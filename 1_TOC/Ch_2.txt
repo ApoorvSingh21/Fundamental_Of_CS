@@ -1,0 +1,1203 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                 THEORY OF COMPUTATION — CHAPTER 2                    ║
+║                    MATHEMATICAL FOUNDATIONS                          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 1 — FOUNDATIONS
+CHAPTER 2 — MATHEMATICAL FOUNDATIONS
+
+PURPOSE OF THIS CHAPTER
+────────────────────────────────────────────────────────────────────────
+Before learning alphabets, strings, languages, DFA, NFA, CFG, PDA, and
+Turing Machines, we need a small but strong mathematical foundation.
+
+This chapter teaches the mathematical language used throughout TOC.
+
+CHAPTER ROADMAP
+────────────────────────────────────────────────────────────────────────
+
+2.1 SETS
+    ↓
+2.2 RELATIONS
+    ↓
+2.3 FUNCTIONS
+    ↓
+2.4 MATHEMATICAL PROOF
+
+In this chapter we will learn:
+
+    Sets
+      ├── Elements
+      ├── Set notation
+      ├── Empty set
+      ├── Finite and infinite sets
+      ├── Subsets
+      ├── Proper subsets
+      ├── Power set
+      ├── Set equality
+      ├── Union
+      ├── Intersection
+      ├── Difference
+      ├── Complement
+      ├── Cartesian product
+      ├── Set identities
+      └── Venn diagrams
+
+    Relations
+      ├── Binary relations
+      ├── Reflexive
+      ├── Symmetric
+      ├── Antisymmetric
+      ├── Transitive
+      ├── Equivalence relation
+      └── Equivalence classes
+
+    Functions
+      ├── Function
+      ├── Domain
+      ├── Codomain
+      ├── Range
+      ├── Injective
+      ├── Surjective
+      ├── Bijective
+      ├── Composition
+      └── Inverse
+
+    Mathematical Proof
+      ├── Statements
+      ├── Logical implication
+      ├── Direct proof
+      ├── Contradiction
+      ├── Contrapositive
+      ├── Mathematical induction
+      ├── Strong induction
+      └── Counterexamples
+
+
+════════════════════════════════════════════════════════════════════════
+2.1 SETS
+════════════════════════════════════════════════════════════════════════
+
+1. WHAT IS A SET?
+────────────────────────────────────────────────────────────────────────
+
+SIMPLE DEFINITION:
+
+A SET is a collection of distinct objects.
+
+The objects inside a set are called ELEMENTS or MEMBERS.
+
+Example:
+
+    A = {1, 2, 3, 4}
+
+Here:
+
+    A       → set
+    1,2,3,4 → elements of A
+
+We write:
+
+    1 ∈ A
+
+and read:
+
+    "1 belongs to A."
+
+If an object does not belong to the set:
+
+    7 ∉ A
+
+Read:
+
+    "7 does not belong to A."
+
+
+FORMAL DEFINITION:
+
+A set is a well-defined collection of distinct objects considered as
+a single mathematical entity.
+
+"Well-defined" means that we can clearly determine whether an object
+belongs to the set or not.
+
+
+REAL-WORLD ANALOGY:
+
+Imagine a classroom.
+
+    Classroom A
+    ┌──────────────────────┐
+    │ Ali                  │
+    │ Ravi                 │
+    │ Priya                │
+    │ Sara                 │
+    └──────────────────────┘
+
+The classroom can be considered a set:
+
+    Students = {Ali, Ravi, Priya, Sara}
+
+Each student is an element.
+
+
+WHY DO WE NEED SETS IN TOC?
+
+Sets are everywhere in TOC.
+
+For example, a DFA is formally represented using sets:
+
+    DFA = (Q, Σ, δ, q₀, F)
+
+Here:
+
+    Q = set of states
+    Σ = set of input symbols
+    F = set of accepting states
+
+Therefore, understanding sets is essential before studying automata.
+
+
+────────────────────────────────────────────────────────────────────────
+2. SET NOTATION
+────────────────────────────────────────────────────────────────────────
+
+Two common ways to describe sets are:
+
+A. ROSTER / ENUMERATION METHOD
+
+List all elements.
+
+Example:
+
+    A = {1, 2, 3, 4, 5}
+
+B. SET-BUILDER / SET-COMPREHENSION METHOD
+
+Describe a property satisfied by the elements.
+
+Example:
+
+    A = {x | x is a positive integer less than 6}
+
+This means:
+
+    "A is the set of x such that x is a positive integer less than 6."
+
+Therefore:
+
+    A = {1,2,3,4,5}
+
+
+════════════════════════════════════════════════════════════════════════
+3. EMPTY SET
+════════════════════════════════════════════════════════════════════════
+
+The EMPTY SET is a set containing no elements.
+
+Notation:
+
+    ∅
+
+or:
+
+    {}
+
+Example:
+
+    A = {x ∈ N | x < 0}
+
+If N means {0,1,2,3,...}, there is no natural number less than 0.
+
+Therefore:
+
+    A = ∅
+
+
+IMPORTANT:
+
+    ∅ ≠ {∅}
+
+Why?
+
+    ∅
+    → contains nothing
+
+    {∅}
+    → contains one element, and that element is ∅
+
+
+ASCII:
+
+Empty set:
+
+    A = ∅
+
+    A
+    ┌─────────────┐
+    │             │
+    │   nothing   │
+    │             │
+    └─────────────┘
+
+
+Set containing empty set:
+
+    B = {∅}
+
+    B
+    ┌─────────────┐
+    │      ∅      │
+    └─────────────┘
+
+
+════════════════════════════════════════════════════════════════════════
+4. FINITE AND INFINITE SETS
+════════════════════════════════════════════════════════════════════════
+
+FINITE SET:
+
+A set having a limited number of elements.
+
+Example:
+
+    A = {1,2,3,4}
+
+Number of elements:
+
+    |A| = 4
+
+
+INFINITE SET:
+
+A set having infinitely many elements.
+
+Example:
+
+    N = {0,1,2,3,4,5,...}
+
+We cannot finish listing all natural numbers.
+
+Therefore N is infinite.
+
+
+IMPORTANT TOC CONNECTION:
+
+The alphabet used in basic finite automata is normally a finite set.
+
+Example:
+
+    Σ = {0,1}
+
+This is a finite alphabet.
+
+
+════════════════════════════════════════════════════════════════════════
+5. SUBSET
+════════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    A = {1,2,3}
+
+    B = {1,2,3,4,5}
+
+Every element of A is also present in B.
+
+Therefore:
+
+    A ⊆ B
+
+Read:
+
+    "A is a subset of B."
+
+
+FORMAL DEFINITION:
+
+A is a subset of B if every element of A is also an element of B.
+
+Mathematically:
+
+    A ⊆ B
+
+means:
+
+    ∀x (x ∈ A ⇒ x ∈ B)
+
+
+ASCII:
+
+        B
+    ┌───────────────────┐
+    │                   │
+    │     ┌───────┐     │
+    │     │   A   │     │
+    │     │1 2 3  │     │
+    │     └───────┘     │
+    │     4 5 6         │
+    │                   │
+    └───────────────────┘
+
+
+IMPORTANT:
+
+Every set is a subset of itself.
+
+Therefore:
+
+    A ⊆ A
+
+Also:
+
+    ∅ ⊆ A
+
+for every set A.
+
+
+════════════════════════════════════════════════════════════════════════
+6. PROPER SUBSET
+════════════════════════════════════════════════════════════════════════
+
+A is a PROPER SUBSET of B if:
+
+    A ⊆ B
+
+and
+
+    A ≠ B
+
+Notation:
+
+    A ⊂ B
+
+Example:
+
+    A = {1,2}
+
+    B = {1,2,3}
+
+Therefore:
+
+    A ⊂ B
+
+
+But:
+
+    A = {1,2,3}
+    B = {1,2,3}
+
+Then:
+
+    A ⊆ B
+
+but:
+
+    A ⊄ B
+
+
+IMPORTANT DISTINCTION:
+
+    A ⊆ B
+    → A may be equal to B
+
+    A ⊂ B
+    → A must be smaller than B
+
+
+════════════════════════════════════════════════════════════════════════
+7. CARDINALITY
+════════════════════════════════════════════════════════════════════════
+
+CARDINALITY means the number of elements in a set.
+
+Notation:
+
+    |A|
+
+Example:
+
+    A = {10,20,30}
+
+Therefore:
+
+    |A| = 3
+
+
+Another example:
+
+    B = {a,b,c,d,e}
+
+    |B| = 5
+
+
+IMPORTANT:
+
+Repeated elements do NOT increase cardinality.
+
+Example:
+
+    A = {1,1,2,2,3}
+
+A set contains distinct elements, so:
+
+    A = {1,2,3}
+
+Therefore:
+
+    |A| = 3
+
+
+════════════════════════════════════════════════════════════════════════
+8. POWER SET
+════════════════════════════════════════════════════════════════════════
+
+The POWER SET of A is the set containing ALL subsets of A.
+
+Notation:
+
+    P(A)
+
+or sometimes:
+
+    2^A
+
+
+Example:
+
+    A = {a,b}
+
+Its subsets are:
+
+    ∅
+    {a}
+    {b}
+    {a,b}
+
+Therefore:
+
+    P(A) = {∅, {a}, {b}, {a,b}}
+
+
+IMPORTANT FORMULA:
+
+If:
+
+    |A| = n
+
+then:
+
+    |P(A)| = 2^n
+
+
+Example:
+
+    |A| = 3
+
+Then:
+
+    |P(A)| = 2³ = 8
+
+
+For:
+
+    A = {a,b,c}
+
+Power set:
+
+    P(A) =
+    {
+      ∅,
+      {a},
+      {b},
+      {c},
+      {a,b},
+      {a,c},
+      {b,c},
+      {a,b,c}
+    }
+
+
+WHY IS POWER SET IMPORTANT IN TOC?
+
+Power sets appear naturally in:
+
+    NFA → DFA conversion
+
+During subset construction, DFA states can correspond to subsets of
+NFA states.
+
+Therefore:
+
+    NFA with n states
+
+may have up to:
+
+    2^n
+
+corresponding DFA states.
+
+
+════════════════════════════════════════════════════════════════════════
+9. SET EQUALITY
+════════════════════════════════════════════════════════════════════════
+
+Two sets are equal if they contain exactly the same elements.
+
+If:
+
+    A = {1,2,3}
+
+and:
+
+    B = {3,1,2}
+
+then:
+
+    A = B
+
+
+ORDER DOES NOT MATTER IN SETS.
+
+Also:
+
+    {1,2,3} = {1,1,2,3}
+
+because duplicates are ignored.
+
+
+Formal idea:
+
+    A = B
+
+if and only if:
+
+    A ⊆ B
+
+and
+
+    B ⊆ A
+
+
+════════════════════════════════════════════════════════════════════════
+10. UNION
+════════════════════════════════════════════════════════════════════════
+
+The UNION of A and B contains elements belonging to A OR B.
+
+Notation:
+
+    A ∪ B
+
+
+Example:
+
+    A = {1,2,3}
+
+    B = {3,4,5}
+
+Then:
+
+    A ∪ B = {1,2,3,4,5}
+
+
+ASCII:
+
+        A                 B
+    ┌─────────┐       ┌─────────┐
+    │ 1  2    │       │    4  5 │
+    │    3────┼───────┼────3    │
+    └─────────┘       └─────────┘
+
+Union:
+
+    everything in either A or B.
+
+
+════════════════════════════════════════════════════════════════════════
+11. INTERSECTION
+════════════════════════════════════════════════════════════════════════
+
+Intersection contains elements common to both sets.
+
+Notation:
+
+    A ∩ B
+
+
+Example:
+
+    A = {1,2,3}
+
+    B = {3,4,5}
+
+Therefore:
+
+    A ∩ B = {3}
+
+
+Think:
+
+    UNION       → OR
+    INTERSECTION → AND
+
+
+ASCII:
+
+             A           B
+          ┌───────┐
+          │       │
+          │   ┌───┼───┐
+          │   │ 3 │   │
+          └───┼───┘   │
+              │       │
+              └───────┘
+
+Common region = intersection.
+
+
+════════════════════════════════════════════════════════════════════════
+12. SET DIFFERENCE
+════════════════════════════════════════════════════════════════════════
+
+A − B means:
+
+Elements that are in A but NOT in B.
+
+Example:
+
+    A = {1,2,3,4}
+
+    B = {3,4,5,6}
+
+Then:
+
+    A − B = {1,2}
+
+
+But:
+
+    B − A = {5,6}
+
+Therefore:
+
+    A − B ≠ B − A
+
+in general.
+
+
+IMPORTANT:
+
+Set difference is NOT generally commutative.
+
+
+════════════════════════════════════════════════════════════════════════
+13. COMPLEMENT
+════════════════════════════════════════════════════════════════════════
+
+Complement depends on a UNIVERSAL SET.
+
+Suppose:
+
+    U = {1,2,3,4,5}
+
+and:
+
+    A = {1,2,3}
+
+Then the complement of A is:
+
+    Aᶜ = {4,5}
+
+
+Meaning:
+
+    Aᶜ = U − A
+
+
+IMPORTANT:
+
+You cannot determine a complement unless the universe is known.
+
+
+════════════════════════════════════════════════════════════════════════
+14. CARTESIAN PRODUCT
+════════════════════════════════════════════════════════════════════════
+
+The Cartesian product of A and B is the set of ordered pairs:
+
+    A × B
+
+where:
+
+    first element comes from A
+    second element comes from B
+
+
+Example:
+
+    A = {1,2}
+
+    B = {x,y}
+
+Then:
+
+    A × B =
+    {(1,x), (1,y), (2,x), (2,y)}
+
+
+IMPORTANT:
+
+Order matters.
+
+Therefore:
+
+    (1,x) ≠ (x,1)
+
+
+Generally:
+
+    A × B ≠ B × A
+
+
+CARDINALITY:
+
+If:
+
+    |A| = m
+    |B| = n
+
+then:
+
+    |A × B| = m × n
+
+
+Example:
+
+    |A| = 2
+    |B| = 3
+
+Therefore:
+
+    |A × B| = 6
+
+
+TOC CONNECTION:
+
+Relations are often defined as subsets of Cartesian products.
+
+For example:
+
+    R ⊆ A × B
+
+
+════════════════════════════════════════════════════════════════════════
+15. IMPORTANT SET IDENTITIES
+════════════════════════════════════════════════════════════════════════
+
+These are useful for B.Tech and GATE examinations.
+
+IDENTITY LAWS:
+
+    A ∪ ∅ = A
+
+    A ∩ ∅ = ∅
+
+    A ∪ A = A
+
+    A ∩ A = A
+
+
+COMMUTATIVE LAWS:
+
+    A ∪ B = B ∪ A
+
+    A ∩ B = B ∩ A
+
+
+ASSOCIATIVE LAWS:
+
+    (A ∪ B) ∪ C = A ∪ (B ∪ C)
+
+    (A ∩ B) ∩ C = A ∩ (B ∩ C)
+
+
+DISTRIBUTIVE LAWS:
+
+    A ∩ (B ∪ C)
+    =
+    (A ∩ B) ∪ (A ∩ C)
+
+    A ∪ (B ∩ C)
+    =
+    (A ∪ B) ∩ (A ∪ C)
+
+
+DE MORGAN'S LAWS:
+
+    (A ∪ B)ᶜ = Aᶜ ∩ Bᶜ
+
+    (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ
+
+
+These laws become very useful when working with regular languages,
+automata, and formal language operations.
+
+
+════════════════════════════════════════════════════════════════════════
+16. VENN DIAGRAM
+════════════════════════════════════════════════════════════════════════
+
+A Venn diagram visually represents relationships between sets.
+
+Example:
+
+    ┌────────────────────────────── U ─────────────────────────────┐
+    │                                                              │
+    │          _________        _________                          │
+    │        /           \____/           \                        │
+    │       /      A       3      B        \                       │
+    │      /    1   2             4   5     \                      │
+    │      \               3               /                       │
+    │       \_____________/ \_____________/                        │
+    │                                                              │
+    └──────────────────────────────────────────────────────────────┘
+
+The overlapping region represents:
+
+    A ∩ B
+
+The complete area covered by both circles represents:
+
+    A ∪ B
+
+
+════════════════════════════════════════════════════════════════════════
+17. SETS — TOC CONNECTION
+════════════════════════════════════════════════════════════════════════
+
+Later we will see:
+
+Alphabet:
+
+    Σ = {0,1}
+
+Set of all strings:
+
+    Σ*
+
+Set of strings accepted by a DFA:
+
+    L = {w ∈ Σ* | DFA accepts w}
+
+Set of states:
+
+    Q = {q₀,q₁,q₂}
+
+Set of final states:
+
+    F = {q₂}
+
+Thus, TOC is heavily based on set theory.
+
+
+════════════════════════════════════════════════════════════════════════
+2.2 RELATIONS
+════════════════════════════════════════════════════════════════════════
+
+18. WHAT IS A RELATION?
+────────────────────────────────────────────────────────────────────────
+
+A relation describes a connection between elements.
+
+Example:
+
+    A = {1,2,3}
+
+We can define:
+
+    R = {(1,1),(2,2),(3,3)}
+
+This relation connects each number to itself.
+
+
+FORMAL DEFINITION:
+
+A binary relation from A to B is a subset of:
+
+    A × B
+
+Therefore:
+
+    R ⊆ A × B
+
+
+Example:
+
+    A = {1,2}
+
+    B = {a,b}
+
+Then:
+
+    A × B =
+    {(1,a),(1,b),(2,a),(2,b)}
+
+A relation can contain any subset of these ordered pairs.
+
+
+════════════════════════════════════════════════════════════════════════
+19. REFLEXIVE RELATION
+════════════════════════════════════════════════════════════════════════
+
+A relation R on A is REFLEXIVE if every element is related to itself.
+
+Formal condition:
+
+    ∀a ∈ A:
+
+    (a,a) ∈ R
+
+
+Example:
+
+    A = {1,2,3}
+
+    R = {(1,1),(2,2),(3,3)}
+
+R is reflexive.
+
+
+Think:
+
+    1 → 1
+    2 → 2
+    3 → 3
+
+Every element has a self-loop.
+
+
+ASCII:
+
+        ↺
+       (1)
+        ↺
+       (2)
+        ↺
+       (3)
+
+
+════════════════════════════════════════════════════════════════════════
+20. SYMMETRIC RELATION
+════════════════════════════════════════════════════════════════════════
+
+A relation is SYMMETRIC if:
+
+If:
+
+    a R b
+
+then:
+
+    b R a
+
+
+Formal:
+
+    (a,b) ∈ R ⇒ (b,a) ∈ R
+
+
+Example:
+
+    R = {(1,2),(2,1)}
+
+This is symmetric.
+
+
+ASCII:
+
+    1 ─────→ 2
+    1 ←───── 2
+
+Both directions exist.
+
+
+Real-world analogy:
+
+"Person A is a sibling of Person B."
+
+If A is sibling of B, B is sibling of A.
+
+Therefore sibling relation is symmetric.
+
+
+════════════════════════════════════════════════════════════════════════
+21. ANTISYMMETRIC RELATION
+════════════════════════════════════════════════════════════════════════
+
+This is often confused with "not symmetric."
+
+ANTISYMMETRIC means:
+
+If:
+
+    a R b
+
+AND
+
+    b R a
+
+then:
+
+    a = b
+
+
+Formal:
+
+    (a,b) ∈ R AND (b,a) ∈ R
+    ⇒ a = b
+
+
+Example:
+
+    ≤
+
+The relation "less than or equal to" is antisymmetric.
+
+If:
+
+    a ≤ b
+
+and:
+
+    b ≤ a
+
+then:
+
+    a = b
+
+
+IMPORTANT:
+
+    Symmetric ≠ Antisymmetric
+
+A relation can be:
+
+    symmetric
+    antisymmetric
+    both
+    neither
+
+
+════════════════════════════════════════════════════════════════════════
+22. TRANSITIVE RELATION
+════════════════════════════════════════════════════════════════════════
+
+A relation is TRANSITIVE if:
+
+If:
+
+    a R b
+
+and:
+
+    b R c
+
+then:
+
+    a R c
+
+
+Formal:
+
+    (a,b) ∈ R AND (b,c) ∈ R
+    ⇒ (a,c) ∈ R
+
+
+Example:
+
+    ≤
+
+If:
+
+    2 ≤ 5
+
+and:
+
+    5 ≤ 8
+
+then:
+
+    2 ≤ 8
+
+
+Therefore ≤ is transitive.
+
+
+ASCII:
+
+    a ─────→ b ─────→ c
+     \_______________/
+            ↓
+          a → c
+
+
+════════════════════════════════════════════════════════════════════════
+23. EQUIVALENCE RELATION
+════════════════════════════════════════════════════════════════════════
+
+An equivalence relation is a relation that is:
+
+    1. Reflexive
+    2. Symmetric
+    3. Transitive
+
+
+Therefore:
+
+    Equivalence Relation
+          │
+          ├── Reflexive
+          ├── Symmetric
+          └── Transitive
+
+
+Example:
+
+"has the same remainder when divided by 3"
+
+For integers, define:
+
+    a R b
+
+if:
+
+    a mod 3 = b mod 3
+
+
+Then R is an equivalence relation.
+
+
+WHY IMPORTANT IN TOC?
+
+Equivalence relations and equivalence classes are connected to:
+
+    DFA minimization
+    Myhill-Nerode theorem
+    State equivalence
+
+
+════════════════════════════════════════════════════════════════════════
+24. EQUIVALENCE CLASSES
+════════════════════════════════════════════════════════════════════════
+
+An equivalence class groups elements that are equivalent under a
+relation.
+
+Example:
+
+Consider integers modulo 3.
+
+The classes are:
+
+    [0] = {...,-6,-

@@ -1,0 +1,2043 @@
+============================================================
+CHAPTER 3 — BINARY ARITHMETIC
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner
+
+CHAPTER GOAL:
+Learn how computers perform arithmetic using only 0 and 1.
+
+You will learn:
+    • Binary addition
+    • Binary subtraction
+    • Borrow
+    • 1's complement
+    • 2's complement
+    • Binary multiplication
+    • Shift-and-add multiplication
+    • Binary division
+    • Restoring division concept
+    • Overflow
+    • Unsigned overflow
+    • Signed overflow
+    • Overflow detection
+
+
+============================================================
+3.1 INTRODUCTION TO BINARY ARITHMETIC
+============================================================
+
+A computer does not normally perform arithmetic using
+decimal digits directly.
+
+Digital circuits operate using:
+
+    0 and 1
+
+Therefore computers perform arithmetic using:
+
+    Binary Arithmetic
+
+
+Example:
+
+    Decimal:
+        5 + 3 = 8
+
+    Binary:
+        101₂ + 011₂ = 1000₂
+
+
+IMPORTANT:
+
+Binary arithmetic follows the same basic mathematical
+principles as decimal arithmetic, but the base is 2.
+
+
+------------------------------------------------------------
+REAL-WORLD ANALOGY
+------------------------------------------------------------
+
+Imagine an electronic counter with only two states:
+
+    OFF = 0
+    ON  = 1
+
+The computer performs calculations by manipulating these
+two states through digital circuits.
+
+The most important circuit used for arithmetic is:
+
+                    ALU
+                     |
+          +----------+----------+
+          |                     |
+      Arithmetic            Logic
+      Operations            Operations
+          |
+      Add/Subtract
+          |
+      Binary arithmetic
+
+
+============================================================
+3.2 BINARY ADDITION
+============================================================
+
+Binary addition uses only four basic rules.
+
+------------------------------------------------------------
+3.2.1 Basic Binary Addition Rules
+------------------------------------------------------------
+
+RULE 1:
+
+    0 + 0 = 0
+
+
+RULE 2:
+
+    0 + 1 = 1
+
+
+RULE 3:
+
+    1 + 0 = 1
+
+
+RULE 4:
+
+    1 + 1 = 10
+
+The last result is extremely important.
+
+In decimal:
+
+    9 + 1 = 10
+
+In binary:
+
+    1 + 1 = 10
+
+Why?
+
+Because binary has only two digits:
+
+    0 and 1
+
+So when:
+
+    1 + 1 = 2
+
+and decimal 2 is represented as:
+
+    10₂
+
+
+------------------------------------------------------------
+3.2.2 Binary Addition Table
+------------------------------------------------------------
+
+    A   B    Sum
+    ----------------
+    0   0     0
+    0   1     1
+    1   0     1
+    1   1     10
+
+
+For:
+
+    1 + 1
+
+we get:
+
+    Sum   = 0
+    Carry = 1
+
+
+============================================================
+3.3 BINARY ADDITION WITH CARRY
+============================================================
+
+Consider:
+
+    101
+  + 011
+  -----
+
+Work from RIGHT to LEFT.
+
+Step 1:
+
+    1 + 1 = 10
+
+Write:
+
+    0
+
+Carry:
+
+    1
+
+
+Step 2:
+
+    0 + 1 + carry 1
+    = 10
+
+Write:
+
+    0
+
+Carry:
+
+    1
+
+
+Step 3:
+
+    1 + 0 + carry 1
+    = 10
+
+Write:
+
+    0
+
+Carry:
+
+    1
+
+
+Final carry:
+
+    1
+
+
+Therefore:
+
+      101
+    + 011
+    -----
+     1000
+
+
+Check in decimal:
+
+    101₂ = 5
+    011₂ = 3
+
+    5 + 3 = 8
+
+    8₁₀ = 1000₂
+
+Correct.
+
+
+============================================================
+3.4 ANOTHER BINARY ADDITION EXAMPLE
+============================================================
+
+Calculate:
+
+      1101
+    + 1011
+    ------
+
+Rightmost:
+
+    1 + 1 = 10
+
+Write 0, carry 1.
+
+Next:
+
+    0 + 1 + 1 = 10
+
+Write 0, carry 1.
+
+Next:
+
+    1 + 0 + 1 = 10
+
+Write 0, carry 1.
+
+Next:
+
+    1 + 1 + 1 = 11
+
+Write 1, carry 1.
+
+Final carry = 1.
+
+Therefore:
+
+      1101
+    + 1011
+    ------
+     11000
+
+
+Check:
+
+    1101₂ = 13
+    1011₂ = 11
+
+    13 + 11 = 24
+
+    24₁₀ = 11000₂
+
+
+============================================================
+3.5 BINARY ADDITION — IMPORTANT TERMINOLOGY
+============================================================
+
+When adding binary numbers:
+
+    Sum:
+        Result written at the current position.
+
+    Carry:
+        Extra value passed to the next position.
+
+
+Example:
+
+    1 + 1 = 10
+
+Therefore:
+
+    Sum   = 0
+    Carry = 1
+
+
+For:
+
+    1 + 1 + 1 = 11
+
+Therefore:
+
+    Sum   = 1
+    Carry = 1
+
+
+============================================================
+3.6 BINARY SUBTRACTION
+============================================================
+
+Binary subtraction has four basic rules.
+
+------------------------------------------------------------
+3.6.1 Basic Binary Subtraction Rules
+------------------------------------------------------------
+
+    0 - 0 = 0
+
+    1 - 0 = 1
+
+    1 - 1 = 0
+
+    0 - 1 = 1    with borrow
+
+
+The last rule is important.
+
+You cannot directly subtract:
+
+    1 from 0
+
+So we borrow from the next higher bit.
+
+
+------------------------------------------------------------
+3.6.2 Decimal Analogy
+------------------------------------------------------------
+
+In decimal:
+
+    10 - 1 = 9
+
+Similarly, in binary:
+
+    10₂ - 1₂ = 1₂
+
+
+Therefore:
+
+    0 - 1
+
+requires a borrow.
+
+
+============================================================
+3.7 BINARY SUBTRACTION USING BORROW
+============================================================
+
+Example:
+
+    1010
+  - 0011
+  ------
+
+This means:
+
+    10 - 3 = 7
+
+Therefore answer should be:
+
+    0111
+
+
+Let's calculate:
+
+    1010
+  - 0011
+  ------
+
+Rightmost:
+
+    0 - 1
+
+Need borrow.
+
+Borrow from the next bit.
+
+The 1 in the next position becomes 0.
+
+The current 0 becomes:
+
+    10₂
+
+Therefore:
+
+    10₂ - 1₂ = 1
+
+
+Next position:
+
+    0 - 1
+
+Again borrow.
+
+Continue.
+
+Final result:
+
+    0111
+
+
+Therefore:
+
+    1010₂ - 0011₂ = 0111₂
+
+
+Check:
+
+    1010₂ = 10
+    0011₂ = 3
+
+    10 - 3 = 7
+
+    0111₂ = 7
+
+
+============================================================
+3.8 PROBLEM WITH DIRECT BINARY SUBTRACTION
+============================================================
+
+Direct subtraction works, but hardware implementation
+becomes more complicated because of borrow propagation.
+
+Computers therefore commonly use:
+
+                    2's COMPLEMENT
+                         |
+                 +-------+-------+
+                 |               |
+              Addition       Subtraction
+
+Subtraction can be converted into addition.
+
+Instead of building completely separate hardware for
+subtraction, the ALU can use complement arithmetic.
+
+
+============================================================
+3.9 1's COMPLEMENT
+============================================================
+
+1's complement is obtained by changing every bit:
+
+    0 → 1
+    1 → 0
+
+
+Example:
+
+    Number:
+        10110010
+
+    1's complement:
+        01001101
+
+
+Another example:
+
+    001011
+
+    1's complement:
+
+    110100
+
+
+------------------------------------------------------------
+IMPORTANT:
+------------------------------------------------------------
+
+1's complement = BITWISE INVERSION
+
+
+You simply flip every bit.
+
+
+============================================================
+3.10 2's COMPLEMENT
+============================================================
+
+2's complement is obtained in TWO steps:
+
+    Step 1:
+        Find 1's complement.
+
+    Step 2:
+        Add 1.
+
+
+Example:
+
+    Find 2's complement of:
+
+        00101100
+
+Step 1:
+
+    1's complement:
+
+        11010011
+
+Step 2:
+
+    Add 1:
+
+        11010011
+      + 00000001
+      ----------
+        11010100
+
+Therefore:
+
+    2's complement = 11010100
+
+
+------------------------------------------------------------
+SHORTCUT:
+------------------------------------------------------------
+
+To find 2's complement:
+
+    Start from the RIGHT.
+
+    Keep bits unchanged until the first 1.
+
+    Then invert all remaining bits.
+
+
+Example:
+
+    00101100
+
+Starting from right:
+
+    00101100
+          ↑
+        first 1
+
+Keep:
+
+    100
+
+Invert everything to its left:
+
+    11010100
+
+Therefore:
+
+    2's complement = 11010100
+
+
+============================================================
+3.11 WHY 2's COMPLEMENT IS IMPORTANT
+============================================================
+
+2's complement is extremely important in computer systems
+because it allows subtraction to be performed using addition.
+
+Mathematically:
+
+    A - B
+
+can be written as:
+
+    A + (-B)
+
+In 2's complement representation:
+
+    -B = 2's complement of B
+
+
+Therefore:
+
+    A - B
+    =
+    A + 2's complement(B)
+
+
+This allows the ALU to use addition circuitry for both
+addition and subtraction.
+
+
+============================================================
+3.12 SUBTRACTION USING 2's COMPLEMENT
+============================================================
+
+Example:
+
+    7 - 3
+
+Represent using 4 bits:
+
+    7 = 0111
+    3 = 0011
+
+
+Step 1:
+Find 2's complement of 3.
+
+    0011
+
+1's complement:
+
+    1100
+
+Add 1:
+
+    1101
+
+Therefore:
+
+    -3 = 1101
+
+
+Step 2:
+Add to 7.
+
+      0111
+    + 1101
+    ------
+     10100
+
+
+There is an extra carry.
+
+Discard the carry beyond the fixed 4-bit width.
+
+Result:
+
+    0100
+
+
+Therefore:
+
+    7 - 3 = 4
+
+    0100₂ = 4
+
+
+============================================================
+3.13 ANOTHER 2's COMPLEMENT SUBTRACTION
+============================================================
+
+Calculate:
+
+    5 - 9
+
+Using 4 bits:
+
+    5 = 0101
+    9 = 1001
+
+
+Find 2's complement of 9:
+
+    1001
+
+1's complement:
+
+    0110
+
+Add 1:
+
+    0111
+
+
+Now:
+
+      0101
+    + 0111
+    ------
+      1100
+
+
+Since the result begins with 1, it represents a negative
+number in 4-bit 2's complement.
+
+Find its magnitude:
+
+    1100
+
+1's complement:
+
+    0011
+
+Add 1:
+
+    0100
+
+Magnitude = 4
+
+Therefore:
+
+    1100₂ = -4
+
+Hence:
+
+    5 - 9 = -4
+
+
+============================================================
+3.14 DIRECT SUBTRACTION VS 2's COMPLEMENT
+============================================================
+
+DIRECT SUBTRACTION:
+
+    • Uses borrowing.
+    • Easy for humans.
+    • More complicated hardware.
+
+
+2's COMPLEMENT SUBTRACTION:
+
+    • Converts subtraction into addition.
+    • Uses the same adder hardware.
+    • Very important in CPUs.
+    • Common representation for signed integers.
+
+
+============================================================
+3.15 BINARY MULTIPLICATION
+============================================================
+
+Binary multiplication follows the same basic idea as
+decimal multiplication.
+
+But there are only two digits:
+
+    0 and 1
+
+
+Basic rules:
+
+    0 × 0 = 0
+    0 × 1 = 0
+    1 × 0 = 0
+    1 × 1 = 1
+
+
+Therefore binary multiplication is relatively simple.
+
+
+============================================================
+3.16 BINARY MULTIPLICATION EXAMPLE
+============================================================
+
+Calculate:
+
+    101₂ × 11₂
+
+
+Write:
+
+        101
+      ×  11
+      -----
+        101       ← 101 × 1
+       1010       ← 101 × 1, shifted left
+      ------
+       1111
+
+
+Therefore:
+
+    101₂ × 11₂ = 1111₂
+
+
+Check:
+
+    101₂ = 5
+    11₂  = 3
+
+    5 × 3 = 15
+
+    15₁₀ = 1111₂
+
+
+============================================================
+3.17 SHIFT-AND-ADD MULTIPLICATION
+============================================================
+
+Computers can perform binary multiplication using:
+
+    SHIFT + ADD
+
+
+Why?
+
+Multiplication by powers of 2 is equivalent to shifting
+left.
+
+Example:
+
+    1011₂ × 2
+
+    = 10110₂
+
+
+Multiplication by 4:
+
+    1011₂ × 4
+
+    = 101100₂
+
+
+Because:
+
+    4 = 2²
+
+So:
+
+    multiply by 2²
+    =
+    shift left by 2 positions.
+
+
+------------------------------------------------------------
+Example:
+------------------------------------------------------------
+
+Multiply:
+
+    1011₂ × 0101₂
+
+Decimal equivalent:
+
+    11 × 5 = 55
+
+
+Using shift-and-add:
+
+Multiplier:
+
+    0101
+
+Bits from right:
+
+    1
+    0
+    1
+    0
+
+For each 1, add a shifted version of the multiplicand.
+
+    Multiplicand = 1011
+
+    First 1:
+        1011
+
+    Second bit = 0:
+        ignore
+
+    Third bit = 1:
+        1011 shifted left by 2
+        = 101100
+
+Add:
+
+      001011
+    + 101100
+    --------
+      110111
+
+Therefore:
+
+    1011₂ × 0101₂ = 110111₂
+
+
+Check:
+
+    11 × 5 = 55
+
+    55₁₀ = 110111₂
+
+
+============================================================
+3.18 BINARY DIVISION
+============================================================
+
+Binary division is similar to decimal long division.
+
+Basic rules include:
+
+    0 ÷ 1 = 0
+    1 ÷ 1 = 1
+
+Division by zero is undefined.
+
+
+Example:
+
+    1100₂ ÷ 10₂
+
+
+Convert to decimal:
+
+    1100₂ = 12
+    10₂   = 2
+
+Therefore:
+
+    12 ÷ 2 = 6
+
+    6₁₀ = 110₂
+
+Therefore:
+
+    1100₂ ÷ 10₂ = 110₂
+
+
+============================================================
+3.19 BINARY LONG DIVISION
+============================================================
+
+Example:
+
+    1010₂ ÷ 10₂
+
+
+This is:
+
+    10 ÷ 2 = 5
+
+
+Therefore:
+
+    1010₂ ÷ 10₂ = 101₂
+
+
+Verification:
+
+    101₂ × 10₂
+    = 1010₂
+
+
+So:
+
+    Dividend = Divisor × Quotient + Remainder
+
+
+For this example:
+
+    1010 = 10 × 101 + 0
+
+
+============================================================
+3.20 DIVISION BY POWERS OF 2
+============================================================
+
+Right shifting a binary number is equivalent to integer
+division by powers of 2.
+
+Example:
+
+    1100₂ >> 1
+
+    = 0110₂
+
+Decimal:
+
+    12 ÷ 2 = 6
+
+
+Similarly:
+
+    1100₂ >> 2
+    = 0011₂
+
+Decimal:
+
+    12 ÷ 4 = 3
+
+
+Therefore:
+
+    Right shift by 1 → divide by 2
+    Right shift by 2 → divide by 4
+    Right shift by 3 → divide by 8
+
+
+============================================================
+3.21 RESTORING DIVISION — BASIC CONCEPT
+============================================================
+
+Restoring division is a hardware algorithm used for
+binary division.
+
+It is called "restoring" because if subtraction produces
+a negative partial remainder, the previous value is
+restored.
+
+Basic idea:
+
+    1. Shift partial remainder and quotient.
+    2. Subtract divisor.
+    3. Check the result.
+    4. If result is negative:
+           Restore the previous remainder.
+           Set quotient bit = 0.
+    5. If result is non-negative:
+           Keep the result.
+           Set quotient bit = 1.
+    6. Repeat.
+
+
+Conceptual flow:
+
+             START
+                |
+                v
+        Shift remainder/quotient
+                |
+                v
+         Subtract divisor
+                |
+          +-----+-----+
+          |           |
+       Negative    Non-negative
+          |           |
+       Restore       Keep
+          |           |
+       Q bit=0      Q bit=1
+          |           |
+          +-----+-----+
+                |
+             Repeat
+
+
+At introductory COA level, understand the algorithm idea
+first. Detailed register-level numerical restoring division
+will be studied when computer arithmetic algorithms are
+covered in depth.
+
+
+============================================================
+3.22 OVERFLOW
+============================================================
+
+Overflow occurs when the result of an arithmetic operation
+cannot be represented using the available number of bits.
+
+
+Example:
+
+Suppose we have only 4 bits.
+
+Maximum unsigned value:
+
+    1111₂ = 15
+
+
+Now:
+
+    1111
+  + 0001
+  ------
+   10000
+
+This requires 5 bits.
+
+But only 4 bits are available.
+
+Therefore:
+
+    OVERFLOW
+
+
+============================================================
+3.23 UNSIGNED OVERFLOW
+============================================================
+
+For an n-bit unsigned number:
+
+    Minimum = 0
+
+    Maximum = 2ⁿ - 1
+
+
+For 4 bits:
+
+    Maximum = 2⁴ - 1
+            = 16 - 1
+            = 15
+
+
+For 8 bits:
+
+    Maximum = 2⁸ - 1
+            = 255
+
+
+For 16 bits:
+
+    Maximum = 2¹⁶ - 1
+            = 65535
+
+
+If the result exceeds this range:
+
+    Unsigned overflow occurs.
+
+
+------------------------------------------------------------
+Example:
+------------------------------------------------------------
+
+4-bit unsigned:
+
+    1111 + 0001
+
+    = 10000
+
+But 10000 requires 5 bits.
+
+Therefore:
+
+    4-bit unsigned overflow.
+
+
+============================================================
+3.24 SIGNED NUMBERS AND 2's COMPLEMENT
+============================================================
+
+For signed integers, the most common representation is:
+
+    2's complement
+
+
+For an n-bit signed number:
+
+    Range:
+
+    -2ⁿ⁻¹  to  2ⁿ⁻¹ - 1
+
+
+For 4 bits:
+
+    -8 to +7
+
+
+Representation:
+
+    +7 = 0111
+    +6 = 0110
+    ...
+    +0 = 0000
+
+    -1 = 1111
+    -2 = 1110
+    ...
+    -8 = 1000
+
+
+============================================================
+3.25 SIGNED OVERFLOW
+============================================================
+
+Signed overflow is different from unsigned overflow.
+
+Example using 4-bit signed numbers:
+
+    7 + 1
+
+    7 = 0111
+    1 = 0001
+
+      0111
+    + 0001
+    ------
+      1000
+
+But in 4-bit 2's complement:
+
+    1000 = -8
+
+We expected:
+
+    +8
+
+But +8 cannot be represented in 4-bit signed 2's
+complement.
+
+Therefore:
+
+    SIGNED OVERFLOW
+
+
+============================================================
+3.26 HOW TO DETECT SIGNED OVERFLOW
+============================================================
+
+Very important rule:
+
+SIGNED OVERFLOW occurs when:
+
+    Positive + Positive = Negative
+
+OR
+
+    Negative + Negative = Positive
+
+
+Examples:
+
+    +7 + +1
+
+    0111 + 0001 = 1000
+
+Positive + Positive produced Negative.
+
+Therefore:
+
+    Overflow.
+
+
+Another example:
+
+    -8 + -1
+
+    1000 + 1111 = 0111
+             ↓
+          -9 mathematically
+
+But -9 is outside the 4-bit signed range.
+
+Therefore:
+
+    Overflow.
+
+
+------------------------------------------------------------
+IMPORTANT:
+------------------------------------------------------------
+
+Adding numbers with DIFFERENT signs cannot produce signed
+overflow.
+
+Example:
+
+    +5 + (-3)
+
+One positive and one negative.
+
+The result is within the range:
+
+    +2
+
+Therefore no signed overflow.
+
+
+============================================================
+3.27 CARRY VS OVERFLOW
+============================================================
+
+This is one of the MOST IMPORTANT exam concepts.
+
+
+CARRY:
+
+    Mainly relevant to unsigned arithmetic.
+
+OVERFLOW:
+
+    Relevant to signed arithmetic.
+
+
+They are NOT the same thing.
+
+
+------------------------------------------------------------
+Example:
+------------------------------------------------------------
+
+4-bit:
+
+    1111 + 0001 = 10000
+
+There is a carry out.
+
+For unsigned numbers:
+
+    15 + 1 = 16
+
+But 16 cannot fit in 4 bits.
+
+Therefore:
+
+    Unsigned overflow.
+
+
+------------------------------------------------------------
+Signed example:
+
+    0111 + 0001 = 1000
+
+There is no carry out.
+
+But:
+
+    +7 + +1 = +8
+
+and +8 cannot be represented in 4-bit signed 2's complement.
+
+Therefore:
+
+    Signed overflow.
+
+
+============================================================
+3.28 OVERFLOW DETECTION USING SIGN BITS
+============================================================
+
+For 2's complement addition:
+
+    Positive + Positive
+        should produce Positive.
+
+    Negative + Negative
+        should produce Negative.
+
+
+If the sign changes unexpectedly:
+
+    Overflow occurred.
+
+
+Another hardware rule:
+
+    Signed overflow =
+    Carry into sign bit XOR Carry out of sign bit
+
+
+Formula:
+
+    V = C_in_to_MSB XOR C_out_of_MSB
+
+
+Where:
+
+    V = overflow
+    MSB = Most Significant Bit
+
+
+This is a common exam concept.
+
+
+============================================================
+3.29 MOST SIGNIFICANT BIT
+============================================================
+
+MSB:
+
+    Most Significant Bit
+
+It is the leftmost bit.
+
+Example:
+
+    10110110
+
+    ↑
+    MSB
+
+
+LSB:
+
+    Least Significant Bit
+
+It is the rightmost bit.
+
+Example:
+
+    10110110
+           ↑
+           LSB
+
+
+For signed 2's complement numbers:
+
+    MSB = 0 → Positive
+    MSB = 1 → Negative
+
+
+============================================================
+3.30 FIXED-WIDTH ARITHMETIC
+============================================================
+
+Computers normally operate with fixed numbers of bits.
+
+Common widths:
+
+    4 bits
+    8 bits
+    16 bits
+    32 bits
+    64 bits
+
+
+Example:
+
+    8-bit number:
+
+    10110110
+
+If an operation produces:
+
+    1 10110110
+
+Only 8 bits can be stored.
+
+The extra carry may be discarded for fixed-width
+unsigned arithmetic.
+
+But whether the operation is valid depends on whether
+we interpret the operands as unsigned or signed.
+
+
+============================================================
+3.31 ZERO EXTENSION
+============================================================
+
+When an unsigned binary number is moved to a larger width,
+zeros are added to the LEFT.
+
+Example:
+
+    1011  (4 bits)
+
+To represent it in 8 bits:
+
+    00001011
+
+
+This is called:
+
+    ZERO EXTENSION
+
+
+============================================================
+3.32 SIGN EXTENSION
+============================================================
+
+For signed 2's complement numbers, when increasing bit width,
+copy the sign bit.
+
+Example:
+
+    4-bit:
+
+    1011
+
+MSB = 1
+
+Therefore negative.
+
+Convert to 8 bits:
+
+    11111011
+
+
+The sign bit 1 is repeated.
+
+For a positive number:
+
+    0101
+
+8-bit:
+
+    00000101
+
+
+Therefore:
+
+    MSB = 0 → add zeros
+    MSB = 1 → add ones
+
+
+============================================================
+3.33 ARITHMETIC SHIFT VS LOGICAL SHIFT
+============================================================
+
+This concept connects binary arithmetic to CPU operations.
+
+
+LOGICAL LEFT SHIFT:
+
+    Fill with 0 from the right.
+
+Example:
+
+    00101100 << 1
+
+    = 01011000
+
+
+LOGICAL RIGHT SHIFT:
+
+    Fill with 0 from the left.
+
+Example:
+
+    00101100 >> 1
+
+    = 00010110
+
+
+ARITHMETIC RIGHT SHIFT:
+
+    Preserve the sign bit.
+
+Example:
+
+    10110000
+
+Arithmetic right shift:
+
+    11011000
+
+The leftmost 1 is preserved.
+
+
+Why?
+
+Because the number is treated as a signed 2's complement
+number.
+
+
+============================================================
+3.34 COMPLETE BINARY ARITHMETIC EXAMPLE
+============================================================
+
+Calculate:
+
+    1011 + 0110
+
+
+      1011
+    + 0110
+    ------
+     10001
+
+
+Check:
+
+    1011₂ = 11
+    0110₂ = 6
+
+    11 + 6 = 17
+
+    17₁₀ = 10001₂
+
+
+If using only 4 bits:
+
+    0001
+
+with a carry out of:
+
+    1
+
+
+Unsigned 4-bit result:
+
+    0001
+
+with overflow/carry.
+
+
+============================================================
+3.35 IMPORTANT FORMULAS
+============================================================
+
+2's complement:
+
+    2's complement
+    =
+    1's complement + 1
+
+
+n-bit unsigned range:
+
+    0 to 2ⁿ - 1
+
+
+n-bit signed 2's complement range:
+
+    -2ⁿ⁻¹ to 2ⁿ⁻¹ - 1
+
+
+Binary multiplication:
+
+    Shift + Add
+
+
+Division by 2:
+
+    Right shift by 1
+
+
+Multiplication by 2:
+
+    Left shift by 1
+
+
+Signed overflow condition:
+
+    Same-sign operands
+    +
+    Different-sign result
+
+
+Hardware overflow detection:
+
+    V = C_in(MSB) XOR C_out(MSB)
+
+
+============================================================
+3.36 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+    Thinking 1 + 1 = 2 in binary.
+
+CORRECT:
+
+    1 + 1 = 10₂
+
+
+MISTAKE 2:
+    Forgetting the carry.
+
+Example:
+
+    1 + 1 =
+
+    Sum = 0
+    Carry = 1
+
+
+MISTAKE 3:
+    Taking 1's complement as 2's complement.
+
+Remember:
+
+    1's complement:
+        Flip bits.
+
+    2's complement:
+        Flip bits + 1.
+
+
+MISTAKE 4:
+    Forgetting fixed bit width.
+
+Example:
+
+    4-bit 2's complement:
+
+        Range = -8 to +7
+
+
+MISTAKE 5:
+    Treating carry and signed overflow as the same.
+
+They are different concepts.
+
+
+MISTAKE 6:
+    Adding 1 to the wrong end when finding 2's complement.
+
+Always add 1 after finding the complete 1's complement.
+
+
+MISTAKE 7:
+    Forgetting sign extension.
+
+For signed numbers:
+
+    MSB = 0 → extend with 0
+    MSB = 1 → extend with 1
+
+
+============================================================
+3.37 B.TECH EXAM QUESTIONS
+============================================================
+
+Q1.
+Perform:
+
+    1011₂ + 1101₂
+
+
+Q2.
+Perform:
+
+    11010₂ - 1011₂
+
+
+Q3.
+Find the 1's complement of:
+
+    10110101
+
+
+Q4.
+Find the 2's complement of:
+
+    00101110
+
+
+Q5.
+Using 2's complement, calculate:
+
+    15 - 9
+
+
+Q6.
+Using 2's complement, calculate:
+
+    7 - 12
+
+
+Q7.
+Multiply:
+
+    1011₂ × 101₂
+
+
+Q8.
+Divide:
+
+    11000₂ ÷ 100₂
+
+
+Q9.
+Explain restoring division.
+
+
+Q10.
+What is overflow?
+
+
+Q11.
+Differentiate carry and overflow.
+
+
+Q12.
+Find the signed 2's complement range for:
+
+    8 bits
+
+
+Q13.
+Determine whether signed overflow occurs:
+
+    0111 + 0001
+
+
+Q14.
+Determine whether signed overflow occurs:
+
+    1000 + 1111
+
+
+Q15.
+Explain the difference between 1's complement and
+2's complement.
+
+
+============================================================
+3.38 COMPETITIVE-EXAM STYLE QUESTIONS
+============================================================
+
+QUESTION 1
+------------------------------------------------------------
+
+Using 4-bit 2's complement, what is:
+
+    0101 + 0011 ?
+
+Solution:
+
+    0101 = +5
+    0011 = +3
+
+    0101
+  + 0011
+  ------
+    1000
+
+1000 represents -8.
+
+But:
+
+    +5 + +3 = +8
+
+and +8 cannot be represented using 4 bits.
+
+Therefore:
+
+    SIGNED OVERFLOW
+
+
+------------------------------------------------------------
+QUESTION 2
+------------------------------------------------------------
+
+Which operation definitely causes signed overflow?
+
+A. Positive + Negative
+B. Positive + Positive producing Negative
+C. Positive + Negative producing Positive
+D. Zero + Positive
+
+Answer:
+
+    B
+
+
+------------------------------------------------------------
+QUESTION 3
+------------------------------------------------------------
+
+What is the 8-bit 2's complement representation of -18?
+
+Step 1:
+
+    +18:
+
+    00010010
+
+Step 2:
+1's complement:
+
+    11101101
+
+Step 3:
+Add 1:
+
+    11101110
+
+Answer:
+
+    -18 = 11101110₂
+
+
+------------------------------------------------------------
+QUESTION 4
+------------------------------------------------------------
+
+What is the 4-bit signed 2's complement range?
+
+Formula:
+
+    -2ⁿ⁻¹ to 2ⁿ⁻¹ - 1
+
+For n = 4:
+
+    -2³ to 2³ - 1
+
+    = -8 to +7
+
+Answer:
+
+    -8 to +7
+
+
+============================================================
+3.39 QUICK REVISION
+============================================================
+
+BINARY ADDITION:
+
+    0 + 0 = 0
+    0 + 1 = 1
+    1 + 0 = 1
+    1 + 1 = 10
+
+
+BINARY SUBTRACTION:
+
+    0 - 0 = 0
+    1 - 0 = 1
+    1 - 1 = 0
+    0 - 1 = 1 with borrow
+
+
+1's COMPLEMENT:
+
+    Flip every bit.
+
+    0 → 1
+    1 → 0
+
+
+2's COMPLEMENT:
+
+    1's complement + 1
+
+
+SUBTRACTION:
+
+    A - B
+    =
+    A + 2's complement(B)
+
+
+BINARY MULTIPLICATION:
+
+    Shift + Add
+
+
+BINARY DIVISION:
+
+    Similar to long division.
+
+
+SHIFT:
+
+    Left shift by 1
+        ≈ multiply by 2
+
+    Right shift by 1
+        ≈ divide by 2
+        for unsigned/integer cases.
+
+
+UNSIGNED RANGE:
+
+    n bits:
+
+    0 to 2ⁿ - 1
+
+
+SIGNED 2's COMPLEMENT RANGE:
+
+    n bits:
+
+    -2ⁿ⁻¹ to 2ⁿ⁻¹ - 1
+
+
+OVERFLOW:
+
+    Result cannot fit in available number of bits.
+
+
+SIGNED OVERFLOW:
+
+    Positive + Positive → Negative
+
+    Negative + Negative → Positive
+
+
+CARRY ≠ OVERFLOW
+
+Carry:
+    Mainly associated with unsigned arithmetic.
+
+Overflow:
+    Signed arithmetic range violation.
+
+
+============================================================
+3.40 MASTER CHECKPOINT
+============================================================
+
+Before moving to Chapter 4, you should be able to:
+
+[ ] Perform binary addition.
+[ ] Handle binary carries.
+[ ] Perform binary subtraction.
+[ ] Handle binary borrows.
+[ ] Find 1's complement.
+[ ] Find 2's complement.
+[ ] Explain why 2's complement is used.
+[ ] Perform subtraction using 2's complement.
+[ ] Perform binary multiplication.
+[ ] Understand shift-and-add multiplication.
+[ ] Perform basic binary division.
+[ ] Explain restoring division concept.
+[ ] Understand overflow.
+[ ] Understand unsigned overflow.
+[ ] Understand signed overflow.
+[ ] Distinguish carry from overflow.
+[ ] Calculate signed 2's complement ranges.
+[ ] Perform sign extension.
+[ ] Understand logical and arithmetic shifts.
+[ ] Solve B.Tech-level binary arithmetic problems.
+[ ] Solve competitive-exam-style overflow questions.
+
+
+============================================================
+CHAPTER 3 COMPLETE
+============================================================
+
+NEXT:
+
+CHAPTER 4 — DATA REPRESENTATION
+
+Topics:
+    • Bit, Nibble, Byte and Word
+    • Integer Representation
+    • Unsigned Integers
+    • Signed Integers
+    • Sign-Magnitude
+    • 1's Complement
+    • 2's Complement in Depth
+    • Character Representation
+    • ASCII
+    • Unicode
+    • UTF-8
+    • BCD
+    • Gray Code
+    • Binary ↔ Gray Conversion
+    • Applications
+============================================================
