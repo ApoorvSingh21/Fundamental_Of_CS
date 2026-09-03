@@ -1,0 +1,2297 @@
+============================================================
+CHAPTER 15 — DIGITAL LOGIC FAMILIES
+============================================================
+Level: B.Tech 1st Year / Computer Science
+Prerequisite: Chapters 1–14
+Goal: Understand how digital logic gates are physically
+      implemented using electronic components, especially
+      transistors, and compare RTL, DTL, TTL, ECL, and CMOS.
+============================================================
+
+
+                    CHAPTER 15 ROADMAP
+
+                  DIGITAL LOGIC FAMILIES
+                           |
+        +------------------+------------------+
+        |                  |                  |
+      BASIC              FAMILIES         PARAMETERS
+        |                  |                  |
+   Digital ICs       +-----+------+      +----+----+
+                     |     |      |      |         |
+                    RTL   DTL    TTL    Speed     Power
+                           |      |      |
+                          ECL    CMOS   Noise
+                                  |      |
+                                  +------+
+                                     |
+                              Comparison
+
+
+============================================================
+15.1 WHAT IS A DIGITAL LOGIC FAMILY?
+============================================================
+
+A LOGIC FAMILY is a group of digital integrated
+circuits that use a particular electronic technology
+to implement logic gates.
+
+Examples:
+
+        RTL
+        DTL
+        TTL
+        ECL
+        CMOS
+
+
+A logic family determines important characteristics
+such as:
+
+        • Speed
+        • Power consumption
+        • Noise immunity
+        • Fan-out
+        • Propagation delay
+        • Voltage levels
+        • Cost
+        • Power-delay product
+
+
+Think of it this way:
+
+        Boolean algebra tells us WHAT logic does.
+
+        Logic gates tell us WHAT operation is performed.
+
+        Logic families tell us HOW the gate is
+        physically implemented.
+
+
+============================================================
+15.2 DIGITAL IC
+============================================================
+
+IC stands for:
+
+        INTEGRATED CIRCUIT
+
+
+An integrated circuit contains many electronic
+components fabricated on a semiconductor chip.
+
+
+A digital IC may contain:
+
+        • Transistors
+        • Diodes
+        • Resistors
+        • Capacitors
+        • Logic gates
+        • Flip-flops
+        • Counters
+        • Memory
+        • Other digital circuits
+
+
+Conceptually:
+
+        +-----------------------------+
+        |        DIGITAL IC           |
+        |                             |
+        |  Gates + FFs + Logic        |
+        |                             |
+        +-----------------------------+
+
+
+Modern processors can contain billions of
+transistors on a single chip.
+
+
+============================================================
+15.3 WHY DO WE NEED LOGIC FAMILIES?
+============================================================
+
+Different applications have different requirements.
+
+For example:
+
+        Application A:
+        "I need extremely low power."
+
+        Application B:
+        "I need extremely high speed."
+
+        Application C:
+        "I need high noise immunity."
+
+        Application D:
+        "I need a balance between speed and power."
+
+
+No single technology is ideal for every situation.
+
+Therefore different logic technologies evolved.
+
+
+============================================================
+15.4 BASIC TRANSISTOR IDEA
+============================================================
+
+Before studying logic families, understand the
+basic role of a transistor.
+
+A transistor can act like an electronic switch.
+
+Conceptually:
+
+        CONTROL
+           |
+           v
+       +-------+
+       |       |
+       | SWITCH|
+       |       |
+       +-------+
+          |
+        OUTPUT
+
+
+Digital electronics often uses two broad states:
+
+        OFF → logic 0
+
+        ON  → logic 1
+
+
+This is a simplified conceptual model.
+
+Actual transistor behavior involves analog
+electrical quantities.
+
+
+============================================================
+15.5 TRANSISTOR AS A SWITCH
+============================================================
+
+Imagine a switch controlling a lamp.
+
+        Switch OFF:
+
+        VCC ----X---- Lamp ---- GND
+                   OFF
+
+
+        Switch ON:
+
+        VCC -------- Lamp ---- GND
+                   ON
+
+
+A transistor can perform a similar switching
+function electronically.
+
+
+This is the fundamental idea behind digital
+logic circuits.
+
+
+============================================================
+15.6 DIGITAL VOLTAGE LEVELS
+============================================================
+
+Digital circuits represent:
+
+        Logic 0
+
+and:
+
+        Logic 1
+
+
+These are represented by voltage ranges rather
+than perfectly exact voltages.
+
+
+Conceptually:
+
+        LOW voltage  → 0
+
+        HIGH voltage → 1
+
+
+IMPORTANT:
+
+A digital input does not always require exactly:
+
+        0 V = 0
+
+        5 V = 1
+
+
+Instead, manufacturers specify acceptable
+voltage ranges.
+
+
+============================================================
+15.7 LOGIC FAMILY PARAMETERS
+============================================================
+
+The most important parameters are:
+
+        1. Propagation delay
+        2. Power dissipation
+        3. Noise margin
+        4. Fan-in
+        5. Fan-out
+        6. Speed
+        7. Power-delay product
+
+
+We will study each carefully.
+
+
+============================================================
+15.8 PROPAGATION DELAY
+============================================================
+
+Propagation delay is the time required for a
+change at the input of a logic gate to produce
+the corresponding change at the output.
+
+
+Suppose:
+
+        Input changes:
+
+        0 ─────────> 1
+
+
+Output does not change instantaneously.
+
+There is a small delay.
+
+
+ASCII timing idea:
+
+        INPUT
+        0 ────────┐
+                  └──────── 1
+                  ↑
+                change
+
+
+        OUTPUT
+        0 ───────────┐
+                     └───── 1
+                     ↑
+                  delayed
+
+
+That delay is propagation delay.
+
+
+Usually measured in:
+
+        nanoseconds (ns)
+
+
+============================================================
+15.9 WHY PROPAGATION DELAY MATTERS
+============================================================
+
+Suppose one gate has:
+
+        5 ns delay
+
+
+and another has:
+
+        50 ns delay
+
+
+The first gate can generally respond faster.
+
+
+In large circuits, delays accumulate.
+
+
+Example:
+
+        Gate 1 → Gate 2 → Gate 3
+
+
+If each gate has approximately 5 ns delay:
+
+        Total ≈ 15 ns
+
+
+Therefore propagation delay strongly affects
+maximum operating speed.
+
+
+============================================================
+15.10 RISE TIME
+============================================================
+
+Rise time is the time required for a signal to
+transition from a low voltage level to a high
+voltage level.
+
+Conceptually:
+
+        LOW
+         |
+         |       ______ HIGH
+         |      /
+         |     /
+         |____/
+
+
+The transition is not perfectly vertical.
+
+
+Rise time is commonly measured between specified
+fractions of the voltage swing, often 10% and 90%.
+
+
+============================================================
+15.11 FALL TIME
+============================================================
+
+Fall time is the time required for a signal to
+transition from a high level to a low level.
+
+
+        HIGH ______
+                   \
+                    \
+                     \____ LOW
+
+
+It is commonly measured between specified
+voltage levels such as 90% and 10%.
+
+
+============================================================
+15.12 POWER DISSIPATION
+============================================================
+
+Power dissipation is the electrical power consumed
+by a digital circuit and generally converted into
+heat.
+
+
+Basic relation:
+
+        P = V × I
+
+
+where:
+
+        P = power
+        V = voltage
+        I = current
+
+
+Power is commonly measured in:
+
+        watts (W)
+
+
+For digital ICs, power is often discussed as:
+
+        power per gate
+
+
+============================================================
+15.13 WHY LOW POWER IS IMPORTANT
+============================================================
+
+Lower power means:
+
+        • Less heat
+        • Longer battery life
+        • Easier cooling
+        • Higher packaging density
+        • Better energy efficiency
+
+
+This is especially important in:
+
+        • Smartphones
+        • Laptops
+        • Wearables
+        • Embedded systems
+        • Large data centers
+
+
+============================================================
+15.14 NOISE
+============================================================
+
+Noise is an unwanted electrical disturbance
+that can affect a digital signal.
+
+
+Examples:
+
+        Electromagnetic interference
+        Power-supply fluctuations
+        Crosstalk
+        Switching noise
+
+
+Suppose the intended signal is:
+
+        HIGH
+
+
+but noise changes its voltage.
+
+
+If the disturbance is large enough, the circuit
+may interpret the signal incorrectly.
+
+
+============================================================
+15.15 NOISE MARGIN
+============================================================
+
+Noise margin indicates how much unwanted voltage
+disturbance a digital circuit can tolerate while
+still correctly recognizing a logic level.
+
+
+There are two important quantities:
+
+        High-level noise margin
+
+        Low-level noise margin
+
+
+For a typical logic family:
+
+        NMH = VOH(min) - VIH(min)
+
+        NML = VIL(max) - VOL(max)
+
+
+where:
+
+        VOH(min) = minimum output HIGH voltage
+
+        VIH(min) = minimum input voltage recognized as HIGH
+
+        VIL(max) = maximum input voltage recognized as LOW
+
+        VOL(max) = maximum output LOW voltage
+
+
+Larger noise margin generally means better
+noise immunity.
+
+
+============================================================
+15.16 FAN-IN
+============================================================
+
+FAN-IN is the number of inputs that a logic gate
+is designed to accept.
+
+
+Example:
+
+        2-input AND gate:
+
+             A ----\
+                    AND ---- Y
+             B ----/
+
+
+Fan-in:
+
+        2
+
+
+For:
+
+        4-input AND gate
+
+
+fan-in:
+
+        4
+
+
+Therefore:
+
+        Fan-in = number of inputs.
+
+
+============================================================
+15.17 FAN-OUT
+============================================================
+
+FAN-OUT is the maximum number of standard logic
+inputs that one output can drive while maintaining
+valid logic levels.
+
+
+Conceptually:
+
+                  +---- Gate 1
+                  |
+        OUTPUT ---+---- Gate 2
+                  |
+                  +---- Gate 3
+                  |
+                  +---- Gate 4
+
+
+If an output can safely drive four standard inputs:
+
+        Fan-out = 4
+
+
+Fan-out is affected by electrical loading.
+
+
+============================================================
+15.18 LOADING
+============================================================
+
+When one output drives multiple inputs, the inputs
+draw current and add electrical capacitance.
+
+This is called LOADING.
+
+
+Too much loading can cause:
+
+        • Slow transitions
+        • Voltage degradation
+        • Timing problems
+        • Incorrect logic levels
+
+
+Therefore every logic family has practical
+fan-out limits.
+
+
+============================================================
+15.19 SPEED
+============================================================
+
+Digital circuit speed is related to how quickly
+the circuit can respond to changes.
+
+
+Lower propagation delay:
+
+        → Faster response
+
+
+Higher propagation delay:
+
+        → Slower response
+
+
+Approximate relationship:
+
+        Speed ∝ 1 / delay
+
+
+This is a conceptual relationship, not a universal
+engineering formula for all systems.
+
+
+============================================================
+15.20 RTL
+============================================================
+
+RTL stands for:
+
+        RESISTOR-TRANSISTOR LOGIC
+
+
+It uses:
+
+        • Resistors
+        • Transistors
+
+
+to implement logic circuits.
+
+
+Historical conceptual structure:
+
+        Inputs
+          |
+       Resistor
+          |
+          v
+      Transistor
+          |
+          v
+        Output
+
+
+RTL was one of the early transistor-based
+digital logic families.
+
+
+============================================================
+15.21 RTL OPERATION
+============================================================
+
+Consider a simplified transistor switching circuit.
+
+
+If the transistor is:
+
+        OFF
+
+the output may be pulled toward a HIGH level.
+
+
+If the transistor is:
+
+        ON
+
+the output may be pulled toward a LOW level.
+
+
+Thus transistor switching can produce
+inverting logic.
+
+
+Conceptually:
+
+        Input = 0
+             ↓
+        Transistor OFF
+             ↓
+        Output = 1
+
+
+        Input = 1
+             ↓
+        Transistor ON
+             ↓
+        Output = 0
+
+
+This resembles a NOT gate.
+
+
+============================================================
+15.22 RTL CHARACTERISTICS
+============================================================
+
+Advantages:
+
+        • Simple circuit structure
+        • Historically important
+        • Relatively easy to understand
+
+
+Limitations:
+
+        • Low speed
+        • Limited fan-out
+        • Higher power compared with modern CMOS
+        • Poorer noise immunity than many later families
+
+
+RTL is primarily important historically and
+educationally today.
+
+
+============================================================
+15.23 DTL
+============================================================
+
+DTL stands for:
+
+        DIODE-TRANSISTOR LOGIC
+
+
+It uses:
+
+        Diodes
+        +
+        Transistors
+
+
+The diodes help perform input logic,
+while the transistor provides amplification
+and switching.
+
+
+Conceptually:
+
+        Inputs
+          |
+          v
+       +------+
+       |Diodes|
+       +------+
+          |
+          v
+       +------+
+       |Trans.|
+       +------+
+          |
+          v
+        Output
+
+
+============================================================
+15.24 WHY USE DIODES?
+============================================================
+
+Diodes can be used to perform logic-level
+combination of multiple inputs.
+
+
+The transistor then provides:
+
+        • Gain
+        • Switching
+        • Signal restoration
+
+
+This makes DTL more capable than basic RTL
+in several respects.
+
+
+============================================================
+15.25 DTL CHARACTERISTICS
+============================================================
+
+Advantages:
+
+        • Better noise immunity than early RTL
+        • Improved fan-out
+        • Historically important
+
+
+Limitations:
+
+        • Slower than TTL
+        • Larger components
+        • Higher delay
+
+
+DTL was an important predecessor to TTL.
+
+
+============================================================
+15.26 TTL
+============================================================
+
+TTL stands for:
+
+        TRANSISTOR-TRANSISTOR LOGIC
+
+
+TTL uses bipolar junction transistors
+for both logic and amplification/switching.
+
+
+TTL became one of the most important
+classic digital logic families.
+
+
+Classic TTL commonly used:
+
+        +5 V supply
+
+
+Examples of classic TTL series:
+
+        7400
+        74xx
+
+
+The 7400 is famous for containing
+four 2-input NAND gates in one package
+in the classic 14-pin version.
+
+
+============================================================
+15.27 TTL NAND GATE
+============================================================
+
+The NAND gate is fundamental in TTL.
+
+
+Conceptual:
+
+        A ----\
+              NAND ---- Y
+        B ----/
+
+
+Boolean expression:
+
+        Y = (A·B)'
+
+
+Truth table:
+
+        A   B   Y
+        -----------
+        0   0   1
+        0   1   1
+        1   0   1
+        1   1   0
+
+
+TTL circuits can implement this using
+multiple bipolar transistors and associated
+components.
+
+
+============================================================
+15.28 TTL CHARACTERISTICS
+============================================================
+
+Traditional TTL offers:
+
+        • Good speed
+        • Moderate power consumption
+        • Good fan-out
+        • Good noise immunity
+        • Robust switching
+
+
+However:
+
+        CMOS became dominant for many modern
+        low-power applications.
+
+
+TTL remains extremely important for understanding
+classic digital electronics.
+
+
+============================================================
+15.29 TTL SUBFAMILIES
+============================================================
+
+Historically, TTL was developed into several
+subfamilies.
+
+Examples:
+
+        Standard TTL
+        Low-power TTL
+        Schottky TTL
+        Low-power Schottky
+        Advanced Schottky
+
+
+Important exam idea:
+
+        Schottky technology can reduce
+        transistor saturation and improve speed.
+
+
+============================================================
+15.30 ECL
+============================================================
+
+ECL stands for:
+
+        EMITTER-COUPLED LOGIC
+
+
+ECL uses bipolar transistors in a way that
+avoids driving them deeply into saturation
+during normal switching.
+
+
+This helps achieve very high speed.
+
+
+Basic conceptual idea:
+
+        Transistors operate in a region that
+        allows very fast switching.
+
+
+============================================================
+15.31 WHY IS ECL FAST?
+============================================================
+
+One important reason:
+
+        ECL avoids deep transistor saturation.
+
+
+When a transistor is deeply saturated,
+removing stored charge can slow switching.
+
+
+ECL keeps the transistor in a suitable
+operating region to reduce this effect.
+
+
+Therefore:
+
+        ECL → very high speed
+
+
+Historically, ECL was used in applications
+where extreme speed was important.
+
+
+============================================================
+15.32 ECL CHARACTERISTICS
+============================================================
+
+Advantages:
+
+        • Very high speed
+        • Low propagation delay
+
+
+Limitations:
+
+        • High power consumption
+        • More complex power requirements
+        • Smaller noise margins than some
+          other families in typical implementations
+
+
+Historically used in:
+
+        • High-speed computers
+        • Communication equipment
+        • Specialized high-speed systems
+
+
+============================================================
+15.33 CMOS
+============================================================
+
+CMOS stands for:
+
+        COMPLEMENTARY METAL-OXIDE-SEMICONDUCTOR
+
+
+CMOS uses complementary:
+
+        NMOS
+        +
+        PMOS
+
+
+transistors.
+
+
+This complementary arrangement is the foundation
+of modern low-power digital logic.
+
+
+CMOS is extremely important.
+
+
+Modern processors, memories, microcontrollers,
+FPGAs, and countless other digital devices
+use CMOS-based technologies.
+
+
+============================================================
+15.34 CMOS INVERTER
+============================================================
+
+The CMOS inverter is one of the most important
+circuits in digital electronics.
+
+
+Conceptual circuit:
+
+                 VDD
+                  |
+                PMOS
+                  |
+        INPUT ----+---- OUTPUT
+                  |
+                NMOS
+                  |
+                 GND
+
+
+When input = 0:
+
+        PMOS → ON
+        NMOS → OFF
+
+        Output → 1
+
+
+When input = 1:
+
+        PMOS → OFF
+        NMOS → ON
+
+        Output → 0
+
+
+Therefore:
+
+        Y = A'
+
+
+============================================================
+15.35 CMOS INVERTER OPERATION
+============================================================
+
+Case 1:
+
+        A = 0
+
+
+PMOS:
+
+        ON
+
+
+NMOS:
+
+        OFF
+
+
+Path:
+
+        VDD → PMOS → Output
+
+
+Therefore:
+
+        Y = 1
+
+
+------------------------------------------------------------
+
+Case 2:
+
+        A = 1
+
+
+PMOS:
+
+        OFF
+
+
+NMOS:
+
+        ON
+
+
+Path:
+
+        Output → NMOS → GND
+
+
+Therefore:
+
+        Y = 0
+
+
+Thus:
+
+        A     Y
+        --------
+        0     1
+        1     0
+
+
+============================================================
+15.36 WHY CMOS HAS LOW STATIC POWER
+============================================================
+
+In an ideal CMOS inverter:
+
+        Input = 0
+
+        PMOS ON
+        NMOS OFF
+
+
+There is no direct conducting path
+from VDD to GND.
+
+
+Similarly:
+
+        Input = 1
+
+        PMOS OFF
+        NMOS ON
+
+
+Again, there is ideally no direct static
+path from VDD to GND.
+
+
+Therefore static power consumption is very low
+in ideal steady-state CMOS.
+
+
+Real CMOS circuits still consume power due to
+leakage and switching.
+
+
+============================================================
+15.37 CMOS DYNAMIC POWER
+============================================================
+
+CMOS consumes significant dynamic power when
+signals switch.
+
+
+A commonly used approximation is:
+
+        P_dynamic ≈ α C V² f
+
+
+where:
+
+        α = switching activity factor
+
+        C = capacitance
+
+        V = supply voltage
+
+        f = switching frequency
+
+
+Important observation:
+
+        Power ∝ V²
+
+
+Therefore reducing supply voltage can strongly
+reduce dynamic power.
+
+
+============================================================
+15.38 CMOS POWER COMPONENTS
+============================================================
+
+CMOS power can be thought of as:
+
+        Total Power
+              |
+        +-----+-----+
+        |           |
+    Dynamic       Static
+     power         power
+        |           |
+    Switching    Leakage
+    activity     currents
+
+
+Modern CMOS has very low static power compared
+with older logic families, but leakage becomes
+important as transistors become extremely small.
+
+
+============================================================
+15.39 CMOS ADVANTAGES
+============================================================
+
+Major advantages:
+
+        • Very low static power
+        • High packing density
+        • Good noise immunity
+        • Wide range of applications
+        • Excellent scalability
+        • Suitable for VLSI
+        • Large-scale integration
+
+
+Applications:
+
+        • CPUs
+        • GPUs
+        • RAM
+        • Microcontrollers
+        • FPGAs
+        • Smartphones
+        • Digital cameras
+        • Embedded systems
+
+
+============================================================
+15.40 CMOS LIMITATIONS
+============================================================
+
+CMOS is not perfect.
+
+
+Limitations include:
+
+        • Dynamic power increases with frequency
+        • Input capacitance affects speed
+        • Leakage exists
+        • Static electricity can damage
+          sensitive CMOS devices
+        • Interconnect delay can become significant
+
+
+Modern CMOS design addresses these problems
+through advanced fabrication and circuit techniques.
+
+
+============================================================
+15.41 TTL VS CMOS
+============================================================
+
++----------------------+----------------------+
+| TTL                  | CMOS                 |
++----------------------+----------------------+
+| Bipolar transistors  | MOS transistors      |
++----------------------+----------------------+
+| Traditionally ~5 V   | Many supply voltages |
+| systems              | depending on family  |
++----------------------+----------------------+
+| Higher static power  | Very low static      |
+|                       | power                |
++----------------------+----------------------+
+| Good speed           | Modern CMOS can be   |
+|                       | extremely fast       |
++----------------------+----------------------+
+| Moderate density     | Very high density    |
++----------------------+----------------------+
+| Good noise immunity  | Generally good noise |
+|                       | immunity             |
++----------------------+----------------------+
+| Classic logic        | Dominant modern     |
+| family               | technology           |
++----------------------+----------------------+
+
+
+IMPORTANT:
+
+Do not memorize:
+
+        "TTL is always faster than CMOS."
+
+
+Modern CMOS can be extremely fast.
+
+The correct comparison depends on the specific
+logic family/process generation.
+
+
+============================================================
+15.42 RTL VS DTL VS TTL VS ECL VS CMOS
+============================================================
+
++------+----------------------+-------------------------+
+|Family| Main technology      | General characteristic  |
++------+----------------------+-------------------------+
+| RTL  | Resistor + transistor| Early, simple, slower  |
+| DTL  | Diode + transistor   | Improved over RTL       |
+| TTL  | Bipolar transistors  | Classic, good speed     |
+| ECL  | Emitter-coupled BJT  | Very high speed         |
+| CMOS | PMOS + NMOS          | Very low static power   |
++------+----------------------+-------------------------+
+
+
+============================================================
+15.43 POWER-DELAY PRODUCT
+============================================================
+
+Power-delay product (PDP) combines:
+
+        Power consumption
+
+and:
+
+        Propagation delay
+
+
+Formula:
+
+        PDP = Power × Delay
+
+
+Units:
+
+        Joules
+
+
+Why is it useful?
+
+A circuit that is:
+
+        very fast but consumes huge power
+
+may not be ideal.
+
+
+Similarly:
+
+        very low power but extremely slow
+
+may not be ideal.
+
+
+PDP gives a simple measure of the
+speed-energy tradeoff.
+
+
+============================================================
+15.44 SPEED-POWER TRADEOFF
+============================================================
+
+Generally, digital designers care about both:
+
+        Speed
+        Power
+
+
+Conceptual:
+
+        Higher speed
+             ↕
+        May require more power
+
+
+But modern circuit design tries to achieve:
+
+        HIGH SPEED
+             +
+        LOW POWER
+
+
+This is one of the major goals of digital
+integrated-circuit design.
+
+
+============================================================
+15.45 NOISE IMMUNITY
+============================================================
+
+A circuit with strong noise immunity can tolerate
+larger unwanted disturbances without changing
+the interpreted logic state.
+
+
+Example:
+
+Suppose an output intended to be:
+
+        LOW
+
+
+A small noise voltage is added.
+
+
+If the resulting voltage is still safely
+within the LOW range:
+
+        Input correctly recognizes 0.
+
+
+Therefore:
+
+        Larger noise margin
+        → better tolerance to noise.
+
+
+============================================================
+15.46 LOGIC LEVELS
+============================================================
+
+Digital circuits define voltage regions.
+
+
+Conceptual:
+
+        HIGH
+        +------------------+
+        |      LOGIC 1     |
+        +------------------+
+              gap
+        +------------------+
+        |      LOGIC 0     |
+        +------------------+
+        LOW
+
+
+There may be an undefined or forbidden region
+between guaranteed LOW and guaranteed HIGH
+input ranges.
+
+
+Good circuit design ensures that normal outputs
+fall into the valid input ranges of connected gates.
+
+
+============================================================
+15.47 OUTPUT AND INPUT SPECIFICATIONS
+============================================================
+
+Important parameters include:
+
+        VOH
+        VOL
+        VIH
+        VIL
+
+
+VOH:
+
+        Output Voltage HIGH
+
+
+VOL:
+
+        Output Voltage LOW
+
+
+VIH:
+
+        Input Voltage recognized as HIGH
+
+
+VIL:
+
+        Input Voltage recognized as LOW
+
+
+These specifications are used to determine
+noise margins and logic compatibility.
+
+
+============================================================
+15.48 NOISE MARGIN EXAMPLE
+============================================================
+
+Suppose:
+
+        VOH(min) = 4.5 V
+        VIH(min) = 3.5 V
+
+
+Then:
+
+        NMH = VOH(min) - VIH(min)
+
+            = 4.5 - 3.5
+
+            = 1.0 V
+
+
+Therefore high-level noise margin is:
+
+        1.0 V
+
+
+Similarly, suppose:
+
+        VIL(max) = 1.5 V
+        VOL(max) = 0.5 V
+
+
+Then:
+
+        NML = VIL(max) - VOL(max)
+
+            = 1.5 - 0.5
+
+            = 1.0 V
+
+
+Therefore:
+
+        NMH = 1.0 V
+        NML = 1.0 V
+
+
+============================================================
+15.49 FAN-OUT EXAMPLE
+============================================================
+
+Suppose one gate output can safely drive:
+
+        8 standard inputs
+
+
+Then:
+
+        Fan-out = 8
+
+
+If you connect nine standard loads,
+the circuit may no longer satisfy guaranteed
+logic-level specifications.
+
+
+This does not necessarily mean it immediately
+stops working, but operation is outside the
+specified fan-out guarantee.
+
+
+============================================================
+15.50 FAN-IN EXAMPLE
+============================================================
+
+Consider:
+
+        8-input OR gate
+
+
+        A -----\
+        B ------\
+        C -------\
+        D --------\
+        E --------- OR ---- Y
+        F --------/
+        G -------/
+        H ------/
+
+
+Fan-in:
+
+        8
+
+
+Because there are eight inputs.
+
+
+============================================================
+15.51 DIGITAL IC CLASSIFICATION
+============================================================
+
+Digital ICs can be broadly classified according
+to complexity.
+
+
+        +-----------------------------+
+        | Digital IC Complexity       |
+        +-----------------------------+
+        | SSI  → Small Scale          |
+        | MSI  → Medium Scale         |
+        | LSI  → Large Scale          |
+        | VLSI → Very Large Scale     |
+        | ULSI → Ultra Large Scale    |
+        +-----------------------------+
+
+
+The exact transistor-count boundaries have changed
+with technology, so these terms are mainly
+historical/educational categories.
+
+
+============================================================
+15.52 SSI
+============================================================
+
+SSI:
+
+        SMALL-SCALE INTEGRATION
+
+
+Contains relatively few gates.
+
+
+Examples historically include:
+
+        Basic logic gates
+
+
+Applications:
+
+        Simple digital circuits.
+
+
+============================================================
+15.53 MSI
+============================================================
+
+MSI:
+
+        MEDIUM-SCALE INTEGRATION
+
+
+Contains more logic than SSI.
+
+
+Examples:
+
+        • Multiplexers
+        • Decoders
+        • Counters
+        • Small arithmetic circuits
+
+
+You have already studied several MSI-type
+building blocks in earlier chapters.
+
+
+============================================================
+15.54 LSI
+============================================================
+
+LSI:
+
+        LARGE-SCALE INTEGRATION
+
+
+Contains a much larger number of gates/components.
+
+
+Examples historically include:
+
+        Memory devices
+        More complex processors
+
+
+============================================================
+15.55 VLSI
+============================================================
+
+VLSI:
+
+        VERY-LARGE-SCALE INTEGRATION
+
+
+Allows huge numbers of transistors to be integrated
+onto a single chip.
+
+
+Examples:
+
+        • CPUs
+        • GPUs
+        • SoCs
+        • Modern memories
+
+
+Modern processors are products of highly advanced
+VLSI technology.
+
+
+============================================================
+15.56 LOGIC FAMILY SELECTION
+============================================================
+
+When selecting a logic technology, consider:
+
+        1. Speed
+        2. Power
+        3. Noise immunity
+        4. Fan-out
+        5. Supply voltage
+        6. Cost
+        7. Integration density
+        8. Application requirements
+
+
+Example:
+
+Battery-powered device:
+
+        Low power becomes extremely important.
+
+
+High-speed specialized system:
+
+        Propagation delay becomes critical.
+
+
+Noisy industrial environment:
+
+        Noise immunity becomes important.
+
+
+============================================================
+15.57 IMPORTANT COMPARISON TABLE
+============================================================
+
++----------+--------+--------+--------------------------+
+| Family   | Speed  | Power  | Key feature              |
++----------+--------+--------+--------------------------+
+| RTL      | Low    | High   | Early simple family     |
+| DTL      | Low    | Mod.   | Diode + transistor      |
+| TTL      | Good   | Mod.   | Classic bipolar logic   |
+| ECL      | Very   | High   | Very high speed         |
+|          | high   |        |                         |
+| CMOS     | High*  | Low**  | Low static power        |
++----------+--------+--------+--------------------------+
+
+*Modern CMOS can be extremely fast.
+
+**Static power is very low ideally; real CMOS has
+leakage and dynamic switching power.
+
+
+============================================================
+15.58 IMPORTANT INTERVIEW QUESTION
+============================================================
+
+Q:
+
+Why is CMOS preferred in modern digital systems?
+
+
+Answer:
+
+Because CMOS provides:
+
+        • Very low static power
+        • High integration density
+        • Good noise immunity
+        • Excellent scalability
+        • High performance
+        • Compatibility with VLSI manufacturing
+
+
+This makes CMOS highly suitable for modern
+processors, memories, controllers, and SoCs.
+
+
+============================================================
+15.59 IMPORTANT INTERVIEW QUESTION
+============================================================
+
+Q:
+
+Why is ECL very fast?
+
+
+Answer:
+
+ECL avoids driving bipolar transistors deeply
+into saturation during normal operation.
+
+This reduces stored charge effects and allows
+very fast switching.
+
+
+============================================================
+15.60 IMPORTANT INTERVIEW QUESTION
+============================================================
+
+Q:
+
+What is the difference between fan-in and fan-out?
+
+
+Answer:
+
+        FAN-IN:
+
+        Number of inputs of a gate.
+
+
+        FAN-OUT:
+
+        Number of standard logic inputs that
+        one output can safely drive.
+
+
+Memory trick:
+
+        IN → inputs INTO gate
+
+        OUT → loads driven OUT of gate
+
+
+============================================================
+15.61 IMPORTANT INTERVIEW QUESTION
+============================================================
+
+Q:
+
+What is propagation delay?
+
+
+Answer:
+
+The time interval between a specified change
+at the input and the corresponding change
+at the output of a logic circuit.
+
+
+Lower delay generally means faster operation.
+
+
+============================================================
+15.62 IMPORTANT INTERVIEW QUESTION
+============================================================
+
+Q:
+
+Why does CMOS consume low static power?
+
+
+Answer:
+
+Because in an ideal CMOS logic state, one of the
+PMOS/NMOS transistor pair is OFF, preventing a
+continuous direct current path from supply to ground.
+
+
+Real circuits still have leakage current.
+
+
+============================================================
+15.63 CHAPTER 15 PRACTICE QUESTIONS
+============================================================
+
+Q1.
+Define logic family.
+
+
+Q2.
+What is a digital IC?
+
+
+Q3.
+What is propagation delay?
+
+
+Q4.
+Define fan-in.
+
+
+Q5.
+Define fan-out.
+
+
+Q6.
+What is noise margin?
+
+
+Q7.
+What is RTL?
+
+
+Q8.
+What is DTL?
+
+
+Q9.
+What is TTL?
+
+
+Q10.
+What is ECL?
+
+
+Q11.
+What is CMOS?
+
+
+Q12.
+Why is ECL fast?
+
+
+Q13.
+Why does CMOS have low static power?
+
+
+Q14.
+Compare TTL and CMOS.
+
+
+Q15.
+Calculate the high-level noise margin if:
+
+        VOH(min) = 4.8 V
+        VIH(min) = 3.2 V
+
+
+Q16.
+Calculate low-level noise margin if:
+
+        VIL(max) = 1.5 V
+        VOL(max) = 0.4 V
+
+
+Q17.
+A gate has eight inputs.
+What is its fan-in?
+
+
+Q18.
+One output drives ten standard inputs.
+What is its fan-out?
+
+
+Q19.
+Calculate PDP if:
+
+        Power = 20 mW
+        Delay = 10 ns
+
+
+Q20.
+Why is low power important in portable devices?
+
+
+============================================================
+15.64 MCQs
+============================================================
+
+Q1.
+RTL stands for:
+
+A) Resistor-Transistor Logic
+B) Register-Transistor Logic
+C) Resistor-Transfer Logic
+D) Random Transistor Logic
+
+
+Q2.
+DTL stands for:
+
+A) Digital Transistor Logic
+B) Diode-Transistor Logic
+C) Dual Transistor Logic
+D) Digital Transfer Logic
+
+
+Q3.
+TTL primarily uses:
+
+A) MOS capacitors only
+B) Bipolar transistors
+C) Mechanical switches
+D) Optical components
+
+
+Q4.
+CMOS uses:
+
+A) Only BJTs
+B) PMOS and NMOS
+C) Only diodes
+D) Only resistors
+
+
+Q5.
+Which family is historically associated with
+very high speed?
+
+A) RTL
+B) DTL
+C) ECL
+D) CMOS only
+
+
+Q6.
+Fan-in refers to:
+
+A) Number of outputs
+B) Number of inputs of a gate
+C) Number of power supplies
+D) Number of chips
+
+
+Q7.
+Fan-out refers to:
+
+A) Number of outputs a gate has
+B) Number of inputs a gate has
+C) Number of loads an output can drive
+D) Number of transistors
+
+
+Q8.
+Propagation delay is:
+
+A) Power consumed
+B) Time delay between input and output response
+C) Number of inputs
+D) Supply voltage
+
+
+Q9.
+Which family generally has very low static power?
+
+A) RTL
+B) DTL
+C) ECL
+D) CMOS
+
+
+Q10.
+The CMOS inverter contains:
+
+A) Two PMOS
+B) Two NMOS
+C) One PMOS and one NMOS
+D) Only one resistor
+
+
+Q11.
+For a CMOS inverter with input 0,
+the output is ideally:
+
+A) 0
+B) 1
+C) Undefined
+D) High impedance
+
+
+Q12.
+PDP stands for:
+
+A) Power Delay Product
+B) Power Digital Processing
+C) Pulse Delay Parameter
+D) Power Drive Point
+
+
+Q13.
+The formula for high-level noise margin is:
+
+A) VOH + VIH
+B) VOH - VIH
+C) VIL - VOL
+D) VOL - VIL
+
+
+Q14.
+A 4-input AND gate has:
+
+A) Fan-in = 2
+B) Fan-in = 4
+C) Fan-out = 4
+D) Fan-out = 2
+
+
+Q15.
+Which is an important advantage of CMOS?
+
+A) Very high static power
+B) Low static power
+C) No transistors
+D) No switching
+
+
+============================================================
+15.65 MCQ ANSWERS
+============================================================
+
+Q1  → A
+Q2  → B
+Q3  → B
+Q4  → B
+Q5  → C
+Q6  → B
+Q7  → C
+Q8  → B
+Q9  → D
+Q10 → C
+Q11 → B
+Q12 → A
+Q13 → B
+Q14 → B
+Q15 → B
+
+
+============================================================
+15.66 CHAPTER 15 QUICK REVISION
+============================================================
+
+LOGIC FAMILY:
+
+        Technology used to implement digital logic.
+
+
+RTL:
+
+        Resistor + Transistor
+
+
+DTL:
+
+        Diode + Transistor
+
+
+TTL:
+
+        Transistor + Transistor
+
+
+ECL:
+
+        Emitter-Coupled Logic
+        → very high speed
+
+
+CMOS:
+
+        Complementary MOS
+        → very low static power
+
+
+PROPAGATION DELAY:
+
+        Time required for output response.
+
+
+FAN-IN:
+
+        Number of gate inputs.
+
+
+FAN-OUT:
+
+        Number of standard loads one output
+        can safely drive.
+
+
+NOISE MARGIN:
+
+        Tolerance against unwanted voltage noise.
+
+
+PDP:
+
+        Power × Delay
+
+
+CMOS INVERTER:
+
+        PMOS + NMOS
+
+
+Input 0:
+
+        PMOS ON
+        NMOS OFF
+        Output 1
+
+
+Input 1:
+
+        PMOS OFF
+        NMOS ON
+        Output 0
+
+
+============================================================
+15.67 MASTER FORMULAS
+============================================================
+
+Power:
+
+        P = V × I
+
+
+High-level noise margin:
+
+        NMH = VOH(min) - VIH(min)
+
+
+Low-level noise margin:
+
+        NML = VIL(max) - VOL(max)
+
+
+Power-delay product:
+
+        PDP = P × tpd
+
+
+CMOS dynamic power approximation:
+
+        Pdynamic ≈ α C V² f
+
+
+Speed concept:
+
+        Higher speed generally corresponds
+        to lower propagation delay.
+
+
+============================================================
+15.68 CHAPTER 15 MASTER CHECKLIST
+============================================================
+
+[ ] Define logic family.
+[ ] Define digital IC.
+[ ] Understand transistor as a switch.
+[ ] Understand logic voltage levels.
+[ ] Understand propagation delay.
+[ ] Understand rise time.
+[ ] Understand fall time.
+[ ] Understand power dissipation.
+[ ] Understand noise.
+[ ] Calculate noise margin.
+[ ] Understand fan-in.
+[ ] Understand fan-out.
+[ ] Understand loading.
+[ ] Explain RTL.
+[ ] Explain DTL.
+[ ] Explain TTL.
+[ ] Explain ECL.
+[ ] Explain CMOS.
+[ ] Explain CMOS inverter.
+[ ] Explain CMOS low static power.
+[ ] Compare TTL and CMOS.
+[ ] Compare RTL, DTL, TTL, ECL, CMOS.
+[ ] Understand PDP.
+[ ] Understand SSI/MSI/LSI/VLSI.
+[ ] Understand practical logic-family selection.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+                    CHAPTER 16
+                        ↓
+          TIMING & DIGITAL CIRCUIT
+                 CHARACTERISTICS
+                        |
+        +---------------+---------------+
+        |               |               |
+      CLOCK          DELAY            TIMING
+        |               |               |
+     Period          Rise/Fall       Setup/Hold
+     Frequency       tPLH/tPHL       Metastability
+     Duty Cycle
+        |               |               |
+        +---------------+---------------+
+                        |
+                        v
+                    NOISE
+                        |
+                  FAN-IN/FAN-OUT
+                        |
+                        v
+                DIGITAL TIMING
+                   ANALYSIS
+
+
+KEY IDEA:
+
+Chapter 15 answered:
+
+    "How are digital logic gates physically
+     implemented, and what are the important
+     characteristics of their technologies?"
+
+
+Chapter 16 will answer:
+
+    "How do digital signals behave with TIME,
+     and how do clock period, frequency, delay,
+     rise/fall time, setup time, hold time,
+     noise margin, and fan-out affect a circuit?"
+
+============================================================

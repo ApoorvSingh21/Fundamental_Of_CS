@@ -1,0 +1,2686 @@
+============================================================
+CHAPTER 16 — TIMING & DIGITAL CIRCUIT CHARACTERISTICS
+============================================================
+Level: B.Tech 1st Year / Computer Science
+Prerequisite: Chapters 1–15
+Goal: Understand how digital circuits behave with TIME,
+      including clocks, frequency, duty cycle, propagation
+      delay, rise/fall time, setup/hold time, metastability,
+      noise margin, fan-in, and fan-out.
+============================================================
+
+
+                    CHAPTER 16 ROADMAP
+
+              TIMING & DIGITAL CHARACTERISTICS
+                           |
+        +------------------+------------------+
+        |                  |                  |
+      CLOCK              DELAY             TIMING
+        |                  |                  |
+     Period             tPLH/tPHL         Setup time
+     Frequency          Rise time         Hold time
+     Duty cycle         Fall time         Metastability
+        |                  |                  |
+        +------------------+------------------+
+                           |
+                         NOISE
+                           |
+                     Noise margin
+                           |
+                      FAN-IN/FAN-OUT
+                           |
+                           v
+                    DIGITAL TIMING
+                       ANALYSIS
+
+
+============================================================
+16.1 WHY IS TIMING IMPORTANT?
+============================================================
+
+In Chapter 15, we learned that digital gates are not
+perfectly instantaneous.
+
+When an input changes:
+
+        INPUT changes
+              |
+              v
+          [ DIGITAL ]
+          [ CIRCUIT  ]
+              |
+              | small delay
+              v
+        OUTPUT changes
+
+
+Therefore, digital circuits must be analyzed not only
+for:
+
+        WHAT output is produced?
+
+but also:
+
+        WHEN does the output change?
+
+
+This is the basic idea of DIGITAL TIMING.
+
+
+============================================================
+16.2 IDEAL DIGITAL CIRCUIT VS REAL DIGITAL CIRCUIT
+============================================================
+
+IDEAL:
+
+        Input changes
+              |
+              v
+        Output changes
+        immediately
+
+
+REAL:
+
+        Input changes
+              |
+              v
+        Propagation delay
+              |
+              v
+        Output changes
+
+
+Example:
+
+        Input:
+        0 ──────────┐
+                    └──────── 1
+
+
+        Ideal output:
+        1 ──────────┐
+                    └──────── 0
+
+
+        Real output:
+        1 ─────────────┐
+                       └───── 0
+                       ↑
+                    delayed
+
+
+Thus:
+
+        REAL DIGITAL CIRCUITS HAVE TIMING DELAYS.
+
+
+============================================================
+16.3 CLOCK SIGNAL
+============================================================
+
+A CLOCK is a periodic digital signal used to
+coordinate operations in synchronous digital systems.
+
+
+Typical clock:
+
+             +-----+     +-----+
+             |     |     |     |
+        _____|     |_____|     |_____
+             ↑     ↑     ↑     ↑
+
+
+The clock alternates between:
+
+        LOW
+        HIGH
+        LOW
+        HIGH
+        ...
+
+
+The clock provides a common timing reference
+for flip-flops, registers, counters, processors,
+and many other sequential circuits.
+
+
+============================================================
+16.4 WHY DO WE NEED A CLOCK?
+============================================================
+
+Consider several digital circuits working together.
+
+Without timing coordination:
+
+        Circuit A
+             |
+             v
+        Circuit B
+             |
+             v
+        Circuit C
+
+
+It becomes difficult to determine exactly when
+Circuit B should capture the output of Circuit A.
+
+
+A clock provides a common reference:
+
+        CLOCK
+          |
+     +----+----+
+     |    |    |
+     v    v    v
+    A    B    C
+
+
+This allows circuits to operate in a controlled
+sequence.
+
+
+============================================================
+16.5 PERIOD
+============================================================
+
+The CLOCK PERIOD is the time required for one
+complete cycle of a periodic clock signal.
+
+
+One cycle:
+
+        HIGH + LOW
+
+
+ASCII:
+
+             <------ T ------>
+
+             +-------+
+             |       |
+        _____|       |________
+             |       |
+             +-------+
+
+             ↑       ↑
+             |       |
+             +-------+
+
+
+The symbol for period is:
+
+        T
+
+
+Unit:
+
+        seconds
+
+
+Common units:
+
+        s
+        ms
+        µs
+        ns
+
+
+============================================================
+16.6 FREQUENCY
+============================================================
+
+Frequency is the number of complete cycles
+occurring per second.
+
+
+Symbol:
+
+        f
+
+
+Unit:
+
+        Hertz (Hz)
+
+
+Fundamental relationship:
+
+        f = 1 / T
+
+
+and:
+
+        T = 1 / f
+
+
+This is one of the most important timing formulas.
+
+
+============================================================
+16.7 EXAMPLE — FREQUENCY TO PERIOD
+============================================================
+
+Suppose:
+
+        f = 1 MHz
+
+
+We know:
+
+        1 MHz = 1,000,000 Hz
+
+
+Therefore:
+
+        T = 1/f
+
+          = 1/1,000,000
+
+          = 1 µs
+
+
+Answer:
+
+        T = 1 µs
+
+
+MEMORY:
+
+        Higher frequency
+              ↓
+        Smaller period
+
+
+        Lower frequency
+              ↓
+        Larger period
+
+
+============================================================
+16.8 EXAMPLE — PERIOD TO FREQUENCY
+============================================================
+
+Suppose:
+
+        T = 10 ns
+
+
+Then:
+
+        f = 1/T
+
+
+        = 1/(10 × 10^-9)
+
+
+        = 100 MHz
+
+
+Answer:
+
+        100 MHz
+
+
+============================================================
+16.9 COMMON FREQUENCY CONVERSIONS
+============================================================
+
+        1 kHz = 10^3 Hz
+
+        1 MHz = 10^6 Hz
+
+        1 GHz = 10^9 Hz
+
+
+Common periods:
+
+        1 kHz  → 1 ms
+
+        1 MHz  → 1 µs
+
+        1 GHz  → 1 ns
+
+
+Very useful exam table:
+
+        +---------+---------+
+        | Frequency| Period |
+        +---------+---------+
+        | 1 kHz   | 1 ms    |
+        | 1 MHz   | 1 µs    |
+        | 1 GHz   | 1 ns    |
+        +---------+---------+
+
+
+============================================================
+16.10 DUTY CYCLE
+============================================================
+
+Duty cycle tells us what percentage of one clock
+period the signal remains HIGH.
+
+
+Formula:
+
+        Duty Cycle
+        =
+        (HIGH time / Total period) × 100%
+
+
+If:
+
+        HIGH time = 4 µs
+
+        Total period = 10 µs
+
+
+Then:
+
+        Duty Cycle
+        = (4/10) × 100
+        = 40%
+
+
+============================================================
+16.11 50% DUTY CYCLE
+============================================================
+
+A clock with 50% duty cycle spends equal time
+HIGH and LOW.
+
+
+Example:
+
+        T = 10 ns
+
+
+Then:
+
+        HIGH time = 5 ns
+
+        LOW time = 5 ns
+
+
+ASCII:
+
+        +-----5 ns-----+-----5 ns-----+
+        |              |              |
+        HIGH           LOW            HIGH
+        ┌──────────────┐
+        │              │
+        ┘              └──────────────
+
+
+Duty cycle:
+
+        50%
+
+
+============================================================
+16.12 DUTY CYCLE EXAMPLE
+============================================================
+
+A clock has:
+
+        Period = 20 ns
+
+        HIGH time = 5 ns
+
+
+Duty cycle:
+
+        (5/20) × 100%
+
+        = 25%
+
+
+Therefore:
+
+        Duty cycle = 25%
+
+
+LOW time:
+
+        20 - 5 = 15 ns
+
+
+============================================================
+16.13 CLOCK EDGES
+============================================================
+
+A clock has two important transitions:
+
+        Rising edge
+        Falling edge
+
+
+RISING EDGE:
+
+        LOW → HIGH
+
+
+ASCII:
+
+              /
+             /
+        ____/
+
+
+FALLING EDGE:
+
+        HIGH → LOW
+
+
+ASCII:
+
+        \____
+            \
+             \
+
+
+These edges are extremely important in
+flip-flop operation.
+
+
+============================================================
+16.14 POSITIVE EDGE
+============================================================
+
+A POSITIVE EDGE is the transition:
+
+        0 → 1
+
+
+Also called:
+
+        Rising edge
+
+
+ASCII:
+
+        LOW
+        ______
+             \
+              \________
+               ↑
+          positive edge
+
+
+A positive-edge-triggered flip-flop responds
+at this transition.
+
+
+============================================================
+16.15 NEGATIVE EDGE
+============================================================
+
+A NEGATIVE EDGE is:
+
+        1 → 0
+
+
+Also called:
+
+        Falling edge
+
+
+ASCII:
+
+        HIGH
+        ________
+                \
+                 \______
+                  ↓
+             negative edge
+
+
+A negative-edge-triggered flip-flop responds
+at this transition.
+
+
+============================================================
+16.16 LEVEL VS EDGE TRIGGERING
+============================================================
+
+LEVEL-TRIGGERED:
+
+A latch can respond while an enable/clock level
+is active.
+
+
+EDGE-TRIGGERED:
+
+A flip-flop responds around a specific transition.
+
+
+Conceptual:
+
+        LATCH:
+        responds during a LEVEL
+
+
+        FLIP-FLOP:
+        responds at an EDGE
+
+
+This distinction is fundamental.
+
+
+============================================================
+16.17 PROPAGATION DELAY
+============================================================
+
+Propagation delay is the time between an input
+transition and the corresponding output transition.
+
+
+Suppose:
+
+        Input changes at:
+
+        t = 10 ns
+
+
+Output changes at:
+
+        t = 14 ns
+
+
+Then:
+
+        Propagation delay = 4 ns
+
+
+Real gates require finite time to respond.
+
+
+============================================================
+16.18 tPLH
+============================================================
+
+tPLH is the propagation delay associated with
+an output transition:
+
+        LOW → HIGH
+
+
+Conceptually:
+
+        INPUT
+        ______
+             \________
+
+
+        OUTPUT
+        _________
+                  \____
+                  ↑
+                tPLH
+
+
+The exact measurement convention depends on
+specified voltage thresholds.
+
+
+============================================================
+16.19 tPHL
+============================================================
+
+tPHL is the propagation delay associated with
+an output transition:
+
+        HIGH → LOW
+
+
+Conceptually:
+
+        INPUT
+        _________
+                \____
+
+
+        OUTPUT
+        ______
+             \_______
+             ↑
+           tPHL
+
+
+Generally:
+
+        tpd ≈ average of tPLH and tPHL
+
+
+if an average propagation delay is specified.
+
+
+============================================================
+16.20 PROPAGATION DELAY EXAMPLE
+============================================================
+
+Suppose:
+
+        tPLH = 8 ns
+
+        tPHL = 12 ns
+
+
+Average propagation delay:
+
+        tpd
+        = (tPLH + tPHL)/2
+
+
+        = (8 + 12)/2
+
+        = 10 ns
+
+
+Answer:
+
+        tpd = 10 ns
+
+
+============================================================
+16.21 RISE TIME
+============================================================
+
+Rise time is the time required for a signal
+to transition from LOW toward HIGH.
+
+
+Typical measurement:
+
+        10% → 90%
+
+
+ASCII:
+
+        100%             ________
+                         /
+        90% ----------- /
+                       /
+        50% ----------/
+                     /
+        10% --------/
+                  /
+        0% _____/
+
+
+Rise time:
+
+        t_r
+
+
+It measures the speed of the voltage transition,
+not the logical delay between input and output.
+
+
+============================================================
+16.22 FALL TIME
+============================================================
+
+Fall time measures the transition:
+
+        HIGH → LOW
+
+
+Often measured:
+
+        90% → 10%
+
+
+ASCII:
+
+        100% ______
+                    \
+        90% --------\
+                     \
+        50% ---------\
+                       \
+        10% ------------\
+                         \____ 0%
+
+
+Fall time:
+
+        t_f
+
+
+============================================================
+16.23 PROPAGATION DELAY VS RISE TIME
+============================================================
+
+These are NOT the same.
+
+
+PROPAGATION DELAY:
+
+        Input transition
+              ↓
+        Output transition
+              ↓
+        Time difference
+
+
+RISE TIME:
+
+        Time required for a signal itself
+        to transition from LOW toward HIGH.
+
+
+Memory trick:
+
+        Propagation delay:
+        "When does output respond?"
+
+
+        Rise time:
+        "How quickly does signal rise?"
+
+
+============================================================
+16.24 SETUP TIME
+============================================================
+
+Setup time is extremely important for flip-flops.
+
+
+Definition:
+
+The minimum time for which the input data must
+be stable BEFORE the active clock edge.
+
+
+Suppose a positive-edge-triggered D flip-flop
+captures data at the rising edge.
+
+
+ASCII:
+
+        D:
+        ----------- stable -----------
+                              |
+                              |
+        CLOCK: ______________/‾‾‾‾‾
+                              ↑
+                         active edge
+
+
+The D input must be stable for a minimum time
+BEFORE this edge.
+
+
+That minimum interval is:
+
+        SETUP TIME
+
+
+Symbol:
+
+        t_setup
+
+
+============================================================
+16.25 SETUP TIME VISUALIZATION
+============================================================
+
+              setup time
+             <--------->
+
+        D:  -----------X---------
+                       |
+                       |
+        CLK: _________/‾‾‾‾‾‾
+                     ↑
+                 clock edge
+
+
+The data must not change too close to
+the active clock edge.
+
+
+============================================================
+16.26 HOLD TIME
+============================================================
+
+Hold time is the minimum time for which data
+must remain stable AFTER the active clock edge.
+
+
+ASCII:
+
+                      hold time
+                     <-------->
+
+        D:  -----------------------
+                         |
+                         |
+        CLK: ___________/‾‾‾‾‾‾
+                         ↑
+                      edge
+
+
+The D input must remain stable for the required
+hold interval after the clock edge.
+
+
+Symbol:
+
+        t_hold
+
+
+============================================================
+16.27 SETUP VS HOLD
+============================================================
+
+SETUP:
+
+        Data stable BEFORE clock edge.
+
+
+HOLD:
+
+        Data stable AFTER clock edge.
+
+
+ASCII:
+
+             SETUP        HOLD
+          <-------->   <-------->
+
+        D  =========|=============
+                    |
+        CLK _______/‾\____________
+                    ↑
+                active edge
+
+
+Memory trick:
+
+        SET UP → before
+
+        HOLD → after
+
+
+============================================================
+16.28 WHY SETUP AND HOLD TIMES EXIST
+============================================================
+
+A flip-flop contains internal electronic storage
+elements that need time to properly capture data.
+
+
+If data changes too close to the clock edge:
+
+        Internal storage may not settle correctly.
+
+
+This can lead to:
+
+        • Incorrect data capture
+        • Timing failure
+        • Metastability
+
+
+============================================================
+16.29 SETUP TIME VIOLATION
+============================================================
+
+Suppose:
+
+        Required setup time = 3 ns
+
+
+But data changes:
+
+        only 1 ns before the clock edge.
+
+
+Then:
+
+        Required = 3 ns
+        Actual   = 1 ns
+
+
+Therefore:
+
+        SETUP VIOLATION
+
+
+Possible result:
+
+        Incorrect or unpredictable behavior.
+
+
+============================================================
+16.30 HOLD TIME VIOLATION
+============================================================
+
+Suppose:
+
+        Required hold time = 2 ns
+
+
+But data changes:
+
+        0.5 ns after the clock edge.
+
+
+Then:
+
+        Required = 2 ns
+        Actual   = 0.5 ns
+
+
+Therefore:
+
+        HOLD VIOLATION
+
+
+Again, the flip-flop may fail to capture
+the intended value reliably.
+
+
+============================================================
+16.31 METASTABILITY
+============================================================
+
+Metastability is a condition in which a
+flip-flop's internal state temporarily enters
+an unstable or indeterminate state.
+
+
+It can occur when timing requirements,
+especially setup or hold requirements, are violated.
+
+
+Conceptually:
+
+        Normal:
+
+        0 ────────────────
+
+        or
+
+        1 ────────────────
+
+
+        Metastable:
+
+        0 ────────?─────── 1
+                    ^
+               uncertain state
+
+
+The output may take an unpredictable amount
+of time to settle to a valid 0 or 1.
+
+
+============================================================
+16.32 WHY METASTABILITY IS DANGEROUS
+============================================================
+
+Suppose:
+
+        Flip-flop A
+             |
+             v
+        Flip-flop B
+
+
+If A becomes metastable, its output may not
+settle before B samples it.
+
+
+Then:
+
+        B may capture an incorrect value.
+
+
+This is especially important when signals cross
+between unrelated clock domains.
+
+
+============================================================
+16.33 SYNCHRONIZER
+============================================================
+
+A common technique for reducing the probability
+of metastability propagating into a synchronous
+system is a multi-stage synchronizer.
+
+
+Conceptual two-flip-flop synchronizer:
+
+        Asynchronous input
+                |
+                v
+             +-----+
+        CLK->| FF1 |
+             +-----+
+                |
+                v
+             +-----+
+        CLK->| FF2 |
+             +-----+
+                |
+                v
+             Synchronized signal
+
+
+The first flip-flop may become metastable,
+but the second flip-flop provides additional
+time for resolution.
+
+
+IMPORTANT:
+
+A synchronizer reduces probability; it does not
+mathematically guarantee zero metastability.
+
+
+============================================================
+16.34 CLOCK-TO-Q DELAY
+============================================================
+
+For a flip-flop, after the active clock edge,
+the output Q does not change instantaneously.
+
+
+The delay from:
+
+        Active clock edge
+
+to:
+
+        Corresponding Q output change
+
+
+is called:
+
+        CLOCK-TO-Q DELAY
+
+
+Symbol often:
+
+        tCQ
+
+
+ASCII:
+
+        CLK ________/‾‾‾‾
+                    ↑
+                    |
+                    | tCQ
+                    ↓
+        Q   _________/‾‾‾‾
+
+
+============================================================
+16.35 COMPLETE FLIP-FLOP TIMING
+============================================================
+
+A typical timing relationship is:
+
+        Data stable
+        <-------------------->
+
+             setup      hold
+          <--------> <-------->
+
+        D  =========|===========
+                    |
+        CLK _______/‾‾‾‾‾‾‾‾‾
+                    ↑
+                active edge
+                    |
+                    | tCQ
+                    ↓
+        Q  ==========|==========
+
+
+Three important quantities:
+
+        Setup time
+        Hold time
+        Clock-to-Q delay
+
+
+============================================================
+16.36 MAXIMUM CLOCK FREQUENCY
+============================================================
+
+A synchronous system cannot operate at an
+arbitrarily high frequency.
+
+
+Consider:
+
+        Flip-Flop A
+             |
+             v
+        Combinational Logic
+             |
+             v
+        Flip-Flop B
+
+
+Timing must allow:
+
+        1. Flip-Flop A to produce output
+        2. Combinational logic to process it
+        3. Flip-Flop B to capture the result
+
+
+A simplified setup-time constraint is:
+
+        Tclock ≥ tCQ + tcomb + tsetup
+
+
+Therefore:
+
+        fmax ≤ 1 / (tCQ + tcomb + tsetup)
+
+
+Ignoring clock skew, uncertainty, and other
+real-world timing terms for the basic formula.
+
+
+============================================================
+16.37 EXAMPLE — MAXIMUM FREQUENCY
+============================================================
+
+Suppose:
+
+        tCQ = 2 ns
+
+        tcomb = 8 ns
+
+        tsetup = 1 ns
+
+
+Then minimum clock period:
+
+        T ≥ 2 + 8 + 1
+
+        T ≥ 11 ns
+
+
+Therefore:
+
+        fmax ≈ 1 / 11 ns
+
+
+        ≈ 90.9 MHz
+
+
+So the theoretical simplified maximum is
+approximately:
+
+        90.9 MHz
+
+
+============================================================
+16.38 CLOCK SKEW
+============================================================
+
+Clock skew is the difference in arrival time
+of the clock signal at different sequential
+elements.
+
+
+Suppose:
+
+        Clock source
+             |
+        +----+----+
+        |         |
+        v         v
+       FF1       FF2
+
+
+The clock may reach:
+
+        FF1 at t = 2 ns
+
+        FF2 at t = 3 ns
+
+
+Difference:
+
+        1 ns
+
+
+This difference is clock skew.
+
+
+Clock skew can affect setup and hold timing.
+
+
+============================================================
+16.39 CLOCK JITTER
+============================================================
+
+Clock jitter is unwanted variation in the timing
+of clock edges from their ideal positions.
+
+
+Ideal:
+
+        |----T----|----T----|----T----|
+
+
+Actual:
+
+        |---T----|-----T---|---T-----|
+           ↑         ↑
+        edge timing variations
+
+
+Jitter can reduce available timing margin.
+
+
+============================================================
+16.40 CLOCK PERIOD VS CLOCK FREQUENCY
+============================================================
+
+These are inversely related.
+
+
+        f = 1/T
+
+
+If frequency increases:
+
+        Period decreases.
+
+
+If frequency decreases:
+
+        Period increases.
+
+
+Example:
+
+        100 MHz → 10 ns
+
+        200 MHz → 5 ns
+
+
+Therefore doubling frequency halves the period.
+
+
+============================================================
+16.41 TIMING DIAGRAM
+============================================================
+
+A timing diagram shows how digital signals
+change over time.
+
+
+Example:
+
+        Time →
+
+
+        A: ___‾‾‾‾___‾‾‾‾___
+
+
+        B: ______‾‾‾‾______‾‾
+
+
+        CLK:
+        __‾‾__‾‾__‾‾__‾‾__‾‾
+
+
+Timing diagrams are extremely useful for:
+
+        • Flip-flops
+        • Counters
+        • Registers
+        • MUXes
+        • Sequential circuits
+        • Communication systems
+
+
+============================================================
+16.42 COMBINATIONAL TIMING
+============================================================
+
+Consider:
+
+        A,B
+         |
+         v
+       +-----+
+       | AND |
+       +-----+
+         |
+         v
+         Y
+
+
+When A or B changes:
+
+        Y changes after propagation delay.
+
+
+Therefore even combinational circuits have
+timing behavior.
+
+
+For a multi-level circuit:
+
+        Input
+          |
+        Gate 1
+          |
+        Gate 2
+          |
+        Gate 3
+          |
+        Output
+
+
+Delays accumulate through the logic path.
+
+
+============================================================
+16.43 CRITICAL PATH
+============================================================
+
+The CRITICAL PATH is the longest timing path
+that limits the maximum speed of a synchronous
+digital system.
+
+
+Example:
+
+        FF1
+         |
+         v
+       Gate
+         |
+         v
+       Gate
+         |
+         v
+       Gate
+         |
+         v
+        FF2
+
+
+If this is the longest register-to-register
+path, it may determine:
+
+        Maximum clock frequency.
+
+
+Therefore:
+
+        Critical path
+             ↓
+        Timing limit
+
+
+============================================================
+16.44 PROPAGATION DELAY IN MULTI-GATE CIRCUIT
+============================================================
+
+Suppose:
+
+        Gate 1 delay = 3 ns
+
+        Gate 2 delay = 4 ns
+
+        Gate 3 delay = 5 ns
+
+
+Signal path:
+
+        Input
+          |
+        G1 (3 ns)
+          |
+        G2 (4 ns)
+          |
+        G3 (5 ns)
+          |
+        Output
+
+
+Total approximate path delay:
+
+        3 + 4 + 5
+
+        = 12 ns
+
+
+This is why reducing logic levels can improve speed.
+
+
+============================================================
+16.45 NOISE
+============================================================
+
+Noise is an unwanted electrical disturbance.
+
+
+Possible sources:
+
+        • Electromagnetic interference
+        • Power supply fluctuations
+        • Crosstalk
+        • Ground bounce
+        • Switching activity
+        • External electrical signals
+
+
+Noise can cause:
+
+        Correct 0 → interpreted as 1
+
+or:
+
+        Correct 1 → interpreted as 0
+
+
+============================================================
+16.46 NOISE MARGIN
+============================================================
+
+Noise margin indicates how much unwanted voltage
+can be tolerated while preserving correct logic.
+
+
+For HIGH:
+
+        NMH = VOH(min) - VIH(min)
+
+
+For LOW:
+
+        NML = VIL(max) - VOL(max)
+
+
+Larger noise margin:
+
+        Better noise immunity
+
+
+============================================================
+16.47 NOISE MARGIN EXAMPLE
+============================================================
+
+Suppose:
+
+        VOH(min) = 4.5 V
+
+        VIH(min) = 3.5 V
+
+
+Then:
+
+        NMH = 4.5 - 3.5
+
+            = 1.0 V
+
+
+For LOW:
+
+        VIL(max) = 1.5 V
+
+        VOL(max) = 0.5 V
+
+
+Then:
+
+        NML = 1.5 - 0.5
+
+            = 1.0 V
+
+
+Therefore:
+
+        High noise margin = 1.0 V
+
+        Low noise margin  = 1.0 V
+
+
+============================================================
+16.48 FAN-IN
+============================================================
+
+Fan-in is the number of inputs a gate has.
+
+
+Example:
+
+        3-input NAND:
+
+
+        A ----\
+        B ----- NAND ---- Y
+        C ----/
+
+
+Fan-in:
+
+        3
+
+
+Higher fan-in can increase circuit complexity
+and may affect delay depending on technology.
+
+
+============================================================
+16.49 FAN-OUT
+============================================================
+
+Fan-out is the number of standard logic inputs
+that one output can safely drive.
+
+
+Example:
+
+        One output
+             |
+        +----+----+----+
+        |    |    |    |
+       G1   G2   G3   G4
+
+
+If four standard loads are safely driven:
+
+        Fan-out = 4
+
+
+Fan-out is limited by electrical current,
+capacitance, voltage levels, and technology.
+
+
+============================================================
+16.50 FAN-OUT AND DELAY
+============================================================
+
+As the number of loads increases:
+
+        Load capacitance ↑
+
+which can cause:
+
+        Transition time ↑
+
+and:
+
+        Propagation delay ↑
+
+
+Therefore:
+
+        Higher loading
+              ↓
+        Potentially slower circuit
+
+
+This is one reason fan-out matters in
+high-speed digital design.
+
+
+============================================================
+16.51 CAPACITIVE LOADING
+============================================================
+
+Digital gates have input capacitance.
+
+
+When one output drives many inputs:
+
+        Output
+          |
+      +---+---+---+
+      |   |   |   |
+      C   C   C   C
+      |   |   |   |
+     Input loads
+
+
+The total effective capacitance increases.
+
+
+The output driver needs time/current to charge
+and discharge that capacitance.
+
+
+Therefore:
+
+        More capacitance
+              ↓
+        Slower transitions
+
+
+============================================================
+16.52 SETUP-HOLD TIMING EXAMPLE
+============================================================
+
+Suppose a flip-flop requires:
+
+        Setup = 2 ns
+
+        Hold = 1 ns
+
+
+The data must be stable:
+
+        2 ns BEFORE the active clock edge
+
+
+and:
+
+        1 ns AFTER the active clock edge
+
+
+ASCII:
+
+        D stable:
+        <---- 2 ns ---->|<--- 1 ns --->
+
+                        CLOCK
+        =================|===============
+                         ↑
+                     active edge
+
+
+This timing window must be respected.
+
+
+============================================================
+16.53 TIMING FAILURE EXAMPLE
+============================================================
+
+Suppose:
+
+        Clock edge = 100 ns
+
+        Setup time = 3 ns
+
+
+Therefore data must remain stable
+at least until:
+
+        100 - 3
+
+        = 97 ns
+
+
+If data changes at:
+
+        98 ns
+
+then setup is satisfied.
+
+
+If data changes at:
+
+        99 ns
+
+then:
+
+        SETUP VIOLATION
+
+
+============================================================
+16.54 HOLD TIMING EXAMPLE
+============================================================
+
+Suppose:
+
+        Clock edge = 100 ns
+
+        Hold time = 2 ns
+
+
+Data must remain stable until:
+
+        100 + 2
+
+        = 102 ns
+
+
+If data changes at:
+
+        103 ns
+
+→ Hold requirement satisfied.
+
+
+If data changes at:
+
+        101 ns
+
+→ Hold violation.
+
+
+============================================================
+16.55 IMPORTANT TIMING TERMS
+============================================================
+
+CLOCK:
+
+        Periodic timing reference.
+
+
+PERIOD:
+
+        Time for one complete cycle.
+
+
+FREQUENCY:
+
+        Number of cycles per second.
+
+
+DUTY CYCLE:
+
+        Percentage of period spent HIGH.
+
+
+RISING EDGE:
+
+        LOW → HIGH.
+
+
+FALLING EDGE:
+
+        HIGH → LOW.
+
+
+PROPAGATION DELAY:
+
+        Input-to-output response delay.
+
+
+RISE TIME:
+
+        LOW-to-HIGH transition time.
+
+
+FALL TIME:
+
+        HIGH-to-LOW transition time.
+
+
+SETUP TIME:
+
+        Data stability requirement before clock edge.
+
+
+HOLD TIME:
+
+        Data stability requirement after clock edge.
+
+
+CLOCK-TO-Q:
+
+        Clock edge to Q output delay.
+
+
+METASTABILITY:
+
+        Temporary uncertain internal state caused
+        by timing violations or asynchronous sampling.
+
+
+============================================================
+16.56 IMPORTANT FORMULAS
+============================================================
+
+Frequency:
+
+        f = 1/T
+
+
+Period:
+
+        T = 1/f
+
+
+Duty cycle:
+
+        D = (THIGH/T) × 100%
+
+
+Average propagation delay:
+
+        tpd ≈ (tPLH + tPHL)/2
+
+
+High-level noise margin:
+
+        NMH = VOH(min) - VIH(min)
+
+
+Low-level noise margin:
+
+        NML = VIL(max) - VOL(max)
+
+
+Simplified synchronous timing constraint:
+
+        Tclock ≥ tCQ + tcomb + tsetup
+
+
+Maximum clock frequency:
+
+        fmax ≤ 1/(tCQ + tcomb + tsetup)
+
+
+Power:
+
+        P = V × I
+
+
+Dynamic CMOS power approximation:
+
+        Pdynamic ≈ αCV²f
+
+
+============================================================
+16.57 SOLVED NUMERICAL PROBLEM 1
+============================================================
+
+Given:
+
+        f = 50 MHz
+
+
+Find period.
+
+
+We know:
+
+        T = 1/f
+
+
+Therefore:
+
+        T = 1/(50 × 10^6)
+
+
+        = 20 × 10^-9 s
+
+
+        = 20 ns
+
+
+ANSWER:
+
+        T = 20 ns
+
+
+============================================================
+16.58 SOLVED NUMERICAL PROBLEM 2
+============================================================
+
+Given:
+
+        T = 25 ns
+
+
+Find frequency.
+
+
+        f = 1/T
+
+
+        = 1/(25 × 10^-9)
+
+
+        = 40 MHz
+
+
+ANSWER:
+
+        f = 40 MHz
+
+
+============================================================
+16.59 SOLVED NUMERICAL PROBLEM 3
+============================================================
+
+Given:
+
+        T = 20 ns
+
+        THIGH = 8 ns
+
+
+Find duty cycle.
+
+
+        D = (THIGH/T) × 100
+
+
+        = (8/20) × 100
+
+
+        = 40%
+
+
+ANSWER:
+
+        40%
+
+
+============================================================
+16.60 SOLVED NUMERICAL PROBLEM 4
+============================================================
+
+Given:
+
+        tPLH = 6 ns
+
+        tPHL = 10 ns
+
+
+Average propagation delay:
+
+
+        tpd = (6 + 10)/2
+
+           = 8 ns
+
+
+ANSWER:
+
+        8 ns
+
+
+============================================================
+16.61 SOLVED NUMERICAL PROBLEM 5
+============================================================
+
+Given:
+
+        tCQ = 3 ns
+
+        tcomb = 7 ns
+
+        tsetup = 2 ns
+
+
+Minimum clock period:
+
+
+        T ≥ 3 + 7 + 2
+
+        T ≥ 12 ns
+
+
+Maximum frequency:
+
+
+        fmax ≈ 1/(12 ns)
+
+
+        ≈ 83.33 MHz
+
+
+ANSWER:
+
+        fmax ≈ 83.33 MHz
+
+
+============================================================
+16.62 SOLVED NUMERICAL PROBLEM 6
+============================================================
+
+Given:
+
+        VOH(min) = 4.2 V
+
+        VIH(min) = 3.0 V
+
+
+Find NMH.
+
+
+        NMH = 4.2 - 3.0
+
+            = 1.2 V
+
+
+ANSWER:
+
+        NMH = 1.2 V
+
+
+============================================================
+16.63 SOLVED NUMERICAL PROBLEM 7
+============================================================
+
+Given:
+
+        VIL(max) = 1.4 V
+
+        VOL(max) = 0.4 V
+
+
+Find NML.
+
+
+        NML = 1.4 - 0.4
+
+            = 1.0 V
+
+
+ANSWER:
+
+        NML = 1.0 V
+
+
+============================================================
+16.64 PRACTICE QUESTIONS
+============================================================
+
+Q1.
+Define clock signal.
+
+
+Q2.
+What is clock period?
+
+
+Q3.
+What is frequency?
+
+
+Q4.
+Write the relation between frequency and period.
+
+
+Q5.
+What is duty cycle?
+
+
+Q6.
+A clock has a period of 10 ns and is HIGH
+for 4 ns. Find duty cycle.
+
+
+Q7.
+Convert 100 MHz into period.
+
+
+Q8.
+Convert 20 ns into frequency.
+
+
+Q9.
+What is propagation delay?
+
+
+Q10.
+What is tPLH?
+
+
+Q11.
+What is tPHL?
+
+
+Q12.
+If tPLH = 4 ns and tPHL = 8 ns,
+find average propagation delay.
+
+
+Q13.
+What is rise time?
+
+
+Q14.
+What is fall time?
+
+
+Q15.
+Explain setup time.
+
+
+Q16.
+Explain hold time.
+
+
+Q17.
+What happens if setup time is violated?
+
+
+Q18.
+What is metastability?
+
+
+Q19.
+What is clock-to-Q delay?
+
+
+Q20.
+Why is a synchronizer used?
+
+
+Q21.
+What is clock skew?
+
+
+Q22.
+What is clock jitter?
+
+
+Q23.
+What is a critical path?
+
+
+Q24.
+A circuit has:
+
+        tCQ = 2 ns
+        tcomb = 6 ns
+        tsetup = 2 ns
+
+Find maximum clock frequency.
+
+
+Q25.
+Define fan-in.
+
+
+Q26.
+Define fan-out.
+
+
+Q27.
+Why does high fan-out potentially increase delay?
+
+
+Q28.
+Define noise margin.
+
+
+Q29.
+Calculate:
+
+        NMH
+
+if:
+
+        VOH(min) = 4.5 V
+        VIH(min) = 3.5 V
+
+
+Q30.
+Calculate:
+
+        NML
+
+if:
+
+        VIL(max) = 1.2 V
+        VOL(max) = 0.3 V
+
+
+============================================================
+16.65 MCQs
+============================================================
+
+Q1.
+The time for one complete clock cycle is:
+
+A) Frequency
+B) Period
+C) Duty cycle
+D) Delay
+
+
+Q2.
+The unit of frequency is:
+
+A) Volt
+B) Ampere
+C) Hertz
+D) Ohm
+
+
+Q3.
+The relationship between frequency and period is:
+
+A) f = T
+B) f = T²
+C) f = 1/T
+D) f = 2T
+
+
+Q4.
+A 50 MHz clock has a period of:
+
+A) 5 ns
+B) 10 ns
+C) 20 ns
+D) 50 ns
+
+
+Q5.
+Duty cycle is:
+
+A) Frequency divided by voltage
+B) HIGH time divided by period × 100%
+C) Period divided by frequency
+D) Propagation delay × 100
+
+
+Q6.
+A positive edge is:
+
+A) 1 → 0
+B) 0 → 1
+C) 0 → 0
+D) 1 → 1
+
+
+Q7.
+A negative edge is:
+
+A) 0 → 1
+B) 1 → 0
+C) 0 → 0
+D) 1 → 1
+
+
+Q8.
+Propagation delay describes:
+
+A) Power consumption
+B) Input-to-output response time
+C) Number of inputs
+D) Clock amplitude
+
+
+Q9.
+Setup time is the minimum time data must be
+stable:
+
+A) After the clock edge
+B) Before the clock edge
+C) During power-off
+D) After reset only
+
+
+Q10.
+Hold time is the minimum time data must remain
+stable:
+
+A) Before the clock edge
+B) After the clock edge
+C) Before power is applied
+D) Before reset
+
+
+Q11.
+Metastability can occur when:
+
+A) Supply voltage is zero
+B) Timing requirements are violated
+C) A gate has two inputs
+D) Frequency is exactly 1 Hz
+
+
+Q12.
+Clock-to-Q delay is measured from:
+
+A) Data input to clock
+B) Clock edge to Q output change
+C) Q to data input
+D) Power to clock
+
+
+Q13.
+The critical path is generally:
+
+A) Shortest logic path
+B) Longest timing path limiting speed
+C) Power path
+D) Ground path
+
+
+Q14.
+Fan-out means:
+
+A) Number of gate inputs
+B) Number of loads an output can drive
+C) Number of clocks
+D) Number of power supplies
+
+
+Q15.
+Which generally improves noise immunity?
+
+A) Larger noise margin
+B) Smaller noise margin
+C) Larger delay only
+D) Higher fan-in only
+
+
+Q16.
+If T = 10 ns, frequency is:
+
+A) 10 MHz
+B) 50 MHz
+C) 100 MHz
+D) 1 GHz
+
+
+Q17.
+If HIGH time = 5 ns and period = 10 ns,
+duty cycle is:
+
+A) 10%
+B) 25%
+C) 50%
+D) 75%
+
+
+Q18.
+If tCQ = 2 ns, tcomb = 5 ns,
+and tsetup = 1 ns, minimum clock period is:
+
+A) 4 ns
+B) 6 ns
+C) 8 ns
+D) 10 ns
+
+
+Q19.
+Which transition is a rising edge?
+
+A) HIGH → LOW
+B) LOW → HIGH
+C) HIGH → HIGH
+D) LOW → LOW
+
+
+Q20.
+A synchronizer is commonly used to:
+
+A) Increase memory size
+B) Reduce metastability propagation
+C) Increase fan-in
+D) Generate analog signals
+
+
+============================================================
+16.66 MCQ ANSWERS
+============================================================
+
+Q1  → B
+Q2  → C
+Q3  → C
+Q4  → C
+Q5  → B
+Q6  → B
+Q7  → B
+Q8  → B
+Q9  → B
+Q10 → B
+Q11 → B
+Q12 → B
+Q13 → B
+Q14 → B
+Q15 → A
+Q16 → C
+Q17 → C
+Q18 → C
+Q19 → B
+Q20 → B
+
+
+============================================================
+16.67 QUICK REVISION
+============================================================
+
+CLOCK:
+
+        Periodic timing reference.
+
+
+PERIOD:
+
+        Time for one complete cycle.
+
+
+FREQUENCY:
+
+        Number of cycles per second.
+
+
+        f = 1/T
+
+
+DUTY CYCLE:
+
+        Percentage of period spent HIGH.
+
+
+RISING EDGE:
+
+        0 → 1
+
+
+FALLING EDGE:
+
+        1 → 0
+
+
+PROPAGATION DELAY:
+
+        Input change → output response delay.
+
+
+tPLH:
+
+        Output LOW → HIGH delay.
+
+
+tPHL:
+
+        Output HIGH → LOW delay.
+
+
+RISE TIME:
+
+        LOW → HIGH transition time.
+
+
+FALL TIME:
+
+        HIGH → LOW transition time.
+
+
+SETUP TIME:
+
+        Data stable BEFORE active clock edge.
+
+
+HOLD TIME:
+
+        Data stable AFTER active clock edge.
+
+
+CLOCK-TO-Q:
+
+        Clock edge → Q output delay.
+
+
+METASTABILITY:
+
+        Temporary uncertain flip-flop state.
+
+
+CLOCK SKEW:
+
+        Difference in clock arrival times.
+
+
+CLOCK JITTER:
+
+        Variation in clock-edge timing.
+
+
+CRITICAL PATH:
+
+        Longest timing path limiting speed.
+
+
+FAN-IN:
+
+        Number of gate inputs.
+
+
+FAN-OUT:
+
+        Number of loads an output can drive.
+
+
+NOISE MARGIN:
+
+        Tolerance to unwanted voltage disturbance.
+
+
+============================================================
+16.68 EXAM MEMORY TRICKS
+============================================================
+
+TRICK 1:
+
+        Frequency ↑
+        Period ↓
+
+
+TRICK 2:
+
+        SETUP = BEFORE
+
+
+        HOLD = AFTER
+
+
+TRICK 3:
+
+        RISING = 0 → 1
+
+
+        FALLING = 1 → 0
+
+
+TRICK 4:
+
+        Fan-IN = inputs INTO gate
+
+
+        Fan-OUT = loads driven OUT
+
+
+TRICK 5:
+
+        Critical path = longest path
+
+
+TRICK 6:
+
+        Higher noise margin
+        = better noise tolerance
+
+
+============================================================
+16.69 CHAPTER 16 MASTER CHECKLIST
+============================================================
+
+[ ] Define clock.
+[ ] Define clock period.
+[ ] Define frequency.
+[ ] Convert frequency ↔ period.
+[ ] Define duty cycle.
+[ ] Calculate duty cycle.
+[ ] Understand rising edge.
+[ ] Understand falling edge.
+[ ] Define propagation delay.
+[ ] Understand tPLH.
+[ ] Understand tPHL.
+[ ] Calculate average propagation delay.
+[ ] Define rise time.
+[ ] Define fall time.
+[ ] Understand setup time.
+[ ] Understand hold time.
+[ ] Identify setup violation.
+[ ] Identify hold violation.
+[ ] Explain metastability.
+[ ] Explain synchronizer.
+[ ] Understand clock-to-Q delay.
+[ ] Calculate maximum clock frequency.
+[ ] Understand clock skew.
+[ ] Understand clock jitter.
+[ ] Understand timing diagrams.
+[ ] Understand critical path.
+[ ] Calculate noise margin.
+[ ] Understand fan-in.
+[ ] Understand fan-out.
+[ ] Understand capacitive loading.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+                    CHAPTER 17
+                        ↓
+              HAZARDS & GLITCHES
+                        |
+        +---------------+---------------+
+        |               |               |
+      HAZARD          STATIC          DYNAMIC
+        |               |               |
+      Cause          Static-1        Multiple
+      Delay          Static-0        transitions
+        |               |               |
+        +---------------+---------------+
+                        |
+                        v
+                 HAZARD DETECTION
+                        |
+                        v
+                  HAZARD REMOVAL
+                        |
+                +-------+-------+
+                |               |
+          Consensus terms   Redundant logic
+                |               |
+                +-------+-------+
+                        |
+                        v
+               HAZARD-FREE DESIGN
+
+
+KEY IDEA:
+
+Chapter 16 answered:
+
+    "How does TIME affect digital circuits?"
+
+Chapter 17 will answer:
+
+    "What happens when different signal paths have
+     different propagation delays, and how can those
+     delays create unwanted temporary outputs called
+     GLITCHES or HAZARDS?"
+
+
+============================================================

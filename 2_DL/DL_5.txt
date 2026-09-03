@@ -1,0 +1,1443 @@
+============================================================
+CHAPTER 5 — COMBINATIONAL LOGIC CIRCUITS
+============================================================
+Level: B.Tech 1st Year
+Prerequisite: Chapters 1–4
+Goal: Understand how digital circuits perform arithmetic
+      operations using logic gates.
+
+------------------------------------------------------------
+5.1 INTRODUCTION TO COMBINATIONAL LOGIC
+------------------------------------------------------------
+
+DEFINITION
+A combinational logic circuit is a digital circuit whose
+OUTPUT depends only on the PRESENT INPUTS.
+
+In other words:
+
+        Present Inputs
+              |
+              v
+      +----------------+
+      | COMBINATIONAL  |
+      |     CIRCUIT    |
+      +----------------+
+              |
+              v
+        Present Output
+
+There is NO memory element in a pure combinational circuit.
+
+Examples:
+    • Adders
+    • Subtractors
+    • Multiplexers
+    • Demultiplexers
+    • Encoders
+    • Decoders
+    • Comparators
+
+IMPORTANT IDEA
+If the input changes, the output changes according to the
+logic function after the circuit's propagation delay.
+
+------------------------------------------------------------
+COMBINATIONAL vs SEQUENTIAL CIRCUIT
+------------------------------------------------------------
+
+COMBINATIONAL:
+
+Inputs ---> Logic ---> Output
+
+Output depends only on current input.
+
+SEQUENTIAL:
+
+              +----------------+
+              |                |
+Inputs ---> Logic ----------> Output
+              ^                |
+              |                |
+              +-- Memory <-----+
+                    ^
+                  Clock
+
+Output depends on:
+    1. Present input
+    2. Previous state
+
+Examples:
+
+Combinational:
+    Adder, MUX, Decoder
+
+Sequential:
+    Flip-flop, Register, Counter
+
+------------------------------------------------------------
+5.2 HALF ADDER
+------------------------------------------------------------
+
+WHY DO WE NEED AN ADDER?
+
+Computers perform addition constantly.
+
+For example:
+
+        1011
+      + 0110
+      ------
+       10001
+
+To build a digital circuit capable of addition, we start
+with the simplest possible case:
+
+Adding TWO 1-bit binary numbers.
+
+A + B
+
+There are two possible outputs:
+
+    S = Sum
+    C = Carry
+
+Therefore:
+
+        A + B
+          |
+          v
+     +-----------+
+     | HALF      |
+     | ADDER     |
+     +-----------+
+       |       |
+       v       v
+      Sum    Carry
+       S       C
+
+------------------------------------------------------------
+HALF ADDER TRUTH TABLE
+------------------------------------------------------------
+
+A    B    |    SUM(S)    CARRY(C)
+----------------------------------
+0    0    |      0          0
+0    1    |      1          0
+1    0    |      1          0
+1    1    |      0          1
+
+Notice:
+
+0 + 0 = 00
+0 + 1 = 01
+1 + 0 = 01
+1 + 1 = 10
+
+The result "10" means:
+
+    Sum = 0
+    Carry = 1
+
+------------------------------------------------------------
+DERIVING HALF ADDER EQUATIONS
+------------------------------------------------------------
+
+Look at the SUM column:
+
+A B | S
+--------
+0 0 | 0
+0 1 | 1
+1 0 | 1
+1 1 | 0
+
+This is exactly XOR.
+
+Therefore:
+
+        S = A XOR B
+
+or
+
+        S = A ⊕ B
+
+Using AND:
+
+A B | C
+--------
+0 0 | 0
+0 1 | 0
+1 0 | 0
+1 1 | 1
+
+Therefore:
+
+        C = A · B
+
+FINAL HALF ADDER EQUATIONS:
+
+        S = A ⊕ B
+        C = A · B
+
+------------------------------------------------------------
+HALF ADDER CIRCUIT
+------------------------------------------------------------
+
+                 +-------+
+A -------------->|       |
+                 |  XOR  |------> S (Sum)
+B -------------->|       |
+                 +-------+
+
+                 +-------+
+A -------------->|       |
+                 |  AND  |------> C (Carry)
+B -------------->|       |
+                 +-------+
+
+So a Half Adder requires:
+
+    1 XOR gate
+    1 AND gate
+
+------------------------------------------------------------
+EXAMPLE 1
+------------------------------------------------------------
+
+Add:
+
+        A = 1
+        B = 1
+
+Sum:
+
+        S = A ⊕ B
+          = 1 ⊕ 1
+          = 0
+
+Carry:
+
+        C = A · B
+          = 1 · 1
+          = 1
+
+Therefore:
+
+        1 + 1 = 10
+
+Answer:
+
+        S = 0
+        C = 1
+
+------------------------------------------------------------
+IMPORTANT LIMITATION OF HALF ADDER
+------------------------------------------------------------
+
+A Half Adder can add only:
+
+        A + B
+
+It CANNOT accept a carry from a previous bit.
+
+Suppose we want:
+
+        101
+      + 111
+      -----
+
+When adding the next bit, there may already be a carry.
+
+A Half Adder has only two inputs:
+
+        A
+        B
+
+But we need:
+
+        A
+        B
+        Carry-in
+
+Therefore we need a FULL ADDER.
+
+============================================================
+5.3 FULL ADDER
+============================================================
+
+DEFINITION
+
+A Full Adder is a combinational circuit that adds THREE
+1-bit binary inputs:
+
+        A
+        B
+        Cin
+
+and produces:
+
+        Sum
+        Carry-out
+
+The third input is called:
+
+        Cin = Carry-in
+
+Output:
+
+        Cout = Carry-out
+
+------------------------------------------------------------
+FULL ADDER BLOCK DIAGRAM
+------------------------------------------------------------
+
+       A --------\
+       B --------->+-------------+
+       Cin -------/| FULL ADDER  |
+                   +-------------+
+                     |         |
+                     v         v
+                   Sum       Cout
+
+------------------------------------------------------------
+FULL ADDER TRUTH TABLE
+------------------------------------------------------------
+
+A   B   Cin | Sum   Cout
+-------------------------
+0   0    0  |  0      0
+0   0    1  |  1      0
+0   1    0  |  1      0
+0   1    1  |  0      1
+1   0    0  |  1      0
+1   0    1  |  0      1
+1   1    0  |  0      1
+1   1    1  |  1      1
+
+------------------------------------------------------------
+HOW TO UNDERSTAND THE TABLE
+------------------------------------------------------------
+
+There are three inputs.
+
+Therefore there are:
+
+        2^3 = 8
+
+possible combinations.
+
+For example:
+
+        1 + 0 + 1 = 10
+
+Therefore:
+
+        Sum  = 0
+        Cout = 1
+
+Another:
+
+        1 + 1 + 1 = 11
+
+Therefore:
+
+        Sum  = 1
+        Cout = 1
+
+------------------------------------------------------------
+FULL ADDER SUM EQUATION
+------------------------------------------------------------
+
+The SUM output is:
+
+        Sum = A ⊕ B ⊕ Cin
+
+This is one of the MOST IMPORTANT equations in digital
+logic.
+
+MEMORIZE:
+
+        +-------------------+
+        | SUM = A ⊕ B ⊕ Cin |
+        +-------------------+
+
+------------------------------------------------------------
+FULL ADDER CARRY EQUATION
+------------------------------------------------------------
+
+Carry occurs when at least TWO of the three inputs are 1.
+
+Therefore:
+
+        Cout = AB + ACin + BCin
+
+or:
+
+        Cout = A·B + A·Cin + B·Cin
+
+Another useful form is:
+
+        Cout = AB + Cin(A ⊕ B)
+
+Both forms are equivalent.
+
+IMPORTANT:
+
+        Sum:
+        A ⊕ B ⊕ Cin
+
+        Carry:
+        AB + ACin + BCin
+
+------------------------------------------------------------
+5.4 FULL ADDER USING TWO HALF ADDERS
+------------------------------------------------------------
+
+This is a very important exam question.
+
+A Full Adder can be constructed using:
+
+        2 Half Adders
+        1 OR gate
+
+Architecture:
+
+             A --------\
+                        +--------+
+             B -------->| HALF   |
+                        | ADDER  |
+                        +--------+
+                           |   |
+                          S1   C1
+                           |
+                           v
+                        +--------+
+Cin ------------------->| HALF   |
+                        | ADDER  |
+                        +--------+
+                           |   |
+                           v   C2
+                         Sum
+
+                    C1 --------\
+                                 >--- OR ---> Cout
+                    C2 --------/
+
+------------------------------------------------------------
+STEP-BY-STEP
+------------------------------------------------------------
+
+FIRST HALF ADDER:
+
+        A + B
+
+produces:
+
+        S1 = A ⊕ B
+
+        C1 = AB
+
+SECOND HALF ADDER:
+
+        S1 + Cin
+
+produces:
+
+        Sum = S1 ⊕ Cin
+
+Therefore:
+
+        Sum = A ⊕ B ⊕ Cin
+
+Second carry:
+
+        C2 = S1 · Cin
+
+        C2 = (A ⊕ B)Cin
+
+Final carry:
+
+        Cout = C1 + C2
+
+Therefore:
+
+        Cout = AB + (A ⊕ B)Cin
+
+This is equivalent to:
+
+        Cout = AB + ACin + BCin
+
+------------------------------------------------------------
+5.5 HALF SUBTRACTOR
+------------------------------------------------------------
+
+Now we move from addition to subtraction.
+
+A Half Subtractor subtracts:
+
+        B from A
+
+That is:
+
+        A - B
+
+It has:
+
+INPUTS:
+    A = Minuend
+    B = Subtrahend
+
+OUTPUTS:
+    D = Difference
+    Borrow = Borrow output
+
+------------------------------------------------------------
+HALF SUBTRACTOR BLOCK
+------------------------------------------------------------
+
+        A --------\
+        B --------->+----------------+
+                    | HALF SUBTRACTOR|
+                    +----------------+
+                       |          |
+                       v          v
+                    Difference   Borrow
+
+------------------------------------------------------------
+HALF SUBTRACTOR TRUTH TABLE
+------------------------------------------------------------
+
+A    B    | Difference(D)   Borrow
+-----------------------------------
+0    0    |       0            0
+0    1    |       1            1
+1    0    |       1            0
+1    1    |       0            0
+
+Understand the difficult row:
+
+        0 - 1
+
+We cannot directly subtract 1 from 0.
+
+So we borrow:
+
+        0 - 1 = 1 with Borrow = 1
+
+Therefore:
+
+        Difference = 1
+        Borrow = 1
+
+------------------------------------------------------------
+HALF SUBTRACTOR EQUATIONS
+------------------------------------------------------------
+
+Difference behaves like XOR:
+
+        D = A ⊕ B
+
+Borrow occurs only when:
+
+        A = 0
+        B = 1
+
+Therefore:
+
+        Borrow = A'B
+
+FINAL:
+
+        D = A ⊕ B
+
+        Borrow = A'B
+
+------------------------------------------------------------
+HALF SUBTRACTOR CIRCUIT
+------------------------------------------------------------
+
+                +-------+
+A -------------->|       |
+                |  XOR  |------> D
+B -------------->|       |
+                +-------+
+
+A -----> NOT ----\
+                  AND ------> Borrow
+B ---------------/
+
+Requires:
+
+    1 XOR
+    1 NOT
+    1 AND
+
+------------------------------------------------------------
+5.6 FULL SUBTRACTOR
+------------------------------------------------------------
+
+A Full Subtractor subtracts THREE 1-bit quantities:
+
+        A
+        B
+        Bin
+
+where:
+
+        Bin = Borrow-in
+
+Outputs:
+
+        Difference
+        Bout = Borrow-out
+
+------------------------------------------------------------
+BLOCK DIAGRAM
+------------------------------------------------------------
+
+       A --------\
+       B --------->+----------------+
+       Bin ------->| FULL SUBTRACTOR|
+                  +----------------+
+                    |            |
+                    v            v
+               Difference      Bout
+
+------------------------------------------------------------
+FULL SUBTRACTOR TRUTH TABLE
+------------------------------------------------------------
+
+A   B   Bin | Difference   Bout
+-------------------------------
+0   0    0  |     0         0
+0   0    1  |     1         1
+0   1    0  |     1         1
+0   1    1  |     0         1
+1   0    0  |     1         0
+1   0    1  |     0         0
+1   1    0  |     0         0
+1   1    1  |     1         1
+
+------------------------------------------------------------
+FULL SUBTRACTOR DIFFERENCE
+------------------------------------------------------------
+
+Difference is:
+
+        D = A ⊕ B ⊕ Bin
+
+Very similar to Full Adder.
+
+Compare:
+
+FULL ADDER:
+        Sum = A ⊕ B ⊕ Cin
+
+FULL SUBTRACTOR:
+        Difference = A ⊕ B ⊕ Bin
+
+------------------------------------------------------------
+FULL SUBTRACTOR BORROW
+------------------------------------------------------------
+
+The borrow equation is:
+
+        Bout = A'B + A'Bin + B Bin
+
+Another useful form:
+
+        Bout = A'B + Bin(A ⊕ B)'
+
+Different textbooks may write the equation in different
+but equivalent forms.
+
+The safest standard form is:
+
+        Bout = A'B + A'Bin + BBin
+
+------------------------------------------------------------
+FULL SUBTRACTOR USING TWO HALF SUBTRACTORS
+------------------------------------------------------------
+
+Exactly like the Full Adder idea.
+
+             A --------\
+                        +-------------+
+             B -------->| HALF        |
+                        | SUBTRACTOR  |
+                        +-------------+
+                           |       |
+                          D1      B1
+                           |
+                           v
+                        +-------------+
+Bin ------------------->| HALF        |
+                        | SUBTRACTOR  |
+                        +-------------+
+                           |       |
+                           v       B2
+
+                    B1 --------\
+                                 >--- OR ---> Bout
+                    B2 --------/
+
+Final:
+
+        Difference = A ⊕ B ⊕ Bin
+
+        Bout = B1 + B2
+
+============================================================
+5.7 PARALLEL BINARY ADDER
+============================================================
+
+A Full Adder handles only ONE bit.
+
+But computers need to add:
+
+        4-bit
+        8-bit
+        16-bit
+        32-bit
+        64-bit
+        etc.
+
+We connect several Full Adders together.
+
+This creates a:
+
+        PARALLEL BINARY ADDER
+
+------------------------------------------------------------
+4-BIT RIPPLE CARRY ADDER
+------------------------------------------------------------
+
+Example:
+
+        A3 A2 A1 A0
+      + B3 B2 B1 B0
+      --------------
+
+We use FOUR Full Adders.
+
+             FA0       FA1       FA2       FA3
+             +--+      +--+      +--+      +--+
+A0 --------->|  |----->|  |----->|  |----->|  |
+B0 --------->|  |      |  |      |  |      |  |
+Cin -------->|  |      |  |      |  |      |  |
+             +--+      +--+      +--+      +--+
+               |         |         |         |
+              S0        S1        S2        S3
+
+Carry:
+
+              C1 -----> C2 -----> C3 -----> C4
+
+The carry "ripples" from one stage to the next.
+
+Therefore it is called:
+
+        RIPPLE CARRY ADDER
+
+------------------------------------------------------------
+WHY IS RIPPLE CARRY SLOW?
+------------------------------------------------------------
+
+Suppose the first Full Adder generates a carry.
+
+The second Full Adder must wait for it.
+
+Then the third waits for the second.
+
+Then the fourth waits for the third.
+
+So:
+
+        FA0 → FA1 → FA2 → FA3
+
+The delay accumulates.
+
+This is called:
+
+        CARRY PROPAGATION DELAY
+
+This is the major disadvantage of a Ripple Carry Adder.
+
+------------------------------------------------------------
+5.8 CARRY LOOK-AHEAD ADDER
+------------------------------------------------------------
+
+The Ripple Carry Adder is slow because each stage waits for
+the previous carry.
+
+The Carry Look-Ahead Adder, or CLA, attempts to calculate
+the carries faster.
+
+The key concepts are:
+
+        GENERATE
+        PROPAGATE
+
+------------------------------------------------------------
+GENERATE
+------------------------------------------------------------
+
+A bit position GENERATES a carry when:
+
+        A = 1
+        B = 1
+
+Therefore:
+
+        Gi = Ai Bi
+
+Example:
+
+        A = 1
+        B = 1
+
+Then:
+
+        G = 1
+
+A carry is generated regardless of Cin.
+
+------------------------------------------------------------
+PROPAGATE
+------------------------------------------------------------
+
+A bit position propagates an incoming carry when exactly
+one of A or B is 1.
+
+Using XOR:
+
+        Pi = Ai ⊕ Bi
+
+Then the carry equation is:
+
+        Ci+1 = Gi + PiCi
+
+This is extremely important.
+
+------------------------------------------------------------
+CLA CARRY EQUATIONS
+------------------------------------------------------------
+
+For the first stage:
+
+        C1 = G0 + P0C0
+
+Second:
+
+        C2 = G1 + P1C1
+
+Substitute C1:
+
+        C2 = G1 + P1G0 + P1P0C0
+
+Third:
+
+        C3 = G2 + P2G1 + P2P1G0
+                    + P2P1P0C0
+
+Fourth:
+
+        C4 = G3 + P3G2 + P3P2G1
+                    + P3P2P1G0
+                    + P3P2P1P0C0
+
+The important idea:
+
+The carries can be calculated in parallel rather than
+waiting for a carry to ripple through every Full Adder.
+
+------------------------------------------------------------
+RIPPLE CARRY vs CLA
+------------------------------------------------------------
+
+RIPPLE CARRY ADDER:
+
+    Simple
+    ↓
+    Low hardware complexity
+    ↓
+    More delay
+
+CLA:
+
+    More hardware
+    ↓
+    More complex
+    ↓
+    Faster carry calculation
+
+EXAM POINT:
+
+    Ripple Carry Adder:
+        Simple but slower
+
+    Carry Look-Ahead Adder:
+        Faster but requires more hardware
+
+============================================================
+5.9 BCD ADDER
+============================================================
+
+BCD = Binary Coded Decimal
+
+In BCD, each decimal digit is represented separately
+using 4 bits.
+
+Examples:
+
+    Decimal 5 → 0101
+    Decimal 7 → 0111
+    Decimal 9 → 1001
+
+Valid BCD codes:
+
+    0000 → 0
+    0001 → 1
+    0010 → 2
+    0011 → 3
+    0100 → 4
+    0101 → 5
+    0110 → 6
+    0111 → 7
+    1000 → 8
+    1001 → 9
+
+Invalid:
+
+    1010 → 10  X
+    1011 → 11  X
+    1100 → 12  X
+    1101 → 13  X
+    1110 → 14  X
+    1111 → 15  X
+
+------------------------------------------------------------
+WHY DO WE NEED A BCD ADDER?
+------------------------------------------------------------
+
+Consider:
+
+        5 + 4 = 9
+
+BCD:
+
+        0101
+      + 0100
+      ------
+        1001
+
+1001 is valid BCD.
+
+Now:
+
+        7 + 5 = 12
+
+BCD:
+
+        0111
+      + 0101
+      ------
+        1100
+
+But 1100 is NOT a valid BCD digit.
+
+Therefore correction is required.
+
+------------------------------------------------------------
+BCD CORRECTION RULE
+------------------------------------------------------------
+
+After binary addition:
+
+If the result is greater than 1001
+OR
+if there is a carry,
+
+add:
+
+        0110
+
+Why?
+
+Because six invalid binary combinations exist:
+
+        1010
+        1011
+        1100
+        1101
+        1110
+        1111
+
+Adding 6 moves the result into the correct BCD representation.
+
+------------------------------------------------------------
+EXAMPLE: 7 + 5
+------------------------------------------------------------
+
+Step 1: Binary addition
+
+        0111
+      + 0101
+      ------
+        1100
+
+1100 is invalid BCD.
+
+Step 2: Add 0110
+
+        1100
+      + 0110
+      ------
+       1 0010
+
+Therefore:
+
+        12 = 0001 0010
+
+So:
+
+        7 + 5 = 12
+
+BCD result:
+
+        0001 0010
+
+which means:
+
+        1     2
+       BCD   BCD
+
+------------------------------------------------------------
+BCD ADDER BASIC STRUCTURE
+------------------------------------------------------------
+
+              A
+              |
+              v
+        +-------------+
+        | 4-bit Binary|
+        |    Adder    |
+        +-------------+
+              |
+              v
+        Is correction
+          required?
+              |
+         +----+----+
+         |         |
+        YES        NO
+         |         |
+         v         |
+      +0110        |
+         |         |
+         +----+----+
+              |
+              v
+          BCD Output
+
+Correction is needed when:
+
+    1. Binary sum > 1001
+OR
+    2. Carry-out = 1
+
+A commonly used correction condition is:
+
+        K = C4 + S3S2 + S3S1
+
+where:
+
+    C4 = carry from binary addition
+    S3,S2,S1 = result bits
+
+------------------------------------------------------------
+5.10 IMPORTANT COMPARISON TABLE
+------------------------------------------------------------
+
++----------------+-----------------------------+
+| Circuit        | Main Function               |
++----------------+-----------------------------+
+| Half Adder     | Adds 2 one-bit numbers      |
+| Full Adder     | Adds 3 one-bit inputs       |
+| Half Subtractor| Subtracts 2 one-bit numbers |
+| Full Subtractor| Subtracts with borrow-in    |
+| RCA            | Multi-bit addition          |
+| CLA            | Fast multi-bit addition     |
+| BCD Adder      | Adds BCD decimal digits     |
++----------------+-----------------------------+
+
+------------------------------------------------------------
+5.11 MOST IMPORTANT FORMULAS
+------------------------------------------------------------
+
+HALF ADDER:
+
+        S = A ⊕ B
+
+        C = AB
+
+
+FULL ADDER:
+
+        S = A ⊕ B ⊕ Cin
+
+        Cout = AB + ACin + BCin
+
+
+HALF SUBTRACTOR:
+
+        D = A ⊕ B
+
+        Borrow = A'B
+
+
+FULL SUBTRACTOR:
+
+        D = A ⊕ B ⊕ Bin
+
+        Bout = A'B + A'Bin + BBin
+
+
+CLA:
+
+        Gi = AiBi
+
+        Pi = Ai ⊕ Bi
+
+        Ci+1 = Gi + PiCi
+
+
+BCD CORRECTION:
+
+        Add 0110 when binary BCD result is invalid.
+
+============================================================
+5.12 QUICK MEMORY TECHNIQUES
+============================================================
+
+TECHNIQUE 1 — ADDER
+
+Think:
+
+        ADDER = SUM + CARRY
+
+SUM always involves XOR.
+
+For Full Adder:
+
+        SUM = XOR of all inputs
+
+        A ⊕ B ⊕ Cin
+
+Carry means "at least two 1s":
+
+        AB + ACin + BCin
+
+
+TECHNIQUE 2 — SUBTRACTOR
+
+Think:
+
+        SUBTRACTOR = DIFFERENCE + BORROW
+
+Difference also uses XOR.
+
+Full Subtractor:
+
+        D = A ⊕ B ⊕ Bin
+
+Borrow is generated when subtraction needs help from
+the next higher bit.
+
+
+TECHNIQUE 3 — RIPPLE CARRY
+
+Imagine water flowing:
+
+        Carry → Carry → Carry → Carry
+
+Each stage waits for the previous stage.
+
+Therefore:
+
+        More bits → More delay
+
+
+TECHNIQUE 4 — CLA
+
+Remember:
+
+        Generate  = creates carry
+        Propagate = passes carry
+
+        C(next) = Generate + Propagate × C(current)
+
+============================================================
+5.13 SOLVED PRACTICE EXAMPLES
+============================================================
+
+EXAMPLE 1
+
+Find the Half Adder output for:
+
+        A = 1
+        B = 0
+
+Solution:
+
+        S = A ⊕ B
+          = 1 ⊕ 0
+          = 1
+
+        C = AB
+          = 1 × 0
+          = 0
+
+Answer:
+
+        S = 1
+        C = 0
+
+
+EXAMPLE 2
+
+Find Full Adder output:
+
+        A = 1
+        B = 1
+        Cin = 1
+
+Sum:
+
+        S = 1 ⊕ 1 ⊕ 1
+          = 1
+
+Carry:
+
+        Cout = AB + ACin + BCin
+             = 1 + 1 + 1
+             = 1
+
+Answer:
+
+        Sum = 1
+        Cout = 1
+
+Therefore:
+
+        1 + 1 + 1 = 11
+
+
+EXAMPLE 3
+
+Find Half Subtractor output:
+
+        A = 0
+        B = 1
+
+Difference:
+
+        D = 0 ⊕ 1
+          = 1
+
+Borrow:
+
+        Borrow = A'B
+               = 1 × 1
+               = 1
+
+Answer:
+
+        D = 1
+        Borrow = 1
+
+============================================================
+5.14 PRACTICE QUESTIONS
+============================================================
+
+Try these yourself before looking for solutions.
+
+------------------------------------------------------------
+BASIC
+------------------------------------------------------------
+
+Q1. What is a combinational circuit?
+
+Q2. What is the main difference between a combinational
+    and sequential circuit?
+
+Q3. How many inputs and outputs does a Half Adder have?
+
+Q4. Write the equations for a Half Adder.
+
+Q5. What is the purpose of Cin in a Full Adder?
+
+------------------------------------------------------------
+INTERMEDIATE
+------------------------------------------------------------
+
+Q6. Find Sum and Carry:
+
+        A = 1, B = 0
+
+Q7. Find Sum and Carry:
+
+        A = 1, B = 1, Cin = 0
+
+Q8. Find Difference and Borrow:
+
+        A = 0, B = 1
+
+Q9. Write the Full Adder carry equation.
+
+Q10. Why is a Ripple Carry Adder slower than a CLA?
+
+------------------------------------------------------------
+NUMERICAL
+------------------------------------------------------------
+
+Q11. Add using a 4-bit binary adder:
+
+        1010
+      + 0111
+      ------
+
+Q12. Perform BCD addition:
+
+        0101
+      + 0110
+      ------
+
+Q13. Perform BCD addition:
+
+        0111
+      + 0101
+      ------
+
+Q14. Find the Full Adder output for:
+
+        A = 1
+        B = 0
+        Cin = 1
+
+Q15. Find the Full Subtractor output for:
+
+        A = 0
+        B = 1
+        Bin = 1
+
+------------------------------------------------------------
+EXAM-LEVEL QUESTIONS
+------------------------------------------------------------
+
+Q16. Derive the Full Adder using two Half Adders and an
+    OR gate.
+
+Q17. Derive the Full Adder Sum and Carry equations from
+    its truth table.
+
+Q18. Explain the working of a 4-bit Ripple Carry Adder.
+
+Q19. Explain Generate and Propagate in a Carry Look-Ahead
+    Adder.
+
+Q20. Explain why BCD correction requires adding 0110.
+
+============================================================
+CHAPTER 5 — EXAM CHECKLIST
+============================================================
+
+Before moving to Chapter 6, you should be able to:
+
+[ ] Define combinational logic.
+[ ] Differentiate combinational and sequential circuits.
+[ ] Explain Half Adder.
+[ ] Draw Half Adder truth table.
+[ ] Derive Half Adder equations.
+[ ] Explain Full Adder.
+[ ] Write Full Adder truth table.
+[ ] Derive Sum and Carry equations.
+[ ] Build Full Adder using two Half Adders.
+[ ] Explain Half Subtractor.
+[ ] Explain Full Subtractor.
+[ ] Understand Ripple Carry Adder.
+[ ] Explain carry propagation delay.
+[ ] Understand Carry Look-Ahead Adder.
+[ ] Understand Generate and Propagate.
+[ ] Explain BCD addition.
+[ ] Perform BCD correction using 0110.
+
+============================================================
+CORE TAKEAWAY
+============================================================
+
+                  COMBINATIONAL LOGIC
+                         |
+          +--------------+--------------+
+          |              |              |
+       ADDITION      SUBTRACTION     BCD ADDITION
+          |              |              |
+     +----+----+     +---+----+         |
+     |         |     |        |         |
+    HA        FA    HS       FS       BCD
+     |         |     |        |       Adder
+     +----+----+     +---+----+
+          |
+       MULTI-BIT
+          |
+      +---+---+
+      |       |
+     RCA     CLA
+      |       |
+   Simple   Fast
+
+THE MOST IMPORTANT IDEAS TO REMEMBER:
+
+    Half Adder:
+        S = A ⊕ B
+        C = AB
+
+    Full Adder:
+        S = A ⊕ B ⊕ Cin
+        Cout = AB + ACin + BCin
+
+    Half Subtractor:
+        D = A ⊕ B
+        Borrow = A'B
+
+    Full Subtractor:
+        D = A ⊕ B ⊕ Bin
+
+    Ripple Carry:
+        Simple but slower
+
+    Carry Look-Ahead:
+        More hardware but faster
+
+    BCD:
+        Add 0110 when correction is required
+
+============================================================
+NEXT TOPIC
+============================================================
+
+CHAPTER 6 — COMPARATORS, DECODERS & ENCODERS
+
+We will learn:
+
+    6.1 Magnitude Comparator
+    6.2 1-bit, 2-bit and multi-bit comparators
+    6.3 Decoder
+    6.4 2-to-4 and 3-to-8 decoders
+    6.5 Enable input
+    6.6 Encoder
+    6.7 Priority Encoder
+    6.8 Real-world applications
+
+============================================================

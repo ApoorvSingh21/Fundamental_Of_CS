@@ -1,0 +1,1753 @@
+============================================================
+CHAPTER 13 — STATE REDUCTION & STATE ASSIGNMENT
+============================================================
+Level: B.Tech 1st Year / Computer Science
+Prerequisite: Chapter 12 — Sequential Circuit Design
+Goal: Learn how to reduce unnecessary states and assign
+      binary codes to states for practical circuit design.
+============================================================
+
+
+                    CHAPTER 13 ROADMAP
+
+             STATE REDUCTION & ASSIGNMENT
+                        |
+          +-------------+-------------+
+          |                           |
+    STATE REDUCTION             STATE ASSIGNMENT
+          |                           |
+   Equivalent States           Binary Assignment
+   Redundant States             Gray Assignment
+   State Equivalence            One-Hot Assignment
+          |                           |
+          +-------------+-------------+
+                        |
+                        v
+               MACHINE OPTIMIZATION
+                        |
+             +----------+----------+
+             |                     |
+        Less Hardware         Simpler Logic
+             |                     |
+             +----------+----------+
+                        |
+                        v
+                  Better Circuit
+============================================================
+
+
+13.1 WHY DO WE NEED STATE REDUCTION?
+============================================================
+
+When designing a sequential circuit, we may initially
+create many states.
+
+Some of these states may behave exactly the same.
+
+If two states have identical behavior, keeping both
+may be unnecessary.
+
+Therefore, we try to eliminate redundant states.
+
+This process is called:
+
+                    STATE REDUCTION
+
+
+Basic idea:
+
+        More states
+             ↓
+        Find equivalent states
+             ↓
+        Merge them
+             ↓
+        Fewer states
+             ↓
+        Less hardware
+
+
+============================================================
+13.2 SIMPLE EXAMPLE OF REDUNDANT STATES
+============================================================
+
+Suppose a machine has:
+
+        S0
+        S1
+        S2
+        S3
+
+
+But suppose S2 and S3 always behave identically.
+
+Then:
+
+        S2 ≡ S3
+
+
+We can replace both with one state:
+
+        S2
+
+
+Therefore:
+
+        Original states = 4
+        Reduced states  = 3
+
+
+This can reduce the number of flip-flops.
+
+
+============================================================
+13.3 WHY FEWER STATES CAN REDUCE HARDWARE
+============================================================
+
+Suppose we have:
+
+        8 states
+
+Binary encoding requires:
+
+        3 flip-flops
+
+because:
+
+        2^3 = 8
+
+
+Now suppose state reduction gives:
+
+        4 states
+
+
+Then:
+
+        2 flip-flops
+
+are enough because:
+
+        2^2 = 4
+
+
+Therefore:
+
+        8 states → 3 FFs
+        4 states → 2 FFs
+
+
+Fewer flip-flops can mean:
+
+        • Less hardware
+        • Less wiring
+        • Lower power
+        • Simpler logic
+        • Lower cost
+
+
+============================================================
+13.4 EQUIVALENT STATES
+============================================================
+
+Two states are called EQUIVALENT if they cannot be
+distinguished by the external behavior of the machine.
+
+In simple terms:
+
+If the machine behaves the same from both states
+for every possible input, they can potentially
+be combined.
+
+
+Think of two rooms in a building.
+
+If entering either room always leads to exactly
+the same future behavior, the two rooms are
+effectively indistinguishable.
+
+
+============================================================
+13.5 STATE EQUIVALENCE — BASIC IDEA
+============================================================
+
+For two states to be equivalent, we generally check:
+
+        1. Outputs are the same
+        2. Next states are equivalent for each input
+
+
+For a Moore machine:
+
+        Same output
+              +
+        Equivalent next states
+              =
+        Equivalent states
+
+
+For a Mealy machine:
+
+        Same output for each input
+              +
+        Equivalent next states
+              =
+        Equivalent states
+
+
+This concept is extremely important.
+
+
+============================================================
+13.6 MOORE STATE EQUIVALENCE
+============================================================
+
+Suppose:
+
+        S1 → Output 0
+        S2 → Output 0
+
+
+Their outputs match.
+
+But that alone is NOT enough.
+
+We must also compare their transitions.
+
+
+Example:
+
++-------+-------+-------+
+| State | X=0   | X=1   |
++-------+-------+-------+
+| S1    | S3    | S4    |
+| S2    | S3    | S4    |
++-------+-------+-------+
+
+
+If S1 and S2 have the same output and identical
+next-state behavior, then:
+
+        S1 ≡ S2
+
+
+Therefore they can be merged.
+
+
+============================================================
+13.7 OUTPUT CHECK FIRST
+============================================================
+
+A useful technique is:
+
+                    FIRST
+                      ↓
+              Compare outputs
+                      ↓
+              Different output?
+                 /          \
+               YES           NO
+                |             |
+          NOT equivalent   Continue
+                              ↓
+                    Compare next states
+
+
+This saves time during state-reduction problems.
+
+
+============================================================
+13.8 EXAMPLE — STATES WITH DIFFERENT OUTPUTS
+============================================================
+
+Suppose:
+
+        S0 → output 0
+        S1 → output 1
+
+
+Can S0 and S1 be equivalent?
+
+NO.
+
+
+Why?
+
+Their outputs are different.
+
+Therefore:
+
+        S0 ≠ S1
+
+
+They cannot be merged.
+
+
+============================================================
+13.9 EXAMPLE — SAME OUTPUT
+============================================================
+
+Suppose:
+
+        S0 → output 0
+        S1 → output 0
+
+
+Now we cannot immediately say:
+
+        S0 ≡ S1
+
+
+We must inspect their transitions.
+
+
+For example:
+
++-------+-------+-------+
+| State | X=0   | X=1   |
++-------+-------+-------+
+| S0    | S2    | S3    |
+| S1    | S2    | S3    |
++-------+-------+-------+
+
+
+If S2 and S3 are equivalent, then:
+
+        S0 ≡ S1
+
+
+This is why state reduction can require
+multiple comparison steps.
+
+
+============================================================
+13.10 STATE REDUCTION BY PARTITIONING
+============================================================
+
+A systematic method is called:
+
+                PARTITIONING
+
+
+The idea is to divide states into groups.
+
+First group states based on output.
+
+Then repeatedly divide groups based on
+their next-state behavior.
+
+
+General process:
+
+        All states
+            ↓
+        Initial partition
+            ↓
+        Compare transitions
+            ↓
+        Split groups if necessary
+            ↓
+        Repeat
+            ↓
+        Final equivalent groups
+
+
+Each final group represents one reduced state.
+
+
+============================================================
+13.11 INITIAL PARTITION
+============================================================
+
+For a Moore machine, group states having
+the same output.
+
+
+Example:
+
+Suppose:
+
+        S0 → 0
+        S1 → 0
+        S2 → 1
+        S3 → 1
+
+
+Initial partition:
+
+        P1 = {S0, S1}
+        P2 = {S2, S3}
+
+
+We do NOT yet know whether S0 ≡ S1
+or S2 ≡ S3.
+
+We need to inspect their transitions.
+
+
+============================================================
+13.12 PARTITION REFINEMENT
+============================================================
+
+Suppose:
+
++-------+-------+-------+
+| State | X=0   | X=1   |
++-------+-------+-------+
+| S0    | S0    | S2    |
+| S1    | S1    | S2    |
+| S2    | S0    | S3    |
+| S3    | S1    | S3    |
++-------+-------+-------+
+
+
+Initial groups:
+
+        {S0,S1}
+        {S2,S3}
+
+
+Compare S0 and S1:
+
+S0:
+        X=0 → S0
+        X=1 → S2
+
+S1:
+        X=0 → S1
+        X=1 → S2
+
+
+Although both transitions remain within the same
+output groups initially, we may need further
+refinement depending on the partition structure.
+
+
+The key idea is:
+
+        Keep splitting until no further distinction
+        can be made.
+
+
+============================================================
+13.13 STATE REDUCTION ALGORITHM
+============================================================
+
+A practical exam procedure:
+
+STEP 1:
+Write the complete state table.
+
+STEP 2:
+Identify outputs.
+
+STEP 3:
+Group states with identical outputs.
+
+STEP 4:
+Compare next-state groups for every input.
+
+STEP 5:
+Split any group whose states behave differently.
+
+STEP 6:
+Repeat the comparison.
+
+STEP 7:
+Stop when no group can be split.
+
+STEP 8:
+Merge states within each final group.
+
+
+This gives the reduced state machine.
+
+
+============================================================
+13.14 SIMPLE STATE REDUCTION EXAMPLE
+============================================================
+
+Suppose a Moore machine has:
+
++-------+-------+-------+--------+
+| State | X=0   | X=1   | Output |
++-------+-------+-------+--------+
+| A     | A     | B     |   0    |
+| B     | A     | B     |   0    |
+| C     | C     | D     |   1    |
+| D     | C     | D     |   1    |
++-------+-------+-------+--------+
+
+
+First compare outputs:
+
+        A, B → 0
+
+        C, D → 1
+
+
+Therefore:
+
+        Group 1 = {A,B}
+        Group 2 = {C,D}
+
+
+Now compare A and B:
+
+A:
+        X=0 → A
+        X=1 → B
+
+B:
+        X=0 → A
+        X=1 → B
+
+
+They behave identically.
+
+Therefore:
+
+        A ≡ B
+
+
+Now compare C and D:
+
+C:
+        X=0 → C
+        X=1 → D
+
+D:
+        X=0 → C
+        X=1 → D
+
+
+Therefore:
+
+        C ≡ D
+
+
+Reduced states:
+
+        [A,B]
+        [C,D]
+
+
+Original:
+
+        4 states
+
+
+Reduced:
+
+        2 states
+
+
+============================================================
+13.15 REDUCED STATE DIAGRAM
+============================================================
+
+Original states:
+
+        A, B, C, D
+
+
+After reduction:
+
+        X = [A,B]
+        Y = [C,D]
+
+
+The reduced machine has only:
+
+        X
+        Y
+
+
+This is the major purpose of state reduction.
+
+
+============================================================
+13.16 STATE REDUCTION IN MEALY MACHINES
+============================================================
+
+For a Mealy machine, output is associated with
+transitions.
+
+Therefore, when comparing states, we inspect:
+
+        Next state
+             +
+        Output
+
+
+Example:
+
++-------+-----------+-----------+
+| State | X=0       | X=1       |
++-------+-----------+-----------+
+| S0    | S1 / 0    | S2 / 1    |
+| S3    | S1 / 0    | S2 / 1    |
++-------+-----------+-----------+
+
+
+If the corresponding next states are equivalent,
+then S0 and S3 may be equivalent.
+
+
+Remember:
+
+        Mealy comparison:
+        input → next state / output
+
+
+============================================================
+13.17 MOORE VS MEALY STATE REDUCTION
+============================================================
+
+MOORE:
+
+        Compare state outputs
+              +
+        Compare next-state groups
+
+
+MEALY:
+
+        Compare transition outputs
+              +
+        Compare next-state groups
+
+
+Memory trick:
+
+        MOORE → output belongs to STATE
+
+        MEALY → output belongs to TRANSITION
+
+
+============================================================
+13.18 STATE ASSIGNMENT
+============================================================
+
+After reducing states, we must assign binary codes.
+
+Suppose the reduced machine has:
+
+        A
+        B
+        C
+        D
+
+
+We can assign:
+
+        A = 00
+        B = 01
+        C = 10
+        D = 11
+
+
+This is called:
+
+                STATE ASSIGNMENT
+
+
+It converts symbolic states into actual binary
+values that can be stored by flip-flops.
+
+
+============================================================
+13.19 WHY STATE ASSIGNMENT IS NECESSARY
+============================================================
+
+A circuit cannot physically store a symbol like:
+
+        "TRAFFIC_GREEN"
+
+
+Flip-flops store binary values:
+
+        0 or 1
+
+
+Therefore:
+
+        GREEN → 01
+
+        RED → 00
+
+        YELLOW → 10
+
+
+State assignment creates this mapping.
+
+
+============================================================
+13.20 BINARY STATE ASSIGNMENT
+============================================================
+
+The most straightforward method is binary counting.
+
+
+For 4 states:
+
+        S0 = 00
+        S1 = 01
+        S2 = 10
+        S3 = 11
+
+
+For 8 states:
+
+        S0 = 000
+        S1 = 001
+        S2 = 010
+        S3 = 011
+        S4 = 100
+        S5 = 101
+        S6 = 110
+        S7 = 111
+
+
+Number of flip-flops:
+
+        n = ceil(log2 N)
+
+
+where:
+
+        N = number of states
+
+
+============================================================
+13.21 EXAMPLE — NUMBER OF FLIP-FLOPS
+============================================================
+
+Question:
+
+How many flip-flops are required for 10 states
+using binary encoding?
+
+
+We need:
+
+        2^n ≥ 10
+
+
+Try:
+
+        2^3 = 8    insufficient
+
+        2^4 = 16   sufficient
+
+
+Therefore:
+
+        n = 4
+
+
+Answer:
+
+        4 flip-flops
+
+
+Unused states:
+
+        16 - 10 = 6
+
+
+============================================================
+13.22 GRAY-CODE STATE ASSIGNMENT
+============================================================
+
+Gray code is a binary sequence in which adjacent
+codes differ by only ONE bit.
+
+
+Example:
+
+        Binary:
+        00
+        01
+        10
+        11
+
+
+Gray:
+
+        00
+        01
+        11
+        10
+
+
+Notice:
+
+        00 → 01
+        one bit changes
+
+        01 → 11
+        one bit changes
+
+        11 → 10
+        one bit changes
+
+
+This property can be useful in state machines.
+
+
+============================================================
+13.23 WHY GRAY CODE CAN BE USEFUL
+============================================================
+
+Suppose the circuit moves from:
+
+        01 → 11
+
+
+Only one bit changes.
+
+
+With some other encoding, multiple bits might
+change simultaneously.
+
+Fewer simultaneous changes can help reduce
+switching-related glitches in certain designs.
+
+
+However, Gray encoding is not automatically
+the best choice for every circuit.
+
+
+============================================================
+13.24 ONE-HOT STATE ASSIGNMENT
+============================================================
+
+In one-hot encoding, each state gets one flip-flop.
+
+
+For 4 states:
+
+        S0 = 0001
+        S1 = 0010
+        S2 = 0100
+        S3 = 1000
+
+
+Only one bit is HIGH at a time.
+
+
+Therefore:
+
+        Number of states = Number of FFs
+
+
+For 8 states:
+
+        8 flip-flops
+
+
+============================================================
+13.25 ONE-HOT EXAMPLE
+============================================================
+
+Suppose:
+
+        S0 = 0001
+        S1 = 0010
+        S2 = 0100
+        S3 = 1000
+
+
+If the machine is in S2:
+
+        0100
+
+
+Only the third state bit is 1.
+
+
+This makes state decoding very straightforward.
+
+
+============================================================
+13.26 BINARY VS GRAY VS ONE-HOT
+============================================================
+
++-------------+----------------------+----------------------+
+| Method      | Main advantage       | Main disadvantage    |
++-------------+----------------------+----------------------+
+| Binary      | Few FFs              | Logic may be complex |
+| Gray        | One-bit transitions  | Not always optimal   |
+| One-hot     | Simple state logic   | Many FFs required    |
++-------------+----------------------+----------------------+
+
+
+Memory trick:
+
+        BINARY → fewer flip-flops
+
+        GRAY → one-bit change
+
+        ONE-HOT → one FF per state
+
+
+============================================================
+13.27 STATE ASSIGNMENT EXAMPLE
+============================================================
+
+Suppose:
+
+        5 states:
+
+        A
+        B
+        C
+        D
+        E
+
+
+------------------------------------------------------------
+Binary assignment:
+------------------------------------------------------------
+
+        A = 000
+        B = 001
+        C = 010
+        D = 011
+        E = 100
+
+
+Requires:
+
+        3 FFs
+
+
+because:
+
+        2^3 = 8
+
+
+------------------------------------------------------------
+One-hot assignment:
+------------------------------------------------------------
+
+        A = 00001
+        B = 00010
+        C = 00100
+        D = 01000
+        E = 10000
+
+
+Requires:
+
+        5 FFs
+
+
+============================================================
+13.28 STATE ASSIGNMENT AND LOGIC COMPLEXITY
+============================================================
+
+Choosing state codes can affect the complexity
+of the next-state logic.
+
+Suppose two states frequently transition between
+each other.
+
+Assigning them nearby Gray-code values may be useful.
+
+Therefore state assignment is not merely:
+
+        "Give random binary numbers."
+
+
+It can be an optimization decision.
+
+
+============================================================
+13.29 STATE MACHINE OPTIMIZATION
+============================================================
+
+State-machine optimization means trying to achieve:
+
+        Fewer states
+             +
+        Fewer flip-flops
+             +
+        Simpler equations
+             +
+        Less hardware
+             +
+        Better performance
+
+
+Typical optimization process:
+
+        State reduction
+              ↓
+        State assignment
+              ↓
+        Equation simplification
+              ↓
+        Circuit optimization
+
+
+============================================================
+13.30 STATE REDUCTION VS STATE ASSIGNMENT
+============================================================
+
+These are different concepts.
+
+
+STATE REDUCTION:
+
+        Changes the NUMBER of states.
+
+
+Example:
+
+        6 states → 4 states
+
+
+STATE ASSIGNMENT:
+
+        Changes the BINARY CODES assigned
+        to the states.
+
+
+Example:
+
+        A = 00
+        B = 01
+
+instead of:
+
+        A = 10
+        B = 11
+
+
+Memory trick:
+
+        REDUCTION = How many states?
+
+        ASSIGNMENT = Which binary code?
+
+
+============================================================
+13.31 COMPLETE DESIGN FLOW
+============================================================
+
+Let's combine Chapters 12 and 13.
+
+
+                Problem
+                   |
+                   v
+             Identify states
+                   |
+                   v
+             State diagram
+                   |
+                   v
+              State table
+                   |
+                   v
+             State reduction
+                   |
+                   v
+            State assignment
+                   |
+                   v
+             Select FF type
+                   |
+                   v
+           Excitation table
+                   |
+                   v
+              K-maps
+                   |
+                   v
+         Simplified equations
+                   |
+                   v
+             Final circuit
+
+
+This is one of the most important flowcharts
+in Digital Logic Design.
+
+
+============================================================
+13.32 PRACTICAL EXAMPLE — TRAFFIC LIGHT
+============================================================
+
+Consider a traffic controller with three states:
+
+        S0 = RED
+        S1 = GREEN
+        S2 = YELLOW
+
+
+Transitions:
+
+        RED → GREEN
+        GREEN → YELLOW
+        YELLOW → RED
+
+
+State diagram:
+
+             +-------+
+             | RED   |
+             +-------+
+                 |
+                 v
+             +-------+
+             | GREEN |
+             +-------+
+                 |
+                 v
+             +-------+
+             |YELLOW |
+             +-------+
+                 |
+                 +-----------> RED
+
+
+Three states require:
+
+        2 FFs
+
+
+because:
+
+        2^1 = 2 < 3
+
+        2^2 = 4 ≥ 3
+
+
+One possible assignment:
+
+        RED    = 00
+        GREEN  = 01
+        YELLOW = 10
+
+
+Unused state:
+
+        11
+
+
+This is an example of binary state assignment.
+
+
+============================================================
+13.33 WHAT HAPPENS TO UNUSED STATES?
+============================================================
+
+If 2 FFs represent 3 states:
+
+        00
+        01
+        10
+
+are used.
+
+But:
+
+        11
+
+is unused.
+
+
+During practical design, we should consider what
+happens if the circuit accidentally enters 11.
+
+
+A robust design can provide a recovery transition.
+
+For example:
+
+        11 → 00
+
+
+This causes the machine to return to a valid state.
+
+
+This is called:
+
+        SELF-CORRECTION / RECOVERY
+
+
+and can improve circuit reliability.
+
+
+============================================================
+13.34 STATE ASSIGNMENT USING A SIMPLE TECHNIQUE
+============================================================
+
+For beginner-level problems:
+
+STEP 1:
+Count the states.
+
+STEP 2:
+Calculate:
+
+        n = ceil(log2 N)
+
+
+STEP 3:
+Use binary codes initially.
+
+STEP 4:
+Check whether the problem specifically asks
+for Gray or one-hot assignment.
+
+STEP 5:
+Write the state table using the selected codes.
+
+
+Example:
+
+        N = 6
+
+
+Then:
+
+        n = ceil(log2 6)
+          = 3
+
+
+Use:
+
+        S0 = 000
+        S1 = 001
+        S2 = 010
+        S3 = 011
+        S4 = 100
+        S5 = 101
+
+
+Unused:
+
+        110
+        111
+
+
+============================================================
+13.35 EXAM TECHNIQUE — STATE REDUCTION
+============================================================
+
+When given a large state table:
+
+DO NOT compare every state randomly.
+
+Instead:
+
+        STEP 1:
+        Group states by output.
+
+
+        STEP 2:
+        Compare transitions.
+
+
+        STEP 3:
+        Write group numbers instead of state names.
+
+
+        STEP 4:
+        Split groups where behavior differs.
+
+
+        STEP 5:
+        Repeat.
+
+
+        STEP 6:
+        Merge states in final groups.
+
+
+This is faster and less error-prone.
+
+
+============================================================
+13.36 IMPORTANT TERMINOLOGY
+============================================================
+
+EQUIVALENT STATES:
+
+States having indistinguishable behavior for all
+possible input sequences.
+
+
+REDUNDANT STATE:
+
+A state that can be eliminated without changing
+the external behavior of the machine.
+
+
+STATE REDUCTION:
+
+Combining equivalent states to create a smaller
+state machine.
+
+
+STATE ASSIGNMENT:
+
+Assigning binary codes to symbolic states.
+
+
+BINARY ENCODING:
+
+Using ordinary binary numbers to represent states.
+
+
+GRAY ENCODING:
+
+Using Gray-code values so adjacent states differ
+by one bit.
+
+
+ONE-HOT ENCODING:
+
+Using one flip-flop for each state, with only one
+state bit active at a time.
+
+
+============================================================
+13.37 IMPORTANT FORMULAS
+============================================================
+
+Minimum number of binary state bits:
+
+        n = ceil(log2 N)
+
+
+Maximum number of states using n FFs:
+
+        Nmax = 2^n
+
+
+Unused states:
+
+        Unused = 2^n - N
+
+
+One-hot flip-flops:
+
+        FFs = N
+
+
+where:
+
+        N = number of states
+
+
+============================================================
+13.38 COMMON EXAM MISTAKES
+============================================================
+
+MISTAKE 1:
+
+Merging states just because their outputs are equal.
+
+WRONG.
+
+You must also compare their transitions.
+
+
+------------------------------------------------------------
+
+MISTAKE 2:
+
+Confusing state reduction with state assignment.
+
+Reduction:
+
+        Fewer states.
+
+Assignment:
+
+        Different binary codes.
+
+
+------------------------------------------------------------
+
+MISTAKE 3:
+
+Using too few flip-flops.
+
+Always check:
+
+        2^n ≥ number of states
+
+
+------------------------------------------------------------
+
+MISTAKE 4:
+
+Forgetting unused states.
+
+If binary encoding provides extra states,
+consider what happens if those states are reached.
+
+
+------------------------------------------------------------
+
+MISTAKE 5:
+
+Assuming one-hot is always better.
+
+One-hot uses more flip-flops.
+
+Its advantage is often simpler logic.
+
+
+============================================================
+13.39 QUICK COMPARISON
+============================================================
+
+                 STATE REDUCTION
+                       |
+               "Remove redundancy"
+                       |
+                       v
+               Fewer symbolic states
+
+
+                 STATE ASSIGNMENT
+                       |
+               "Give binary codes"
+                       |
+                       v
+              Physical state encoding
+
+
+                 OPTIMIZATION
+                       |
+          +------------+------------+
+          |                         |
+     Fewer states             Better encoding
+          |                         |
+          +------------+------------+
+                       |
+                       v
+                Better circuit
+
+
+============================================================
+13.40 PRACTICE QUESTIONS
+============================================================
+
+Q1.
+What is state reduction?
+
+
+Q2.
+What are equivalent states?
+
+
+Q3.
+Why should equivalent states be merged?
+
+
+Q4.
+What is state assignment?
+
+
+Q5.
+How many flip-flops are required to represent
+12 states using binary encoding?
+
+
+Q6.
+How many states can 4 flip-flops represent?
+
+
+Q7.
+How many flip-flops are required for 7 states
+using one-hot encoding?
+
+
+Q8.
+What is the main property of Gray code?
+
+
+Q9.
+What is the major advantage of one-hot encoding?
+
+
+Q10.
+What is the difference between state reduction
+and state assignment?
+
+
+Q11.
+A machine has 20 states. Find the minimum number
+of binary state flip-flops.
+
+
+Q12.
+If 5 states are represented using 3 flip-flops,
+how many binary combinations are unused?
+
+
+Q13.
+Why must unused states be considered in practical
+sequential-circuit design?
+
+
+Q14.
+For a Moore machine, what should be checked first
+when looking for equivalent states?
+
+
+Q15.
+Can two states with different outputs be equivalent
+in a Moore machine?
+
+
+============================================================
+13.41 MCQs
+============================================================
+
+Q1.
+State reduction is used to:
+
+A) Increase the number of states
+B) Remove equivalent states
+C) Remove all flip-flops
+D) Remove inputs
+
+
+Q2.
+The minimum number of flip-flops needed for
+10 binary-coded states is:
+
+A) 2
+B) 3
+C) 4
+D) 10
+
+
+Q3.
+The number of states represented by 5 flip-flops is:
+
+A) 5
+B) 10
+C) 25
+D) 32
+
+
+Q4.
+In one-hot encoding, for N states, the typical
+number of flip-flops is:
+
+A) log2 N
+B) N
+C) N/2
+D) 2N
+
+
+Q5.
+Gray code has the property that adjacent codes:
+
+A) Differ in all bits
+B) Differ in one bit
+C) Are always identical
+D) Contain only 1s
+
+
+Q6.
+State assignment means:
+
+A) Removing states
+B) Assigning binary codes to states
+C) Removing inputs
+D) Changing the clock
+
+
+Q7.
+Two Moore states with different outputs are:
+
+A) Always equivalent
+B) Potentially equivalent
+C) Not equivalent
+D) Identical
+
+
+Q8.
+If 6 states are encoded using 3 flip-flops,
+the number of unused states is:
+
+A) 1
+B) 2
+C) 3
+D) 6
+
+
+Q9.
+Which encoding generally uses the fewest flip-flops?
+
+A) One-hot
+B) Binary
+C) Decimal
+D) ASCII
+
+
+Q10.
+The purpose of partition refinement is to:
+
+A) Increase clock frequency
+B) Find equivalent states systematically
+C) Convert binary to decimal
+D) Generate parity
+
+
+============================================================
+13.42 MCQ ANSWERS
+============================================================
+
+Q1  → B
+Q2  → C
+Q3  → D
+Q4  → B
+Q5  → B
+Q6  → B
+Q7  → C
+Q8  → B
+Q9  → B
+Q10 → B
+
+
+============================================================
+13.43 CHAPTER 13 QUICK REVISION
+============================================================
+
+STATE REDUCTION:
+
+        Remove equivalent/redundant states.
+
+
+STATE EQUIVALENCE:
+
+        Same observable behavior for all inputs.
+
+
+MOORE:
+
+        Compare state outputs + next-state behavior.
+
+
+MEALY:
+
+        Compare transition outputs + next-state behavior.
+
+
+BINARY:
+
+        Few flip-flops.
+
+
+GRAY:
+
+        Adjacent states differ by one bit.
+
+
+ONE-HOT:
+
+        One flip-flop per state.
+
+
+IMPORTANT FORMULA:
+
+        n = ceil(log2 N)
+
+
+Unused states:
+
+        2^n - N
+
+
+Main distinction:
+
+        REDUCTION → fewer states
+
+        ASSIGNMENT → binary coding of states
+
+
+============================================================
+13.44 CHAPTER 13 MASTER CHECKLIST
+============================================================
+
+Before moving forward, you should be able to:
+
+[ ] Define equivalent states.
+[ ] Define redundant states.
+[ ] Explain state reduction.
+[ ] Explain partitioning.
+[ ] Explain partition refinement.
+[ ] Reduce a simple Moore state table.
+[ ] Understand Mealy state equivalence.
+[ ] Explain state assignment.
+[ ] Perform binary state assignment.
+[ ] Explain Gray-code assignment.
+[ ] Explain one-hot assignment.
+[ ] Calculate required flip-flops.
+[ ] Calculate unused states.
+[ ] Explain why unused states matter.
+[ ] Compare binary, Gray, and one-hot encoding.
+[ ] Explain state-machine optimization.
+[ ] Distinguish state reduction from state assignment.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+                    CHAPTER 14
+                        ↓
+             MEMORY & PROGRAMMABLE
+                    LOGIC
+                        |
+          +-------------+-------------+
+          |                           |
+        MEMORY                     PLDs
+          |                           |
+      Memory Cell                  PLA
+      Address Lines               PAL
+      Data Lines                  CPLD
+      Read/Write                  FPGA
+          |                           |
+       +--+--+                        |
+       |     |                        |
+      RAM   ROM                       |
+       |     |                        |
+     SRAM  PROM                       |
+     DRAM  EPROM                      |
+           EEPROM                     |
+           Flash                      |
+          |                           |
+          +-------------+-------------+
+                        |
+                        v
+                 DIGITAL HARDWARE
+
+
+KEY IDEA:
+
+Chapter 13 taught:
+
+    "How can we minimize and encode the states
+     of a sequential machine?"
+
+
+Chapter 14 moves from logic/state machines to
+STORAGE HARDWARE:
+
+    "How does a digital system store large amounts
+     of binary information?"
+
+============================================================

@@ -1,0 +1,1774 @@
+============================================================
+CHAPTER 9 — FLIP-FLOP ANALYSIS & DESIGN
+============================================================
+Level: B.Tech 1st Year
+Prerequisite: Chapter 8 — Latches & Flip-Flops
+Goal: Learn how to ANALYZE, DESIGN, and CONVERT flip-flops
+============================================================
+
+
+                 CHAPTER 9 ROADMAP
+                       |
+        +--------------+--------------+
+        |              |              |
+   Characteristics  Excitation     Conversion
+        |              |              |
+   Present/Next     Required      SR ↔ JK ↔ D ↔ T
+      State          Inputs
+        |
+     Timing
+        |
+ Setup / Hold / Propagation Delay
+        |
+   Race-Around
+============================================================
+
+
+------------------------------------------------------------
+9.1 WHY DO WE STUDY FLIP-FLOP ANALYSIS?
+------------------------------------------------------------
+
+In Chapter 8, we learned:
+
+    "What is a flip-flop?"
+    "How does a JK, D, SR, or T flip-flop work?"
+
+Now we go one step further.
+
+We want to answer questions such as:
+
+    • If the present state is 0, what will the next state be?
+    • What input should we apply to change 0 → 1?
+    • Can a JK flip-flop behave like a D flip-flop?
+    • Can a D flip-flop behave like a T flip-flop?
+    • What happens when the clock arrives?
+    • How fast can a flip-flop operate?
+
+This is called:
+
+                FLIP-FLOP ANALYSIS & DESIGN
+
+
+------------------------------------------------------------
+9.2 IMPORTANT TERMINOLOGY
+------------------------------------------------------------
+
+A flip-flop stores ONE BIT.
+
+Therefore:
+
+                Q = Present State
+
+After the next active clock edge:
+
+                Q(next) = Next State
+
+We commonly write:
+
+                Q(t)   = Present state
+                Q(t+1) = Next state
+
+
+Example:
+
+Suppose:
+
+                Q(t) = 0
+
+After a clock pulse:
+
+                Q(t+1) = 1
+
+Therefore the flip-flop changed:
+
+                0 → 1
+
+
+Another example:
+
+                Q(t) = 1
+                Q(t+1) = 1
+
+The flip-flop remained unchanged.
+
+
+------------------------------------------------------------
+9.3 PRESENT STATE AND NEXT STATE
+------------------------------------------------------------
+
+A flip-flop can have two states:
+
+                0
+                1
+
+The basic state transitions are:
+
+                0 → 0     No change
+                0 → 1     Set
+                1 → 0     Reset
+                1 → 1     No change
+
+
+ASCII STATE DIAGRAM:
+
+                 +------+
+                 |      |
+                 v      |
+              +-----+   |
+              |  0  |---+
+              +-----+
+                |
+                | Set
+                v
+              +-----+
+              |  1  |
+              +-----+
+                |
+                | Reset
+                v
+              +-----+
+
+
+There are four possible transitions:
+
+    Present     Next
+    ----------------
+       0          0
+       0          1
+       1          0
+       1          1
+
+
+These four transitions are extremely important
+for solving flip-flop problems.
+
+
+============================================================
+9.4 CHARACTERISTIC TABLE
+============================================================
+
+A characteristic table tells us:
+
+    "Given the input and present state,
+     what will the next state be?"
+
+It describes the NORMAL OPERATION of a flip-flop.
+
+
+------------------------------------------------------------
+9.4.1 SR FLIP-FLOP CHARACTERISTIC TABLE
+------------------------------------------------------------
+
+For an active-high SR flip-flop:
+
+    S = Set
+    R = Reset
+
++---+---+---------+
+| S | R | Q(t+1)  |
++---+---+---------+
+| 0 | 0 | Q(t)    |  No change
+| 0 | 1 | 0       |  Reset
+| 1 | 0 | 1       |  Set
+| 1 | 1 | Invalid |  Forbidden
++---+---+---------+
+
+
+Remember:
+
+    S = 1 → SET
+    R = 1 → RESET
+    S = R = 0 → HOLD
+
+
+------------------------------------------------------------
+9.4.2 JK FLIP-FLOP CHARACTERISTIC TABLE
+------------------------------------------------------------
+
++---+---+---------+
+| J | K | Q(t+1)  |
++---+---+---------+
+| 0 | 0 | Q(t)    | Hold
+| 0 | 1 | 0       | Reset
+| 1 | 0 | 1       | Set
+| 1 | 1 | Q'(t)   | Toggle
++---+---+---------+
+
+
+The most important JK condition:
+
+                J = K = 1
+
+causes:
+
+                Q → Q'
+
+
+Therefore:
+
+    0 → 1
+    1 → 0
+
+
+------------------------------------------------------------
+9.4.3 D FLIP-FLOP CHARACTERISTIC TABLE
+------------------------------------------------------------
+
+The D flip-flop is extremely simple:
+
++---+---------+
+| D | Q(t+1)  |
++---+---------+
+| 0 | 0       |
+| 1 | 1       |
++---+---------+
+
+Therefore:
+
+                Q(t+1) = D
+
+
+This is the characteristic equation of the D flip-flop.
+
+
+------------------------------------------------------------
+9.4.4 T FLIP-FLOP CHARACTERISTIC TABLE
+------------------------------------------------------------
+
++---+---------+
+| T | Q(t+1)  |
++---+---------+
+| 0 | Q(t)    | Hold
+| 1 | Q'(t)   | Toggle
++---+---------+
+
+
+Therefore:
+
+    T = 0 → No change
+    T = 1 → Toggle
+
+
+============================================================
+9.5 CHARACTERISTIC EQUATIONS
+============================================================
+
+A characteristic equation mathematically describes
+the operation of a flip-flop.
+
+
+------------------------------------------------------------
+SR FLIP-FLOP
+------------------------------------------------------------
+
+For a valid SR flip-flop:
+
+                Q(next) = S + R'Q
+
+where the invalid condition is excluded.
+
+
+------------------------------------------------------------
+JK FLIP-FLOP
+------------------------------------------------------------
+
+                Q(next) = JQ' + K'Q
+
+
+This equation is VERY important in digital logic exams.
+
+
+------------------------------------------------------------
+D FLIP-FLOP
+------------------------------------------------------------
+
+                Q(next) = D
+
+
+------------------------------------------------------------
+T FLIP-FLOP
+------------------------------------------------------------
+
+                Q(next) = T ⊕ Q
+
+Equivalent form:
+
+                Q(next) = T'Q + TQ'
+
+
+------------------------------------------------------------
+MEMORY TECHNIQUE
+------------------------------------------------------------
+
+Remember:
+
+    SR → Set/Reset
+    JK → J sets, K resets, both toggle
+    D  → Data goes directly to Q
+    T  → Toggle
+
+
+============================================================
+9.6 CHARACTERISTIC TABLE vs EXCITATION TABLE
+============================================================
+
+This distinction is one of the MOST IMPORTANT concepts
+in Chapter 9.
+
+
+CHARACTERISTIC TABLE asks:
+
+    "Given INPUTS + PRESENT STATE,
+     what is the NEXT STATE?"
+
+EXCITATION TABLE asks:
+
+    "Given PRESENT STATE + DESIRED NEXT STATE,
+     what INPUTS are required?"
+
+
+Think of it like this:
+
+                CHARACTERISTIC
+                      |
+             Input + Present
+                      |
+                      v
+                   Next
+
+
+                EXCITATION
+                      |
+             Present + Desired Next
+                      |
+                      v
+                  Required Input
+
+
+============================================================
+9.7 EXCITATION TABLE
+============================================================
+
+An excitation table is used mainly during
+FLIP-FLOP DESIGN and FLIP-FLOP CONVERSION.
+
+
+------------------------------------------------------------
+9.7.1 SR EXCITATION TABLE
+------------------------------------------------------------
+
++-------+------+---+---+
+| Q(t)  | Q(t+1)| S | R |
++-------+------+---+---+
+|   0   |   0  | 0 | X |
+|   0   |   1  | 1 | 0 |
+|   1   |   0  | 0 | 1 |
+|   1   |   1  | X | 0 |
++-------+------+---+---+
+
+X = Don't Care
+
+Why?
+
+For:
+
+                0 → 0
+
+we simply need:
+
+                S = 0
+
+R can be 0 or 1 depending on implementation,
+but in the standard excitation table it is marked X
+where either value can achieve the required transition.
+
+
+For:
+
+                0 → 1
+
+we must SET:
+
+                S = 1
+                R = 0
+
+
+For:
+
+                1 → 0
+
+we must RESET:
+
+                S = 0
+                R = 1
+
+
+For:
+
+                1 → 1
+
+we need to HOLD:
+
+                R = 0
+                S = X
+
+
+------------------------------------------------------------
+9.7.2 JK EXCITATION TABLE
+------------------------------------------------------------
+
++-------+------+---+---+
+| Q(t)  | Q(t+1)| J | K |
++-------+------+---+---+
+|   0   |   0  | 0 | X |
+|   0   |   1  | 1 | X |
+|   1   |   0  | X | 1 |
+|   1   |   1  | X | 0 |
++-------+------+---+---+
+
+
+Memory trick:
+
+        0 → 1 requires J = 1
+        1 → 0 requires K = 1
+
+
+------------------------------------------------------------
+9.7.3 D EXCITATION TABLE
+------------------------------------------------------------
+
+Because:
+
+                Q(next) = D
+
+we simply need:
+
++-------+------+---+
+| Q(t)  | Q(t+1)| D |
++-------+------+---+
+|   0   |   0  | 0 |
+|   0   |   1  | 1 |
+|   1   |   0  | 0 |
+|   1   |   1  | 1 |
++-------+------+---+
+
+
+Therefore:
+
+                D = Q(next)
+
+
+------------------------------------------------------------
+9.7.4 T EXCITATION TABLE
+------------------------------------------------------------
+
++-------+------+---+
+| Q(t)  | Q(t+1)| T |
++-------+------+---+
+|   0   |   0  | 0 |
+|   0   |   1  | 1 |
+|   1   |   0  | 1 |
+|   1   |   1  | 0 |
++-------+------+---+
+
+
+Therefore:
+
+    No change → T = 0
+    Toggle    → T = 1
+
+
+============================================================
+9.8 FLIP-FLOP CONVERSION
+============================================================
+
+Flip-flop conversion means:
+
+    "Use one type of flip-flop so that it behaves
+     like another type."
+
+
+Examples:
+
+    JK → D
+    D  → JK
+    D  → T
+    T  → JK
+    SR → JK
+    JK → T
+
+
+Why is conversion useful?
+
+Because in practical digital design:
+
+    • A particular IC may be available.
+    • We may want to reduce hardware.
+    • A design may require a particular behavior.
+    • We may have only one type of flip-flop available.
+
+
+============================================================
+9.9 GENERAL FLIP-FLOP CONVERSION PROCEDURE
+============================================================
+
+This procedure is VERY IMPORTANT.
+
+Suppose we want:
+
+        Available FF → Required FF
+
+
+STEP 1:
+Write the characteristic table of the
+REQUIRED flip-flop.
+
+
+STEP 2:
+Write present state Q and desired next state Q(next).
+
+
+STEP 3:
+Use the excitation table of the AVAILABLE flip-flop.
+
+
+STEP 4:
+Find the required inputs of the available flip-flop.
+
+
+STEP 5:
+Simplify those input equations using Boolean algebra
+or K-map.
+
+
+STEP 6:
+Connect the resulting logic to the available flip-flop.
+
+
+General structure:
+
+Required behavior
+       |
+       v
+Desired Q(next)
+       |
+       v
+Excitation table of available FF
+       |
+       v
+Required input equations
+       |
+       v
+Logic circuit
+       |
+       v
+Available flip-flop
+       |
+       v
+Desired behavior
+
+
+============================================================
+9.10 EXAMPLE — D FLIP-FLOP USING JK FLIP-FLOP
+============================================================
+
+Goal:
+
+    We have a JK flip-flop.
+
+    We want it to behave like a D flip-flop.
+
+
+D flip-flop requires:
+
+                Q(next) = D
+
+
+JK characteristic equation:
+
+                Q(next) = JQ' + K'Q
+
+
+We want the JK flip-flop to reproduce D.
+
+
+A very simple solution is:
+
+                J = D
+                K = D'
+
+
+ASCII CIRCUIT:
+
+                    +-------+
+             D ---->| J     |
+                   |       |---- Q
+            D --+  |  JK   |
+               NOT |       |
+                |  |       |
+                +->| K     |
+                   +-------+
+
+Therefore:
+
+                J = D
+                K = D'
+
+
+Check it.
+
+Case 1:
+
+                D = 0
+
+Then:
+
+                J = 0
+                K = 1
+
+JK performs RESET:
+
+                Q(next) = 0
+
+
+Case 2:
+
+                D = 1
+
+Then:
+
+                J = 1
+                K = 0
+
+JK performs SET:
+
+                Q(next) = 1
+
+
+Therefore:
+
+                Q(next) = D
+
+So the JK behaves like a D flip-flop.
+
+
+============================================================
+9.11 EXAMPLE — D FLIP-FLOP USING T FLIP-FLOP
+============================================================
+
+Goal:
+
+    Available = T
+    Required   = D
+
+
+D requires:
+
+                Q(next) = D
+
+
+T requires:
+
+                Q(next) = T ⊕ Q
+
+
+We need to determine T.
+
+Therefore:
+
+                T = D ⊕ Q
+
+
+ASCII:
+
+                     +-------+
+          D -------->|       |
+                    |  XOR   |---- T
+          Q -------->|       |
+                     +-------+
+                          |
+                          v
+                     +---------+
+                     | T       |
+                     |   T FF  |---- Q
+                     | CLK     |
+                     +---------+
+
+
+Therefore:
+
+                T = D ⊕ Q
+
+
+Check:
+
+If:
+
+                Q = 0
+                D = 1
+
+Then:
+
+                T = 1 ⊕ 0 = 1
+
+T toggles:
+
+                0 → 1
+
+
+If:
+
+                Q = 1
+                D = 1
+
+Then:
+
+                T = 1 ⊕ 1 = 0
+
+T holds:
+
+                1 → 1
+
+
+Perfect!
+
+
+============================================================
+9.12 EXAMPLE — JK FLIP-FLOP USING D FLIP-FLOP
+============================================================
+
+Goal:
+
+    Available = D
+    Required   = JK
+
+
+JK characteristic:
+
++---+---+---------+
+| J | K | Q(next) |
++---+---+---------+
+| 0 | 0 | Q       |
+| 0 | 1 | 0       |
+| 1 | 0 | 1       |
+| 1 | 1 | Q'      |
++---+---+---------+
+
+
+Since a D flip-flop has:
+
+                Q(next) = D
+
+we simply make:
+
+                D = JQ' + K'Q
+
+
+ASCII:
+
+                    +---------+
+                    |         |
+        J ----+----|         |
+              |    |   AND   |---+
+             Q'    |         |   |
+                    +---------+   |
+                                  OR ----> D
+                    +---------+   |
+        K ----NOT-->|         |   |
+              |     |   AND   |---+
+              Q ----|         |
+                    +---------+
+                                  |
+                                  v
+                             +---------+
+                             | D   FF  |---- Q
+                             +---------+
+
+
+Therefore:
+
+                D = JQ' + K'Q
+
+
+This is a very common conversion technique.
+
+
+============================================================
+9.13 TIMING PARAMETERS
+============================================================
+
+Flip-flops are not instantaneous.
+
+Real electronic circuits require finite time
+to respond to signals.
+
+
+Important timing parameters are:
+
+    1. Setup time
+    2. Hold time
+    3. Propagation delay
+    4. Clock-to-Q delay
+    5. Maximum operating frequency
+
+
+------------------------------------------------------------
+9.13.1 SETUP TIME
+------------------------------------------------------------
+
+Definition:
+
+Setup time is the minimum amount of time that the
+input must remain stable BEFORE the active clock edge.
+
+
+Suppose a positive-edge-triggered flip-flop is used:
+
+                       ↑
+                       Clock edge
+                       |
+Input:       ==========[================
+                       |
+                Setup time
+                <------>
+
+
+The input must be stable before the clock edge.
+
+
+Simple definition:
+
+    SETUP TIME = Required stable time BEFORE clock edge.
+
+
+------------------------------------------------------------
+9.13.2 HOLD TIME
+------------------------------------------------------------
+
+Hold time is the minimum amount of time that the input
+must remain stable AFTER the active clock edge.
+
+
+                       ↑
+                       Clock
+                       |
+Input:       ==========[================
+                       |<---->
+                        Hold
+
+
+Simple definition:
+
+    HOLD TIME = Required stable time AFTER clock edge.
+
+
+------------------------------------------------------------
+SETUP + HOLD MEMORY TRICK
+------------------------------------------------------------
+
+            BEFORE clock → SETUP
+            AFTER clock  → HOLD
+
+
+Think:
+
+                SETUP → prepare
+                HOLD  → keep
+
+
+============================================================
+9.14 PROPAGATION DELAY
+============================================================
+
+A flip-flop does not change output immediately after
+the clock edge.
+
+There is a small delay.
+
+
+Clock:
+
+              ____|‾‾‾‾‾‾
+                  ↑
+                edge
+
+
+Q:
+
+              ______|‾‾‾‾
+                   ↑
+                  delay
+
+
+This delay is called propagation delay.
+
+
+In flip-flops, an important parameter is:
+
+                CLOCK-TO-Q DELAY
+
+
+It is the time between the active clock edge and
+the corresponding change in Q.
+
+
+------------------------------------------------------------
+9.14.1 tPLH AND tPHL
+------------------------------------------------------------
+
+Two common propagation delays are:
+
+                tPLH
+                tPHL
+
+
+tPLH:
+
+    Propagation delay for output transition:
+
+                LOW → HIGH
+
+
+tPHL:
+
+    Propagation delay for output transition:
+
+                HIGH → LOW
+
+
+Usually:
+
+                tpd = max(tPLH, tPHL)
+
+
+depending on the specification being used.
+
+
+============================================================
+9.15 MAXIMUM CLOCK FREQUENCY
+============================================================
+
+A flip-flop cannot operate at infinitely high frequency.
+
+The clock period must be large enough for the circuit
+to perform correctly.
+
+
+Very simplified relationship:
+
+                fmax ≈ 1 / Tmin
+
+
+where:
+
+                fmax = maximum clock frequency
+                Tmin = minimum clock period
+
+
+In a real synchronous system, Tmin may depend on:
+
+    • Clock-to-Q delay
+    • Combinational logic delay
+    • Setup time
+    • Clock skew
+
+
+A common timing relation is:
+
+    Tclock ≥ tCQ + tlogic + tsetup
+
+Therefore:
+
+                fmax ≤ 1 / Tclock(min)
+
+
+Example:
+
+Suppose:
+
+    tCQ    = 2 ns
+    tlogic = 5 ns
+    tsetup = 1 ns
+
+Then:
+
+    Tmin = 2 + 5 + 1
+         = 8 ns
+
+
+Therefore:
+
+    fmax ≈ 1 / 8 ns
+         = 125 MHz
+
+
+============================================================
+9.16 RACE-AROUND CONDITION
+============================================================
+
+Race-around is associated mainly with a
+LEVEL-TRIGGERED JK FLIP-FLOP when:
+
+                J = K = 1
+
+
+For JK:
+
+                J = K = 1
+
+means:
+
+                TOGGLE
+
+
+Suppose the clock pulse remains HIGH for a long time.
+
+The output toggles:
+
+                0 → 1 → 0 → 1 → 0 → ...
+
+
+If the propagation delay is small compared with
+the clock pulse width, the output may toggle
+multiple times during one clock pulse.
+
+
+This is called:
+
+                RACE-AROUND CONDITION
+
+
+ASCII:
+
+Clock:
+
+        _________
+_______|         |_______
+       ↑         ↑
+       |         |
+       Active clock period
+
+
+Q:
+
+        0 → 1 → 0 → 1 → 0
+            multiple toggles
+
+
+The final state becomes uncertain because the output
+may toggle repeatedly during the same clock pulse.
+
+
+============================================================
+9.17 WHY DOES RACE-AROUND OCCUR?
+============================================================
+
+Condition:
+
+                J = K = 1
+
+AND
+
+                Clock pulse width > propagation delay
+
+
+Then:
+
+                Q changes
+                   ↓
+                Feedback
+                   ↓
+                Q changes again
+                   ↓
+                Feedback
+                   ↓
+                Q changes again
+                   ↓
+                  ...
+
+
+This is the race-around effect.
+
+
+============================================================
+9.18 HOW TO REMOVE RACE-AROUND?
+============================================================
+
+Three common approaches:
+
+
+1. EDGE-TRIGGERED FLIP-FLOP
+
+The flip-flop responds only at an edge:
+
+                ↑
+
+rather than throughout the clock level.
+
+
+2. MASTER-SLAVE JK FLIP-FLOP
+
+Two stages are used:
+
+                Master → Slave
+
+
+ASCII:
+
+        Clock
+          |
+          v
+      +--------+      +--------+
+      | MASTER | ---> | SLAVE  | ---> Q
+      +--------+      +--------+
+
+
+The master and slave operate during opposite clock
+phases, preventing repeated toggling.
+
+
+3. REDUCE CLOCK PULSE WIDTH
+
+Make the active clock pulse sufficiently short so that
+the output cannot repeatedly toggle.
+
+In practice, edge-triggered and master-slave designs
+are much more important.
+
+
+============================================================
+9.19 MASTER-SLAVE JK FLIP-FLOP
+============================================================
+
+A master-slave arrangement uses two latches/flip-flop
+stages.
+
+
+Simplified:
+
+                 CLK
+                  |
+                  v
+             +---------+
+    J ------>| MASTER  |
+    K ------>|         |
+             +---------+
+                  |
+                  v
+             +---------+
+             |  SLAVE  |---- Q
+             +---------+
+                  ^
+                  |
+                 CLK'
+
+
+The master responds during one clock phase.
+
+The slave responds during the opposite phase.
+
+
+Therefore, feedback cannot cause repeated toggling
+within the same active phase.
+
+
+============================================================
+9.20 EDGE-TRIGGERED FLIP-FLOP
+============================================================
+
+An edge-triggered flip-flop changes state only
+at a particular clock edge.
+
+
+Positive-edge triggered:
+
+                ↑
+
+
+Negative-edge triggered:
+
+                ↓
+
+
+ASCII:
+
+Positive edge:
+
+              ______
+             /
+____________/
+
+
+Negative edge:
+
+        ______
+       /
+______/
+
+
+Symbolically:
+
+                CLK
+                 |
+                 ↑
+              [ FF ]
+
+
+This is one of the main methods used in modern
+synchronous digital systems.
+
+
+============================================================
+9.21 LATCH VS FLIP-FLOP — QUICK REVISION
+============================================================
+
++----------------+----------------------+
+| LATCH          | FLIP-FLOP            |
++----------------+----------------------+
+| Level triggered| Edge triggered       |
+| Responds during| Responds at clock edge|
+| an active level|                      |
+| Simpler        | More controlled      |
+| Used for       | Used extensively in  |
+| storage        | synchronous systems  |
++----------------+----------------------+
+
+
+Easy memory:
+
+        LATCH     → LEVEL
+        FLIP-FLOP → EDGE
+
+
+============================================================
+9.22 IMPORTANT EXAM TABLE
+============================================================
+
++------+------------------------+----------------------+
+| FF   | Characteristic Eq.     | Main Operation       |
++------+------------------------+----------------------+
+| SR   | Qn = S + R'Q           | Set/Reset            |
+| JK   | Qn = JQ' + K'Q         | Set/Reset/Toggle     |
+| D    | Qn = D                 | Data storage         |
+| T    | Qn = T ⊕ Q             | Toggle               |
++------+------------------------+----------------------+
+
+
+Where:
+
+                Qn = Q(t+1)
+
+
+============================================================
+9.23 IMPORTANT EXAM TABLE — EXCITATION
+============================================================
+
++------+-----+-----+-----+-----+
+| Q    | Qn  | SR  | JK  | D/T |
++------+-----+-----+-----+-----+
+|  0   |  0  | 0X  | 0X  | D=0 |
+|  0   |  1  | 10  | 1X  | D=1 |
+|  1   |  0  | 01  | X1  | D=0 |
+|  1   |  1  | X0  | X0  | D=1 |
++------+-----+-----+-----+-----+
+
+For T:
+
+    0 → 0 : T=0
+    0 → 1 : T=1
+    1 → 0 : T=1
+    1 → 1 : T=0
+
+
+============================================================
+9.24 SOLVED PROBLEM 1
+============================================================
+
+Question:
+
+A JK flip-flop has:
+
+                J = 1
+                K = 0
+                Q = 0
+
+What is Q(next)?
+
+
+JK table:
+
+                J=1, K=0 → SET
+
+
+Therefore:
+
+                Q(next) = 1
+
+
+Answer:
+
+                1
+
+
+------------------------------------------------------------
+SOLVED PROBLEM 2
+------------------------------------------------------------
+
+Question:
+
+A T flip-flop has:
+
+                T = 1
+                Q = 0
+
+Find Q(next).
+
+
+T = 1 means TOGGLE.
+
+Therefore:
+
+                0 → 1
+
+
+Answer:
+
+                Q(next) = 1
+
+
+------------------------------------------------------------
+SOLVED PROBLEM 3
+------------------------------------------------------------
+
+Question:
+
+A T flip-flop has:
+
+                T = 0
+                Q = 1
+
+Find Q(next).
+
+
+T = 0 means HOLD.
+
+Therefore:
+
+                Q(next) = 1
+
+
+Answer:
+
+                1
+
+
+------------------------------------------------------------
+SOLVED PROBLEM 4
+------------------------------------------------------------
+
+Question:
+
+What input is required for a D flip-flop to perform:
+
+                1 → 0 ?
+
+
+For D:
+
+                Q(next) = D
+
+
+Therefore:
+
+                D = 0
+
+
+Answer:
+
+                D = 0
+
+
+------------------------------------------------------------
+SOLVED PROBLEM 5
+------------------------------------------------------------
+
+Question:
+
+What input is required for a T flip-flop to perform:
+
+                0 → 1 ?
+
+
+T table:
+
+                0 → 1 = Toggle
+
+Therefore:
+
+                T = 1
+
+
+Answer:
+
+                T = 1
+
+
+============================================================
+9.25 SOLVED TIMING PROBLEM
+============================================================
+
+Given:
+
+    Clock-to-Q delay = 3 ns
+    Combinational delay = 7 ns
+    Setup time = 2 ns
+
+Find approximate maximum clock frequency.
+
+
+Formula:
+
+    Tmin = tCQ + tlogic + tsetup
+
+
+Therefore:
+
+    Tmin = 3 + 7 + 2
+         = 12 ns
+
+
+Now:
+
+    fmax = 1 / 12 ns
+
+
+Since:
+
+    12 ns = 12 × 10^-9 s
+
+
+Therefore:
+
+    fmax ≈ 83.33 MHz
+
+
+Answer:
+
+                ≈ 83.33 MHz
+
+
+============================================================
+9.26 HIGH-VALUE CONCEPTS TO REMEMBER
+============================================================
+
+1. Characteristic table:
+
+        INPUT + PRESENT STATE
+                    ↓
+                NEXT STATE
+
+
+2. Excitation table:
+
+        PRESENT + DESIRED NEXT STATE
+                    ↓
+              REQUIRED INPUT
+
+
+3. D flip-flop:
+
+                Q(next) = D
+
+
+4. T flip-flop:
+
+                T = 0 → HOLD
+                T = 1 → TOGGLE
+
+
+5. JK flip-flop:
+
+                J=0,K=0 → HOLD
+                J=0,K=1 → RESET
+                J=1,K=0 → SET
+                J=1,K=1 → TOGGLE
+
+
+6. Setup time:
+
+                BEFORE clock edge
+
+
+7. Hold time:
+
+                AFTER clock edge
+
+
+8. Race-around:
+
+                JK + J=K=1 + level triggering
+
+
+9. Race-around solutions:
+
+                Edge triggering
+                Master-slave
+                Short clock pulse
+
+
+10. Maximum frequency:
+
+                Higher delay → Lower fmax
+
+
+============================================================
+9.27 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+Confusing characteristic and excitation tables.
+
+Remember:
+
+    Characteristic → "What happens?"
+    Excitation     → "What do I need?"
+
+
+MISTAKE 2:
+
+Thinking T=1 means SET.
+
+Wrong.
+
+                T=1 → TOGGLE
+
+
+MISTAKE 3:
+
+Thinking JK=11 is invalid.
+
+Wrong.
+
+For JK:
+
+                J=K=1 → TOGGLE
+
+
+Unlike SR, JK has no invalid input combination.
+
+
+MISTAKE 4:
+
+Confusing setup and hold.
+
+Remember:
+
+                SETUP = before
+                HOLD  = after
+
+
+MISTAKE 5:
+
+Thinking flip-flop output changes exactly at the clock edge.
+
+Real circuits have propagation delay.
+
+
+============================================================
+9.28 PRACTICE QUESTIONS
+============================================================
+
+Try these WITHOUT looking at the answers.
+
+
+Q1.
+For a JK flip-flop:
+
+    J=0, K=1, Q=1
+
+Find Q(next).
+
+
+Q2.
+For a T flip-flop:
+
+    T=1, Q=1
+
+Find Q(next).
+
+
+Q3.
+For a D flip-flop:
+
+    D=0
+
+What is Q(next)?
+
+
+Q4.
+Which table tells us the required input for a
+desired state transition?
+
+A) Truth table
+B) Characteristic table
+C) Excitation table
+D) Timing table
+
+
+Q5.
+For a T flip-flop, what value of T is required
+for the transition:
+
+                1 → 0 ?
+
+
+Q6.
+What is the difference between setup time and
+hold time?
+
+
+Q7.
+What is the race-around condition?
+
+
+Q8.
+For a JK flip-flop, what happens when:
+
+                J=1, K=1?
+
+
+Q9.
+A circuit has:
+
+    tCQ = 4 ns
+    tlogic = 6 ns
+    tsetup = 2 ns
+
+Find approximate fmax.
+
+
+Q10.
+Why is a master-slave JK flip-flop used?
+
+
+------------------------------------------------------------
+ANSWERS
+------------------------------------------------------------
+
+Q1 → 0
+Q2 → 0
+Q3 → 0
+Q4 → C
+Q5 → 1
+Q6 → Setup is before the clock edge; hold is after it.
+Q7 → Repeated toggling of a level-triggered JK FF
+      when J=K=1 during one clock pulse.
+Q8 → Toggle
+Q9 → Tmin = 4+6+2 = 12 ns
+      fmax ≈ 83.33 MHz
+Q10 → To eliminate/prevent race-around behavior.
+
+
+============================================================
+9.29 CHAPTER 9 — ONE-PAGE REVISION
+============================================================
+
+                    FLIP-FLOP ANALYSIS
+                           |
+          +----------------+----------------+
+          |                |                |
+     Characteristic    Excitation       Timing
+        Tables           Tables        Parameters
+          |                |                |
+       Q → Qn          Q,Qn → Inputs   Setup/Hold
+                                           |
+                                    Propagation delay
+                                           |
+                                      fmax
+                                           |
+                                    Race-around
+                                           |
+                                  Master-Slave / Edge
+
+
+KEY EQUATIONS:
+
+    SR: Qn = S + R'Q
+
+    JK: Qn = JQ' + K'Q
+
+    D : Qn = D
+
+    T : Qn = T ⊕ Q
+
+
+KEY IDEAS:
+
+    Characteristic = future state from inputs
+
+    Excitation = inputs needed for desired transition
+
+    Setup = before clock
+
+    Hold = after clock
+
+    Race-around = repeated JK toggling
+
+    Edge-triggering = one clock-edge response
+
+
+============================================================
+9.30 CHAPTER 9 MASTERY CHECK
+============================================================
+
+Before moving forward, you should be able to:
+
+[ ] Explain present state and next state.
+[ ] Write characteristic tables.
+[ ] Write characteristic equations.
+[ ] Write excitation tables.
+[ ] Explain flip-flop conversion.
+[ ] Perform basic FF conversions.
+[ ] Explain setup time.
+[ ] Explain hold time.
+[ ] Explain propagation delay.
+[ ] Calculate approximate maximum clock frequency.
+[ ] Explain race-around condition.
+[ ] Explain master-slave JK flip-flop.
+[ ] Explain edge-triggered flip-flop.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+                 CHAPTER 10
+                     ↓
+                  REGISTERS
+
+You will learn:
+
+    10.1 Introduction to Registers
+    10.2 Register vs Memory
+    10.3 Storage of Binary Data
+    10.4 Shift Registers
+    10.5 SISO
+    10.6 SIPO
+    10.7 PISO
+    10.8 PIPO
+    10.9 Universal Shift Register
+    10.10 Applications of Registers
+
+The key idea will be:
+
+        ONE FLIP-FLOP
+              ↓
+          stores 1 bit
+              ↓
+        MANY FLIP-FLOPS
+              ↓
+           REGISTER
+              ↓
+       stores multiple bits
+============================================================

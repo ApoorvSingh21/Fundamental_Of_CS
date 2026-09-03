@@ -1,0 +1,2069 @@
+============================================================
+CHAPTER 12 — SEQUENTIAL CIRCUIT DESIGN
+============================================================
+Level: B.Tech 1st Year / Computer Science
+Prerequisites: Flip-Flops, Registers, Counters
+Goal: Learn how to design sequential circuits from
+      a problem statement using state diagrams,
+      state tables, flip-flops, equations, and K-maps.
+============================================================
+
+
+                    CHAPTER 12 ROADMAP
+
+                 SEQUENTIAL CIRCUIT DESIGN
+                           |
+             +-------------+-------------+
+             |                           |
+        STATE CONCEPT              STATE MACHINES
+             |                           |
+     Present / Next State          +-----+-----+
+             |                     |           |
+        State Table             MOORE       MEALY
+             |                     |           |
+        State Diagram             Output     Output
+             |                     |           |
+        State Reduction            +-----+-----+
+             |                           |
+        State Assignment                |
+             |                           |
+        FF Selection                    |
+             |                           |
+       Excitation Table                |
+             |                           |
+          K-Map                         |
+             |                           |
+       Final Circuit <------------------+
+============================================================
+
+
+12.1 WHAT IS SEQUENTIAL CIRCUIT DESIGN?
+============================================================
+
+A sequential circuit is a digital circuit whose output
+depends on:
+
+        1. Present input
+        2. Present state / previous information
+
+Unlike a simple combinational circuit, a sequential
+circuit has MEMORY.
+
+Examples:
+
+        • Counters
+        • Registers
+        • Traffic-light controllers
+        • Digital locks
+        • Vending machines
+        • Sequence detectors
+        • Control units
+
+
+The important question in this chapter is:
+
+    "How do we DESIGN such a circuit from scratch?"
+
+
+The general process is:
+
+    Problem
+       ↓
+    Identify states
+       ↓
+    State diagram
+       ↓
+    State table
+       ↓
+    State reduction
+       ↓
+    State assignment
+       ↓
+    Select flip-flops
+       ↓
+    Find excitation equations
+       ↓
+    K-map simplification
+       ↓
+    Draw circuit
+
+
+============================================================
+12.2 WHAT IS A STATE?
+============================================================
+
+A STATE represents the current condition or memory
+of a sequential circuit.
+
+Think of a traffic signal.
+
+It may have states:
+
+        S0 = RED
+        S1 = GREEN
+        S2 = YELLOW
+
+
+The circuit remembers which condition it is currently in.
+
+
+ASCII:
+
+             +----------------+
+             |                |
+             |    TRAFFIC     |
+             |   CONTROLLER   |
+             |                |
+             +----------------+
+                     |
+                     v
+               Current STATE
+
+
+A state is therefore a representation of the circuit's
+current stored condition.
+
+
+============================================================
+12.3 PRESENT STATE
+============================================================
+
+The PRESENT STATE is the current state of the circuit.
+
+Example:
+
+        Current state = S1
+
+Then:
+
+        Present State = S1
+
+
+If a counter is currently:
+
+        101
+
+then:
+
+        Present State = 101
+
+
+We often write:
+
+        PS = Present State
+
+
+============================================================
+12.4 NEXT STATE
+============================================================
+
+The NEXT STATE is the state that the circuit will enter
+after the next clock event.
+
+Example:
+
+        Present state = 001
+
+After clock:
+
+        Next state = 010
+
+
+We often write:
+
+        NS = Next State
+
+
+So:
+
+        Present State
+              |
+            CLOCK
+              |
+              v
+          Next State
+
+
+============================================================
+12.5 STATE TRANSITION
+============================================================
+
+A STATE TRANSITION means moving from one state to
+another.
+
+Example:
+
+        S0 → S1
+
+
+This means:
+
+        Current state = S0
+
+        After the required event/clock:
+
+        New state = S1
+
+
+ASCII:
+
+             +------+
+             |  S0  |
+             +------+
+                 |
+                 | transition
+                 v
+             +------+
+             |  S1  |
+             +------+
+
+
+Transitions are fundamental to sequential circuit design.
+
+
+============================================================
+12.6 STATE VARIABLES
+============================================================
+
+Flip-flops store binary information.
+
+Suppose we have two flip-flops:
+
+        Q1
+        Q0
+
+
+Together they can represent:
+
+        00
+        01
+        10
+        11
+
+
+These bits are called STATE VARIABLES.
+
+
+Example:
+
+        State = 10
+
+means:
+
+        Q1 = 1
+        Q0 = 0
+
+
+For N flip-flops:
+
+        Maximum states = 2^N
+
+
+============================================================
+12.7 STATE TABLE
+============================================================
+
+A STATE TABLE represents the behavior of a sequential
+circuit in tabular form.
+
+It usually contains:
+
+        • Present state
+        • Input
+        • Next state
+        • Output
+
+
+General structure:
+
++---------------+-------+-------------+--------+
+| Present State | Input | Next State  | Output |
++---------------+-------+-------------+--------+
+|       S0      |   0   |     S0      |   0    |
+|       S0      |   1   |     S1      |   0    |
+|       S1      |   0   |     S0      |   1    |
+|       S1      |   1   |     S1      |   1    |
++---------------+-------+-------------+--------+
+
+
+The exact columns depend on the problem.
+
+
+============================================================
+12.8 STATE DIAGRAM
+============================================================
+
+A STATE DIAGRAM is a graphical representation of
+states and transitions.
+
+States are usually represented by circles.
+
+Transitions are represented by arrows.
+
+
+Example:
+
+             1
+        +----------+
+        |          v
+      +----+     +----+
+      | S0 |---->| S1 |
+      +----+     +----+
+        ^          |
+        |          |
+        +----------+
+             0
+
+
+The arrows show how the circuit moves between states.
+
+
+============================================================
+12.9 STATE DIAGRAM SYMBOL
+============================================================
+
+A state:
+
+             +------+
+             |  S0  |
+             +------+
+
+
+A transition:
+
+        S0 ---------> S1
+
+
+If input controls the transition:
+
+        S0 ---1---> S1
+
+
+This means:
+
+        If input = 1,
+        move from S0 to S1.
+
+
+============================================================
+12.10 MOORE MACHINE
+============================================================
+
+A MOORE MACHINE is a sequential circuit in which
+the output depends ONLY on the present state.
+
+Therefore:
+
+        Output = f(Present State)
+
+
+NOT directly on the input.
+
+
+Conceptually:
+
+        Input
+          |
+          v
+     +----------+
+     | Next     |
+     | State     |
+     | Logic     |
+     +----------+
+          |
+          v
+     +----------+
+     |  STATE   |
+     | MEMORY   |
+     +----------+
+          |
+          v
+       Output
+          |
+          v
+     Output Logic
+
+
+Simplified idea:
+
+        State → Output
+
+
+============================================================
+12.11 MOORE MACHINE EXAMPLE
+============================================================
+
+Suppose a system has two states:
+
+        S0 → Output 0
+        S1 → Output 1
+
+
+State table:
+
++-------+--------+
+| State | Output |
++-------+--------+
+|  S0   |   0    |
+|  S1   |   1    |
++-------+--------+
+
+
+Notice:
+
+The output is determined only by the state.
+
+
+If:
+
+        State = S0
+
+then:
+
+        Output = 0
+
+
+If:
+
+        State = S1
+
+then:
+
+        Output = 1
+
+
+============================================================
+12.12 MOORE STATE DIAGRAM
+============================================================
+
+In a Moore machine, output is written INSIDE
+the state circle.
+
+
+Example:
+
+             +---------+
+             |  S0/0   |
+             +---------+
+                  |
+                  | 1
+                  v
+             +---------+
+             |  S1/1   |
+             +---------+
+
+
+Meaning:
+
+        S0 → output 0
+
+        S1 → output 1
+
+
+The notation:
+
+        State / Output
+
+
+is commonly used.
+
+
+============================================================
+12.13 MEALY MACHINE
+============================================================
+
+A MEALY MACHINE is a sequential circuit in which
+the output depends on:
+
+        Present state
+              +
+        Present input
+
+
+Therefore:
+
+        Output = f(State, Input)
+
+
+Conceptually:
+
+        Input --------+
+                     |
+                     v
+              +-------------+
+              | Output      |
+              | Logic       |
+              +-------------+
+                     |
+                   Output
+
+
+So:
+
+        State + Input → Output
+
+
+============================================================
+12.14 MEALY STATE DIAGRAM
+============================================================
+
+In a Mealy machine, the input and output are generally
+written ON THE TRANSITION.
+
+
+Example:
+
+             +------+
+             |  S0  |
+             +------+
+                |
+              1/1
+                |
+                v
+             +------+
+             |  S1  |
+             +------+
+
+
+The notation:
+
+        input / output
+
+
+means:
+
+        Input = 1
+        Output = 1
+
+
+============================================================
+12.15 MOORE VS MEALY
+============================================================
+
++-------------------+------------------------+
+| Moore             | Mealy                  |
++-------------------+------------------------+
+| Output depends    | Output depends on      |
+| only on state     | state + input          |
++-------------------+------------------------+
+| Output written    | Input/output written   |
+| inside state      | on transition         |
++-------------------+------------------------+
+| Usually more      | Usually fewer states  |
+| states             | may be needed          |
++-------------------+------------------------+
+| Output changes    | Output can respond     |
+| with state change | immediately to input   |
++-------------------+------------------------+
+
+
+MEMORY TRICK:
+
+        MOORE:
+        "Output from STATE"
+
+
+        MEALY:
+        "Output from STATE + INPUT"
+
+
+============================================================
+12.16 PRACTICAL EXAMPLE — AUTOMATIC DOOR
+============================================================
+
+Consider an automatic door.
+
+Inputs:
+
+        S = Sensor
+
+States:
+
+        CLOSED
+        OPEN
+
+
+Behavior:
+
+If the door is CLOSED and sensor detects a person:
+
+        CLOSED → OPEN
+
+
+If the door is OPEN and nobody is detected:
+
+        OPEN → CLOSED
+
+
+This can be modeled as a state machine.
+
+
+ASCII:
+
+              Sensor = 1
+          +----------------+
+          |                v
+      +----------+      +----------+
+      |  CLOSED  |      |   OPEN   |
+      +----------+      +----------+
+          ^                |
+          |                |
+          +----------------+
+             Sensor = 0
+
+
+The important point is:
+
+The circuit remembers whether the door is currently
+OPEN or CLOSED.
+
+
+============================================================
+12.17 STATE MACHINE
+============================================================
+
+A STATE MACHINE is a mathematical model used to
+describe sequential behavior.
+
+It consists of:
+
+        • States
+        • Inputs
+        • Outputs
+        • Transitions
+
+
+General structure:
+
+                 Input
+                   |
+                   v
+          +----------------+
+          | Next-State     |
+          | Logic          |
+          +----------------+
+                   |
+                   v
+          +----------------+
+          | Flip-Flops /   |
+          | State Memory   |
+          +----------------+
+                   |
+             Present State
+                   |
+          +--------+--------+
+          |                 |
+          v                 v
+     Next-state          Output
+        logic              logic
+
+
+============================================================
+12.18 STATE MACHINE DESIGN — COMPLETE FLOW
+============================================================
+
+Suppose a question says:
+
+"Design a circuit that detects a particular sequence."
+
+
+Do NOT immediately draw gates.
+
+Instead:
+
+STEP 1:
+Understand the problem.
+
+STEP 2:
+Determine what information must be remembered.
+
+STEP 3:
+Define states.
+
+STEP 4:
+Draw state diagram.
+
+STEP 5:
+Create state table.
+
+STEP 6:
+Reduce states if possible.
+
+STEP 7:
+Assign binary values to states.
+
+STEP 8:
+Choose flip-flops.
+
+STEP 9:
+Use excitation table.
+
+STEP 10:
+Find equations.
+
+STEP 11:
+Simplify equations using K-map.
+
+STEP 12:
+Draw final circuit.
+
+This is the standard design procedure.
+
+
+============================================================
+12.19 STATE ASSIGNMENT
+============================================================
+
+Suppose a machine has four states:
+
+        S0
+        S1
+        S2
+        S3
+
+
+We need to represent them using binary values.
+
+
+Possible assignment:
+
+        S0 = 00
+        S1 = 01
+        S2 = 10
+        S3 = 11
+
+
+This is called:
+
+        BINARY STATE ASSIGNMENT
+
+
+Since there are 4 states:
+
+        2^2 = 4
+
+
+Therefore:
+
+        2 flip-flops are sufficient.
+
+
+============================================================
+12.20 STATE ASSIGNMENT EXAMPLE
+============================================================
+
+Suppose we have 3 states:
+
+        S0
+        S1
+        S2
+
+
+Two flip-flops are required because:
+
+        2^1 = 2 < 3
+
+        2^2 = 4 ≥ 3
+
+
+Assign:
+
+        S0 = 00
+        S1 = 01
+        S2 = 10
+
+
+The fourth state:
+
+        11
+
+is unused.
+
+
+============================================================
+12.21 STATE DIAGRAM → STATE TABLE
+============================================================
+
+Suppose the state diagram is:
+
+                 1
+          +------------>
+          |             |
+        +----+        +----+
+        | S0 |        | S1 |
+        +----+        +----+
+          ^             |
+          |             |
+          +-------------+
+                 0
+
+
+Assume:
+
+        From S0:
+            Input 0 → S0
+            Input 1 → S1
+
+
+        From S1:
+            Input 0 → S0
+            Input 1 → S1
+
+
+Then the state table is:
+
++-------+-------+-------------+
+| PS    | Input | NS          |
++-------+-------+-------------+
+| S0    |   0   | S0          |
+| S0    |   1   | S1          |
+| S1    |   0   | S0          |
+| S1    |   1   | S1          |
++-------+-------+-------------+
+
+
+This conversion is very important in exams.
+
+
+============================================================
+12.22 STATE TABLE → BINARY TABLE
+============================================================
+
+Suppose:
+
+        S0 = 00
+        S1 = 01
+
+
+Then:
+
++-------+-------+-------+
+| PS    | X     | NS    |
++-------+-------+-------+
+| S0    | 0     | S0    |
+| S0    | 1     | S1    |
+| S1    | 0     | S0    |
+| S1    | 1     | S1    |
++-------+-------+-------+
+
+
+Convert to binary:
+
++-----+-----+----------+
+| Q1  | Q0  | X | Q1+Q0+|
++-----+-----+----------+
+| 0   | 0   | 0 |  00  |
+| 0   | 0   | 1 |  01  |
+| 0   | 1   | 0 |  00  |
+| 0   | 1   | 1 |  01  |
++-----+-----+----------+
+
+
+Now we can design flip-flop input logic.
+
+
+============================================================
+12.23 FLIP-FLOP SELECTION
+============================================================
+
+Common choices:
+
+        • SR flip-flop
+        • JK flip-flop
+        • D flip-flop
+        • T flip-flop
+
+
+For beginners, D flip-flops are often easiest
+for state-machine implementation.
+
+
+Why?
+
+Because:
+
+        D = Next State
+
+
+For a D flip-flop:
+
+        Q(next) = D
+
+
+This makes design particularly straightforward.
+
+
+============================================================
+12.24 D FLIP-FLOP IN STATE DESIGN
+============================================================
+
+Suppose:
+
+        Present Q = 0
+
+and we want:
+
+        Next Q = 1
+
+
+Then:
+
+        D = 1
+
+
+If:
+
+        Present Q = 1
+
+and we want:
+
+        Next Q = 0
+
+
+Then:
+
+        D = 0
+
+
+Therefore:
+
+        D = Q(next)
+
+
+This is one of the easiest relationships
+in sequential circuit design.
+
+
+============================================================
+12.25 D FLIP-FLOP EXCITATION TABLE
+============================================================
+
++-----+-------+---+
+| Q   | Qnext | D |
++-----+-------+---+
+| 0   |   0   | 0 |
+| 0   |   1   | 1 |
+| 1   |   0   | 0 |
+| 1   |   1   | 1 |
++-----+-------+---+
+
+
+Notice:
+
+        D = Qnext
+
+
+This means that when designing with D flip-flops,
+we can directly derive D equations from the
+next-state equations.
+
+
+============================================================
+12.26 T FLIP-FLOP IN STATE DESIGN
+============================================================
+
+T flip-flop:
+
+        T = 0 → Hold
+        T = 1 → Toggle
+
+
+Excitation table:
+
++-----+-------+---+
+| Q   | Qnext | T |
++-----+-------+---+
+| 0   |   0   | 0 |
+| 0   |   1   | 1 |
+| 1   |   0   | 1 |
+| 1   |   1   | 0 |
++-----+-------+---+
+
+
+Therefore:
+
+        T = Q XOR Qnext
+
+
+This is useful during counter and sequential
+circuit design.
+
+
+============================================================
+12.27 JK FLIP-FLOP EXCITATION
+============================================================
+
+JK excitation table:
+
++-----+-------+---+---+
+| Q   | Qnext | J | K |
++-----+-------+---+---+
+| 0   |   0   | 0 | X |
+| 0   |   1   | 1 | X |
+| 1   |   0   | X | 1 |
+| 1   |   1   | X | 0 |
++-----+-------+---+---+
+
+
+Here:
+
+        X = Don't care
+
+
+This table is extremely important for
+JK-based sequential circuit design.
+
+
+============================================================
+12.28 SR FLIP-FLOP EXCITATION
+============================================================
+
+A typical SR excitation table is:
+
++-----+-------+---+---+
+| Q   | Qnext | S | R |
++-----+-------+---+---+
+| 0   |   0   | 0 | X |
+| 0   |   1   | 1 | 0 |
+| 1   |   0   | 0 | 1 |
+| 1   |   1   | X | 0 |
++-----+-------+---+---+
+
+
+Remember that SR has an invalid input condition,
+depending on the particular implementation.
+
+
+============================================================
+12.29 STATE REDUCTION
+============================================================
+
+Sometimes a state diagram contains unnecessary states.
+
+If two states behave identically for all possible
+inputs and produce equivalent outputs, they may be
+combined.
+
+This is called:
+
+        STATE REDUCTION
+
+
+Why reduce states?
+
+        Fewer states
+             ↓
+        Fewer flip-flops
+             ↓
+        Less hardware
+             ↓
+        Simpler circuit
+
+
+Example:
+
+Suppose a design initially has:
+
+        6 states
+
+
+But after reduction:
+
+        4 states
+
+
+Then:
+
+        2^2 = 4
+
+
+Only 2 flip-flops may be needed instead of
+3 flip-flops.
+
+
+============================================================
+12.30 WHY STATE REDUCTION MATTERS
+============================================================
+
+Suppose:
+
+        8 states
+
+Then:
+
+        3 FFs
+
+
+If we reduce to:
+
+        4 states
+
+then:
+
+        2 FFs
+
+
+One fewer flip-flop can reduce:
+
+        • Hardware
+        • Power
+        • Wiring
+        • Logic complexity
+        • Cost
+
+
+Therefore state reduction is an important
+optimization technique.
+
+
+============================================================
+12.31 STATE ASSIGNMENT METHODS
+============================================================
+
+Common state assignment methods include:
+
+        1. Binary assignment
+        2. Gray-code assignment
+        3. One-hot assignment
+
+
+------------------------------------------------------------
+BINARY ASSIGNMENT
+------------------------------------------------------------
+
+For four states:
+
+        S0 = 00
+        S1 = 01
+        S2 = 10
+        S3 = 11
+
+
+Requires:
+
+        2 FFs
+
+
+------------------------------------------------------------
+GRAY ASSIGNMENT
+------------------------------------------------------------
+
+Gray code changes only one bit between adjacent states.
+
+Example:
+
+        00
+        01
+        11
+        10
+
+
+This can sometimes reduce switching-related issues.
+
+
+------------------------------------------------------------
+ONE-HOT ASSIGNMENT
+------------------------------------------------------------
+
+Each state gets one dedicated flip-flop.
+
+For four states:
+
+        S0 = 0001
+        S1 = 0010
+        S2 = 0100
+        S3 = 1000
+
+
+Requires:
+
+        4 FFs
+
+
+More flip-flops, but often simpler state-decoding logic.
+
+
+============================================================
+12.32 BINARY VS ONE-HOT
+============================================================
+
+For 8 states:
+
+Binary:
+
+        3 FFs
+
+because:
+
+        2^3 = 8
+
+
+One-hot:
+
+        8 FFs
+
+
+So binary uses fewer flip-flops.
+
+
+But one-hot may simplify the combinational
+logic used in some implementations.
+
+
+This is an important hardware trade-off.
+
+
+============================================================
+12.33 SEQUENCE DETECTOR
+============================================================
+
+One of the most important applications of FSMs
+is a SEQUENCE DETECTOR.
+
+
+Suppose we want to detect:
+
+        101
+
+
+Input arrives one bit at a time.
+
+Example input stream:
+
+        1 0 1
+
+
+When the circuit recognizes:
+
+        101
+
+it produces:
+
+        Output = 1
+
+
+Otherwise:
+
+        Output = 0
+
+
+The circuit needs memory because it must remember
+previous input bits.
+
+Therefore:
+
+        Sequence detector = Sequential circuit
+
+
+============================================================
+12.34 SIMPLE SEQUENCE DETECTOR IDEA
+============================================================
+
+Suppose we want to detect "101".
+
+Possible states:
+
+        S0 = nothing detected
+        S1 = detected "1"
+        S2 = detected "10"
+
+
+Then:
+
+        S0 --1--> S1
+        S1 --0--> S2
+        S2 --1--> detected
+
+
+Conceptually:
+
+        +----+
+        | S0 |
+        +----+
+          |
+          | 1
+          v
+        +----+
+        | S1 |
+        +----+
+          |
+          | 0
+          v
+        +----+
+        | S2 |
+        +----+
+          |
+          | 1
+          v
+       DETECT
+
+
+This is the basic idea behind sequence-detector design.
+
+
+============================================================
+12.35 MOORE SEQUENCE DETECTOR
+============================================================
+
+In a Moore detector, the output becomes 1
+when the machine enters a dedicated detection state.
+
+
+Example:
+
+        S0 = 0
+        S1 = 0
+        S2 = 0
+        S3 = 1
+
+
+State S3 means:
+
+        "101 has been detected."
+
+
+The output is associated with S3.
+
+
+============================================================
+12.36 MEALY SEQUENCE DETECTOR
+============================================================
+
+In a Mealy detector, the output can become 1
+on the transition that completes the sequence.
+
+
+Example:
+
+        S2 --1/1--> S0
+
+
+Here:
+
+        Input = 1
+        Output = 1
+
+
+The sequence is recognized immediately on the
+transition.
+
+
+This is one reason Mealy machines can sometimes
+use fewer states.
+
+
+============================================================
+12.37 MOORE VS MEALY — SEQUENCE DETECTOR
+============================================================
+
+Suppose detecting:
+
+        101
+
+
+Moore:
+
+        Requires a detection state.
+
+Mealy:
+
+        Can produce output on the transition
+        that receives the final 1.
+
+
+Therefore:
+
+        Moore → output associated with state
+
+        Mealy → output associated with transition
+
+
+============================================================
+12.38 STATE TRANSITION EQUATIONS
+============================================================
+
+After creating a state table, we need to determine
+the logic that generates the next state.
+
+Suppose:
+
+        Qnext = F(Q, X)
+
+
+Then:
+
+        D = Qnext
+
+if D flip-flops are used.
+
+
+For multiple state bits:
+
+        Q1next = F1(Q1,Q0,X)
+
+        Q0next = F2(Q1,Q0,X)
+
+
+Then:
+
+        D1 = Q1next
+
+        D0 = Q0next
+
+
+These equations are simplified using Boolean algebra
+or K-maps.
+
+
+============================================================
+12.39 K-MAP IN SEQUENTIAL CIRCUIT DESIGN
+============================================================
+
+K-maps are not limited to combinational circuits.
+
+They are also used to simplify:
+
+        • Next-state equations
+        • Flip-flop input equations
+        • Output equations
+
+
+Typical process:
+
+        State table
+             ↓
+        Truth table
+             ↓
+          K-map
+             ↓
+        Simplified equation
+             ↓
+        Logic circuit
+
+
+Therefore Chapter 4 K-map knowledge becomes
+very important here.
+
+
+============================================================
+12.40 COMPLETE DESIGN EXAMPLE — D FLIP-FLOP
+============================================================
+
+Let's design a very simple sequential circuit.
+
+Requirement:
+
+        If X = 1, toggle the state.
+        If X = 0, keep the state unchanged.
+
+
+There is one state variable:
+
+        Q
+
+
+Desired behavior:
+
+        X = 0 → Hold
+        X = 1 → Toggle
+
+
+------------------------------------------------------------
+STEP 1 — STATE TABLE
+------------------------------------------------------------
+
++---+---+-------+
+| Q | X | Qnext |
++---+---+-------+
+| 0 | 0 |   0   |
+| 0 | 1 |   1   |
+| 1 | 0 |   1   |
+| 1 | 1 |   0   |
++---+---+-------+
+
+
+------------------------------------------------------------
+STEP 2 — USE D FF
+------------------------------------------------------------
+
+For D FF:
+
+        D = Qnext
+
+
+Therefore:
+
++---+---+---+
+| Q | X | D |
++---+---+---+
+| 0 | 0 | 0 |
+| 0 | 1 | 1 |
+| 1 | 0 | 1 |
+| 1 | 1 | 0 |
++---+---+---+
+
+
+This is exactly:
+
+        D = Q XOR X
+
+
+Therefore:
+
+        D = Q ⊕ X
+
+
+------------------------------------------------------------
+FINAL CIRCUIT
+------------------------------------------------------------
+
+                +------+
+        Q ------|      |
+                | XOR  |------ D
+        X ------|      |
+                +------+
+                    |
+                    v
+                +-------+
+        CLK --->| D FF  |
+                +-------+
+                    |
+                    +---- Q
+
+
+This circuit holds when X=0 and toggles when X=1.
+
+
+============================================================
+12.41 DESIGN THINKING TECHNIQUE
+============================================================
+
+When solving a sequential design problem,
+ask these questions in order:
+
+        1. What must the circuit remember?
+
+        2. What are the possible states?
+
+        3. What causes movement between states?
+
+        4. What should the next state be?
+
+        5. What should the output be?
+
+        6. Is this Moore or Mealy?
+
+        7. How many flip-flops are required?
+
+        8. Which flip-flop should I use?
+
+        9. What are the excitation inputs?
+
+       10. Can the equations be simplified?
+
+
+This checklist prevents many exam mistakes.
+
+
+============================================================
+12.42 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+Confusing present state with next state.
+
+Remember:
+
+        PS = current
+
+        NS = after transition
+
+
+------------------------------------------------------------
+
+MISTAKE 2:
+
+Thinking Moore output depends directly on input.
+
+Incorrect.
+
+Moore:
+
+        Output = f(State)
+
+
+------------------------------------------------------------
+
+MISTAKE 3:
+
+Thinking Mealy output depends only on state.
+
+Incorrect.
+
+Mealy:
+
+        Output = f(State, Input)
+
+
+------------------------------------------------------------
+
+MISTAKE 4:
+
+Forgetting that state assignment is required
+before physical flip-flop implementation.
+
+
+------------------------------------------------------------
+
+MISTAKE 5:
+
+Using the wrong excitation table.
+
+Always identify the flip-flop type first.
+
+
+------------------------------------------------------------
+
+MISTAKE 6:
+
+Skipping K-map simplification.
+
+This can lead to unnecessarily complicated hardware.
+
+
+============================================================
+12.43 EXAM-IMPORTANT DEFINITIONS
+============================================================
+
+STATE:
+
+The current condition of a sequential circuit.
+
+
+PRESENT STATE:
+
+The state stored in the flip-flops before a
+clock transition.
+
+
+NEXT STATE:
+
+The state that will be stored after the transition.
+
+
+STATE TRANSITION:
+
+Movement from one state to another.
+
+
+STATE TABLE:
+
+Tabular representation of present state,
+input, next state, and output.
+
+
+STATE DIAGRAM:
+
+Graphical representation of states and transitions.
+
+
+MOORE MACHINE:
+
+A machine whose output depends only on the
+present state.
+
+
+MEALY MACHINE:
+
+A machine whose output depends on present state
+and present input.
+
+
+STATE REDUCTION:
+
+The process of eliminating equivalent/redundant states.
+
+
+STATE ASSIGNMENT:
+
+Assigning binary codes to symbolic states.
+
+
+============================================================
+12.44 IMPORTANT FORMULAS / RELATIONSHIPS
+============================================================
+
+For N flip-flops:
+
+        Maximum states = 2^N
+
+
+For D flip-flop:
+
+        Qnext = D
+
+
+For T flip-flop:
+
+        T = Q ⊕ Qnext
+
+
+Moore:
+
+        Output = f(State)
+
+
+Mealy:
+
+        Output = f(State, Input)
+
+
+Binary state assignment for N states:
+
+        Number of FFs = ceil(log2 N)
+
+
+One-hot:
+
+        Number of FFs ≈ number of states
+
+
+============================================================
+12.45 PRACTICE QUESTIONS
+============================================================
+
+Q1.
+What is the difference between present state
+and next state?
+
+
+Q2.
+Why is a sequential circuit capable of memory?
+
+
+Q3.
+What is a state diagram?
+
+
+Q4.
+What is the difference between Moore and
+Mealy machines?
+
+
+Q5.
+How many flip-flops are required to represent
+7 states using binary encoding?
+
+
+Q6.
+How many flip-flops are required for 16 states?
+
+
+Q7.
+For a D flip-flop, if Qnext = 1, what should D be?
+
+
+Q8.
+For a T flip-flop:
+
+        Q = 0
+        Qnext = 1
+
+What is T?
+
+
+Q9.
+What is state reduction?
+
+
+Q10.
+Why is K-map used in sequential circuit design?
+
+
+Q11.
+A machine has 5 states. What is the minimum
+number of binary-encoded state flip-flops?
+
+
+Q12.
+In a Moore machine, where is the output normally
+represented in a state diagram?
+
+
+Q13.
+In a Mealy machine, where are input/output values
+normally written?
+
+============================================================
+12.46 MCQs
+============================================================
+
+Q1.
+A sequential circuit differs from a combinational
+circuit because it has:
+
+A) Only gates
+B) Memory/state
+C) No inputs
+D) No outputs
+
+
+Q2.
+Present state means:
+
+A) Future state
+B) Current state
+C) Invalid state
+D) Reset state
+
+
+Q3.
+In a Moore machine, output depends on:
+
+A) Input only
+B) State only
+C) State and input
+D) Clock only
+
+
+Q4.
+In a Mealy machine, output depends on:
+
+A) State only
+B) Input only
+C) State and input
+D) Neither
+
+
+Q5.
+How many flip-flops are required for 8 binary-coded
+states?
+
+A) 2
+B) 3
+C) 4
+D) 8
+
+
+Q6.
+For a D flip-flop:
+
+A) D = Q
+B) D = Qnext
+C) D = Q'
+D) D = clock
+
+
+Q7.
+Which is usually represented inside a Moore
+state circle?
+
+A) Input
+B) Output
+C) Clock
+D) Flip-flop type
+
+
+Q8.
+In a Mealy state diagram, a transition label is
+commonly written as:
+
+A) State only
+B) Output only
+C) Input/Output
+D) Clock/State
+
+
+Q9.
+The purpose of state reduction is mainly to:
+
+A) Increase states
+B) Increase power
+C) Reduce unnecessary hardware
+D) Remove the clock
+
+
+Q10.
+Which technique is commonly used to simplify
+next-state equations?
+
+A) K-map
+B) Decimal conversion
+C) ASCII
+D) Parity
+
+
+============================================================
+12.47 MCQ ANSWERS
+============================================================
+
+Q1  → B
+Q2  → B
+Q3  → B
+Q4  → C
+Q5  → B
+Q6  → B
+Q7  → B
+Q8  → C
+Q9  → C
+Q10 → A
+
+
+============================================================
+12.48 CHAPTER 12 QUICK REVISION
+============================================================
+
+Sequential circuit:
+
+        Output depends on state
+        and possibly input.
+
+
+State:
+
+        Current condition of the circuit.
+
+
+Present state:
+
+        Current stored state.
+
+
+Next state:
+
+        State after the next transition.
+
+
+State diagram:
+
+        Graphical representation.
+
+
+State table:
+
+        Tabular representation.
+
+
+Moore:
+
+        Output = State
+
+
+Mealy:
+
+        Output = State + Input
+
+
+State reduction:
+
+        Remove equivalent states.
+
+
+State assignment:
+
+        Give binary codes to states.
+
+
+D FF:
+
+        D = Qnext
+
+
+T FF:
+
+        T = Q ⊕ Qnext
+
+
+Design flow:
+
+        Problem
+          ↓
+        States
+          ↓
+        Diagram
+          ↓
+        Table
+          ↓
+        Reduction
+          ↓
+        Assignment
+          ↓
+        Flip-Flop
+          ↓
+        Excitation
+          ↓
+        K-map
+          ↓
+        Circuit
+
+
+============================================================
+12.49 CHAPTER 12 — MASTER CHECKLIST
+============================================================
+
+Before moving forward, you should be able to:
+
+[ ] Define sequential circuit.
+[ ] Explain the concept of state.
+[ ] Explain present state.
+[ ] Explain next state.
+[ ] Explain state transition.
+[ ] Create a state table.
+[ ] Create a state diagram.
+[ ] Explain Moore machine.
+[ ] Explain Mealy machine.
+[ ] Compare Moore and Mealy.
+[ ] Explain state variables.
+[ ] Determine required flip-flops.
+[ ] Explain binary state assignment.
+[ ] Explain Gray-code assignment.
+[ ] Explain one-hot assignment.
+[ ] Explain state reduction.
+[ ] Use D flip-flop excitation.
+[ ] Use T flip-flop excitation.
+[ ] Understand JK excitation.
+[ ] Understand SR excitation.
+[ ] Convert a state table into binary form.
+[ ] Understand the role of K-maps.
+[ ] Explain the general sequential design procedure.
+[ ] Understand the basic sequence-detector concept.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+                    CHAPTER 13
+                        ↓
+             STATE REDUCTION &
+              STATE ASSIGNMENT
+                        |
+          +-------------+-------------+
+          |                           |
+    STATE REDUCTION             STATE ASSIGNMENT
+          |                           |
+   Equivalent States           Binary Assignment
+   Redundant States             Gray Assignment
+   State Equivalence            One-Hot Assignment
+          |                           |
+          +-------------+-------------+
+                        |
+                        v
+               STATE MACHINE
+                 OPTIMIZATION
+
+
+KEY IDEA:
+
+Chapter 12 taught:
+
+        "How do I design a sequential circuit?"
+
+
+Chapter 13 will focus more deeply on:
+
+        "How can I reduce the number of states
+         and choose the best state encoding?"
+
+============================================================

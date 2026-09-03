@@ -1,0 +1,2633 @@
+============================================================
+CHAPTER 18 — A/D & D/A CONVERSION
+============================================================
+Level: B.Tech 1st Year / Computer Science
+Prerequisite: Chapters 1–17
+Goal: Understand how digital systems communicate with
+      the analog world.
+
+============================================================
+18.1 WHY DO WE NEED A/D AND D/A CONVERSION?
+============================================================
+
+Computers and digital circuits work primarily with:
+
+        0 and 1
+        ↓
+        DIGITAL
+
+But the real world is mostly:
+
+        Temperature
+        Sound
+        Light
+        Pressure
+        Speed
+        Voltage
+        ↓
+        ANALOG
+
+
+Therefore, a digital system needs a bridge between
+the analog and digital worlds.
+
+                    REAL WORLD
+                        |
+                        v
+                     ANALOG
+                        |
+                        | ADC
+                        v
+                     DIGITAL
+                        |
+                        | Digital Processing
+                        v
+                     DIGITAL
+                        |
+                        | DAC
+                        v
+                     ANALOG
+                        |
+                        v
+                    REAL WORLD
+
+
+ADC:
+    Analog → Digital
+
+DAC:
+    Digital → Analog
+
+
+============================================================
+18.2 ANALOG SIGNAL
+============================================================
+
+An ANALOG signal is a signal whose amplitude can take
+continuously varying values over a range.
+
+
+Example:
+
+Voltage may be:
+
+    0.1 V
+    0.2 V
+    0.25 V
+    0.251 V
+    0.2517 V
+    ...
+
+There can theoretically be infinitely many values
+between two points.
+
+
+ASCII representation:
+
+Voltage
+  ^
+  |       /‾‾\        /‾‾\
+  |      /    \      /    \
+  |_____/      \____/      \____> Time
+
+
+Examples:
+
+    Microphone output
+    Temperature sensor
+    Light sensor
+    Human voice
+    ECG signal
+
+
+============================================================
+18.3 DIGITAL SIGNAL
+============================================================
+
+A DIGITAL signal uses discrete levels.
+
+For binary logic:
+
+        HIGH → 1
+        LOW  → 0
+
+
+Example:
+
+        __      __
+       |  |    |  |
+    ___|  |____|  |____
+       1   0    1   0
+
+
+Digital signals do not represent every possible
+analog value directly.
+
+
+============================================================
+18.4 ADC — ANALOG TO DIGITAL CONVERTER
+============================================================
+
+Definition:
+
+An ADC is an electronic circuit that converts an
+analog input signal into a corresponding digital
+binary representation.
+
+
+Basic structure:
+
+Analog input
+     |
+     v
+   +-----+
+   | ADC |
+   +-----+
+     |
+     v
+Digital output
+
+
+Example:
+
+        Analog voltage = 2.5 V
+
+ADC might produce:
+
+        10000000
+
+depending on the ADC resolution and reference voltage.
+
+
+============================================================
+18.5 DAC — DIGITAL TO ANALOG CONVERTER
+============================================================
+
+Definition:
+
+A DAC is an electronic circuit that converts a
+digital binary input into a corresponding analog
+output.
+
+
+Basic structure:
+
+Digital input
+     |
+     v
+   +-----+
+   | DAC |
+   +-----+
+     |
+     v
+Analog output
+
+
+Example:
+
+        Digital input:
+
+        1010
+
+may produce a particular analog voltage depending
+on the reference voltage and DAC design.
+
+
+============================================================
+18.6 ADC AND DAC TOGETHER
+============================================================
+
+Consider a digital audio system.
+
+        Sound
+          |
+          v
+      Microphone
+          |
+          v
+       Analog
+          |
+         ADC
+          |
+          v
+       Digital
+          |
+       Computer
+          |
+          v
+       Digital
+          |
+         DAC
+          |
+          v
+       Analog
+          |
+          v
+       Speaker
+          |
+          v
+        Sound
+
+
+This is one of the most important practical
+applications of ADC and DAC.
+
+
+============================================================
+18.7 BASIC ADC PROCESS
+============================================================
+
+An ADC generally involves:
+
+        1. Sampling
+        2. Quantization
+        3. Encoding
+
+
+Therefore:
+
+    ANALOG SIGNAL
+          |
+          v
+       Sampling
+          |
+          v
+     Quantization
+          |
+          v
+       Encoding
+          |
+          v
+    DIGITAL OUTPUT
+
+
+Remember:
+
+        S → Q → E
+
+        Sampling
+        Quantization
+        Encoding
+
+
+============================================================
+18.8 SAMPLING
+============================================================
+
+Sampling means measuring the amplitude of an analog
+signal at discrete time intervals.
+
+
+Continuous:
+
+    ~~~~~~~~ analog waveform ~~~~~~~~
+
+Sampled:
+
+        •       •       •       •
+       /       /       /       /
+      /       /       /       /
+    --•-------•-------•-------•----> Time
+
+
+The ADC does not continuously store the entire
+analog waveform.
+
+It takes samples at specific times.
+
+
+============================================================
+18.9 SAMPLING RATE
+============================================================
+
+Sampling rate is the number of samples taken per second.
+
+Unit:
+
+        Samples/second
+
+Also called:
+
+        Samples per second (S/s)
+
+
+Example:
+
+        1000 samples/sec
+
+means:
+
+        1000 measurements every second.
+
+
+If:
+
+        Sampling frequency = 10 kHz
+
+then:
+
+        10,000 samples/sec
+
+
+============================================================
+18.10 QUANTIZATION
+============================================================
+
+After sampling, each sampled amplitude must be mapped
+to one of a finite number of digital levels.
+
+This process is called:
+
+        QUANTIZATION
+
+
+Analog amplitude:
+
+        0
+        |
+        |      •
+        |    •
+        |  •
+        | •
+        +---------------- Time
+
+
+Quantized levels:
+
+        Level 4 ─────────────
+        Level 3 ─────────────
+        Level 2 ─────────────
+        Level 1 ─────────────
+        Level 0 ─────────────
+
+
+A sampled value may not exactly match a level.
+
+It is assigned to the nearest available level
+according to the quantizer design.
+
+
+============================================================
+18.11 QUANTIZATION ERROR
+============================================================
+
+Because the analog signal can have many possible
+values but the ADC has only finite digital levels,
+there is usually a difference between:
+
+        Actual analog value
+
+and
+
+        Quantized value
+
+
+This difference is called:
+
+        QUANTIZATION ERROR
+
+
+Example:
+
+Actual:
+
+        2.37 V
+
+
+Quantized:
+
+        2.40 V
+
+
+Error:
+
+        2.40 - 2.37
+        = 0.03 V
+
+
+Therefore:
+
+        Quantization error = 0.03 V
+
+
+============================================================
+18.12 ENCODING
+============================================================
+
+After quantization, each quantization level is assigned
+a binary code.
+
+
+Example:
+
+Level 0 → 000
+Level 1 → 001
+Level 2 → 010
+Level 3 → 011
+Level 4 → 100
+Level 5 → 101
+Level 6 → 110
+Level 7 → 111
+
+
+Thus:
+
+        Quantized level
+              |
+              v
+        Binary code
+
+
+This process is called:
+
+        ENCODING
+
+
+============================================================
+18.13 ADC EXAMPLE
+============================================================
+
+Suppose a 3-bit ADC has:
+
+        8 possible codes
+
+because:
+
+        2^3 = 8
+
+
+Codes:
+
+        000
+        001
+        010
+        011
+        100
+        101
+        110
+        111
+
+
+Suppose input voltage is measured and falls
+into level 5.
+
+Then output may be:
+
+        101
+
+
+Therefore:
+
+        Analog input
+             ↓
+        Sampling
+             ↓
+        Quantization
+             ↓
+        Level 5
+             ↓
+        Encoding
+             ↓
+           101
+
+
+============================================================
+18.14 ADC RESOLUTION
+============================================================
+
+Resolution tells us how finely an ADC can distinguish
+different input voltage levels.
+
+
+For an N-bit ADC:
+
+        Number of levels = 2^N
+
+
+Examples:
+
+        1-bit → 2 levels
+        2-bit → 4 levels
+        3-bit → 8 levels
+        4-bit → 16 levels
+        8-bit → 256 levels
+        10-bit → 1024 levels
+        12-bit → 4096 levels
+        16-bit → 65536 levels
+
+
+Therefore:
+
+        Higher number of bits
+                ↓
+        More quantization levels
+                ↓
+        Finer resolution
+
+
+============================================================
+18.15 RESOLUTION FORMULA
+============================================================
+
+For an ideal N-bit ADC with input range:
+
+        0 to Vref
+
+
+Approximate step size:
+
+        Resolution =
+        Vref / 2^N
+
+
+Some textbooks define the LSB size using
+slightly different endpoint conventions.
+
+For most introductory exam problems:
+
+        LSB size ≈ Vref / 2^N
+
+
+============================================================
+18.16 RESOLUTION EXAMPLE
+============================================================
+
+Given:
+
+        N = 8 bits
+        Vref = 5 V
+
+
+Number of levels:
+
+        2^8 = 256
+
+
+Resolution:
+
+        5 / 256
+        ≈ 0.01953 V
+
+
+Therefore:
+
+        ≈ 19.53 mV per LSB
+
+
+An 8-bit ADC over 0–5 V can therefore
+distinguish approximately 19.53 mV steps.
+
+
+============================================================
+18.17 COMPARING ADC RESOLUTION
+============================================================
+
+Suppose:
+
+        ADC A = 8-bit
+        ADC B = 12-bit
+
+
+ADC A:
+
+        2^8 = 256 levels
+
+
+ADC B:
+
+        2^12 = 4096 levels
+
+
+Therefore ADC B provides:
+
+        4096 / 256
+        = 16 times
+
+as many quantization levels.
+
+
+Hence:
+
+        12-bit ADC has finer resolution
+        than an 8-bit ADC.
+
+
+============================================================
+18.18 DAC BASIC IDEA
+============================================================
+
+A DAC performs the reverse operation.
+
+        DIGITAL CODE
+             |
+             v
+          +-----+
+          | DAC |
+          +-----+
+             |
+             v
+        ANALOG VOLTAGE
+
+
+For example, for a 3-bit DAC:
+
+        000
+        001
+        010
+        011
+        100
+        101
+        110
+        111
+
+represent increasing analog output levels
+in an ideal unipolar DAC.
+
+
+============================================================
+18.19 DAC RESOLUTION
+============================================================
+
+For an N-bit DAC:
+
+        Number of possible output codes
+        =
+        2^N
+
+
+Example:
+
+        8-bit DAC:
+
+        2^8 = 256 levels
+
+
+12-bit DAC:
+
+        2^12 = 4096 levels
+
+
+Higher resolution means smaller output
+steps between adjacent codes.
+
+
+============================================================
+18.20 DAC STEP SIZE
+============================================================
+
+For an ideal N-bit DAC with full-scale reference
+Vref:
+
+        Step size ≈ Vref / 2^N
+
+
+Example:
+
+        8-bit DAC
+        Vref = 10 V
+
+
+Step size:
+
+        10 / 256
+        = 0.0390625 V
+
+
+Therefore:
+
+        ≈ 39.06 mV
+
+
+============================================================
+18.21 DAC DIGITAL CODE EXAMPLE
+============================================================
+
+Suppose a 4-bit ideal DAC has:
+
+        Vref = 16 V
+
+
+There are:
+
+        2^4 = 16 levels
+
+
+The binary code:
+
+        1010
+
+
+has decimal value:
+
+        10
+
+
+Its ideal output is proportional to:
+
+        10 / 16
+
+
+So approximately:
+
+        Vout = 16 × 10/16
+             = 10 V
+
+
+Depending on the DAC convention, the exact formula
+may use a denominator of 2^N rather than 2^N−1.
+
+Always follow the formula given in the problem.
+
+
+============================================================
+18.22 DAC IMPORTANT PARAMETERS
+============================================================
+
+Important DAC characteristics include:
+
+    1. Resolution
+    2. Accuracy
+    3. Conversion speed
+    4. Settling time
+    5. Linearity
+    6. Monotonicity
+
+
+============================================================
+18.23 ADC IMPORTANT PARAMETERS
+============================================================
+
+Important ADC characteristics include:
+
+    1. Resolution
+    2. Accuracy
+    3. Conversion time
+    4. Sampling rate
+    5. Quantization error
+    6. Linearity
+    7. Signal-to-noise performance
+
+
+============================================================
+18.24 ADC TYPES
+============================================================
+
+Important ADC architectures:
+
+        +----------------------+
+        |         ADC          |
+        +----------------------+
+             |
+     +-------+-------+--------+
+     |       |       |        |
+   Flash    SAR    Counter  Dual-slope
+
+
+We will study:
+
+    1. Flash ADC
+    2. Successive Approximation ADC
+    3. Counter-type ADC
+    4. Dual-slope ADC
+
+
+============================================================
+18.25 FLASH ADC
+============================================================
+
+Flash ADC is one of the fastest ADC architectures.
+
+
+Basic concept:
+
+        Analog input
+             |
+       +-----+-----+
+       |           |
+      Comp       Comp
+       |           |
+      Comp       Comp
+       |           |
+       +-----+-----+
+             |
+          Encoder
+             |
+             v
+       Digital output
+
+
+Flash ADC uses multiple comparators operating
+in parallel.
+
+
+============================================================
+18.26 FLASH ADC NUMBER OF COMPARATORS
+============================================================
+
+For an N-bit flash ADC:
+
+        Number of comparators
+        =
+        2^N - 1
+
+
+Example:
+
+        3-bit Flash ADC:
+
+
+        2^3 - 1
+        = 7 comparators
+
+
+4-bit Flash ADC:
+
+        2^4 - 1
+        = 15 comparators
+
+
+8-bit Flash ADC:
+
+        2^8 - 1
+        = 255 comparators
+
+
+This is a very important formula.
+
+
+============================================================
+18.27 FLASH ADC WORKING
+============================================================
+
+Suppose the input voltage is:
+
+        Vin
+
+
+A resistor ladder creates reference levels.
+
+
+        Vref
+         |
+        R
+         +---- Comparator
+         |
+        R
+         +---- Comparator
+         |
+        R
+         +---- Comparator
+         |
+        R
+         |
+        GND
+
+
+All comparators compare Vin with different
+reference voltages simultaneously.
+
+
+Comparator outputs form a thermometer-like code.
+
+
+Then:
+
+        Comparator outputs
+                ↓
+             Encoder
+                ↓
+          Binary output
+
+
+============================================================
+18.28 FLASH ADC ADVANTAGES
+============================================================
+
+Advantages:
+
+    + Very fast
+    + Parallel conversion
+    + Suitable for high-speed applications
+
+
+Disadvantages:
+
+    - Requires many comparators
+    - High hardware cost
+    - High power consumption
+    - Becomes impractical for very high resolution
+
+
+Memory:
+
+        FLASH = FAST
+
+
+============================================================
+18.29 SUCCESSIVE APPROXIMATION ADC
+============================================================
+
+SAR ADC means:
+
+        SUCCESSIVE APPROXIMATION REGISTER ADC
+
+
+It uses a successive approximation process
+similar to binary search.
+
+
+Basic structure:
+
+        Analog input
+             |
+             v
+        +---------+
+        |Comparator|
+        +---------+
+             ^
+             |
+           DAC
+             ^
+             |
+           SAR
+             |
+             v
+        Digital output
+
+
+Main components:
+
+        SAR
+        DAC
+        Comparator
+        Control logic
+
+
+============================================================
+18.30 SAR ADC WORKING
+============================================================
+
+Suppose we have a 4-bit ADC.
+
+
+The SAR tests bits from:
+
+        MSB → LSB
+
+
+First:
+
+        1000
+
+
+Comparator checks whether this value is too high
+or too low.
+
+
+Then the SAR decides whether to keep or clear
+that bit.
+
+
+Next bit is tested.
+
+
+Conceptually:
+
+        Start
+          |
+          v
+        Test MSB
+          |
+          v
+        Test next bit
+          |
+          v
+        Test next bit
+          |
+          v
+        Test LSB
+          |
+          v
+        Final code
+
+
+This is similar to binary search.
+
+
+============================================================
+18.31 SAR EXAMPLE
+============================================================
+
+Suppose the ADC is 4-bit.
+
+
+Possible codes:
+
+        0000
+        ...
+        1111
+
+
+The SAR might test:
+
+        1000
+
+
+If Vin is greater than the DAC output:
+
+        keep 1
+
+
+If Vin is lower:
+
+        clear 1
+
+
+Then test:
+
+        1100
+        or
+        1000
+
+
+and continue.
+
+
+Eventually:
+
+        Final binary code
+
+
+is obtained.
+
+
+============================================================
+18.32 SAR ADC ADVANTAGES
+============================================================
+
+Advantages:
+
+    + Good speed
+    + Good resolution
+    + Moderate hardware complexity
+    + Low power compared with flash for similar resolution
+    + Widely used
+
+
+Applications:
+
+    Temperature measurement
+    Industrial control
+    Data acquisition
+    Embedded systems
+
+
+Memory:
+
+        SAR = BALANCED
+
+
+============================================================
+18.33 COUNTER-TYPE ADC
+============================================================
+
+Also called:
+
+        Digital ramp ADC
+
+
+Basic structure:
+
+        Clock
+          |
+       Counter
+          |
+          v
+         DAC
+          |
+          v
+       Comparator
+          ^
+          |
+         Vin
+
+
+Working:
+
+    1. Counter starts from 0.
+    2. Counter output goes to DAC.
+    3. DAC produces an analog voltage.
+    4. Comparator compares DAC output with Vin.
+    5. Counter continues until DAC output reaches
+       or crosses the input level.
+    6. Counter value becomes digital output.
+
+
+============================================================
+18.34 COUNTER ADC EXAMPLE
+============================================================
+
+Suppose:
+
+        Vin = 3 V
+
+
+Counter produces:
+
+        000
+        001
+        010
+        011
+        ...
+
+DAC output rises step by step.
+
+
+When DAC output becomes close to Vin:
+
+        Stop counting.
+
+
+The counter value represents Vin.
+
+
+============================================================
+18.35 COUNTER ADC ADVANTAGES
+============================================================
+
+Advantages:
+
+    + Simple design
+    + Easy to understand
+    + Low hardware complexity
+
+
+Disadvantages:
+
+    - Slow
+    - Conversion time depends on input value
+    - Worst-case conversion can take many clock cycles
+
+
+Memory:
+
+        COUNTER ADC = SIMPLE BUT SLOW
+
+
+============================================================
+18.36 DUAL-SLOPE ADC
+============================================================
+
+Dual-slope ADC is widely used where accuracy and
+noise rejection are important.
+
+
+Common applications:
+
+        Digital multimeters
+
+
+Basic idea:
+
+        Integrator
+           ^
+           |
+        Analog input
+           |
+           v
+        Integration
+           |
+           v
+        Reference
+           |
+           v
+        De-integration
+           |
+           v
+        Counter
+           |
+           v
+        Digital output
+
+
+============================================================
+18.37 DUAL-SLOPE WORKING
+============================================================
+
+It has two major integration phases.
+
+
+PHASE 1:
+
+        Integrate the unknown input voltage.
+
+
+PHASE 2:
+
+        Apply a known reference voltage of
+        opposite polarity and integrate back
+        toward zero.
+
+
+The time required to return to zero is measured.
+
+
+That time is proportional to the input voltage.
+
+
+Concept:
+
+        Input integration
+              /
+             /
+            /
+           /
+          /
+
+
+        Return using reference
+              \
+               \
+                \
+                 \____ 0
+
+
+The measured time determines the digital value.
+
+
+============================================================
+18.38 WHY DUAL-SLOPE IS USEFUL
+============================================================
+
+Advantages:
+
+    + High accuracy
+    + Good noise rejection
+    + Excellent for measurement instruments
+
+
+Disadvantages:
+
+    - Slow conversion
+    - Not suitable for high-speed applications
+
+
+Memory:
+
+        DUAL-SLOPE = ACCURATE BUT SLOW
+
+
+============================================================
+18.39 ADC COMPARISON
+============================================================
+
++-------------+-----------+-------------+----------------+
+| ADC Type    | Speed     | Complexity  | Main Feature   |
++-------------+-----------+-------------+----------------+
+| Flash       | Very high | High        | Fastest        |
+| SAR         | High      | Moderate    | Balanced       |
+| Counter     | Low       | Low         | Simple         |
+| Dual-slope  | Low       | Moderate    | Accurate       |
++-------------+-----------+-------------+----------------+
+
+
+Memory:
+
+        Flash      → Fast
+        SAR        → Balanced
+        Counter    → Simple
+        Dual-slope → Accurate
+
+
+============================================================
+18.40 DAC ARCHITECTURES
+============================================================
+
+Important DAC types:
+
+        1. Binary-weighted resistor DAC
+        2. R-2R ladder DAC
+
+
+============================================================
+18.41 BINARY-WEIGHTED RESISTOR DAC
+============================================================
+
+It uses resistors having binary-weighted values.
+
+
+For a 4-bit DAC:
+
+        R
+        2R
+        4R
+        8R
+
+
+Conceptual structure:
+
+        b3 ──R────\
+                   \
+        b2 ──2R────\
+                     >---- Op-amp ---- Vout
+        b1 ──4R────/
+                   /
+        b0 ──8R───/
+
+
+MSB receives the largest contribution.
+
+
+Because:
+
+        MSB has highest weight.
+
+
+============================================================
+18.42 BINARY-WEIGHTED DAC WORKING
+============================================================
+
+For a binary number:
+
+        b3 b2 b1 b0
+
+
+The output is proportional to:
+
+        b3/2
+      + b2/4
+      + b1/8
+      + b0/16
+
+
+with the overall scaling determined by the
+reference voltage and circuit configuration.
+
+
+Therefore each bit has a binary weight.
+
+
+============================================================
+18.43 BINARY-WEIGHTED DAC ADVANTAGES
+============================================================
+
+Advantages:
+
+    + Simple concept
+    + Fast operation
+    + Direct binary weighting
+
+
+Disadvantages:
+
+    - Requires several precise resistor values
+    - Resistor matching becomes difficult
+      at high resolution
+    - Large resistor range may be required
+
+
+============================================================
+18.44 R-2R LADDER DAC
+============================================================
+
+R-2R ladder DAC uses only two resistor values:
+
+        R
+        2R
+
+
+This is its major advantage.
+
+
+Concept:
+
+        b3      b2      b1      b0
+         |       |       |       |
+         v       v       v       v
+        [R-2R ladder network]
+                  |
+                  v
+                Vout
+
+
+The repeated structure makes accurate resistor
+matching easier.
+
+
+============================================================
+18.45 R-2R LADDER ADVANTAGES
+============================================================
+
+Advantages:
+
+    + Only R and 2R resistor values
+    + Easier fabrication
+    + Good scalability
+    + Common practical DAC architecture
+
+
+Disadvantages:
+
+    - Switching and resistor matching still matter
+    - Circuit design is somewhat more involved
+
+
+Memory:
+
+        R-2R = ONLY TWO RESISTOR VALUES
+
+
+============================================================
+18.46 BINARY-WEIGHTED VS R-2R
+============================================================
+
++----------------------+-------------------------+
+| Feature              | Binary-weighted | R-2R   |
++----------------------+-------------------------+
+| Resistor values      | Many values     | R, 2R  |
+| High resolution      | Difficult       | Easier |
+| Matching             | Difficult       | Easier |
+| Practical use        | Limited         | Common |
++----------------------+-------------------------+
+
+
+============================================================
+18.47 DAC RESOLUTION VS ADC RESOLUTION
+============================================================
+
+Both use the idea:
+
+        N bits → 2^N codes/levels
+
+
+For ADC:
+
+        More bits
+        → smaller input step
+        → finer measurement
+
+
+For DAC:
+
+        More bits
+        → smaller output step
+        → finer analog approximation
+
+
+============================================================
+18.48 ACCURACY
+============================================================
+
+Resolution and accuracy are NOT the same.
+
+
+RESOLUTION:
+
+    How small a change can be distinguished.
+
+
+ACCURACY:
+
+    How close the actual result is to the
+    desired/ideal value.
+
+
+Example:
+
+A measuring system may have:
+
+        Very fine resolution
+
+but still have:
+
+        Calibration error
+
+
+Therefore:
+
+        High resolution ≠ automatically high accuracy
+
+
+============================================================
+18.49 CONVERSION TIME
+============================================================
+
+Conversion time is the time required by an ADC
+to produce a digital result after receiving
+an analog input.
+
+
+Smaller conversion time:
+
+        Faster ADC
+
+
+Examples:
+
+        Flash → very fast
+
+        SAR → moderate/fast
+
+        Counter → potentially slow
+
+        Dual-slope → slow
+
+
+============================================================
+18.50 SAMPLING THEOREM
+============================================================
+
+The sampling theorem is fundamental to digital
+signal processing.
+
+
+For a band-limited analog signal with maximum
+frequency:
+
+        fmax
+
+
+The sampling frequency must satisfy:
+
+        fs > 2fmax
+
+
+This is the Nyquist sampling condition.
+
+
+============================================================
+18.51 NYQUIST RATE
+============================================================
+
+The minimum theoretical sampling rate required
+to perfectly reconstruct a band-limited signal is:
+
+        Nyquist rate = 2fmax
+
+
+Example:
+
+        Maximum signal frequency = 5 kHz
+
+
+Nyquist rate:
+
+        2 × 5 kHz
+        = 10 kHz
+
+
+Therefore:
+
+        fs > 10 kHz
+
+is required for ideal sampling according to
+the strict sampling theorem.
+
+
+============================================================
+18.52 NYQUIST FREQUENCY
+============================================================
+
+The Nyquist frequency is:
+
+        fs / 2
+
+
+where fs is the sampling frequency.
+
+
+Example:
+
+        fs = 20 kHz
+
+
+Nyquist frequency:
+
+        20/2
+        = 10 kHz
+
+
+IMPORTANT:
+
+        Nyquist rate:
+            2fmax
+
+
+        Nyquist frequency:
+            fs/2
+
+
+Do not confuse them.
+
+
+============================================================
+18.53 SAMPLING EXAMPLE
+============================================================
+
+Suppose an audio signal contains frequencies
+up to:
+
+        20 kHz
+
+
+Required sampling rate:
+
+        fs > 2 × 20 kHz
+
+        fs > 40 kHz
+
+
+A common practical audio sampling rate is:
+
+        44.1 kHz
+
+
+which is greater than 40 kHz.
+
+
+This allows frequencies up to 20 kHz to be
+represented under ideal assumptions.
+
+
+============================================================
+18.54 WHAT IS ALIASING?
+============================================================
+
+Aliasing occurs when a signal is sampled too slowly,
+causing different frequency components to become
+indistinguishable after sampling.
+
+
+Simple idea:
+
+        HIGH-frequency signal
+                |
+        insufficient sampling
+                |
+                v
+        appears as a LOWER-frequency signal
+
+
+Therefore:
+
+        Aliasing = frequency misrepresentation
+        caused by insufficient sampling.
+
+
+============================================================
+18.55 ALIASING VISUALIZATION
+============================================================
+
+Original high-frequency waveform:
+
+        /\/\/\/\/\/\/\/\/\/\/\
+
+
+Samples:
+
+        •   •   •   •   •   •
+
+
+The sample points may appear to form a much
+slower waveform:
+
+        \        /
+         \      /
+          \____/
+
+
+The reconstructed signal can therefore be wrong.
+
+
+============================================================
+18.56 HOW TO PREVENT ALIASING
+============================================================
+
+Main technique:
+
+        Use sufficient sampling frequency.
+
+
+Also use:
+
+        ANTI-ALIASING FILTER
+
+
+Before ADC:
+
+        Analog signal
+             |
+             v
+      Low-pass filter
+             |
+             v
+            ADC
+             |
+             v
+          Digital
+
+
+The filter removes frequencies above the desired
+band before sampling.
+
+
+============================================================
+18.57 ANTI-ALIASING FILTER
+============================================================
+
+An anti-aliasing filter is generally a
+LOW-PASS FILTER placed before the ADC.
+
+
+Purpose:
+
+        Remove unwanted high-frequency components
+        before sampling.
+
+
+Structure:
+
+        Analog signal
+              |
+              v
+       +-------------+
+       | Anti-alias  |
+       |   filter    |
+       +-------------+
+              |
+              v
+             ADC
+              |
+              v
+           Digital
+
+
+============================================================
+18.58 PRACTICAL ADC-DAC SYSTEM
+============================================================
+
+Example: DIGITAL AUDIO
+
+
+        Sound
+          |
+          v
+     Microphone
+          |
+          v
+      Low-pass
+       filter
+          |
+          v
+         ADC
+          |
+          v
+     Digital data
+          |
+          v
+      Processor
+          |
+          v
+         DAC
+          |
+          v
+    Reconstruction
+       filter
+          |
+          v
+      Amplifier
+          |
+          v
+       Speaker
+          |
+          v
+        Sound
+
+
+This is a complete analog-digital-analog chain.
+
+
+============================================================
+18.59 RECONSTRUCTION FILTER
+============================================================
+
+After DAC, the output may contain stepped or
+sample-related components.
+
+
+A reconstruction filter, usually a low-pass filter,
+can smooth the output.
+
+
+        DAC output:
+
+        __    __    __
+          |__|  |__|
+
+
+After filtering:
+
+        ~~~~~~~~~~~~~
+
+
+Therefore:
+
+        DAC
+         ↓
+    Reconstruction
+       filter
+         ↓
+     Smooth analog
+
+
+============================================================
+18.60 ADC VS DAC
+============================================================
+
++----------------+----------------------------+
+| Feature        | ADC                        |
++----------------+----------------------------+
+| Conversion     | Analog → Digital          |
+| Input           | Analog signal             |
+| Output          | Binary code               |
+| Key concepts    | Sampling, quantization    |
+|                 | and encoding              |
++----------------+----------------------------+
+
++----------------+----------------------------+
+| Feature        | DAC                        |
++----------------+----------------------------+
+| Conversion     | Digital → Analog          |
+| Input           | Binary code               |
+| Output          | Analog signal             |
+| Key concepts    | Binary weighting, ladder   |
++----------------+----------------------------+
+
+
+============================================================
+18.61 IMPORTANT FORMULAS
+============================================================
+
+NUMBER OF LEVELS:
+
+        L = 2^N
+
+
+ADC LSB/step size:
+
+        Δ ≈ Vref / 2^N
+
+
+DAC ideal step size:
+
+        Δ ≈ Vref / 2^N
+
+
+FLASH ADC:
+
+        Number of comparators
+        =
+        2^N - 1
+
+
+NYQUIST RATE:
+
+        2fmax
+
+
+NYQUIST FREQUENCY:
+
+        fs/2
+
+
+SAMPLING CONDITION:
+
+        fs > 2fmax
+
+
+============================================================
+18.62 SOLVED NUMERICAL 1
+============================================================
+
+Question:
+
+A 10-bit ADC has a 5 V reference.
+Find the approximate resolution.
+
+Given:
+
+        N = 10
+        Vref = 5 V
+
+
+Number of levels:
+
+        2^10 = 1024
+
+
+Resolution:
+
+        5/1024
+
+        ≈ 0.0048828 V
+
+
+Therefore:
+
+        ≈ 4.883 mV
+
+
+ANSWER:
+
+        ≈ 4.88 mV/LSB
+
+
+============================================================
+18.63 SOLVED NUMERICAL 2
+============================================================
+
+Question:
+
+How many comparators are needed for an
+8-bit Flash ADC?
+
+
+Formula:
+
+        Comparators = 2^N - 1
+
+
+N = 8
+
+
+        = 256 - 1
+
+        = 255
+
+
+ANSWER:
+
+        255 comparators
+
+
+============================================================
+18.64 SOLVED NUMERICAL 3
+============================================================
+
+Question:
+
+A signal has maximum frequency of 15 kHz.
+Find the minimum theoretical sampling rate.
+
+
+Formula:
+
+        fs > 2fmax
+
+
+Therefore:
+
+        fs > 2 × 15 kHz
+
+        fs > 30 kHz
+
+
+The Nyquist rate is:
+
+        30 kHz
+
+
+Practical sampling frequency should be greater
+than 30 kHz.
+
+
+============================================================
+18.65 SOLVED NUMERICAL 4
+============================================================
+
+Question:
+
+A 12-bit ADC has a 3.3 V reference.
+Find the approximate LSB size.
+
+
+        2^12 = 4096
+
+
+        Resolution
+        = 3.3 / 4096
+
+        ≈ 0.0008057 V
+
+
+Therefore:
+
+        ≈ 0.806 mV
+
+
+============================================================
+18.66 SOLVED NUMERICAL 5
+============================================================
+
+Question:
+
+What is the Nyquist frequency for a sampling
+frequency of 48 kHz?
+
+
+Formula:
+
+        Nyquist frequency = fs/2
+
+
+        = 48/2
+
+        = 24 kHz
+
+
+ANSWER:
+
+        24 kHz
+
+
+============================================================
+18.67 SOLVED NUMERICAL 6
+============================================================
+
+Question:
+
+A 6-bit ADC has an input range of 0–2.56 V.
+Find the approximate step size.
+
+
+        2^6 = 64
+
+
+        Step size
+        = 2.56/64
+
+        = 0.04 V
+
+
+Therefore:
+
+        40 mV
+
+
+============================================================
+18.68 COMMON EXAM TRAPS
+============================================================
+
+TRAP 1:
+
+    ADC:
+        Analog → Digital
+
+    DAC:
+        Digital → Analog
+
+
+TRAP 2:
+
+    Nyquist rate ≠ Nyquist frequency
+
+
+TRAP 3:
+
+    Nyquist rate:
+        2fmax
+
+
+    Nyquist frequency:
+        fs/2
+
+
+TRAP 4:
+
+    Flash ADC comparator count:
+
+        2^N - 1
+
+
+NOT:
+
+        2^N
+
+
+TRAP 5:
+
+    Resolution ≠ Accuracy
+
+
+TRAP 6:
+
+    Quantization happens after sampling.
+
+
+TRAP 7:
+
+    Encoding converts quantization levels
+    into binary codes.
+
+
+============================================================
+18.69 EASY MEMORY TECHNIQUES
+============================================================
+
+ADC PROCESS:
+
+        SQE
+
+        S = Sampling
+        Q = Quantization
+        E = Encoding
+
+
+ADC TYPES:
+
+        F S C D
+
+        F = Flash
+        S = SAR
+        C = Counter
+        D = Dual-slope
+
+
+Think:
+
+        Flash → Fast
+        SAR → Search
+        Counter → Count
+        Dual-slope → Measure accurately
+
+
+DAC TYPES:
+
+        B + R
+
+        B = Binary-weighted
+        R = R-2R ladder
+
+
+SAMPLING:
+
+        "TWICE THE HIGHEST FREQUENCY"
+
+
+============================================================
+18.70 PRACTICE QUESTIONS — BASIC
+============================================================
+
+Q1.
+Define an analog signal.
+
+
+Q2.
+Define a digital signal.
+
+
+Q3.
+What is an ADC?
+
+
+Q4.
+What is a DAC?
+
+
+Q5.
+What are the three main stages of ADC?
+
+
+Q6.
+Define sampling.
+
+
+Q7.
+Define quantization.
+
+
+Q8.
+Define quantization error.
+
+
+Q9.
+Define encoding.
+
+
+Q10.
+What is ADC resolution?
+
+
+============================================================
+18.71 PRACTICE QUESTIONS — CONCEPTUAL
+============================================================
+
+Q11.
+Why is an ADC required in a digital system?
+
+
+Q12.
+Why is a DAC required?
+
+
+Q13.
+Differentiate ADC and DAC.
+
+
+Q14.
+Differentiate resolution and accuracy.
+
+
+Q15.
+Why does increasing the number of ADC bits
+increase resolution?
+
+
+Q16.
+Why is Flash ADC very fast?
+
+
+Q17.
+Why does Flash ADC require many comparators?
+
+
+Q18.
+Why is SAR ADC compared to binary search?
+
+
+Q19.
+Why is Counter ADC slow?
+
+
+Q20.
+Why is Dual-slope ADC used in digital multimeters?
+
+
+============================================================
+18.72 PRACTICE QUESTIONS — NUMERICAL
+============================================================
+
+Q21.
+Find the number of levels in a 6-bit ADC.
+
+
+Q22.
+Find the number of levels in a 12-bit ADC.
+
+
+Q23.
+Find the resolution of an 8-bit ADC with
+Vref = 5 V.
+
+
+Q24.
+How many comparators are required for a
+5-bit Flash ADC?
+
+
+Q25.
+How many comparators are required for a
+10-bit Flash ADC?
+
+
+Q26.
+A signal has maximum frequency 10 kHz.
+Find the Nyquist rate.
+
+
+Q27.
+A signal has maximum frequency 25 kHz.
+What minimum theoretical sampling rate is required?
+
+
+Q28.
+Find the Nyquist frequency for fs = 100 kHz.
+
+
+Q29.
+Find the approximate LSB size of a
+10-bit ADC with Vref = 3.3 V.
+
+
+Q30.
+A 4-bit DAC has Vref = 8 V.
+Find its approximate step size.
+
+
+============================================================
+18.73 MCQs
+============================================================
+
+Q1.
+ADC stands for:
+
+A) Analog Data Circuit
+B) Analog-to-Digital Converter
+C) Automatic Digital Converter
+D) Analog Digital Controller
+
+
+Q2.
+DAC converts:
+
+A) Analog to digital
+B) Digital to analog
+C) Digital to digital
+D) Analog to analog
+
+
+Q3.
+The correct ADC sequence is:
+
+A) Encoding → Sampling → Quantization
+B) Quantization → Sampling → Encoding
+C) Sampling → Quantization → Encoding
+D) Sampling → Encoding → Quantization
+
+
+Q4.
+A 4-bit ADC has:
+
+A) 4 levels
+B) 8 levels
+C) 16 levels
+D) 32 levels
+
+
+Q5.
+The number of comparators in an N-bit Flash ADC is:
+
+A) 2^N
+B) 2N
+C) 2^N - 1
+D) N - 1
+
+
+Q6.
+Which ADC is generally the fastest?
+
+A) Counter
+B) Dual-slope
+C) Flash
+D) SAR
+
+
+Q7.
+Which ADC is commonly used for high-accuracy
+measurement instruments?
+
+A) Flash
+B) Dual-slope
+C) Counter
+D) None
+
+
+Q8.
+SAR means:
+
+A) Serial Analog Register
+B) Successive Approximation Register
+C) Sample Analog Register
+D) Successive Analog Resistor
+
+
+Q9.
+R-2R DAC uses:
+
+A) R only
+B) 2R only
+C) R and 2R
+D) R, 2R, 4R, 8R only
+
+
+Q10.
+The Nyquist rate for a signal of maximum frequency
+10 kHz is:
+
+A) 5 kHz
+B) 10 kHz
+C) 20 kHz
+D) 40 kHz
+
+
+Q11.
+Aliasing occurs mainly because:
+
+A) Sampling frequency is too high
+B) Sampling frequency is too low
+C) Resolution is too high
+D) DAC is too fast
+
+
+Q12.
+An anti-aliasing filter is generally:
+
+A) High-pass
+B) Low-pass
+C) Band-stop only
+D) Digital counter
+
+
+Q13.
+The Nyquist frequency for fs = 50 kHz is:
+
+A) 10 kHz
+B) 20 kHz
+C) 25 kHz
+D) 100 kHz
+
+
+Q14.
+Quantization error is caused because:
+
+A) Digital levels are infinite
+B) Finite quantization levels approximate continuous amplitudes
+C) Sampling never occurs
+D) DAC has no output
+
+
+Q15.
+Increasing ADC resolution generally:
+
+A) Decreases the number of levels
+B) Increases quantization step size
+C) Increases the number of levels
+D) Eliminates sampling
+
+
+============================================================
+18.74 MCQ ANSWERS
+============================================================
+
+Q1  → B
+Q2  → B
+Q3  → C
+Q4  → C
+Q5  → C
+Q6  → C
+Q7  → B
+Q8  → B
+Q9  → C
+Q10 → C
+Q11 → B
+Q12 → B
+Q13 → C
+Q14 → B
+Q15 → C
+
+
+============================================================
+18.75 CHAPTER 18 QUICK REVISION
+============================================================
+
+ADC:
+
+        Analog → Digital
+
+
+DAC:
+
+        Digital → Analog
+
+
+ADC PROCESS:
+
+        Sampling
+           ↓
+        Quantization
+           ↓
+        Encoding
+
+
+N-bit converter:
+
+        2^N levels
+
+
+ADC resolution:
+
+        ≈ Vref / 2^N
+
+
+Flash ADC:
+
+        Fastest
+        Comparators = 2^N - 1
+
+
+SAR ADC:
+
+        Binary-search-like
+        Balanced speed and resolution
+
+
+Counter ADC:
+
+        Simple
+        Slow
+
+
+Dual-slope ADC:
+
+        Accurate
+        Slow
+        Good for measurement instruments
+
+
+Binary-weighted DAC:
+
+        Binary-weighted resistors
+
+
+R-2R DAC:
+
+        Only R and 2R resistor values
+
+
+Nyquist rate:
+
+        2fmax
+
+
+Nyquist frequency:
+
+        fs/2
+
+
+Sampling condition:
+
+        fs > 2fmax
+
+
+Aliasing:
+
+        Incorrect frequency representation
+        due to insufficient sampling.
+
+
+Anti-aliasing filter:
+
+        Low-pass filter before ADC.
+
+
+============================================================
+18.76 CHAPTER 18 MASTER CHECKLIST
+============================================================
+
+[ ] Understand analog signals.
+[ ] Understand digital signals.
+[ ] Understand ADC.
+[ ] Understand DAC.
+[ ] Understand sampling.
+[ ] Understand quantization.
+[ ] Understand quantization error.
+[ ] Understand encoding.
+[ ] Calculate 2^N levels.
+[ ] Calculate ADC resolution.
+[ ] Understand Flash ADC.
+[ ] Remember 2^N - 1 comparators.
+[ ] Understand SAR ADC.
+[ ] Understand Counter ADC.
+[ ] Understand Dual-slope ADC.
+[ ] Compare ADC architectures.
+[ ] Understand binary-weighted DAC.
+[ ] Understand R-2R DAC.
+[ ] Compare DAC architectures.
+[ ] Understand sampling theorem.
+[ ] Calculate Nyquist rate.
+[ ] Calculate Nyquist frequency.
+[ ] Understand aliasing.
+[ ] Understand anti-aliasing filters.
+[ ] Solve ADC/DAC numerical problems.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+                    CHAPTER 19
+                        ↓
+             LOGIC CIRCUIT DESIGN PROBLEMS
+                        |
+          +-------------+-------------+
+          |                           |
+    COMBINATIONAL                 SEQUENTIAL
+       DESIGN                       DESIGN
+          |                           |
+   Truth table                  State diagram
+          ↓                           ↓
+   Boolean equation             State table
+          ↓                           ↓
+   Simplification               FF selection
+          ↓                           ↓
+   K-map                        Excitation table
+          ↓                           ↓
+   Circuit                      K-map
+                                      ↓
+                                  Final circuit
+
+In Chapter 19, we will start putting everything
+together and learn how to DESIGN complete digital
+circuits from a problem statement.
+
+============================================================

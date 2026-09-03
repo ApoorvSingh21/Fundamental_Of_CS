@@ -1,0 +1,2193 @@
+============================================================
+CHAPTER 20 — ADVANCED DIGITAL LOGIC & PRACTICAL CONCEPTS
+============================================================
+Level: B.Tech 1st Year / Computer Science
+Goal: Understand how individual digital circuits are
+      connected to build practical computer hardware.
+
+Topics:
+    20.1 Tri-State Logic
+    20.2 Open-Collector / Open-Drain Logic
+    20.3 Bus Systems
+    20.4 Digital System Building Blocks
+    20.5 Hardware Description Languages
+============================================================
+
+
+20.1 WHY ADVANCED DIGITAL LOGIC?
+============================================================
+
+So far, we studied individual building blocks:
+
+    Logic gates
+       ↓
+    Adders
+       ↓
+    MUX/DEMUX
+       ↓
+    Flip-flops
+       ↓
+    Registers
+       ↓
+    Counters
+       ↓
+    State machines
+
+But a real computer contains thousands or millions
+of such components working together.
+
+For example:
+
+                    COMPUTER
+                       |
+          +------------+------------+
+          |            |            |
+         CPU         MEMORY         I/O
+          |
+     +----+----+
+     |         |
+    ALU     Control
+             Unit
+               |
+           Registers
+
+
+To connect these blocks efficiently, we need concepts
+such as:
+
+    • Tri-state logic
+    • Buses
+    • Bus control
+    • ALU
+    • Datapath
+    • Control units
+    • HDL
+
+
+============================================================
+20.2 TRI-STATE LOGIC
+============================================================
+
+Normally, a digital output has two possible states:
+
+        0
+        1
+
+
+Tri-state logic adds a third state:
+
+        HIGH IMPEDANCE (Z)
+
+
+Therefore:
+
+        0
+        1
+        Z
+
+
+The third state is called:
+
+        High impedance
+        or
+        Hi-Z
+
+
+Symbolically:
+
+        Z = High impedance
+
+
+IMPORTANT:
+
+Z does NOT mean 0.
+
+Z does NOT mean 1.
+
+Z means:
+
+        "Disconnected from the circuit"
+        or
+        "electrically not driving the line."
+
+
+============================================================
+20.3 WHY DO WE NEED HIGH IMPEDANCE?
+============================================================
+
+Imagine two devices connected to the same wire.
+
+Device A wants:
+
+        1
+
+
+Device B wants:
+
+        0
+
+
+If both actively drive the wire:
+
+        A ----+
+             |
+             +---------- BUS
+             |
+        B ----+
+
+
+A → 1
+
+B → 0
+
+
+This creates:
+
+        BUS = conflict
+
+
+This condition is called:
+
+        BUS CONTENTION
+
+
+It can cause:
+
+    • Incorrect data
+    • Excessive current
+    • Possible hardware damage
+
+
+Therefore, we need a way for devices to
+temporarily disconnect from the bus.
+
+That is exactly what the high-impedance state provides.
+
+
+============================================================
+20.4 TRI-STATE BUFFER
+============================================================
+
+A tri-state buffer has:
+
+        Input
+        Enable
+        Output
+
+
+Basic representation:
+
+                 +---------+
+Input ---------->|         |
+                 | TRI-    |------ Output
+Enable --------->| STATE   |
+                 | BUFFER  |
+                 +---------+
+
+
+The enable input controls whether the buffer
+drives the output.
+
+
+For an active-HIGH enable:
+
+        Enable = 1
+        → Buffer enabled
+
+
+        Enable = 0
+        → Output = Z
+
+
+Truth table:
+
++---------+-------+--------+
+| Enable  | Input | Output |
++---------+-------+--------+
+|    0    |   0   |   Z    |
+|    0    |   1   |   Z    |
+|    1    |   0   |   0    |
+|    1    |   1   |   1    |
++---------+-------+--------+
+
+
+Therefore:
+
+        E = 0 → disconnected
+        E = 1 → output follows input
+
+
+Boolean relationship when enabled:
+
+        Y = D
+
+
+When disabled:
+
+        Y = Z
+
+
+============================================================
+20.5 TRI-STATE BUFFER AS A SWITCH
+============================================================
+
+Think of the tri-state buffer as an electronically
+controlled switch.
+
+
+        Input
+          |
+          v
+       +-----+
+       |     |------ Output
+       |  Z  |
+       |     |
+       +-----+
+          ^
+          |
+        Enable
+
+
+Enable OFF:
+
+        Input ----X---- Output
+
+
+Enable ON:
+
+        Input ---------- Output
+
+
+This mental model is extremely useful.
+
+
+============================================================
+20.6 MULTIPLE DEVICES ON ONE BUS
+============================================================
+
+Suppose three devices share a bus:
+
+        Device A
+            |
+            |
+        Device B
+            |
+            +------ BUS
+            |
+        Device C
+
+
+Each device uses a tri-state buffer.
+
+        A ----[Tri-State]---+
+                             |
+        B ----[Tri-State]---+---- BUS
+                             |
+        C ----[Tri-State]---+
+
+
+Only ONE device should normally be enabled
+at a time.
+
+
+Example:
+
+        Enable A = 1
+        Enable B = 0
+        Enable C = 0
+
+
+Then:
+
+        BUS = Data from A
+
+
+If:
+
+        Enable A = 0
+        Enable B = 1
+        Enable C = 0
+
+
+Then:
+
+        BUS = Data from B
+
+
+============================================================
+20.7 BUS CONTENTION
+============================================================
+
+Bus contention occurs when two or more devices
+simultaneously drive the same bus with conflicting
+values.
+
+
+Example:
+
+        Device A → 1
+        Device B → 0
+
+
+       A =======+
+               |
+               +------ BUS
+               |
+       B =======+
+
+
+This is dangerous.
+
+
+Correct operation:
+
+        Device A → 1
+        Device B → Z
+        Device C → Z
+
+
+Then:
+
+        BUS = 1
+
+
+Therefore:
+
+        One driver active
+        Others = Z
+
+
+is the basic bus-sharing principle.
+
+
+============================================================
+20.8 TRI-STATE APPLICATIONS
+============================================================
+
+Tri-state logic is commonly used in:
+
+    • Data buses
+    • CPU buses
+    • Memory interfaces
+    • Microprocessors
+    • I/O interfaces
+    • Shared communication lines
+
+
+The main advantage:
+
+        MANY devices
+             ↓
+        ONE shared bus
+
+
+============================================================
+20.9 OPEN-COLLECTOR LOGIC
+============================================================
+
+Open-collector logic is another method used
+for connecting multiple devices to a common line.
+
+
+The output transistor's collector is intentionally
+left "open" and an external pull-up resistor is used.
+
+
+Conceptually:
+
+                 VCC
+                  |
+                Rpull-up
+                  |
+                  +-------- OUTPUT
+                  |
+              +---+
+              |
+             transistor
+              |
+             GND
+
+
+The pull-up resistor pulls the output HIGH
+when the transistor is OFF.
+
+
+When the transistor turns ON:
+
+        Output → LOW
+
+
+Therefore:
+
+        Transistor OFF → 1
+        Transistor ON  → 0
+
+
+============================================================
+20.10 WHY IS A PULL-UP RESISTOR NEEDED?
+============================================================
+
+Without the pull-up resistor, when the transistor
+is OFF, there is no active device forcing the
+line HIGH.
+
+
+The resistor provides:
+
+        HIGH state
+
+
+Conceptually:
+
+        VCC
+         |
+         R
+         |
+         +------ Output
+         |
+       switch
+         |
+        GND
+
+
+Switch OFF:
+
+        Output ≈ HIGH
+
+
+Switch ON:
+
+        Output ≈ LOW
+
+
+============================================================
+20.11 OPEN-DRAIN LOGIC
+============================================================
+
+In MOS technology, the corresponding concept is:
+
+        OPEN-DRAIN
+
+
+It is similar to open-collector logic.
+
+Difference:
+
+    Open-collector → commonly associated with BJT
+    Open-drain    → commonly associated with MOSFET
+
+
+Concept:
+
+        Device can actively pull line LOW.
+
+        External pull-up provides HIGH.
+
+
+Therefore:
+
+        OFF → HIGH through pull-up
+        ON  → LOW
+
+
+============================================================
+20.12 WIRED LOGIC
+============================================================
+
+Multiple open-collector/open-drain outputs can
+share a common line.
+
+
+Example:
+
+        Device A ----+
+                     |
+        Device B ----+------ LINE
+                     |
+        Device C ----+
+
+
+With a pull-up resistor:
+
+
+                  VCC
+                   |
+                   R
+                   |
+                   +------ LINE
+                   |
+              +----+----+
+              |    |    |
+              A    B    C
+             switch/switch/switch
+              |    |    |
+             GND  GND  GND
+
+
+If ANY device pulls the line LOW:
+
+        LINE = 0
+
+
+The line is HIGH only when:
+
+        ALL devices release it.
+
+
+This behavior resembles:
+
+        WIRED-AND
+
+
+depending on the logic convention used.
+
+
+============================================================
+20.13 OPEN-DRAIN APPLICATIONS
+============================================================
+
+Common applications include:
+
+    • Shared interrupt lines
+    • I²C communication
+    • Level shifting
+    • Reset lines
+    • Wired logic
+    • Multiple-device signaling
+
+
+IMPORTANT EXAM POINT:
+
+Open-drain outputs generally need a pull-up
+resistor to obtain a HIGH level.
+
+
+============================================================
+20.14 TRI-STATE VS OPEN-DRAIN
+============================================================
+
++----------------------+--------------------------+
+| Tri-State            | Open-Drain             |
++----------------------+--------------------------+
+| 0, 1, Z              | Pull LOW or release    |
+| Can drive HIGH/LOW   | Usually actively LOW   |
+| Uses Hi-Z            | Uses pull-up resistor  |
+| Common bus sharing   | Shared signaling lines |
+| CPU data buses       | I²C, interrupts        |
++----------------------+--------------------------+
+
+
+Memory trick:
+
+        TRI-STATE → 0 / 1 / Z
+
+        OPEN-DRAIN → LOW / RELEASE
+
+
+============================================================
+20.15 WHAT IS A BUS?
+============================================================
+
+A bus is a group of parallel electrical lines
+used to transfer information between digital
+components.
+
+
+Instead of connecting every component directly
+to every other component:
+
+        A ↔ B
+        A ↔ C
+        A ↔ D
+        B ↔ C
+        B ↔ D
+        C ↔ D
+
+
+we can use a shared bus.
+
+
+        +---------+
+        | Device A |
+        +----+----+
+             |
+             |
+        +----+----------------+
+        |       BUS           |
+        +----+----------------+
+             |
+        +----+----+
+        | Device B |
+        +---------+
+
+
+This greatly simplifies interconnection.
+
+
+============================================================
+20.16 TYPES OF COMPUTER BUSES
+============================================================
+
+The three traditional categories are:
+
+        1. DATA BUS
+        2. ADDRESS BUS
+        3. CONTROL BUS
+
+
+Think:
+
+        DATA    = WHAT?
+        ADDRESS = WHERE?
+        CONTROL = HOW/WHEN?
+
+
+============================================================
+20.17 DATA BUS
+============================================================
+
+The data bus carries actual data.
+
+
+Example:
+
+        CPU → Memory
+
+CPU sends:
+
+        10110100
+
+
+The data bus carries those bits.
+
+
+For an 8-bit data bus:
+
+        D7 D6 D5 D4 D3 D2 D1 D0
+
+
+There are:
+
+        8 physical data lines.
+
+
+For a 32-bit data bus:
+
+        32 data lines
+
+
+For a 64-bit data bus:
+
+        64 data lines
+
+
+============================================================
+20.18 ADDRESS BUS
+============================================================
+
+The address bus identifies the location
+where data should be read from or written to.
+
+
+Example:
+
+        CPU wants memory location:
+
+        00001010
+
+
+The address is sent through the address bus.
+
+
+If there are n address lines:
+
+        Number of addressable locations = 2^n
+
+
+Example:
+
+        10 address lines
+
+
+Then:
+
+        2^10 = 1024 locations
+
+
+Example:
+
+        16 address lines
+
+
+Then:
+
+        2^16 = 65,536 locations
+
+
+============================================================
+20.19 CONTROL BUS
+============================================================
+
+The control bus carries control signals.
+
+
+Examples:
+
+        READ
+        WRITE
+        CLOCK
+        RESET
+        INTERRUPT
+        ENABLE
+
+
+Conceptually:
+
+        +-------+
+        |  CPU  |
+        +---+---+
+            |
+       +----+----+
+       |         |
+       v         v
+    Address     Data
+      Bus        Bus
+       |
+       |
+    Control Bus
+       |
+       v
+     Memory
+
+
+============================================================
+20.20 MEMORY READ OPERATION
+============================================================
+
+Suppose CPU wants to read data from memory.
+
+
+General process:
+
+        1. CPU places address on address bus.
+        2. CPU activates READ signal.
+        3. Memory decodes address.
+        4. Memory places data on data bus.
+        5. CPU receives data.
+
+
+ASCII:
+
+      ADDRESS BUS
+CPU -----------------> MEMORY
+                       |
+      READ ----------->|
+                       |
+      DATA <------------|
+CPU <------------------+
+
+
+Remember:
+
+        Address = location
+        Data    = information
+        Read    = operation
+
+
+============================================================
+20.21 MEMORY WRITE OPERATION
+============================================================
+
+CPU wants to store data.
+
+
+Process:
+
+        1. CPU places address.
+        2. CPU places data.
+        3. CPU activates WRITE.
+        4. Memory stores data.
+
+
+ASCII:
+
+      ADDRESS BUS
+CPU -----------------> MEMORY
+
+      DATA BUS
+CPU -----------------> MEMORY
+
+      WRITE
+CPU -----------------> MEMORY
+
+
+============================================================
+20.22 BUS WIDTH
+============================================================
+
+Bus width refers to the number of bits
+transferred simultaneously.
+
+
+Example:
+
+        8-bit bus
+
+can transfer:
+
+        8 bits at once.
+
+
+        D7 D6 D5 D4 D3 D2 D1 D0
+        |  |  |  |  |  |  |  |
+        +--+--+--+--+--+--+--+
+                 DATA
+
+
+A wider bus can transfer more bits per
+parallel transfer.
+
+
+============================================================
+20.23 BUS CONTENTION
+============================================================
+
+Suppose:
+
+        CPU → BUS
+        Memory → BUS
+
+
+Both cannot drive the bus at the same time
+unless specifically designed for it.
+
+
+Therefore bus systems require:
+
+        Enable signals
+        or
+        Bus arbitration
+
+
+============================================================
+20.24 BUS ARBITRATION
+============================================================
+
+What happens if multiple devices want control
+of the same bus?
+
+
+We need:
+
+        BUS ARBITRATION
+
+
+Bus arbitration decides:
+
+        "Who gets to use the bus?"
+
+
+Possible bus masters:
+
+        CPU
+        DMA controller
+        I/O controller
+
+
+Conceptually:
+
+        Device A ----\
+        Device B -----+--> ARBITER --> BUS
+        Device C ----/
+
+
+The arbiter grants bus ownership to one device.
+
+
+============================================================
+20.25 DIGITAL SYSTEM BUILDING BLOCKS
+============================================================
+
+A practical digital system is constructed
+from reusable blocks.
+
+
+Important blocks:
+
+        • ALU
+        • Registers
+        • Memory
+        • Control unit
+        • Datapath
+        • Counters
+        • Multiplexers
+        • Decoders
+
+
+These blocks combine to form computers.
+
+
+============================================================
+20.26 ALU
+============================================================
+
+ALU means:
+
+        ARITHMETIC LOGIC UNIT
+
+
+It performs arithmetic and logical operations.
+
+
+Typical operations:
+
+        ADD
+        SUBTRACT
+        AND
+        OR
+        XOR
+        NOT
+        SHIFT
+        COMPARE
+
+
+Basic diagram:
+
+                 +----------------+
+ A ------------->|                |
+                 |      ALU       |----> Result
+ B ------------->|                |
+                 |                |
+ Control ------->| Operation      |
+                 +----------------+
+
+
+Example:
+
+        A = 0101
+        B = 0011
+
+
+ALU operation:
+
+        ADD
+
+
+Result:
+
+        1000
+
+
+============================================================
+20.27 ALU INTERNAL STRUCTURE
+============================================================
+
+An ALU may contain:
+
+        Arithmetic unit
+        Logic unit
+        Multiplexer
+        Control logic
+
+
+Conceptually:
+
+                  A
+                  |
+                  v
+           +-------------+
+           | Arithmetic  |
+           |    Unit     |
+           +------+------+
+                  |
+                  |
+                  +------+
+                         |
+                         v
+                      +-----+
+                      | MUX |---- Result
+                      +-----+
+                         ^
+                         |
+                  +------+
+                  |
+           +------+------+
+           |    Logic    |
+           |    Unit     |
+           +-------------+
+                  ^
+                  |
+                  B
+
+
+Control signals determine which operation
+is selected.
+
+
+============================================================
+20.28 REGISTERS
+============================================================
+
+A register is a collection of flip-flops
+used to store binary information.
+
+
+For an n-bit register:
+
+        n flip-flops
+
+
+Example:
+
+        4-bit register
+
+
+        +---+---+---+---+
+        | Q3| Q2| Q1| Q0|
+        +---+---+---+---+
+
+
+It can store:
+
+        0000 to 1111
+
+
+Therefore:
+
+        2^4 = 16 possible bit patterns.
+
+
+============================================================
+20.29 REGISTER IN A CPU
+============================================================
+
+Registers provide very fast temporary storage.
+
+
+Example:
+
+        +---------+
+        | Register|
+        |   R1    |
+        +---------+
+             |
+             v
+            ALU
+
+
+CPU instructions frequently operate on
+register contents.
+
+
+============================================================
+20.30 CONTROL UNIT
+============================================================
+
+The control unit coordinates the operations
+of the processor.
+
+
+It generates control signals such as:
+
+        Register Enable
+        Register Load
+        ALU Select
+        Memory Read
+        Memory Write
+        MUX Select
+
+
+Conceptually:
+
+                 +-------------+
+                 |   CONTROL   |
+                 |    UNIT     |
+                 +------+------+
+                        |
+          +-------------+-------------+
+          |             |             |
+          v             v             v
+        ALU         Registers      Memory
+
+
+Think:
+
+        ALU = Does the operation
+
+        Control Unit =
+        Tells everyone what to do
+
+
+============================================================
+20.31 DATAPATH
+============================================================
+
+A datapath is the collection of hardware
+through which data moves and is processed.
+
+
+It commonly contains:
+
+        Registers
+        ALU
+        Multiplexers
+        Buses
+
+
+Example:
+
+        R1 ----\
+               MUX ----> ALU ----> R2
+        R3 ----/          ^
+                          |
+                         Control
+
+
+The datapath carries the actual data.
+
+
+============================================================
+20.32 DATAPATH + CONTROL
+============================================================
+
+A CPU can conceptually be divided into:
+
+        DATAPATH
+             +
+        CONTROL UNIT
+
+
+                 CPU
+        +----------------------+
+        |                      |
+        |  +--------+          |
+        |  | Control|          |
+        |  |  Unit  |          |
+        |  +---+----+          |
+        |      |               |
+        |      v               |
+        |  +--------+          |
+        |  |Datapath|          |
+        |  | ALU +  |          |
+        |  |Registers          |
+        |  +--------+          |
+        |                      |
+        +----------------------+
+
+
+Control tells the datapath what operation
+to perform.
+
+
+============================================================
+20.33 SIMPLE CPU OPERATION
+============================================================
+
+Suppose CPU wants:
+
+        R3 = R1 + R2
+
+
+Conceptually:
+
+        R1 ----\
+                \
+                 ALU ----> R3
+                /
+        R2 ----/
+
+
+Control unit generates:
+
+        Select R1
+        Select R2
+        ALU = ADD
+        Load R3
+
+
+Sequence:
+
+        1. Read R1
+        2. Read R2
+        3. ALU adds
+        4. Store result in R3
+
+
+This is digital logic working together
+at a higher level.
+
+
+============================================================
+20.34 HARDWARE DESCRIPTION LANGUAGES
+============================================================
+
+A Hardware Description Language (HDL) is a
+language used to describe digital hardware.
+
+
+Instead of physically drawing every gate,
+we can describe the circuit using text.
+
+
+Examples:
+
+        Verilog
+        VHDL
+        SystemVerilog
+
+
+HDL can be used for:
+
+        • Design
+        • Simulation
+        • Verification
+        • Synthesis
+        • FPGA development
+
+
+============================================================
+20.35 WHY USE HDL?
+============================================================
+
+Imagine designing a processor containing
+millions of gates manually.
+
+
+This would be extremely difficult.
+
+
+HDL allows us to describe hardware
+systematically.
+
+
+Example:
+
+        "Create an AND gate."
+
+
+Conceptually:
+
+        A ----\
+               AND ---- Y
+        B ----/
+
+
+In HDL, we can express the same behavior
+using code.
+
+
+============================================================
+20.36 VERILOG
+============================================================
+
+Verilog is a hardware description language
+widely used for digital design.
+
+
+A simple AND gate can be represented as:
+
+    module and_gate(
+        input A,
+        input B,
+        output Y
+    );
+
+        assign Y = A & B;
+
+    endmodule
+
+
+The important idea is:
+
+        Y = A AND B
+
+
+The code describes hardware behavior.
+
+
+============================================================
+20.37 BASIC VERILOG STRUCTURE
+============================================================
+
+General structure:
+
+    module module_name(
+        inputs,
+        outputs
+    );
+
+        // hardware description
+
+    endmodule
+
+
+Think of:
+
+        module
+
+as a digital circuit block.
+
+
+Example:
+
+    module xor_gate(
+        input A,
+        input B,
+        output Y
+    );
+
+        assign Y = A ^ B;
+
+    endmodule
+
+
+Here:
+
+        ^ = XOR
+
+
+============================================================
+20.38 COMMON VERILOG OPERATORS
+============================================================
+
+Bitwise operators:
+
+        &   AND
+        |   OR
+        ^   XOR
+        ~   NOT
+
+
+Example:
+
+        assign Y = A & B;
+
+
+means:
+
+        Y = A AND B
+
+
+Example:
+
+        assign Y = A | B;
+
+
+means:
+
+        Y = A OR B
+
+
+Example:
+
+        assign Y = ~A;
+
+
+means:
+
+        Y = NOT A
+
+
+============================================================
+20.39 VERILOG MULTIPLEXER EXAMPLE
+============================================================
+
+2:1 MUX equation:
+
+        Y = S'D0 + SD1
+
+
+Verilog:
+
+    module mux2to1(
+        input D0,
+        input D1,
+        input S,
+        output Y
+    );
+
+        assign Y = (~S & D0) | (S & D1);
+
+    endmodule
+
+
+Notice the connection:
+
+        Boolean equation
+              ↓
+        Verilog expression
+              ↓
+        Hardware circuit
+
+
+============================================================
+20.40 VERILOG FULL ADDER EXAMPLE
+============================================================
+
+Full adder:
+
+Inputs:
+
+        A
+        B
+        Cin
+
+
+Outputs:
+
+        Sum
+        Cout
+
+
+Equations:
+
+        Sum = A XOR B XOR Cin
+
+        Cout = AB + ACin + BCin
+
+
+Verilog:
+
+    module full_adder(
+        input A,
+        input B,
+        input Cin,
+        output Sum,
+        output Cout
+    );
+
+        assign Sum = A ^ B ^ Cin;
+
+        assign Cout =
+            (A & B) |
+            (A & Cin) |
+            (B & Cin);
+
+    endmodule
+
+
+This is essentially the same logic we designed
+using gates earlier.
+
+
+============================================================
+20.41 HDL: DESIGN FLOW
+============================================================
+
+Typical digital design flow:
+
+        Specification
+             ↓
+        HDL description
+             ↓
+        Simulation
+             ↓
+        Verification
+             ↓
+        Synthesis
+             ↓
+        Hardware
+
+
+For FPGA:
+
+        HDL
+         ↓
+      Synthesis
+         ↓
+     FPGA configuration
+         ↓
+       Physical circuit
+
+
+============================================================
+20.42 SIMULATION
+============================================================
+
+Simulation allows us to test a circuit
+without physically building it.
+
+
+Example:
+
+        AND gate
+
+
+Input:
+
+        A B
+
+Test:
+
+        00
+        01
+        10
+        11
+
+
+Expected:
+
+        0
+        0
+        0
+        1
+
+
+A simulator verifies whether the HDL
+produces the expected output.
+
+
+============================================================
+20.43 TESTBENCH
+============================================================
+
+A testbench is code used to apply inputs
+to a design and observe its outputs.
+
+
+Conceptually:
+
+        Testbench
+             |
+             v
+        +---------+
+        |  DUT    |
+        | Design  |
+        +---------+
+             |
+             v
+          Outputs
+
+
+DUT means:
+
+        Device Under Test
+
+
+The testbench does not represent the final
+hardware itself.
+
+It tests the hardware description.
+
+
+============================================================
+20.44 SYNTHESIS
+============================================================
+
+Synthesis converts an HDL description
+into hardware structures.
+
+
+Conceptually:
+
+        Verilog
+           ↓
+        Synthesis
+           ↓
+      Logic gates
+           ↓
+    Flip-flops / LUTs
+           ↓
+       Hardware
+
+
+For an FPGA, synthesis maps the design
+into resources available inside the FPGA.
+
+
+============================================================
+20.45 FPGA INTRODUCTION
+============================================================
+
+FPGA means:
+
+        Field Programmable Gate Array
+
+
+It is a programmable digital hardware device.
+
+
+Conceptually:
+
+        +--------------------------------+
+        |             FPGA               |
+        |                                |
+        |  LUT   FF   LUT   FF           |
+        |                                |
+        |  LUT   FF   LUT   FF           |
+        |                                |
+        |     Programmable Routing       |
+        +--------------------------------+
+
+
+You can configure the FPGA to implement
+many different digital circuits.
+
+
+Examples:
+
+        Counters
+        Processors
+        Controllers
+        Signal-processing systems
+        Custom digital logic
+
+
+============================================================
+20.46 ASIC VS FPGA
+============================================================
+
+ASIC:
+
+        Application-Specific Integrated Circuit
+
+
+Designed for a specific application.
+
+
+FPGA:
+
+        Reconfigurable hardware.
+
+
+Comparison:
+
++----------------+----------------------+
+| ASIC           | FPGA                 |
++----------------+----------------------+
+| Fixed hardware | Reprogrammable       |
+| High initial   | Lower development    |
+| development    | cost                 |
+| Often faster   | Flexible             |
+| High volume    | Prototyping          |
++----------------+----------------------+
+
+
+============================================================
+20.47 PRACTICAL DIGITAL SYSTEM
+============================================================
+
+Let's combine everything.
+
+
+Imagine a simple processor:
+
+
+              +----------------+
+              | CONTROL UNIT   |
+              +-------+--------+
+                      |
+                      v
+        +-----------------------------+
+        |           DATAPATH          |
+        |                             |
+        |  +------+      +---------+  |
+        |  | R1   |----->|         |  |
+        |  +------+      |   ALU   |--+--> Result
+        |                |         |  |
+        |  +------+----->|         |  |
+        |  | R2   |      +---------+  |
+        |  +------+                    |
+        +-----------------------------+
+                      |
+                    BUS
+                      |
+                +-----------+
+                |  MEMORY   |
+                +-----------+
+
+
+Inside these blocks are:
+
+        Gates
+        MUXes
+        Flip-flops
+        Adders
+        Decoders
+        Registers
+        Control logic
+
+
+Therefore a CPU is ultimately constructed
+from digital logic.
+
+
+============================================================
+20.48 IMPORTANT CONCEPT
+============================================================
+
+The hierarchy is:
+
+        TRANSISTORS
+             ↓
+        LOGIC GATES
+             ↓
+        COMBINATIONAL CIRCUITS
+             ↓
+        FLIP-FLOPS
+             ↓
+        REGISTERS
+             ↓
+        ALU / CONTROL
+             ↓
+        DATAPATH
+             ↓
+        CPU
+             ↓
+        COMPUTER
+
+
+This is one of the most important connections
+in Digital Logic.
+
+
+============================================================
+20.49 EXAM QUESTIONS
+============================================================
+
+Q1.
+What is tri-state logic?
+
+
+Q2.
+What are the three states of a tri-state output?
+
+
+Q3.
+What is high impedance?
+
+
+Q4.
+Why is tri-state logic useful in bus systems?
+
+
+Q5.
+What is bus contention?
+
+
+Q6.
+What is an open-collector output?
+
+
+Q7.
+Why is a pull-up resistor used with
+open-collector logic?
+
+
+Q8.
+Differentiate open-collector and open-drain.
+
+
+Q9.
+What are the three major types of computer buses?
+
+
+Q10.
+What is the function of the data bus?
+
+
+Q11.
+What is the function of the address bus?
+
+
+Q12.
+What is the function of the control bus?
+
+
+Q13.
+If an address bus has 12 lines, how many
+locations can it address?
+
+
+Q14.
+What is an ALU?
+
+
+Q15.
+What is a datapath?
+
+
+Q16.
+What is the function of a control unit?
+
+
+Q17.
+What is HDL?
+
+
+Q18.
+What is Verilog?
+
+
+Q19.
+What is synthesis?
+
+
+Q20.
+What is simulation?
+
+
+============================================================
+20.50 NUMERICAL PRACTICE
+============================================================
+
+Q21.
+
+A memory has 16 address lines.
+
+How many locations can it address?
+
+
+Q22.
+
+A memory has 20 address lines.
+
+How many locations can it address?
+
+
+Q23.
+
+A system has a 32-bit data bus.
+
+How many bits can be transferred in one
+parallel data transfer?
+
+
+Q24.
+
+How many flip-flops are required for
+a 16-bit register?
+
+
+Q25.
+
+How many possible binary values can
+a 8-bit register store?
+
+
+============================================================
+20.51 MCQs
+============================================================
+
+Q1.
+A tri-state output has:
+
+A) 1 state
+B) 2 states
+C) 3 states
+D) 4 states
+
+
+Q2.
+The third state of tri-state logic is:
+
+A) X
+B) Z
+C) H
+D) N
+
+
+Q3.
+High impedance means:
+
+A) Logic HIGH
+B) Logic LOW
+C) Electrically disconnected/released
+D) Short circuit
+
+
+Q4.
+Bus contention occurs when:
+
+A) No device drives the bus
+B) Multiple devices drive the bus simultaneously
+C) The clock stops
+D) Memory is empty
+
+
+Q5.
+Open-drain outputs generally use:
+
+A) Pull-up resistor
+B) Pull-down resistor only
+C) Capacitor
+D) Inductor
+
+
+Q6.
+Which bus carries actual data?
+
+A) Address bus
+B) Control bus
+C) Data bus
+D) Clock bus
+
+
+Q7.
+If there are 10 address lines, the number of
+addressable locations is:
+
+A) 10
+B) 100
+C) 1024
+D) 2048
+
+
+Q8.
+ALU stands for:
+
+A) Arithmetic Logic Unit
+B) Address Logic Unit
+C) Analog Logic Unit
+D) Arithmetic Link Unit
+
+
+Q9.
+Which unit coordinates CPU operations?
+
+A) ALU
+B) Control Unit
+C) Register
+D) Data bus
+
+
+Q10.
+HDL stands for:
+
+A) Hardware Description Language
+B) Hardware Data Logic
+C) High Digital Language
+D) Hardware Design Link
+
+
+Q11.
+Which is an HDL?
+
+A) HTML
+B) Python
+C) Verilog
+D) SQL
+
+
+Q12.
+Synthesis converts HDL into:
+
+A) Text
+B) Hardware implementation
+C) Decimal numbers
+D) Analog signals
+
+
+Q13.
+An FPGA is:
+
+A) Fixed analog memory
+B) Programmable digital hardware
+C) Only a processor
+D) A logic gate
+
+
+Q14.
+A 16-bit register requires:
+
+A) 4 flip-flops
+B) 8 flip-flops
+C) 16 flip-flops
+D) 32 flip-flops
+
+
+Q15.
+A datapath primarily carries:
+
+A) Data and performs data operations
+B) Only clock signals
+C) Only addresses
+D) Only reset signals
+
+
+============================================================
+20.52 MCQ ANSWERS
+============================================================
+
+Q1  → C
+Q2  → B
+Q3  → C
+Q4  → B
+Q5  → A
+Q6  → C
+Q7  → C
+Q8  → A
+Q9  → B
+Q10 → A
+Q11 → C
+Q12 → B
+Q13 → B
+Q14 → C
+Q15 → A
+
+
+============================================================
+20.53 CHAPTER 20 QUICK REVISION
+============================================================
+
+TRI-STATE:
+
+        0 / 1 / Z
+
+
+HIGH IMPEDANCE:
+
+        Z = electrically released
+
+
+BUS:
+
+        Shared communication path
+
+
+DATA BUS:
+
+        Carries data
+
+
+ADDRESS BUS:
+
+        Identifies location
+
+
+CONTROL BUS:
+
+        Carries control signals
+
+
+OPEN-DRAIN:
+
+        Pulls LOW or releases line
+
+
+ALU:
+
+        Performs arithmetic and logic
+
+
+REGISTER:
+
+        Stores binary information
+
+
+CONTROL UNIT:
+
+        Generates control signals
+
+
+DATAPATH:
+
+        Hardware through which data moves
+        and is processed
+
+
+HDL:
+
+        Describes digital hardware using code
+
+
+VERILOG:
+
+        Hardware description language
+
+
+SIMULATION:
+
+        Test design behavior
+
+
+SYNTHESIS:
+
+        Convert HDL into hardware implementation
+
+
+FPGA:
+
+        Programmable digital hardware
+
+
+============================================================
+20.54 THE BIG PICTURE
+============================================================
+
+You have now progressed from:
+
+        BASIC DIGITAL CONCEPTS
+                 ↓
+        NUMBER SYSTEMS
+                 ↓
+        BOOLEAN ALGEBRA
+                 ↓
+        LOGIC GATES
+                 ↓
+        K-MAPS
+                 ↓
+        COMBINATIONAL CIRCUITS
+                 ↓
+        FLIP-FLOPS
+                 ↓
+        REGISTERS
+                 ↓
+        COUNTERS
+                 ↓
+        STATE MACHINES
+                 ↓
+        CIRCUIT DESIGN
+                 ↓
+        PRACTICAL DIGITAL SYSTEMS
+                 ↓
+        CPU BUILDING BLOCKS
+                 ↓
+        HDL / FPGA
+
+
+This is the bridge from introductory
+Digital Logic to Computer Architecture
+and real hardware design.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+                    CHAPTER 21
+             DIGITAL LOGIC PRACTICALS
+                        
+                        ↓
+
+        Basic Gate Experiments
+              ↓
+        Boolean Law Verification
+              ↓
+        Half Adder / Full Adder
+              ↓
+        Subtractors
+              ↓
+        MUX / DEMUX
+              ↓
+        Encoder / Decoder
+              ↓
+        Comparator
+              ↓
+        Latches / Flip-Flops
+              ↓
+        Shift Registers
+              ↓
+        Counters
+              ↓
+        Logisim / Digital
+              ↓
+        Proteus / Multisim
+              ↓
+        HDL Simulation
+
+Chapter 21 will focus on how the concepts learned
+in Chapters 1–20 are actually tested, constructed,
+and verified in a digital logic laboratory.
+
+============================================================

@@ -1,0 +1,2032 @@
+u============================================================
+CHAPTER 19 — LOGIC CIRCUIT DESIGN PROBLEMS
+============================================================
+Level: B.Tech 1st Year / Computer Science
+Goal: Learn how to design a complete digital circuit
+      starting from a real-world problem statement.
+
+This chapter connects everything learned so far:
+
+Number Systems
+      ↓
+Boolean Algebra
+      ↓
+Logic Gates
+      ↓
+K-Maps
+      ↓
+Combinational Circuits
+      ↓
+Flip-Flops
+      ↓
+Counters
+      ↓
+State Machines
+      ↓
+COMPLETE CIRCUIT DESIGN
+============================================================
+
+
+19.1 WHAT IS DIGITAL CIRCUIT DESIGN?
+============================================================
+
+Digital circuit design means converting a problem or
+requirement into a working digital logic circuit.
+
+For example:
+
+"Design a circuit whose output is 1 whenever at least
+two of three inputs are 1."
+
+We need to convert this sentence into:
+
+        Problem
+           ↓
+     Identify inputs
+           ↓
+     Identify output
+           ↓
+       Truth table
+           ↓
+    Boolean expression
+           ↓
+      Simplification
+           ↓
+    Logic implementation
+           ↓
+      Final circuit
+
+
+This is the basic design methodology.
+
+
+============================================================
+19.2 TWO MAJOR TYPES OF DIGITAL DESIGN
+============================================================
+
+Digital circuits are broadly divided into:
+
+        1. COMBINATIONAL
+        2. SEQUENTIAL
+
+
+COMBINATIONAL:
+
+Output depends only on present inputs.
+
+
+        Inputs
+          |
+          v
+     +----------+
+     | Logic    |
+     | Circuit  |
+     +----------+
+          |
+          v
+        Output
+
+
+Mathematically:
+
+        Output = f(Present Inputs)
+
+
+Examples:
+
+    Adder
+    Subtractor
+    Multiplexer
+    Decoder
+    Encoder
+    Comparator
+
+
+------------------------------------------------------------
+
+SEQUENTIAL:
+
+Output depends on:
+
+        Present inputs
+              +
+        Previous state
+
+
+        Inputs
+          |
+          v
+     +----------+
+     | Logic    |------> Output
+     +----------+
+          ^
+          |
+       Memory
+          ^
+          |
+        Clock
+
+
+Mathematically:
+
+        Next State =
+        f(Present State, Inputs)
+
+
+Examples:
+
+    Counter
+    Sequence detector
+    Traffic controller
+    Digital lock
+    Vending machine
+
+
+============================================================
+19.3 COMBINATIONAL CIRCUIT DESIGN PROCEDURE
+============================================================
+
+For most combinational design problems, follow:
+
+        STEP 1 → Understand problem
+        STEP 2 → Identify inputs
+        STEP 3 → Identify outputs
+        STEP 4 → Assign binary variables
+        STEP 5 → Construct truth table
+        STEP 6 → Obtain Boolean expression
+        STEP 7 → Simplify
+        STEP 8 → Draw logic circuit
+        STEP 9 → Verify
+
+
+MEMORY TECHNIQUE:
+
+        I → O → T → E → S → C → V
+
+        Inputs
+        Outputs
+        Truth table
+        Expression
+        Simplification
+        Circuit
+        Verification
+
+
+============================================================
+19.4 DESIGN EXAMPLE 1
+      MAJORITY CIRCUIT
+============================================================
+
+Problem:
+
+"Design a circuit with three inputs A, B and C.
+The output should be 1 when at least two inputs
+are 1."
+
+
+------------------------------------------------------------
+STEP 1: IDENTIFY INPUTS
+------------------------------------------------------------
+
+There are three inputs:
+
+        A
+        B
+        C
+
+
+Therefore:
+
+        Number of inputs = 3
+
+
+------------------------------------------------------------
+STEP 2: IDENTIFY OUTPUT
+------------------------------------------------------------
+
+Let output be:
+
+        Y
+
+
+Requirement:
+
+        Y = 1
+        when at least two inputs are 1.
+
+
+============================================================
+19.5 TRUTH TABLE
+============================================================
+
+There are:
+
+        2^3 = 8
+
+possible input combinations.
+
+
++---+---+---+-----+
+| A | B | C |  Y  |
++---+---+---+-----+
+| 0 | 0 | 0 |  0  |
+| 0 | 0 | 1 |  0  |
+| 0 | 1 | 0 |  0  |
+| 0 | 1 | 1 |  1  |
+| 1 | 0 | 0 |  0  |
+| 1 | 0 | 1 |  1  |
+| 1 | 1 | 0 |  1  |
+| 1 | 1 | 1 |  1  |
++---+---+---+-----+
+
+
+Observe:
+
+Y = 1 for:
+
+        011
+        101
+        110
+        111
+
+
+============================================================
+19.6 OBTAINING BOOLEAN EXPRESSION
+============================================================
+
+Take every row where:
+
+        Y = 1
+
+
+011:
+
+        A'BC
+
+
+101:
+
+        AB'C
+
+
+110:
+
+        ABC'
+
+
+111:
+
+        ABC
+
+
+Therefore canonical SOP is:
+
+        Y = A'BC + AB'C + ABC' + ABC
+
+
+Now simplify.
+
+
+============================================================
+19.7 SIMPLIFICATION
+============================================================
+
+Starting:
+
+        Y = A'BC + AB'C + ABC' + ABC
+
+
+Group terms:
+
+        A'BC + ABC
+        = BC(A' + A)
+        = BC
+
+
+Similarly:
+
+        AB'C + ABC
+        = AC(B' + B)
+        = AC
+
+
+And:
+
+        ABC' + ABC
+        = AB(C' + C)
+        = AB
+
+
+Therefore:
+
+        Y = AB + AC + BC
+
+
+Final expression:
+
+        +---+       +---+
+A ------|   |       |   |
+        |AND|---\   |   |
+B ------|   |    \  |   |
+        +---+     \ |OR |---- Y
+                   \|   |
+A ------+---+       |   |
+        |AND|-------|   |
+C ------|   |       +---+
+        +---+
+         
+B ------+---+
+        |AND|
+C ------|   |
+        +---+
+
+
+More simply:
+
+        Y = AB + AC + BC
+
+
+This is called a:
+
+        MAJORITY CIRCUIT
+
+
+because the majority of inputs must be 1.
+
+
+============================================================
+19.8 DESIGN EXAMPLE 2
+      HALF ADDER FROM A REQUIREMENT
+============================================================
+
+Problem:
+
+"Design a circuit that adds two 1-bit binary numbers."
+
+
+Inputs:
+
+        A
+        B
+
+
+Outputs:
+
+        Sum = S
+        Carry = C
+
+
+Binary addition:
+
+        0 + 0 = 00
+        0 + 1 = 01
+        1 + 0 = 01
+        1 + 1 = 10
+
+
+Therefore:
+
+        S = A XOR B
+
+        C = AB
+
+
+Circuit:
+
+        A --------+------ XOR ------ S
+                  |
+        B --------+
+
+        A --------+------ AND ------ C
+                  |
+        B --------+
+
+
+This demonstrates an important point:
+
+A design problem can directly lead to a known
+building block.
+
+
+============================================================
+19.9 DESIGN EXAMPLE 3
+      EVEN PARITY GENERATOR
+============================================================
+
+Problem:
+
+"Design a circuit that generates an even parity bit
+for three data bits A, B and C."
+
+
+Even parity means:
+
+        Total number of 1s,
+        including parity bit,
+        must be EVEN.
+
+
+For three data bits:
+
+        P = A XOR B XOR C
+
+
+Why?
+
+XOR produces 1 when there is an odd number of 1s.
+
+Therefore the parity bit changes the total number
+of 1s from odd to even.
+
+
+Circuit:
+
+        A ----\
+               XOR ----\
+        B ----/         \
+                         XOR ---- P
+        C ---------------/
+
+
+Example:
+
+        A B C = 101
+
+There are two 1s.
+
+Already even.
+
+Therefore:
+
+        P = 0
+
+
+Total:
+
+        1010
+
+Number of 1s = 2
+
+
+Another example:
+
+        A B C = 100
+
+There is one 1.
+
+Therefore:
+
+        P = 1
+
+
+Result:
+
+        1001
+
+Number of 1s = 2
+
+
+============================================================
+19.10 DESIGN EXAMPLE 4
+      ALARM CIRCUIT
+============================================================
+
+Problem:
+
+An alarm should activate if:
+
+    Door is open AND system is armed.
+
+Let:
+
+        D = Door open
+        A = System armed
+        Y = Alarm
+
+
+Requirement:
+
+        Y = D · A
+
+
+Truth table:
+
++---+---+---+
+| D | A | Y |
++---+---+---+
+| 0 | 0 | 0 |
+| 0 | 1 | 0 |
+| 1 | 0 | 0 |
+| 1 | 1 | 1 |
++---+---+---+
+
+
+Circuit:
+
+        D --------\
+                   AND ---- Y
+        A --------/
+
+
+This is the simplest type of design problem.
+
+
+============================================================
+19.11 WHEN TO USE SOP?
+============================================================
+
+SOP means:
+
+        SUM OF PRODUCTS
+
+
+Example:
+
+        Y = AB + AC + BC
+
+
+It is useful when the output is specified
+for input combinations where:
+
+        Y = 1
+
+
+Procedure:
+
+        Find 1s
+          ↓
+        Write minterms
+          ↓
+        Simplify
+          ↓
+        Implement
+
+
+============================================================
+19.12 WHEN TO USE POS?
+============================================================
+
+POS means:
+
+        PRODUCT OF SUMS
+
+
+It is often convenient when the output is specified
+through the rows where:
+
+        Y = 0
+
+
+Procedure:
+
+        Find 0s
+          ↓
+        Write maxterms
+          ↓
+        Simplify
+          ↓
+        Implement
+
+
+============================================================
+19.13 USING K-MAP IN DESIGN
+============================================================
+
+Suppose:
+
+        Y(A,B,C,D)
+        = Σm(0,2,8,10)
+
+
+We can:
+
+        1. Draw 4-variable K-map
+        2. Place 1s
+        3. Group adjacent 1s
+        4. Obtain simplified expression
+        5. Draw circuit
+
+
+The K-map is therefore a bridge between:
+
+        TRUTH TABLE
+             ↓
+        MINIMIZATION
+             ↓
+        CIRCUIT
+
+
+============================================================
+19.14 DON'T-CARE CONDITIONS IN DESIGN
+============================================================
+
+Sometimes certain input combinations never occur
+or their output does not matter.
+
+These are called:
+
+        DON'T-CARE CONDITIONS
+
+
+Represented by:
+
+        X
+
+
+Example:
+
+BCD uses only:
+
+        0000 to 1001
+
+
+The combinations:
+
+        1010
+        1011
+        1100
+        1101
+        1110
+        1111
+
+
+are invalid BCD combinations.
+
+They may sometimes be treated as don't-cares
+when designing BCD-related combinational logic.
+
+
+The K-map can use X values to create larger groups.
+
+
+============================================================
+19.15 SEQUENTIAL CIRCUIT DESIGN
+============================================================
+
+Sequential design is more complex because
+we have MEMORY.
+
+
+General flow:
+
+        Problem statement
+              ↓
+        Identify inputs
+              ↓
+        Identify outputs
+              ↓
+        Identify states
+              ↓
+        State diagram
+              ↓
+        State table
+              ↓
+        State reduction
+              ↓
+        State assignment
+              ↓
+        Select flip-flop
+              ↓
+        Excitation table
+              ↓
+        K-map
+              ↓
+        Logic equations
+              ↓
+        Final circuit
+
+
+MEMORY:
+
+        S → T → A → F → K → E → C
+
+        States
+        Table
+        Assignment
+        Flip-flop
+        K-map
+        Equations
+        Circuit
+
+
+============================================================
+19.16 WHAT IS A STATE?
+============================================================
+
+A state represents the stored information about
+the past behavior of a sequential circuit.
+
+
+Example:
+
+Suppose a vending machine has received:
+
+        ₹0
+        ₹5
+        ₹10
+
+
+These can be states.
+
+
+        S0 = ₹0 received
+        S1 = ₹5 received
+        S2 = ₹10 received
+
+
+The machine remembers the current state.
+
+
+============================================================
+19.17 STATE DIAGRAM
+============================================================
+
+A state diagram represents:
+
+        States
+        +
+        Transitions
+
+
+Example:
+
+        +------+
+        | S0   |
+        +------+
+          |
+       coin
+          v
+        +------+
+        | S1   |
+        +------+
+
+
+The arrow represents a transition.
+
+
+============================================================
+19.18 STATE TRANSITION
+============================================================
+
+Suppose:
+
+        S0 = No coin
+        S1 = ₹5 inserted
+
+
+If a ₹5 coin is inserted:
+
+        S0 --₹5--> S1
+
+
+If another ₹5 coin is inserted:
+
+        S1 --₹5--> S2
+
+
+Therefore:
+
+        S0 → S1 → S2
+
+
+The next state depends on:
+
+        Present state
+        +
+        Input
+
+
+============================================================
+19.19 DESIGN EXAMPLE — SIMPLE SEQUENCE DETECTOR
+============================================================
+
+Problem:
+
+Design a circuit that detects the sequence:
+
+        101
+
+
+Input arrives one bit at a time.
+
+Example input stream:
+
+        1 0 1
+
+Output should become 1 when the sequence
+101 has been detected.
+
+
+We need memory because the circuit must remember
+previous input bits.
+
+
+Therefore this is:
+
+        SEQUENTIAL CIRCUIT
+
+
+============================================================
+19.20 IDENTIFY STATES
+============================================================
+
+We can define:
+
+        S0:
+        Nothing useful detected.
+
+
+        S1:
+        We received 1.
+
+
+        S2:
+        We received 10.
+
+
+When another 1 arrives from S2:
+
+        101 detected.
+
+
+Therefore:
+
+        S2 --1--> detection
+
+
+============================================================
+19.21 BASIC STATE DIAGRAM
+============================================================
+
+        1
+   +----------+
+   |          v
+ +----+     +----+
+ | S0 |---->| S1 |
+ +----+  1  +----+
+   ^           |
+   |           | 0
+   |           v
+   |         +----+
+   +---------| S2 |
+      0      +----+
+                |
+                | 1
+                v
+              DETECT
+
+
+This diagram can be refined depending on whether
+overlapping sequences are allowed.
+
+
+============================================================
+19.22 MEALY VS MOORE IN DESIGN
+============================================================
+
+A sequence detector can be implemented as:
+
+        Moore machine
+
+or:
+
+        Mealy machine
+
+
+MEALY:
+
+        Output depends on:
+
+        Present state + Input
+
+
+MOORE:
+
+        Output depends on:
+
+        Present state only
+
+
+This choice changes the state diagram and
+sometimes the number of states.
+
+
+============================================================
+19.23 SEQUENTIAL DESIGN EXAMPLE
+      — TRAFFIC LIGHT CONTROLLER
+============================================================
+
+Problem:
+
+Design a controller for a traffic signal.
+
+
+Possible states:
+
+        S0 = RED
+        S1 = GREEN
+        S2 = YELLOW
+
+
+State sequence:
+
+        RED
+         |
+         v
+       GREEN
+         |
+         v
+       YELLOW
+         |
+         v
+        RED
+
+
+ASCII:
+
+        +-------+
+        | RED   |
+        +-------+
+            |
+            v
+        +-------+
+        | GREEN |
+        +-------+
+            |
+            v
+        +--------+
+        | YELLOW |
+        +--------+
+            |
+            +-------> RED
+
+
+A clock determines when the state changes.
+
+
+============================================================
+19.24 STATE TABLE
+============================================================
+
+A state table describes transitions in tabular form.
+
+
+Example:
+
++--------------+--------+---------------+
+| Present State| Input  | Next State    |
++--------------+--------+---------------+
+| S0           | 0      | S0            |
+| S0           | 1      | S1            |
+| S1           | 0      | S2            |
+| S1           | 1      | S2            |
++--------------+--------+---------------+
+
+
+The actual table depends on the problem.
+
+
+============================================================
+19.25 STATE ASSIGNMENT
+============================================================
+
+Suppose there are:
+
+        4 states
+
+
+We need enough flip-flops to represent them.
+
+
+Number of flip-flops required:
+
+        n = ceil(log2 N)
+
+
+where N = number of states.
+
+
+For 4 states:
+
+        log2(4) = 2
+
+
+Therefore:
+
+        2 flip-flops
+
+
+Possible assignment:
+
+        S0 = 00
+        S1 = 01
+        S2 = 10
+        S3 = 11
+
+
+============================================================
+19.26 STATE ASSIGNMENT EXAMPLE
+============================================================
+
+Suppose:
+
+        3 states
+
+
+We need:
+
+        ceil(log2 3)
+        = 2 flip-flops
+
+
+Possible:
+
+        S0 = 00
+        S1 = 01
+        S2 = 10
+
+
+State:
+
+        11
+
+is unused.
+
+
+The unused state must be considered carefully
+during practical design.
+
+
+============================================================
+19.27 FLIP-FLOP SELECTION
+============================================================
+
+After state assignment, select the flip-flop.
+
+
+Common choices:
+
+        SR
+        JK
+        D
+        T
+
+
+D flip-flops are often convenient because:
+
+        D = Next State
+
+
+For a D flip-flop:
+
+        Q(next) = D
+
+
+Therefore if:
+
+        Desired next state = Q(next)
+
+
+then simply:
+
+        D = Q(next)
+
+
+This can greatly simplify sequential design.
+
+
+============================================================
+19.28 SEQUENTIAL DESIGN USING D FLIP-FLOPS
+============================================================
+
+General process:
+
+        Present State
+              |
+              v
+        Next-state logic
+              |
+              v
+             D
+              |
+          +-------+
+ Clock -->| D FF  |
+          +-------+
+              |
+              v
+        Present State
+
+
+This creates a feedback system.
+
+
+============================================================
+19.29 COUNTER DESIGN
+============================================================
+
+Counters are also sequential circuit design problems.
+
+
+Example:
+
+Design a 2-bit binary up counter.
+
+
+Counting sequence:
+
+        00
+        01
+        10
+        11
+        00
+        ...
+
+
+State diagram:
+
+        +----+
+        | 00 |
+        +----+
+          |
+          v
+        +----+
+        | 01 |
+        +----+
+          |
+          v
+        +----+
+        | 10 |
+        +----+
+          |
+          v
+        +----+
+        | 11 |
+        +----+
+          |
+          +-----> 00
+
+
+This sequence repeats with each clock pulse.
+
+
+============================================================
+19.30 DESIGNING A COUNTER
+============================================================
+
+Typical steps:
+
+        1. Determine counting sequence
+        2. Draw state diagram
+        3. Create state table
+        4. Select flip-flops
+        5. Use excitation table
+        6. Derive input equations
+        7. Simplify using K-map
+        8. Draw circuit
+        9. Verify sequence
+
+
+============================================================
+19.31 FREQUENCY DIVIDER DESIGN
+============================================================
+
+A flip-flop can divide frequency.
+
+
+For a T flip-flop:
+
+        T = 1
+
+
+the output toggles every clock pulse.
+
+
+Therefore:
+
+        foutput = fclock / 2
+
+
+For two cascaded divide-by-2 stages:
+
+        foutput = fclock / 4
+
+
+ASCII:
+
+ Clock
+   |
+   v
+ +-----+
+ | T FF|---- /2
+ +-----+
+    |
+    v
+ +-----+
+ | T FF|---- /4
+ +-----+
+    |
+    v
+ +-----+
+ | T FF|---- /8
+ +-----+
+
+
+This is a very common design concept.
+
+
+============================================================
+19.32 DIGITAL LOCK DESIGN
+============================================================
+
+Consider a digital lock requiring:
+
+        1 → 0 → 1
+
+
+The circuit must remember entered bits.
+
+
+Possible states:
+
+        S0 = nothing entered
+        S1 = received 1
+        S2 = received 10
+        S3 = received 101
+
+
+If S3 is reached:
+
+        Unlock = 1
+
+
+State sequence:
+
+        S0 → S1 → S2 → S3
+
+
+This is essentially a sequence detector
+with a specific output condition.
+
+
+============================================================
+19.33 VENDING MACHINE DESIGN
+============================================================
+
+Suppose a product costs:
+
+        ₹10
+
+
+Inputs:
+
+        N = ₹5 coin
+        T = ₹10 coin
+
+
+States:
+
+        S0 = ₹0
+        S1 = ₹5
+
+
+If ₹5 inserted:
+
+        S0 → S1
+
+
+If another ₹5 inserted:
+
+        S1 → dispense
+
+
+If ₹10 inserted:
+
+        S0 → dispense
+
+
+This requires:
+
+        Inputs
+        +
+        State memory
+        +
+        Output logic
+
+
+Therefore it is sequential.
+
+
+============================================================
+19.34 COMBINATIONAL VS SEQUENTIAL DESIGN
+============================================================
+
++----------------------+--------------------------+
+| Combinational       | Sequential              |
++----------------------+--------------------------+
+| No memory           | Has memory               |
+| Current inputs only | Inputs + previous state |
+| No state transition | State transitions        |
+| Usually simpler     | Usually more complex     |
+| Adders              | Counters                 |
+| MUX                 | Sequence detectors       |
+| Decoder             | Traffic controller      |
++----------------------+--------------------------+
+
+
+============================================================
+19.35 HOW TO READ A DESIGN PROBLEM
+============================================================
+
+Whenever you see a question, ask:
+
+QUESTION 1:
+
+"Does the circuit need to remember the past?"
+
+If NO:
+
+        Combinational
+
+
+If YES:
+
+        Sequential
+
+
+QUESTION 2:
+
+"What are the inputs?"
+
+
+QUESTION 3:
+
+"What are the outputs?"
+
+
+QUESTION 4:
+
+"When should output become 1?"
+
+
+QUESTION 5:
+
+"What happens in every possible input/state?"
+
+
+These questions prevent many design mistakes.
+
+
+============================================================
+19.36 COMMON DESIGN MISTAKES
+============================================================
+
+MISTAKE 1:
+
+Forgetting an input variable.
+
+
+MISTAKE 2:
+
+Incorrect truth-table row.
+
+
+MISTAKE 3:
+
+Writing minterms incorrectly.
+
+
+MISTAKE 4:
+
+Grouping non-adjacent cells in K-map.
+
+
+MISTAKE 5:
+
+Confusing present state with next state.
+
+
+MISTAKE 6:
+
+Using an insufficient number of flip-flops.
+
+
+MISTAKE 7:
+
+Ignoring unused states.
+
+
+MISTAKE 8:
+
+Forgetting the reset/initial state.
+
+
+MISTAKE 9:
+
+Drawing the final circuit without verification.
+
+
+============================================================
+19.37 DESIGN VERIFICATION
+============================================================
+
+After designing a circuit, ALWAYS verify it.
+
+
+For combinational circuit:
+
+        Test every input combination.
+
+
+For sequential circuit:
+
+        Test every state transition.
+
+
+Example:
+
+If 3 inputs exist:
+
+        2^3 = 8 combinations
+
+
+Check all 8.
+
+
+Never check only the "important" cases.
+
+
+============================================================
+19.38 TOP-DOWN DESIGN APPROACH
+============================================================
+
+Start with the requirement:
+
+        "What should the circuit do?"
+
+
+Then move downward:
+
+        Specification
+             ↓
+        Block diagram
+             ↓
+        Inputs/outputs
+             ↓
+        Truth/state table
+             ↓
+        Equations
+             ↓
+        Simplification
+             ↓
+        Gates
+             ↓
+        Hardware
+
+
+This is called a:
+
+        TOP-DOWN APPROACH
+
+
+============================================================
+19.39 BOTTOM-UP THINKING
+============================================================
+
+You can also start from known building blocks:
+
+        Gates
+         ↓
+        MUX
+         ↓
+        Adder
+         ↓
+        Register
+         ↓
+        ALU
+         ↓
+        Processor
+
+
+This is useful when constructing larger systems
+from smaller components.
+
+
+============================================================
+19.40 DESIGN HIERARCHY
+============================================================
+
+A complex digital system can be divided into blocks.
+
+
+Example CPU:
+
+        +-------------------------+
+        |          CPU            |
+        |                         |
+        |  +------+   +--------+  |
+        |  | ALU  |   | Control|  |
+        |  +------+   +--------+  |
+        |      |          |       |
+        |  +------------------+   |
+        |  |    Registers     |   |
+        |  +------------------+   |
+        +-------------------------+
+
+
+Each block itself contains smaller digital circuits.
+
+
+Therefore:
+
+        Large system
+             ↓
+        Smaller blocks
+             ↓
+        Gates
+             ↓
+        Transistors
+
+
+============================================================
+19.41 IMPORTANT EXAM METHOD
+============================================================
+
+When asked:
+
+"Design a combinational circuit..."
+
+Write:
+
+    1. Given/requirement
+    2. Inputs
+    3. Outputs
+    4. Truth table
+    5. Boolean expression
+    6. K-map/algebraic simplification
+    7. Final equation
+    8. Logic diagram
+    9. Verification
+
+
+When asked:
+
+"Design a sequential circuit..."
+
+Write:
+
+    1. Problem statement
+    2. Inputs
+    3. Outputs
+    4. States
+    5. State diagram
+    6. State table
+    7. State assignment
+    8. Flip-flop selection
+    9. Excitation table
+   10. K-map
+   11. FF input equations
+   12. Final circuit
+   13. Verification
+
+
+============================================================
+19.42 INTERVIEW QUESTIONS
+============================================================
+
+Q1.
+How do you decide whether a circuit is
+combinational or sequential?
+
+ANSWER:
+
+If output depends only on current inputs,
+it is combinational.
+
+If the circuit requires memory and output/next
+state depends on previous state, it is sequential.
+
+
+Q2.
+Why is a truth table important?
+
+ANSWER:
+
+It specifies the required output for every
+possible input combination.
+
+
+Q3.
+Why is K-map used?
+
+ANSWER:
+
+To simplify Boolean expressions and reduce
+hardware complexity.
+
+
+Q4.
+Why do sequential circuits need states?
+
+ANSWER:
+
+States represent stored information about
+previous behavior.
+
+
+Q5.
+Why are flip-flops used?
+
+ANSWER:
+
+They store binary state information.
+
+
+============================================================
+19.43 PRACTICE — COMBINATIONAL DESIGN
+============================================================
+
+Q1.
+
+Design a 3-input circuit whose output is 1 only
+when all three inputs are 1.
+
+
+Q2.
+
+Design a 3-input circuit whose output is 1 when
+at least one input is 1.
+
+
+Q3.
+
+Design a 3-input circuit whose output is 1 when
+exactly one input is 1.
+
+
+Q4.
+
+Design an odd-parity generator for three inputs.
+
+
+Q5.
+
+Design a circuit that detects whether two
+2-bit numbers are equal.
+
+
+Q6.
+
+Design a circuit whose output is 1 when:
+
+        A = 1
+        AND
+        either B or C is 1.
+
+
+Q7.
+
+Design a majority circuit for four inputs.
+
+
+============================================================
+19.44 PRACTICE — SEQUENTIAL DESIGN
+============================================================
+
+Q8.
+
+Design a 2-bit binary up counter.
+
+
+Q9.
+
+Design a 2-bit binary down counter.
+
+
+Q10.
+
+Design a circuit that detects the sequence:
+
+        110
+
+
+Q11.
+
+Design a circuit that detects:
+
+        1011
+
+
+Q12.
+
+Design a traffic-light controller using
+three states.
+
+
+Q13.
+
+Design a digital lock requiring:
+
+        1 → 0 → 1
+
+
+Q14.
+
+Design a MOD-5 counter.
+
+
+============================================================
+19.45 NUMERICAL/LOGIC QUESTIONS
+============================================================
+
+Q15.
+
+How many rows are required in a truth table
+for 5 input variables?
+
+
+Q16.
+
+How many flip-flops are required to represent
+8 states?
+
+
+Q17.
+
+How many flip-flops are required to represent
+10 states?
+
+
+Q18.
+
+How many states can 4 flip-flops represent?
+
+
+Q19.
+
+How many possible combinations exist for
+6 binary inputs?
+
+
+Q20.
+
+A circuit has 4 inputs. How many truth-table
+rows must be checked during verification?
+
+
+============================================================
+19.46 MCQs
+============================================================
+
+Q1.
+The first step in combinational circuit design is:
+
+A) Draw gates
+B) Simplify expression
+C) Understand/specify the problem
+D) Select flip-flop
+
+
+Q2.
+A circuit whose output depends only on present
+inputs is:
+
+A) Sequential
+B) Combinational
+C) Counter
+D) Register
+
+
+Q3.
+A circuit requiring memory is:
+
+A) Combinational
+B) Sequential
+C) Decoder
+D) Encoder
+
+
+Q4.
+For n input variables, the truth table contains:
+
+A) n rows
+B) 2n rows
+C) 2^n rows
+D) n^2 rows
+
+
+Q5.
+The simplified majority function for three inputs is:
+
+A) AB + AC + BC
+B) A + B + C
+C) ABC
+D) A'B'C'
+
+
+Q6.
+Which is normally required for sequential circuit design?
+
+A) State diagram
+B) State table
+C) Flip-flop
+D) All of the above
+
+
+Q7.
+For 4 states, the minimum number of binary
+state bits is:
+
+A) 1
+B) 2
+C) 3
+D) 4
+
+
+Q8.
+For 10 states, the minimum number of flip-flops
+required is:
+
+A) 2
+B) 3
+C) 4
+D) 10
+
+
+Q9.
+A D flip-flop has the characteristic relationship:
+
+A) Q(next) = D
+B) Q(next) = D'
+C) Q(next) = Q
+D) Q(next) = T
+
+
+Q10.
+A sequence detector is generally:
+
+A) Combinational
+B) Sequential
+C) Analog
+D) Passive
+
+
+Q11.
+A K-map is primarily used for:
+
+A) Storing data
+B) Increasing clock frequency
+C) Boolean simplification
+D) Generating analog signals
+
+
+Q12.
+A counter is a:
+
+A) Combinational circuit
+B) Sequential circuit
+C) Decoder
+D) Multiplexer
+
+
+============================================================
+19.47 MCQ ANSWERS
+============================================================
+
+Q1  → C
+Q2  → B
+Q3  → B
+Q4  → C
+Q5  → A
+Q6  → D
+Q7  → B
+Q8  → B
+Q9  → A
+Q10 → B
+Q11 → C
+Q12 → B
+
+
+============================================================
+19.48 CHAPTER 19 QUICK REVISION
+============================================================
+
+COMBINATIONAL:
+
+        Output = f(Current Inputs)
+
+
+SEQUENTIAL:
+
+        Output/Next State =
+        f(Current Inputs, Present State)
+
+
+COMBINATIONAL DESIGN:
+
+        Problem
+          ↓
+        Inputs/Outputs
+          ↓
+        Truth table
+          ↓
+        Boolean expression
+          ↓
+        Simplification
+          ↓
+        Circuit
+          ↓
+        Verification
+
+
+SEQUENTIAL DESIGN:
+
+        Problem
+          ↓
+        States
+          ↓
+        State diagram
+          ↓
+        State table
+          ↓
+        State assignment
+          ↓
+        Flip-flop selection
+          ↓
+        Excitation equations
+          ↓
+        K-map
+          ↓
+        Circuit
+          ↓
+        Verification
+
+
+KEY IDEA:
+
+        DESIGN = REQUIREMENT → CIRCUIT
+
+
+============================================================
+19.49 MASTER CHECKLIST
+============================================================
+
+[ ] Understand combinational design.
+[ ] Understand sequential design.
+[ ] Identify inputs and outputs.
+[ ] Construct truth tables.
+[ ] Derive SOP expressions.
+[ ] Derive POS expressions.
+[ ] Simplify using K-map.
+[ ] Understand don't-care conditions.
+[ ] Draw logic circuits.
+[ ] Understand states.
+[ ] Draw state diagrams.
+[ ] Construct state tables.
+[ ] Assign binary states.
+[ ] Calculate required flip-flops.
+[ ] Select flip-flops.
+[ ] Use excitation tables.
+[ ] Design counters.
+[ ] Design sequence detectors.
+[ ] Understand traffic-light design.
+[ ] Understand digital-lock design.
+[ ] Understand vending-machine design.
+[ ] Verify final circuits.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+                    CHAPTER 20
+          ADVANCED DIGITAL LOGIC &
+             PRACTICAL CONCEPTS
+                        
+                        ↓
+
+        Tri-State Logic
+              ↓
+        Open-Collector /
+        Open-Drain Logic
+              ↓
+        Bus Systems
+              ↓
+        ALU
+              ↓
+        Registers & Datapath
+              ↓
+        Control Units
+              ↓
+        Hardware Description
+        Languages (HDL)
+              ↓
+        Verilog Basics
+              ↓
+        Digital Circuit Simulation
+
+
+Chapter 20 will move from designing individual
+circuits toward understanding how digital circuits
+are combined to build practical computer hardware.
+
+============================================================

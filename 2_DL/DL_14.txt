@@ -1,0 +1,2690 @@
+============================================================
+CHAPTER 14 — MEMORY & PROGRAMMABLE LOGIC
+============================================================
+Level: B.Tech 1st Year / Computer Science
+Prerequisite: Chapters 1–13
+Goal: Understand how digital systems store binary data,
+      how RAM and ROM work, memory organization,
+      and how programmable logic devices such as PLA,
+      PAL, CPLD, and FPGA are used.
+============================================================
+
+
+                    CHAPTER 14 ROADMAP
+
+                 MEMORY & PROGRAMMABLE LOGIC
+                           |
+             +-------------+-------------+
+             |                           |
+          MEMORY                        PLDs
+             |                           |
+       +-----+-----+              +------+------+
+       |           |              |             |
+      RAM         ROM            PLA           PAL
+       |           |              |             |
+    +--+--+     +--+--+          CPLD          FPGA
+    |     |     |     |
+   SRAM  DRAM  PROM  EPROM
+               EEPROM
+               Flash
+             |
+        Memory Organization
+             |
+      +------+------+
+      |             |
+ Address Lines   Data Lines
+      |
+ Read / Write
+      |
+ Memory Expansion
+============================================================
+
+
+14.1 WHAT IS MEMORY?
+============================================================
+
+MEMORY is a digital storage system used to store
+binary information.
+
+Digital systems need memory because they must store:
+
+        • Instructions
+        • Numbers
+        • Programs
+        • Characters
+        • Addresses
+        • Intermediate results
+        • Sensor data
+        • Operating-system information
+
+
+At the lowest level, digital memory stores:
+
+        0s and 1s
+
+
+Example:
+
+        10110110
+
+
+This is a binary word.
+
+
+Think of memory as a huge collection of tiny
+storage locations.
+
+ASCII idea:
+
+        +----------------------------------+
+        |              MEMORY              |
+        +----------------------------------+
+        | Location 0  → 10101100           |
+        | Location 1  → 11001001           |
+        | Location 2  → 00011101           |
+        | Location 3  → 10110010           |
+        | Location 4  → 01100101           |
+        | ...                              |
+        +----------------------------------+
+
+
+============================================================
+14.2 MEMORY CELL
+============================================================
+
+A MEMORY CELL is the basic storage element capable
+of storing binary information.
+
+At the simplest conceptual level:
+
+        Memory cell = stores one bit
+
+
+A cell can store:
+
+        0
+
+or:
+
+        1
+
+
+Many cells are combined to form larger memory.
+
+
+Example:
+
+        8 cells:
+
+        [1][0][1][1][0][0][1][0]
+
+This represents:
+
+        10110010
+
+
+Therefore:
+
+        8 bits = 1 byte
+
+
+============================================================
+14.3 BIT, BYTE, WORD
+============================================================
+
+BIT:
+
+        One binary digit.
+
+        0 or 1
+
+
+BYTE:
+
+        8 bits.
+
+
+Example:
+
+        10110101
+
+
+WORD:
+
+A group of bits processed/stored together by
+a particular system.
+
+Examples:
+
+        8-bit word
+        16-bit word
+        32-bit word
+        64-bit word
+
+
+Important:
+
+        Word size depends on the architecture.
+
+
+============================================================
+14.4 MEMORY LOCATION
+============================================================
+
+Memory is divided into locations.
+
+Each location has a unique ADDRESS.
+
+
+Example:
+
+        +---------+-------------+
+        | Address | Data        |
+        +---------+-------------+
+        |   000   | 10101010    |
+        |   001   | 11001100    |
+        |   010   | 11110000    |
+        |   011   | 00001111    |
+        +---------+-------------+
+
+
+The address tells the system:
+
+        "Which memory location do you want?"
+
+
+The data tells the system:
+
+        "What information is stored there?"
+
+
+============================================================
+14.5 ADDRESS AND DATA — EASY ANALOGY
+============================================================
+
+Think of memory like an apartment building.
+
+        Apartment number = ADDRESS
+
+        Person/items inside = DATA
+
+
+For example:
+
+        Apartment 105
+              ↓
+        contains some information
+
+
+Similarly:
+
+        Address 105
+              ↓
+        contains binary data
+
+
+So:
+
+        ADDRESS → selects location
+
+        DATA → information stored there
+
+
+============================================================
+14.6 MEMORY ORGANIZATION
+============================================================
+
+Memory is commonly described as:
+
+        Number of locations × Number of bits/location
+
+
+Example:
+
+        1024 × 8 memory
+
+
+means:
+
+        1024 locations
+
+and each location stores:
+
+        8 bits
+
+
+Therefore total capacity:
+
+        1024 × 8 bits
+
+        = 8192 bits
+
+        = 1024 bytes
+
+        = 1 KB
+
+
+This notation is extremely important in exams.
+
+
+============================================================
+14.7 MEMORY CAPACITY
+============================================================
+
+Memory capacity tells us how much data the memory
+can store.
+
+Formula:
+
+        Capacity
+        =
+        Number of locations × Bits per location
+
+
+Example:
+
+        2048 × 8
+
+
+Capacity:
+
+        2048 × 8
+        = 16384 bits
+
+
+Since:
+
+        8 bits = 1 byte
+
+
+Capacity:
+
+        2048 bytes
+
+        = 2 KB
+
+
+============================================================
+14.8 ADDRESS LINES
+============================================================
+
+Address lines select memory locations.
+
+Suppose there are:
+
+        n address lines
+
+
+Then the number of possible addresses is:
+
+        2^n
+
+
+Therefore:
+
+        Number of memory locations = 2^n
+
+
+Example:
+
+        10 address lines
+
+
+Then:
+
+        2^10 = 1024
+
+
+So the memory can have:
+
+        1024 locations
+
+
+============================================================
+14.9 DATA LINES
+============================================================
+
+DATA LINES carry the actual binary data.
+
+Suppose a memory has:
+
+        8 data lines
+
+
+Then each selected memory location can transfer:
+
+        8 bits
+
+at a time.
+
+
+ASCII:
+
+             ADDRESS LINES
+                  |
+                  v
+        +---------------------+
+        |                     |
+        |       MEMORY        |
+        |                     |
+        +---------------------+
+                  |
+                  v
+              DATA LINES
+
+
+Address lines:
+
+        Select WHERE.
+
+
+Data lines:
+
+        Carry WHAT.
+
+
+============================================================
+14.10 ADDRESS LINES VS DATA LINES
+============================================================
+
++----------------+------------------------------+
+| Address Lines  | Data Lines                  |
++----------------+------------------------------+
+| Select memory  | Carry stored information    |
+| location       |                             |
++----------------+------------------------------+
+| Determine      | Determine word width        |
+| number of      |                             |
+| locations      |                             |
++----------------+------------------------------+
+| n lines → 2^n  | m lines → m bits/location  |
+| locations      |                             |
++----------------+------------------------------+
+
+
+MEMORY TRICK:
+
+        ADDRESS = WHERE
+
+        DATA = WHAT
+
+
+============================================================
+14.11 MEMORY READ OPERATION
+============================================================
+
+A READ operation means:
+
+        "Take data from memory."
+
+
+Basic sequence:
+
+        1. Put address on address lines.
+        2. Enable memory.
+        3. Activate READ.
+        4. Memory places stored data
+           on data lines.
+
+
+ASCII:
+
+        CPU
+         |
+         | Address
+         v
+    +-----------+
+    |  MEMORY   |
+    +-----------+
+         |
+         | Data
+         v
+        CPU
+
+
+Example:
+
+        Address = 0101
+
+        Memory contains:
+
+        11001100
+
+
+Read operation returns:
+
+        11001100
+
+
+============================================================
+14.12 MEMORY WRITE OPERATION
+============================================================
+
+A WRITE operation means:
+
+        "Store new data into memory."
+
+
+Basic sequence:
+
+        1. Put address on address lines.
+        2. Put data on data lines.
+        3. Activate WRITE.
+        4. Memory stores the data.
+
+
+ASCII:
+
+             Address
+                |
+                v
+        +---------------+
+        |    MEMORY     |
+        +---------------+
+                ^
+                |
+              Data
+
+
+Example:
+
+        Address = 0011
+
+        Data = 10101010
+
+
+After writing:
+
+        Memory[0011] = 10101010
+
+
+============================================================
+14.13 READ VS WRITE
+============================================================
+
+READ:
+
+        Memory → System
+
+
+WRITE:
+
+        System → Memory
+
+
+ASCII:
+
+        READ:
+
+        MEMORY ---------> CPU
+
+
+        WRITE:
+
+        CPU -------------> MEMORY
+
+
+Memory trick:
+
+        READ = take OUT
+
+        WRITE = put IN
+
+
+============================================================
+14.14 MEMORY CONTROL SIGNALS
+============================================================
+
+Common control signals include:
+
+        CS / CE
+        OE
+        WE
+
+
+CS:
+
+        Chip Select
+
+Used to enable/select the memory chip.
+
+
+CE:
+
+        Chip Enable
+
+Similar purpose in many memory devices.
+
+
+OE:
+
+        Output Enable
+
+Controls whether memory output is enabled.
+
+
+WE:
+
+        Write Enable
+
+Controls writing into memory.
+
+
+Exact active-high/active-low behavior depends
+on the particular device.
+
+
+============================================================
+14.15 CHIP SELECT
+============================================================
+
+Suppose a computer contains several memory chips.
+
+How does it know which chip should respond?
+
+A CHIP SELECT signal determines which chip is active.
+
+
+ASCII:
+
+              Address
+                 |
+        +--------+--------+
+        |                 |
+        v                 v
+    +-------+         +-------+
+    | RAM 1 |         | RAM 2 |
+    +-------+         +-------+
+       ^                 ^
+       |                 |
+      CS1               CS2
+
+
+Only the selected chip should respond.
+
+
+============================================================
+14.16 MEMORY ARRAY
+============================================================
+
+Conceptually, memory can be represented as rows
+and columns of storage cells.
+
+
+Example:
+
+        +---+---+---+---+
+        | 0 | 1 | 1 | 0 |
+        +---+---+---+---+
+        | 1 | 0 | 0 | 1 |
+        +---+---+---+---+
+        | 0 | 0 | 1 | 1 |
+        +---+---+---+---+
+
+
+Each row can represent a memory word.
+
+
+A decoder selects the required row.
+
+
+============================================================
+14.17 MEMORY DECODER
+============================================================
+
+A decoder can be used to select one memory location
+from many possibilities.
+
+Suppose:
+
+        2 address lines
+
+
+Possible addresses:
+
+        00
+        01
+        10
+        11
+
+
+A 2-to-4 decoder can activate one of four
+locations.
+
+
+ASCII:
+
+                 A1 A0
+                   |
+                   v
+             +-----------+
+             | 2-to-4    |
+             | DECODER   |
+             +-----------+
+              | | | |
+              v v v v
+             W0 W1 W2 W3
+
+
+Only one word line is selected at a time
+in a basic one-of-four selection scheme.
+
+
+============================================================
+14.18 RAM
+============================================================
+
+RAM stands for:
+
+        RANDOM ACCESS MEMORY
+
+
+"Random access" means that any location can be
+accessed directly using its address.
+
+RAM is generally used for working storage.
+
+
+Examples:
+
+        • Program data while running
+        • Temporary calculations
+        • Operating-system working memory
+        • Buffers
+
+
+RAM is commonly associated with read and write
+operations.
+
+
+============================================================
+14.19 WHY IS IT CALLED RANDOM ACCESS?
+============================================================
+
+It does NOT mean that addresses are selected randomly.
+
+It means:
+
+        Access time is not fundamentally dependent
+        on the location being accessed.
+
+
+For example, accessing:
+
+        Address 0000
+
+and:
+
+        Address 1111
+
+can be performed through the same addressing
+mechanism rather than sequentially passing through
+all previous locations.
+
+
+============================================================
+14.20 TYPES OF RAM
+============================================================
+
+Two fundamental types:
+
+                    RAM
+                     |
+              +------+------+
+              |             |
+             SRAM          DRAM
+              |             |
+        Static RAM     Dynamic RAM
+
+
+SRAM:
+
+        Static Random Access Memory
+
+
+DRAM:
+
+        Dynamic Random Access Memory
+
+
+============================================================
+14.21 SRAM
+============================================================
+
+SRAM stores each bit using a bistable circuit,
+commonly implemented using a flip-flop-like cell.
+
+
+Characteristics:
+
+        • Fast
+        • Does not require periodic refresh in
+          the same way as DRAM
+        • More expensive per bit
+        • Lower density than DRAM
+        • Uses more transistors per bit
+
+
+SRAM is commonly used where high speed is important.
+
+
+Examples:
+
+        • CPU cache
+        • Small high-speed buffers
+
+
+============================================================
+14.22 SRAM CONCEPTUAL CELL
+============================================================
+
+A simplified conceptual view:
+
+              +---------+
+        D --->|         |
+              |  SRAM   |----> Q
+              |  CELL   |
+        WE -->|         |
+              +---------+
+
+
+The actual SRAM cell is more complex than this
+conceptual diagram.
+
+
+A common SRAM bit cell uses a bistable latch
+with access transistors.
+
+
+============================================================
+14.23 DRAM
+============================================================
+
+DRAM stands for:
+
+        Dynamic Random Access Memory
+
+
+A DRAM bit is typically stored as electrical charge
+associated with a capacitor.
+
+
+The charge gradually leaks away.
+
+Therefore DRAM requires:
+
+        REFRESH
+
+
+periodically to preserve stored information.
+
+
+Characteristics:
+
+        • High density
+        • Lower cost per bit
+        • Requires refresh
+        • Generally slower than SRAM
+        • Commonly used as main memory
+
+
+============================================================
+14.24 DRAM CONCEPTUAL CELL
+============================================================
+
+Simplified:
+
+        Data
+          |
+          v
+       +-----+
+       |     |
+       |  C  |   ← capacitor
+       |     |
+       +-----+
+          |
+        stored
+        charge
+
+
+A transistor controls access to the capacitor.
+
+
+The capacitor's charge represents the stored bit.
+
+
+============================================================
+14.25 SRAM VS DRAM
+============================================================
+
++----------------------+----------------------+
+| SRAM                 | DRAM                 |
++----------------------+----------------------+
+| Static RAM           | Dynamic RAM          |
++----------------------+----------------------+
+| Faster               | Generally slower     |
++----------------------+----------------------+
+| No periodic refresh  | Requires refresh     |
+| like DRAM            |                      |
++----------------------+----------------------+
+| More expensive/bit  | Cheaper/bit          |
++----------------------+----------------------+
+| Lower density        | Higher density       |
++----------------------+----------------------+
+| Common in cache      | Common as main       |
+| memory               | memory               |
++----------------------+----------------------+
+
+
+MEMORY TRICK:
+
+        SRAM → Speed
+
+
+        DRAM → Density + Refresh
+
+
+============================================================
+14.26 ROM
+============================================================
+
+ROM stands for:
+
+        READ ONLY MEMORY
+
+
+Traditionally, ROM refers to memory whose contents
+are not normally changed during ordinary operation.
+
+
+ROM is useful for storing relatively permanent
+information.
+
+
+Examples:
+
+        • Firmware
+        • Boot code
+        • Lookup tables
+        • Embedded-system programs
+
+
+Modern "ROM" families include several types
+that can be programmed or erased.
+
+
+============================================================
+14.27 TYPES OF ROM
+============================================================
+
+                    ROM
+                     |
+          +----------+----------+
+          |          |          |
+         PROM      EPROM      EEPROM
+                                |
+                              Flash
+
+
+More accurately, these are ROM-family
+nonvolatile memories with different
+programming/erase mechanisms.
+
+
+============================================================
+14.28 PROM
+============================================================
+
+PROM:
+
+        Programmable Read Only Memory
+
+
+PROM can be programmed by the user.
+
+But traditionally:
+
+        Once programmed → cannot be electrically
+        erased and reprogrammed.
+
+
+Therefore:
+
+        One-time programmable
+
+
+PROM is useful when data must be permanently
+programmed after manufacturing.
+
+
+============================================================
+14.29 EPROM
+============================================================
+
+EPROM:
+
+        Erasable Programmable Read Only Memory
+
+
+EPROM can be erased and programmed again.
+
+
+Traditional EPROM erasure is performed using:
+
+        ULTRAVIOLET LIGHT
+
+
+EPROM chips traditionally had a transparent window
+through which UV light could reach the memory cells.
+
+
+Conceptual:
+
+        +-------------+
+        |   EPROM     |
+        |      ◯      | ← UV window
+        +-------------+
+
+
+============================================================
+14.30 EEPROM
+============================================================
+
+EEPROM:
+
+        Electrically Erasable Programmable
+        Read Only Memory
+
+
+Unlike traditional EPROM:
+
+        EEPROM can be erased electrically.
+
+
+Advantages:
+
+        • Electrical erasure
+        • Reprogrammable
+        • Convenient for embedded systems
+
+
+============================================================
+14.31 FLASH MEMORY
+============================================================
+
+Flash memory is a type of electrically erasable
+nonvolatile memory related to EEPROM technology.
+
+
+It is widely used in:
+
+        • SSDs
+        • USB drives
+        • Memory cards
+        • Smartphones
+        • Embedded systems
+
+
+Flash generally erases/programs blocks or pages
+rather than behaving exactly like a byte-addressable
+EEPROM in all respects.
+
+
+============================================================
+14.32 VOLATILE VS NONVOLATILE
+============================================================
+
+VOLATILE MEMORY:
+
+Loses stored information when power is removed.
+
+
+Examples:
+
+        SRAM
+        DRAM
+
+
+NONVOLATILE MEMORY:
+
+Retains information without continuous power.
+
+
+Examples:
+
+        ROM
+        PROM
+        EPROM
+        EEPROM
+        Flash
+
+
+Memory trick:
+
+        Volatile → needs power to retain data
+
+
+        Nonvolatile → retains data without power
+
+
+============================================================
+14.33 RAM VS ROM
+============================================================
+
++----------------------+----------------------+
+| RAM                  | ROM                  |
++----------------------+----------------------+
+| Usually read/write   | Traditionally mainly |
+| working memory       | read-oriented        |
++----------------------+----------------------+
+| Usually volatile     | Usually nonvolatile  |
++----------------------+----------------------+
+| Temporary data       | Persistent data      |
++----------------------+----------------------+
+| Main memory/cache   | Firmware/storage    |
+| depending on type    |                      |
++----------------------+----------------------+
+
+
+IMPORTANT:
+
+Modern memory technologies blur some traditional
+definitions, but this distinction is still useful
+for B.Tech fundamentals.
+
+
+============================================================
+14.34 MEMORY CAPACITY EXAMPLE 1
+============================================================
+
+A memory has:
+
+        10 address lines
+        8 data lines
+
+
+Find capacity.
+
+
+Number of locations:
+
+        2^10 = 1024
+
+
+Each location stores:
+
+        8 bits
+
+
+Therefore:
+
+        Capacity = 1024 × 8 bits
+
+                 = 8192 bits
+
+                 = 1024 bytes
+
+                 = 1 KB
+
+
+Answer:
+
+        1 KB
+
+
+============================================================
+14.35 MEMORY CAPACITY EXAMPLE 2
+============================================================
+
+A memory is specified as:
+
+        4096 × 16
+
+
+This means:
+
+        4096 locations
+
+        16 bits per location
+
+
+Capacity:
+
+        4096 × 16
+        = 65536 bits
+
+
+In bytes:
+
+        65536 / 8
+        = 8192 bytes
+
+
+Therefore:
+
+        8 KB
+
+
+============================================================
+14.36 FINDING ADDRESS LINES
+============================================================
+
+Question:
+
+How many address lines are required for
+a memory containing 1024 locations?
+
+
+We know:
+
+        2^n = 1024
+
+
+Since:
+
+        2^10 = 1024
+
+
+Therefore:
+
+        n = 10
+
+
+Answer:
+
+        10 address lines
+
+
+============================================================
+14.37 FINDING DATA LINES
+============================================================
+
+Question:
+
+A memory stores 32 bits per location.
+
+How many data lines are required?
+
+
+Each location transfers:
+
+        32 bits
+
+
+Therefore:
+
+        Data lines = 32
+
+
+Answer:
+
+        32 data lines
+
+
+============================================================
+14.38 MEMORY ORGANIZATION EXAMPLE
+============================================================
+
+Consider:
+
+        1K × 8 memory
+
+
+"1K" means:
+
+        1024 locations
+
+
+"×8" means:
+
+        8 bits/location
+
+
+Therefore:
+
+        Address lines = 10
+
+because:
+
+        2^10 = 1024
+
+
+Data lines:
+
+        8
+
+
+Total capacity:
+
+        1024 × 8
+        = 8192 bits
+        = 1 KB
+
+
+ASCII:
+
+            A9 ... A0
+                |
+                v
+          +-------------+
+          |   1K × 8    |
+          |   MEMORY    |
+          +-------------+
+             | | | | | | | |
+             D7.........D0
+
+
+============================================================
+14.39 MEMORY EXPANSION
+============================================================
+
+Sometimes one memory chip is not large enough.
+
+We can combine multiple memory chips.
+
+
+Two major types:
+
+        1. Increase WORD LENGTH
+        2. Increase NUMBER OF LOCATIONS
+
+
+These are called:
+
+        Width expansion
+
+and:
+
+        Depth expansion
+
+
+============================================================
+14.40 WIDTH EXPANSION
+============================================================
+
+Suppose we have:
+
+        1K × 4 memory
+
+
+But we need:
+
+        1K × 8
+
+
+Use two chips:
+
+        Chip 1 → 1K × 4
+        Chip 2 → 1K × 4
+
+
+Connect the same address lines to both chips.
+
+Their outputs together give:
+
+        4 + 4 = 8 bits
+
+
+ASCII:
+
+                Address
+                   |
+             +-----+-----+
+             |           |
+             v           v
+          +------+    +------+
+          | 1K×4 |    | 1K×4 |
+          +------+    +------+
+             |           |
+             +-----+-----+
+                   |
+                 8 bits
+
+
+This increases width.
+
+
+============================================================
+14.41 DEPTH EXPANSION
+============================================================
+
+Suppose we have:
+
+        1K × 8
+
+
+But need:
+
+        2K × 8
+
+
+We need two chips.
+
+Each chip stores:
+
+        1K × 8
+
+
+One additional address bit can select which
+chip is active.
+
+
+ASCII:
+
+                 A10
+                  |
+             +----+----+
+             | Decoder |
+             +----+----+
+                |   |
+               CS1 CS2
+                |   |
+             +----+ +----+
+             |1K×8| |1K×8|
+             +----+ +----+
+
+
+Now:
+
+        Total locations = 2K
+
+        Width = 8 bits
+
+
+============================================================
+14.42 WIDTH VS DEPTH EXPANSION
+============================================================
+
+WIDTH:
+
+        Increase bits per location.
+
+
+DEPTH:
+
+        Increase number of locations.
+
+
+Memory trick:
+
+        WIDTH → wider word
+
+        DEPTH → more addresses
+
+
+============================================================
+14.43 WHAT IS PROGRAMMABLE LOGIC?
+============================================================
+
+A programmable logic device allows hardware logic
+to be configured or programmed to implement
+desired digital functions.
+
+
+Instead of building every circuit from individual
+gates, programmable devices provide configurable
+logic resources.
+
+
+Examples:
+
+        • PLA
+        • PAL
+        • CPLD
+        • FPGA
+
+
+These devices are extremely important in modern
+digital-system design.
+
+
+============================================================
+14.44 PLA
+============================================================
+
+PLA:
+
+        PROGRAMMABLE LOGIC ARRAY
+
+
+A PLA generally has:
+
+        Programmable AND array
+                 +
+        Programmable OR array
+
+
+Conceptually:
+
+             Inputs
+                |
+                v
+        +---------------+
+        | Programmable  |
+        | AND Array     |
+        +---------------+
+                |
+          Product terms
+                |
+                v
+        +---------------+
+        | Programmable  |
+        | OR Array      |
+        +---------------+
+                |
+                v
+             Outputs
+
+
+PLA is useful for implementing Boolean functions
+in sum-of-products form.
+
+
+============================================================
+14.45 PLA STRUCTURE
+============================================================
+
+Suppose:
+
+        F1 = AB + AC
+
+        F2 = AB + BC
+
+
+We can generate product terms:
+
+        P1 = AB
+        P2 = AC
+        P3 = BC
+
+
+Then OR the appropriate product terms.
+
+
+ASCII:
+
+        A,B,C
+          |
+          v
+      +---------+
+      | AND     |
+      | ARRAY   |
+      +---------+
+       |  |  |
+       P1 P2 P3
+       |  |  |
+       +--+  |
+          |  |
+      +---------+
+      | OR      |
+      | ARRAY   |
+      +---------+
+        |    |
+       F1    F2
+
+
+This is the basic PLA concept.
+
+
+============================================================
+14.46 PAL
+============================================================
+
+PAL:
+
+        PROGRAMMABLE ARRAY LOGIC
+
+
+A PAL generally has:
+
+        Programmable AND array
+                +
+        Fixed OR array
+
+
+Conceptually:
+
+        Inputs
+           |
+           v
+     +-------------+
+     | Programmable|
+     | AND Array   |
+     +-------------+
+           |
+      Product terms
+           |
+           v
+     +-------------+
+     | Fixed OR    |
+     | Array       |
+     +-------------+
+           |
+         Output
+
+
+The key difference from a classic PLA is
+the organization of programmability.
+
+
+============================================================
+14.47 PLA VS PAL
+============================================================
+
++----------------------+----------------------+
+| PLA                  | PAL                  |
++----------------------+----------------------+
+| AND array            | AND array            |
+| programmable         | programmable         |
++----------------------+----------------------+
+| OR array             | OR array typically   |
+| programmable         | fixed                |
++----------------------+----------------------+
+| More flexible        | Less flexible        |
++----------------------+----------------------+
+| Can be more complex  | Often simpler/faster |
+| to configure         | to implement         |
++----------------------+----------------------+
+
+
+MEMORY TRICK:
+
+        PLA → Programmable AND + OR
+
+
+        PAL → Programmable AND + fixed OR
+
+
+============================================================
+14.48 CPLD
+============================================================
+
+CPLD:
+
+        COMPLEX PROGRAMMABLE LOGIC DEVICE
+
+
+A CPLD contains multiple programmable logic blocks
+connected through programmable interconnects.
+
+
+Conceptually:
+
+        +--------+       +--------+
+        | Logic  |-------| Logic  |
+        | Block  |       | Block  |
+        +--------+       +--------+
+             \             /
+              \           /
+               +---------+
+               |Programmable|
+               | Interconnect|
+               +---------+
+
+
+CPLDs are useful for:
+
+        • Control logic
+        • Glue logic
+        • Interface logic
+        • Deterministic digital systems
+
+
+============================================================
+14.49 FPGA
+============================================================
+
+FPGA:
+
+        FIELD-PROGRAMMABLE GATE ARRAY
+
+
+An FPGA is a highly configurable digital device
+containing many programmable resources.
+
+
+Typical FPGA resources include:
+
+        • Configurable logic blocks
+        • Flip-flops
+        • Programmable routing
+        • I/O blocks
+        • Memory blocks
+        • Clocking resources
+        • Sometimes DSP blocks
+
+
+Conceptual:
+
+        +---+---+---+---+
+        | L | L | L | L |
+        +---+---+---+---+
+        | L | L | L | L |
+        +---+---+---+---+
+        | L | L | L | L |
+        +---+---+---+---+
+
+        L = configurable logic resource
+
+
+The routing between these resources is also
+programmable.
+
+
+============================================================
+14.50 WHY FPGA IS IMPORTANT
+============================================================
+
+FPGAs allow engineers to implement digital
+hardware after the chip has been manufactured.
+
+
+Applications include:
+
+        • Digital signal processing
+        • Communication systems
+        • Robotics
+        • Embedded systems
+        • Prototyping
+        • AI acceleration
+        • Networking
+        • Hardware controllers
+
+
+Instead of wiring thousands of gates manually,
+we describe the desired hardware using tools
+such as:
+
+        Verilog
+        VHDL
+
+
+The design is then synthesized and programmed
+into the FPGA.
+
+
+============================================================
+14.51 CPLD VS FPGA
+============================================================
+
++----------------------+----------------------+
+| CPLD                 | FPGA                 |
++----------------------+----------------------+
+| Smaller logic       | Much larger logic    |
+| capacity             | capacity             |
++----------------------+----------------------+
+| More predictable     | Very flexible        |
+| timing in many cases | architecture         |
++----------------------+----------------------+
+| Good for control     | Good for complex     |
+| and glue logic       | digital systems      |
++----------------------+----------------------+
+| Generally simpler    | More configurable    |
+| architecture         | resources            |
++----------------------+----------------------+
+
+
+This is a conceptual comparison; actual devices
+vary greatly.
+
+
+============================================================
+14.52 MEMORY VS PROGRAMMABLE LOGIC
+============================================================
+
+Memory:
+
+        Primary purpose:
+        STORE INFORMATION
+
+
+Programmable logic:
+
+        Primary purpose:
+        IMPLEMENT DIGITAL LOGIC FUNCTIONS
+
+
+However, modern devices can combine both concepts.
+
+For example, FPGAs can contain:
+
+        Logic + Flip-flops + RAM + DSP + I/O
+
+
+============================================================
+14.53 MEMORY MAPPED THINKING
+============================================================
+
+In a digital system, different addresses can
+represent different resources.
+
+Example:
+
+        Address 0000 → RAM
+        Address 0001 → RAM
+        ...
+        Address 1000 → I/O device
+
+
+Address decoding determines which device
+responds to an address.
+
+
+This is fundamental to computer architecture.
+
+
+============================================================
+14.54 ADDRESS SPACE
+============================================================
+
+If a system has:
+
+        n address bits
+
+
+Then it can generate:
+
+        2^n unique addresses
+
+
+Example:
+
+        16 address bits
+
+
+Number of addresses:
+
+        2^16
+        = 65536
+
+
+Therefore:
+
+        65,536 unique addresses
+
+
+This is called the address space.
+
+
+============================================================
+14.55 EXAMPLE — 16-BIT ADDRESS BUS
+============================================================
+
+Suppose a computer has:
+
+        16 address lines
+
+Then:
+
+        2^16 = 65,536
+
+
+So the system can address:
+
+        65,536 locations
+
+
+If each location stores one byte:
+
+        Total addressable memory
+        = 65,536 bytes
+        = 64 KB
+
+
+============================================================
+14.56 EXAMPLE — 20-BIT ADDRESS BUS
+============================================================
+
+Suppose:
+
+        Address lines = 20
+
+
+Then:
+
+        2^20
+        = 1,048,576
+
+
+If each address corresponds to one byte:
+
+        1,048,576 bytes
+        = 1 MB
+
+
+Therefore:
+
+        20-bit address space → 1 MB
+
+under a byte-addressable model.
+
+
+============================================================
+14.57 MEMORY CALCULATION SHORTCUT
+============================================================
+
+If memory is:
+
+        2^n × m
+
+
+Then:
+
+        Address lines = n
+
+        Data width = m bits
+
+
+Example:
+
+        2^12 × 8
+
+
+Therefore:
+
+        Address lines = 12
+
+        Data lines = 8
+
+
+Capacity:
+
+        4096 × 8 bits
+
+        = 4 KB
+
+
+============================================================
+14.58 MEMORY ORGANIZATION — EXAM TEMPLATE
+============================================================
+
+If given:
+
+        X × Y
+
+
+Interpret as:
+
+        X = number of locations
+
+        Y = bits per location
+
+
+Then:
+
+        Address lines = log2(X)
+
+        Data lines = Y
+
+        Capacity = X × Y bits
+
+
+Example:
+
+        8192 × 16
+
+
+Address lines:
+
+        log2(8192)
+        = 13
+
+
+Data lines:
+
+        16
+
+
+Capacity:
+
+        8192 × 16 bits
+
+        = 131072 bits
+
+        = 16384 bytes
+
+        = 16 KB
+
+
+============================================================
+14.59 IMPORTANT ROM COMPARISON
+============================================================
+
++---------+-------------------------------+
+| Type    | Main characteristic           |
++---------+-------------------------------+
+| ROM     | Fixed/normal read operation   |
+| PROM    | Programmed once               |
+| EPROM   | UV erasable                   |
+| EEPROM  | Electrically erasable         |
+| Flash   | Electrically erasable,        |
+|         | typically block-based         |
++---------+-------------------------------+
+
+
+Memory trick:
+
+        PROM  → Program once
+
+        EPROM → Erase with UV
+
+        EEPROM → Electrical erase
+
+        Flash → Block-oriented EEPROM-family memory
+
+
+============================================================
+14.60 PRACTICAL APPLICATIONS
+============================================================
+
+RAM:
+
+        • Main memory
+        • Cache
+        • Buffers
+
+
+ROM / Flash:
+
+        • Firmware
+        • Bootloaders
+        • Embedded programs
+
+
+SRAM:
+
+        • CPU cache
+        • High-speed buffers
+
+
+DRAM:
+
+        • Main system memory
+
+
+EEPROM:
+
+        • Configuration storage
+        • Calibration data
+
+
+Flash:
+
+        • SSD
+        • USB drive
+        • Memory card
+        • Embedded storage
+
+
+FPGA:
+
+        • Hardware prototyping
+        • Digital processing
+        • Custom controllers
+
+
+============================================================
+14.61 COMMON EXAM MISTAKES
+============================================================
+
+MISTAKE 1:
+
+Confusing address lines with data lines.
+
+Remember:
+
+        Address = location
+
+        Data = contents
+
+
+------------------------------------------------------------
+
+MISTAKE 2:
+
+Forgetting that:
+
+        n address lines → 2^n locations
+
+
+------------------------------------------------------------
+
+MISTAKE 3:
+
+Confusing SRAM and DRAM.
+
+Remember:
+
+        SRAM → fast, no periodic refresh like DRAM
+
+        DRAM → capacitor-based storage, refresh required
+
+
+------------------------------------------------------------
+
+MISTAKE 4:
+
+Confusing PROM and EPROM.
+
+PROM:
+
+        programmed once.
+
+
+EPROM:
+
+        can be UV erased and reprogrammed.
+
+
+------------------------------------------------------------
+
+MISTAKE 5:
+
+Thinking ROM means "never programmable."
+
+ROM is a historical family name. PROM, EPROM,
+EEPROM and Flash are programmable/erasable
+nonvolatile memory technologies.
+
+
+------------------------------------------------------------
+
+MISTAKE 6:
+
+Confusing PLA and PAL.
+
+Remember:
+
+        PLA → programmable AND + programmable OR
+
+        PAL → programmable AND + fixed OR
+        (classic PAL organization)
+
+
+============================================================
+14.62 EXAM-IMPORTANT DEFINITIONS
+============================================================
+
+MEMORY:
+
+A digital storage system used to store binary data.
+
+
+MEMORY CELL:
+
+The basic storage element representing a bit.
+
+
+ADDRESS:
+
+A binary identifier used to select a memory location.
+
+
+DATA:
+
+Information stored in or transferred from memory.
+
+
+RAM:
+
+Random Access Memory used primarily for
+read/write working storage.
+
+
+SRAM:
+
+Static RAM that uses bistable storage and does not
+need DRAM-style periodic refresh.
+
+
+DRAM:
+
+Dynamic RAM that stores charge and requires refresh.
+
+
+ROM:
+
+Read-oriented nonvolatile memory family.
+
+
+PROM:
+
+Programmable once.
+
+
+EPROM:
+
+UV-erasable programmable memory.
+
+
+EEPROM:
+
+Electrically erasable programmable memory.
+
+
+FLASH:
+
+A widely used nonvolatile memory technology based
+on electrically erasable memory cells, typically
+operating with block/page-oriented operations.
+
+
+PLA:
+
+Programmable AND array + programmable OR array.
+
+
+PAL:
+
+Programmable AND array + fixed OR array
+in the classic architecture.
+
+
+CPLD:
+
+Complex programmable logic device containing
+multiple programmable logic blocks.
+
+
+FPGA:
+
+Field-programmable gate array containing
+configurable logic and routing resources.
+
+
+============================================================
+14.63 IMPORTANT FORMULAS
+============================================================
+
+Number of locations:
+
+        2^n
+
+where:
+
+        n = number of address lines
+
+
+Memory capacity:
+
+        Locations × Bits/location
+
+
+Address lines:
+
+        log2(Number of locations)
+
+
+Data lines:
+
+        Bits per location
+
+
+Unused addresses:
+
+        2^n - N
+
+
+Byte conversion:
+
+        8 bits = 1 byte
+
+
+KB:
+
+        1 KB = 1024 bytes
+
+
+MB:
+
+        1 MB = 1024 KB
+
+
+GB:
+
+        1 GB = 1024 MB
+
+
+For digital logic exam calculations,
+binary powers are particularly useful:
+
+        2^10 = 1024
+        2^20 = 1,048,576
+        2^30 = 1,073,741,824
+
+
+============================================================
+14.64 PRACTICE QUESTIONS
+============================================================
+
+Q1.
+What is a memory cell?
+
+
+Q2.
+What is the difference between an address
+and data?
+
+
+Q3.
+A memory has 12 address lines. How many locations
+can it contain?
+
+
+Q4.
+A memory contains 4096 locations with 8 bits
+per location. Find its capacity in bytes.
+
+
+Q5.
+How many address lines are required for
+16,384 locations?
+
+
+Q6.
+What is the difference between SRAM and DRAM?
+
+
+Q7.
+Why does DRAM require refresh?
+
+
+Q8.
+What is PROM?
+
+
+Q9.
+How is EPROM erased?
+
+
+Q10.
+What is the main advantage of EEPROM?
+
+
+Q11.
+What is Flash memory?
+
+
+Q12.
+A memory is organized as 2K × 16.
+Find:
+    a) Number of locations
+    b) Address lines
+    c) Data lines
+    d) Total capacity
+
+
+Q13.
+What is the difference between width expansion
+and depth expansion?
+
+
+Q14.
+What is a PLA?
+
+
+Q15.
+What is the difference between PLA and PAL?
+
+
+Q16.
+What is a CPLD?
+
+
+Q17.
+What is an FPGA?
+
+
+Q18.
+Which encoding uses one flip-flop per state?
+(Connect this with Chapter 13.)
+
+
+============================================================
+14.65 MCQs
+============================================================
+
+Q1.
+A memory cell stores:
+
+A) One byte always
+B) One bit conceptually
+C) One instruction always
+D) One address always
+
+
+Q2.
+If a memory has 8 address lines, the number
+of locations is:
+
+A) 8
+B) 16
+C) 128
+D) 256
+
+
+Q3.
+Address lines are used to:
+
+A) Store instructions
+B) Select memory locations
+C) Perform addition
+D) Generate clock pulses
+
+
+Q4.
+Data lines carry:
+
+A) Memory addresses
+B) Control signals only
+C) Stored/transferred data
+D) Clock signals
+
+
+Q5.
+Which memory normally requires periodic refresh?
+
+A) SRAM
+B) DRAM
+C) ROM
+D) PROM
+
+
+Q6.
+Which is generally faster?
+
+A) DRAM
+B) SRAM
+C) Flash
+D) EPROM
+
+
+Q7.
+Traditional EPROM is erased using:
+
+A) Heat
+B) Magnetic field
+C) Ultraviolet light
+D) Sound
+
+
+Q8.
+EEPROM can be erased:
+
+A) Electrically
+B) Only using UV
+C) Mechanically
+D) Magnetically
+
+
+Q9.
+Which device has programmable AND and OR arrays
+in the classic architecture?
+
+A) PAL
+B) PLA
+C) SRAM
+D) DRAM
+
+
+Q10.
+Which device typically has a programmable AND
+array and fixed OR array?
+
+A) PLA
+B) PAL
+C) FPGA
+D) DRAM
+
+
+Q11.
+For a memory with 10 address lines and 8 data lines,
+capacity is:
+
+A) 8 bits
+B) 80 bits
+C) 8192 bits
+D) 1024 bits
+
+
+Q12.
+A memory organized as 4K × 8 contains:
+
+A) 4 locations
+B) 8 locations
+C) 4096 locations
+D) 8192 locations
+
+
+Q13.
+Which is generally nonvolatile?
+
+A) DRAM
+B) SRAM
+C) Flash
+D) Cache SRAM
+
+
+Q14.
+Which device is highly configurable and contains
+programmable routing?
+
+A) FPGA
+B) DRAM
+C) PROM
+D) SRAM only
+
+
+Q15.
+The main purpose of memory is to:
+
+A) Store information
+B) Generate only clocks
+C) Perform only Boolean algebra
+D) Convert analog signals
+
+
+============================================================
+14.66 MCQ ANSWERS
+============================================================
+
+Q1  → B
+Q2  → D
+Q3  → B
+Q4  → C
+Q5  → B
+Q6  → B
+Q7  → C
+Q8  → A
+Q9  → B
+Q10 → B
+Q11 → C
+Q12 → C
+Q13 → C
+Q14 → A
+Q15 → A
+
+
+============================================================
+14.67 CHAPTER 14 QUICK REVISION
+============================================================
+
+MEMORY:
+
+        Stores binary information.
+
+
+MEMORY CELL:
+
+        Basic storage unit for a bit.
+
+
+ADDRESS:
+
+        Selects WHERE data is stored.
+
+
+DATA:
+
+        Tells WHAT is stored.
+
+
+n ADDRESS LINES:
+
+        2^n locations
+
+
+RAM:
+
+        Working read/write memory.
+
+
+SRAM:
+
+        Fast, no DRAM-style refresh,
+        commonly used in cache.
+
+
+DRAM:
+
+        Dense, capacitor-based,
+        requires refresh,
+        commonly used as main memory.
+
+
+ROM FAMILY:
+
+        Nonvolatile storage technologies.
+
+
+PROM:
+
+        Program once.
+
+
+EPROM:
+
+        UV erasable.
+
+
+EEPROM:
+
+        Electrically erasable.
+
+
+FLASH:
+
+        Nonvolatile, electrically erasable,
+        commonly block/page oriented.
+
+
+PLA:
+
+        Programmable AND + programmable OR.
+
+
+PAL:
+
+        Programmable AND + fixed OR.
+
+
+CPLD:
+
+        Multiple programmable logic blocks.
+
+
+FPGA:
+
+        Highly configurable logic + routing.
+
+
+MOST IMPORTANT FORMULA:
+
+        Capacity = locations × bits/location
+
+
+============================================================
+14.68 CHAPTER 14 MASTER CHECKLIST
+============================================================
+
+[ ] Define memory.
+[ ] Define memory cell.
+[ ] Understand bit, byte, and word.
+[ ] Explain address.
+[ ] Explain data.
+[ ] Explain address lines.
+[ ] Explain data lines.
+[ ] Calculate memory capacity.
+[ ] Calculate number of locations.
+[ ] Calculate required address lines.
+[ ] Explain read operation.
+[ ] Explain write operation.
+[ ] Explain chip select.
+[ ] Explain RAM.
+[ ] Explain SRAM.
+[ ] Explain DRAM.
+[ ] Compare SRAM and DRAM.
+[ ] Explain ROM.
+[ ] Explain PROM.
+[ ] Explain EPROM.
+[ ] Explain EEPROM.
+[ ] Explain Flash memory.
+[ ] Compare volatile and nonvolatile memory.
+[ ] Solve memory organization problems.
+[ ] Understand width expansion.
+[ ] Understand depth expansion.
+[ ] Explain PLA.
+[ ] Explain PAL.
+[ ] Compare PLA and PAL.
+[ ] Explain CPLD.
+[ ] Explain FPGA.
+[ ] Compare CPLD and FPGA.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+                    CHAPTER 15
+                        ↓
+                DIGITAL LOGIC
+                   FAMILIES
+                        |
+        +---------------+---------------+
+        |               |               |
+       RTL             TTL             CMOS
+        |               |               |
+       DTL             ECL          Characteristics
+        |               |               |
+        +---------------+---------------+
+                        |
+                        v
+                 LOGIC FAMILY
+                  COMPARISON
+                        |
+       +----------------+----------------+
+       |                |                |
+      Speed            Power        Noise Margin
+       |                |                |
+       +----------------+----------------+
+                        |
+                        v
+                PRACTICAL DIGITAL ICs
+
+
+KEY IDEA:
+
+Chapter 14 answered:
+
+    "How does a digital system STORE information
+     and implement programmable logic?"
+
+
+Chapter 15 asks:
+
+    "How are the actual digital logic gates built
+     electronically, and why do different logic
+     families have different speed, power, and
+     noise characteristics?"
+
+============================================================

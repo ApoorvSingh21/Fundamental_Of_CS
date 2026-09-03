@@ -1,0 +1,2068 @@
+u============================================================
+CHAPTER 7 — MULTIPLEXERS & DEMULTIPLEXERS
+============================================================
+Level: B.Tech 1st Year
+Prerequisite: Chapters 1–6
+Goal: Understand how digital circuits SELECT, ROUTE, and
+      DISTRIBUTE data using MUX and DEMUX.
+
+============================================================
+7.0 CHAPTER ROADMAP
+============================================================
+
+This chapter focuses on two very important combinational
+circuits:
+
+    1. MULTIPLEXER (MUX)
+       → Selects ONE input from MANY inputs.
+
+    2. DEMULTIPLEXER (DEMUX)
+       → Sends ONE input to ONE of MANY outputs.
+
+We will learn:
+
+    • 2:1 MUX
+    • 4:1 MUX
+    • 8:1 MUX
+    • 16:1 MUX
+    • Boolean function implementation using MUX
+    • MUX cascading
+    • 1:2 DEMUX
+    • 1:4 DEMUX
+    • 1:8 DEMUX
+    • MUX vs DEMUX
+    • Applications
+    • Exam techniques
+    • Practice problems
+
+------------------------------------------------------------
+MOST IMPORTANT MEMORY TRICK
+------------------------------------------------------------
+
+MUX:
+
+        MANY INPUTS
+             |
+             v
+          SELECT
+             |
+             v
+        ONE OUTPUT
+
+        "Many → One"
+
+DEMUX:
+
+        ONE INPUT
+             |
+             v
+          SELECT
+             |
+             v
+        MANY OUTPUTS
+
+        "One → Many"
+
+============================================================
+7.1 WHAT IS A MULTIPLEXER?
+============================================================
+
+DEFINITION
+
+A Multiplexer, commonly called a MUX, is a combinational
+logic circuit that selects ONE input from several input
+lines and transfers the selected input to a SINGLE output.
+
+In simple words:
+
+        MUX = DIGITAL SELECTOR
+
+------------------------------------------------------------
+BASIC MUX DIAGRAM
+------------------------------------------------------------
+
+        I0 --------\
+        I1 ---------\
+        I2 ----------> +-----------+
+        I3 ---------/  |    MUX    |------> Y
+                       +-----------+
+                          ^
+                          |
+                     Select lines
+
+The MUX has:
+
+    • Data inputs
+    • Select inputs
+    • One output
+
+------------------------------------------------------------
+WHY DO WE NEED A MUX?
+------------------------------------------------------------
+
+Suppose four sensors produce:
+
+        Sensor 0
+        Sensor 1
+        Sensor 2
+        Sensor 3
+
+But the processor can receive only ONE signal at a time.
+
+We can use a MUX:
+
+        Sensor 0 ----\
+        Sensor 1 -----\
+        Sensor 2 ------> MUX ----> Processor
+        Sensor 3 -----/
+                       ^
+                       |
+                    Select
+
+The select lines tell the MUX:
+
+        "Which sensor should I send?"
+
+============================================================
+7.2 SELECT LINES
+============================================================
+
+The number of select lines determines how many inputs a MUX
+can select.
+
+Formula:
+
+        Number of inputs = 2^n
+
+where:
+
+        n = number of select lines
+
+Therefore:
+
+        1 select line  → 2 inputs
+        2 select lines → 4 inputs
+        3 select lines → 8 inputs
+        4 select lines → 16 inputs
+
+------------------------------------------------------------
+IMPORTANT TABLE
+------------------------------------------------------------
+
++----------------+------------------+
+| Select Lines   | MUX Inputs       |
++----------------+------------------+
+| 1              | 2                |
+| 2              | 4                |
+| 3              | 8                |
+| 4              | 16               |
+| 5              | 32               |
++----------------+------------------+
+
+So:
+
+        2:1 MUX → 1 select line
+        4:1 MUX → 2 select lines
+        8:1 MUX → 3 select lines
+        16:1 MUX → 4 select lines
+
+------------------------------------------------------------
+MEMORY TRICK
+------------------------------------------------------------
+
+If you know the number of inputs:
+
+        Select lines = log2(number of inputs)
+
+Example:
+
+        8 inputs
+
+        log2(8) = 3
+
+Therefore:
+
+        8:1 MUX has 3 select lines.
+
+============================================================
+7.3 2:1 MULTIPLEXER
+============================================================
+
+The simplest MUX is:
+
+        2:1 MUX
+
+It has:
+
+        2 data inputs
+        1 select line
+        1 output
+
+Inputs:
+
+        I0
+        I1
+
+Select:
+
+        S
+
+Output:
+
+        Y
+
+------------------------------------------------------------
+BLOCK DIAGRAM
+------------------------------------------------------------
+
+        I0 --------\
+                    \
+                     >---- +---------+
+                    /      |         |
+        I1 --------/       |  2:1    |----> Y
+                           |  MUX    |
+        S ---------------->| SELECT  |
+                           +---------+
+
+============================================================
+7.4 2:1 MUX TRUTH TABLE
+============================================================
+
+The select input S decides which input reaches Y.
+
+S | Y
+------
+0 | I0
+1 | I1
+
+This means:
+
+        If S = 0:
+            Y = I0
+
+        If S = 1:
+            Y = I1
+
+------------------------------------------------------------
+2:1 MUX LOGIC EQUATION
+------------------------------------------------------------
+
+We want:
+
+        Y = I0 when S = 0
+
+and:
+
+        Y = I1 when S = 1
+
+Therefore:
+
+        Y = S'I0 + SI1
+
+This is the MOST IMPORTANT equation for a 2:1 MUX.
+
+------------------------------------------------------------
+VERIFYING THE EQUATION
+------------------------------------------------------------
+
+Case 1:
+
+        S = 0
+
+Then:
+
+        Y = S'I0 + SI1
+
+        Y = (1)I0 + (0)I1
+
+        Y = I0
+
+Correct.
+
+Case 2:
+
+        S = 1
+
+Then:
+
+        Y = (0)I0 + (1)I1
+
+        Y = I1
+
+Correct.
+
+============================================================
+7.5 2:1 MUX USING LOGIC GATES
+============================================================
+
+Equation:
+
+        Y = S'I0 + SI1
+
+Required:
+
+        1 NOT gate
+        2 AND gates
+        1 OR gate
+
+ASCII diagram:
+
+                  +---- NOT ---- S'
+                  |
+S ----------------+
+
+S' --------\
+            AND --------\
+I0 ---------/            \
+                          OR ----> Y
+S ---------\             /
+            AND --------/
+I1 ---------/
+
+Operation:
+
+        S = 0 → I0 selected
+        S = 1 → I1 selected
+
+============================================================
+7.6 EXAMPLE OF 2:1 MUX
+============================================================
+
+Given:
+
+        I0 = 0
+        I1 = 1
+        S  = 0
+
+Since:
+
+        S = 0
+
+the MUX selects:
+
+        I0
+
+Therefore:
+
+        Y = 0
+
+------------------------------------------------------------
+ANOTHER EXAMPLE
+------------------------------------------------------------
+
+Given:
+
+        I0 = 0
+        I1 = 1
+        S  = 1
+
+The MUX selects:
+
+        I1
+
+Therefore:
+
+        Y = 1
+
+------------------------------------------------------------
+IMPORTANT IDEA
+------------------------------------------------------------
+
+The MUX does NOT change the selected input.
+
+It simply:
+
+        SELECTS
+           ↓
+        PASSES
+           ↓
+        OUTPUT
+
+============================================================
+7.7 4:1 MULTIPLEXER
+============================================================
+
+A 4:1 MUX has:
+
+        4 data inputs
+
+        I0
+        I1
+        I2
+        I3
+
+        2 select lines
+
+        S1
+        S0
+
+        1 output
+
+        Y
+
+------------------------------------------------------------
+BLOCK DIAGRAM
+------------------------------------------------------------
+
+        I0 --------\
+        I1 ---------\
+        I2 ----------> +-----------+
+        I3 ---------/  |   4:1     |----> Y
+                       |    MUX    |
+        S1 ---------->|           |
+        S0 ---------->|           |
+                       +-----------+
+
+Because:
+
+        2^2 = 4
+
+two select lines are required.
+
+============================================================
+7.8 4:1 MUX TRUTH TABLE
+============================================================
+
+S1 S0 | Selected Input | Y
+---------------------------
+0  0  | I0             | I0
+0  1  | I1             | I1
+1  0  | I2             | I2
+1  1  | I3             | I3
+
+MEMORIZE:
+
+        00 → I0
+        01 → I1
+        10 → I2
+        11 → I3
+
+The binary value of the select lines tells us the selected
+input number.
+
+------------------------------------------------------------
+4:1 MUX EQUATION
+------------------------------------------------------------
+
+From the truth table:
+
+For:
+
+        S1S0 = 00
+
+selected:
+
+        I0
+
+Corresponding term:
+
+        S1'S0'I0
+
+For:
+
+        S1S0 = 01
+
+selected:
+
+        I1
+
+Term:
+
+        S1'S0I1
+
+For:
+
+        S1S0 = 10
+
+selected:
+
+        I2
+
+Term:
+
+        S1S0'I2
+
+For:
+
+        S1S0 = 11
+
+selected:
+
+        I3
+
+Term:
+
+        S1S0I3
+
+Therefore:
+
+        Y =
+        S1'S0'I0
+        +
+        S1'S0I1
+        +
+        S1S0'I2
+        +
+        S1S0I3
+
+------------------------------------------------------------
+4:1 MUX FORMULA
+------------------------------------------------------------
+
+        Y = I0S1'S0'
+          + I1S1'S0
+          + I2S1S0'
+          + I3S1S0
+
+============================================================
+7.9 HOW TO REMEMBER A 4:1 MUX
+============================================================
+
+Use this table:
+
+        S1 S0
+         |
+         v
+
+        00 → I0
+        01 → I1
+        10 → I2
+        11 → I3
+
+Think of the select lines as an ADDRESS.
+
+For example:
+
+        S1S0 = 10
+
+means:
+
+        "Go to input number 2."
+
+Therefore:
+
+        Y = I2
+
+This "address" interpretation is extremely useful in
+competitive exam questions.
+
+============================================================
+7.10 4:1 MUX EXAMPLE
+============================================================
+
+Suppose:
+
+        I0 = 0
+        I1 = 1
+        I2 = 1
+        I3 = 0
+
+and:
+
+        S1S0 = 10
+
+Since:
+
+        10 → I2
+
+therefore:
+
+        Y = I2 = 1
+
+------------------------------------------------------------
+ANOTHER EXAMPLE
+------------------------------------------------------------
+
+Suppose:
+
+        S1S0 = 01
+
+Then:
+
+        Y = I1
+
+The actual values of I0, I2 and I3 do not matter for
+that particular selection.
+
+============================================================
+7.11 8:1 MULTIPLEXER
+============================================================
+
+An 8:1 MUX has:
+
+        8 data inputs
+
+        I0 to I7
+
+        3 select lines
+
+        S2 S1 S0
+
+        1 output
+
+        Y
+
+Because:
+
+        2^3 = 8
+
+------------------------------------------------------------
+BLOCK
+------------------------------------------------------------
+
+        I0 --------\
+        I1 ---------\
+        I2 ----------\
+        I3 -----------\
+        I4 ------------> +-------------+
+        I5 -----------/  |     8:1     |----> Y
+        I6 ----------/   |     MUX     |
+        I7 ---------/    +-------------+
+                            ^ ^ ^
+                            | | |
+                           S2 S1 S0
+
+------------------------------------------------------------
+SELECTION TABLE
+------------------------------------------------------------
+
+S2 S1 S0 | Selected Input
+-------------------------
+0  0  0   | I0
+0  0  1   | I1
+0  1  0   | I2
+0  1  1   | I3
+1  0  0   | I4
+1  0  1   | I5
+1  1  0   | I6
+1  1  1   | I7
+
+MEMORY:
+
+        000 → I0
+        001 → I1
+        010 → I2
+        011 → I3
+        100 → I4
+        101 → I5
+        110 → I6
+        111 → I7
+
+============================================================
+7.12 16:1 MULTIPLEXER
+============================================================
+
+A 16:1 MUX has:
+
+        16 inputs
+
+        I0 to I15
+
+        4 select lines
+
+        S3 S2 S1 S0
+
+        1 output
+
+Why?
+
+        2^4 = 16
+
+Selection:
+
+        0000 → I0
+        0001 → I1
+        0010 → I2
+          ...
+        1111 → I15
+
+The same principle continues for larger MUXes.
+
+============================================================
+7.13 MUX AS A DATA SELECTOR
+============================================================
+
+Suppose four devices produce:
+
+        D0
+        D1
+        D2
+        D3
+
+But only one needs to communicate with a processor.
+
+Use:
+
+        4:1 MUX
+
+                 D0
+                 D1
+                 D2
+                 D3
+                  |
+                  v
+               +------+
+               | 4:1  |
+               | MUX  |----> CPU
+               +------+
+                  ^
+                  |
+               Select
+
+The select lines determine which device communicates.
+
+------------------------------------------------------------
+REAL-WORLD ANALOGY
+------------------------------------------------------------
+
+Imagine four roads:
+
+        Road 0 ----\
+        Road 1 -----\
+        Road 2 ------> MUX ----> Destination
+        Road 3 -----/
+
+The traffic controller chooses ONE road.
+
+The MUX is like that traffic controller.
+
+============================================================
+7.14 MUX AS A BOOLEAN FUNCTION IMPLEMENTER
+============================================================
+
+This is one of the MOST IMPORTANT topics in this chapter.
+
+A MUX can be used to implement Boolean functions.
+
+Suppose:
+
+        F(A,B) = Σm(1,2)
+
+We can use a:
+
+        4:1 MUX
+
+because there are two variables.
+
+Use:
+
+        A and B
+
+as the select lines.
+
+------------------------------------------------------------
+STEP 1 — WRITE TRUTH TABLE
+------------------------------------------------------------
+
+A B | Minterm | F
+-----------------
+0 0 |   m0    | 0
+0 1 |   m1    | 1
+1 0 |   m2    | 1
+1 1 |   m3    | 0
+
+------------------------------------------------------------
+STEP 2 — MAP TO MUX INPUTS
+------------------------------------------------------------
+
+Because:
+
+        00 → I0
+        01 → I1
+        10 → I2
+        11 → I3
+
+Therefore:
+
+        I0 = 0
+        I1 = 1
+        I2 = 1
+        I3 = 0
+
+Select lines:
+
+        S1 = A
+        S0 = B
+
+Then the MUX output is:
+
+        F
+
+------------------------------------------------------------
+FINAL CIRCUIT
+------------------------------------------------------------
+
+A -----------------> S1
+B -----------------> S0
+
+I0 = 0
+I1 = 1
+I2 = 1
+I3 = 0
+
+       +-------------+
+0 ---->| I0          |
+1 ---->| I1          |
+1 ---->| I2   4:1    |----> F
+0 ---->| I3    MUX   |
+       +-------------+
+          ^       ^
+          |       |
+          A       B
+
+Therefore:
+
+        F = Σm(1,2)
+
+is implemented using a 4:1 MUX.
+
+============================================================
+7.15 GENERAL MUX FUNCTION IMPLEMENTATION METHOD
+============================================================
+
+When implementing:
+
+        F(A,B,C,...)
+
+using a MUX:
+
+STEP 1:
+    Determine the number of variables.
+
+STEP 2:
+    Choose enough select lines.
+
+STEP 3:
+    Use some variables as select lines.
+
+STEP 4:
+    Fill the MUX inputs with:
+        0
+        1
+        variable
+        variable complement
+
+depending on the problem.
+
+STEP 5:
+    The MUX output becomes F.
+
+------------------------------------------------------------
+SIMPLE CASE
+------------------------------------------------------------
+
+For an n-variable function, if an:
+
+        2^n : 1 MUX
+
+is available, all n variables can be used as select lines.
+
+Then every MUX input is simply:
+
+        0 or 1
+
+based on the truth table.
+
+============================================================
+7.16 IMPLEMENTING A 3-VARIABLE FUNCTION USING 8:1 MUX
+============================================================
+
+Suppose:
+
+        F(A,B,C) = Σm(1,3,5,7)
+
+Use:
+
+        8:1 MUX
+
+Select lines:
+
+        S2 = A
+        S1 = B
+        S0 = C
+
+Since:
+
+        m0 → I0
+        m1 → I1
+        ...
+        m7 → I7
+
+Set:
+
+        I0 = 0
+        I1 = 1
+        I2 = 0
+        I3 = 1
+        I4 = 0
+        I5 = 1
+        I6 = 0
+        I7 = 1
+
+Therefore:
+
+        F = MUX output
+
+Notice the pattern:
+
+        F = 1 whenever C = 1
+
+So the simplified function is:
+
+        F = C
+
+But the MUX implementation still demonstrates the
+general method.
+
+============================================================
+7.17 MUX CASCADING
+============================================================
+
+What if we need a:
+
+        16:1 MUX
+
+but only have:
+
+        4:1 MUXes?
+
+We can combine multiple smaller MUXes.
+
+This is called:
+
+        CASCADING
+
+------------------------------------------------------------
+16:1 MUX USING 4:1 MUXES
+------------------------------------------------------------
+
+First stage:
+
+        4 MUXes
+
+Each receives four inputs.
+
+        I0-I3       → MUX0
+        I4-I7       → MUX1
+        I8-I11      → MUX2
+        I12-I15     → MUX3
+
+Their outputs then go into another 4:1 MUX.
+
+ASCII:
+
+I0-I3     ---> [4:1 MUX] --\
+I4-I7     ---> [4:1 MUX] ---\
+I8-I11    ---> [4:1 MUX] ----> [4:1 MUX] ---> Y
+I12-I15   ---> [4:1 MUX] ---/
+
+The first stage chooses within each group.
+
+The final stage chooses which group.
+
+This creates a larger MUX from smaller MUXes.
+
+============================================================
+7.18 DEMULTIPLEXER
+============================================================
+
+Now we reverse the idea.
+
+DEFINITION
+
+A Demultiplexer, or DEMUX, is a combinational circuit that
+takes ONE input and routes it to ONE of several outputs
+according to the select lines.
+
+Think:
+
+        MUX:
+            MANY → ONE
+
+        DEMUX:
+            ONE → MANY
+
+------------------------------------------------------------
+BASIC DEMUX
+------------------------------------------------------------
+
+                 +-----------+
+Input D -------->|   DEMUX   |----> Y0
+                 |           |----> Y1
+Select ---------->|           |----> Y2
+lines ----------->|           |----> Y3
+                 +-----------+
+
+Only one output receives the input.
+
+============================================================
+7.19 1:2 DEMULTIPLEXER
+============================================================
+
+The simplest DEMUX is:
+
+        1:2 DEMUX
+
+It has:
+
+        1 data input
+        1 select line
+        2 outputs
+
+Inputs:
+
+        D
+        S
+
+Outputs:
+
+        Y0
+        Y1
+
+------------------------------------------------------------
+BLOCK DIAGRAM
+------------------------------------------------------------
+
+                  +---------+
+D --------------->|         |----> Y0
+                  | 1-to-2  |
+S --------------->|  DEMUX  |----> Y1
+                  +---------+
+
+============================================================
+7.20 1:2 DEMUX TRUTH TABLE
+============================================================
+
+S | Y0 | Y1
+------------
+0 | D  | 0
+1 | 0  | D
+
+Therefore:
+
+        S = 0 → D goes to Y0
+
+        S = 1 → D goes to Y1
+
+------------------------------------------------------------
+EQUATIONS
+------------------------------------------------------------
+
+For Y0:
+
+        Y0 = DS'
+
+For Y1:
+
+        Y1 = DS
+
+Therefore:
+
+        Y0 = DS'
+        Y1 = DS
+
+============================================================
+7.21 1:2 DEMUX USING GATES
+============================================================
+
+                 +---- NOT ---- S'
+                 |
+S ---------------+
+
+S' --------\
+            AND --------> Y0
+D ---------/
+
+S ---------\
+            AND --------> Y1
+D ---------/
+
+The select line determines which AND gate receives the data.
+
+============================================================
+7.22 1:4 DEMULTIPLEXER
+============================================================
+
+A 1:4 DEMUX has:
+
+        1 data input
+
+        D
+
+        2 select lines
+
+        S1 S0
+
+        4 outputs
+
+        Y0 Y1 Y2 Y3
+
+Why two select lines?
+
+        2^2 = 4
+
+------------------------------------------------------------
+BLOCK DIAGRAM
+------------------------------------------------------------
+
+                    +-------------+
+D ----------------->|             |----> Y0
+S1 ---------------->|    1:4      |----> Y1
+S0 ---------------->|   DEMUX     |----> Y2
+                    |             |----> Y3
+                    +-------------+
+
+============================================================
+7.23 1:4 DEMUX TRUTH TABLE
+============================================================
+
+S1 S0 | Selected Output
+-----------------------
+0  0  | Y0 = D
+0  1  | Y1 = D
+1  0  | Y2 = D
+1  1  | Y3 = D
+
+All other outputs are:
+
+        0
+
+------------------------------------------------------------
+EQUATIONS
+------------------------------------------------------------
+
+Y0 = DS1'S0'
+
+Y1 = DS1'S0
+
+Y2 = DS1S0'
+
+Y3 = DS1S0
+
+Notice something?
+
+These equations look very similar to a decoder.
+
+That is because a DEMUX can be thought of as a decoder
+whose selected output is enabled by the data input D.
+
+============================================================
+7.24 DEMUX AND DECODER RELATIONSHIP
+============================================================
+
+A decoder:
+
+        Inputs
+          ↓
+       Select one
+          ↓
+       Output line
+
+A DEMUX:
+
+        Data + Select
+             ↓
+       Select one
+             ↓
+       Data appears
+       at that output
+
+For a DEMUX:
+
+        D = 1
+
+the output selection pattern becomes similar to a decoder.
+
+For example, in a 1:4 DEMUX:
+
+        D = 1
+
+and:
+
+        S1S0 = 10
+
+then:
+
+        Y2 = 1
+
+and:
+
+        Y0 = Y1 = Y3 = 0
+
+So:
+
+        DEMUX = Decoder + Data input concept
+
+============================================================
+7.25 1:8 DEMUX
+============================================================
+
+A 1:8 DEMUX has:
+
+        1 data input
+
+        3 select lines
+
+        8 outputs
+
+Because:
+
+        2^3 = 8
+
+Selection:
+
+        000 → Y0
+        001 → Y1
+        010 → Y2
+        011 → Y3
+        100 → Y4
+        101 → Y5
+        110 → Y6
+        111 → Y7
+
+Only the selected output receives D.
+
+============================================================
+7.26 MUX vs DEMUX
+============================================================
+
++-------------------+-------------------------+
+| MUX               | DEMUX                   |
++-------------------+-------------------------+
+| Many inputs       | One input               |
+| One output        | Many outputs            |
+| Selects one input | Selects one output      |
+| Many → One        | One → Many              |
+| Data selection    | Data distribution       |
++-------------------+-------------------------+
+
+------------------------------------------------------------
+MEMORY TRICK
+------------------------------------------------------------
+
+MUX:
+
+        "Which input should I take?"
+
+DEMUX:
+
+        "Where should I send this input?"
+
+============================================================
+7.27 PRACTICAL APPLICATIONS OF MUX
+============================================================
+
+MUX is used for:
+
+    • Data selection
+    • Communication systems
+    • CPU datapaths
+    • ALU input selection
+    • Bus routing
+    • Sensor selection
+    • Boolean function implementation
+    • Serial/parallel data systems
+
+------------------------------------------------------------
+CPU EXAMPLE
+------------------------------------------------------------
+
+Suppose an ALU can receive data from:
+
+        Register A
+        Register B
+        Memory
+        Immediate value
+
+A MUX can select which source goes into the ALU.
+
+                  Register A ----\
+                  Register B -----\
+                  Memory ---------> MUX ---> ALU
+                  Immediate -----/
+                                  ^
+                                  |
+                               Select
+
+The control unit generates the select signals.
+
+============================================================
+7.28 PRACTICAL APPLICATIONS OF DEMUX
+============================================================
+
+DEMUX is used for:
+
+    • Data distribution
+    • Communication systems
+    • Memory selection
+    • Serial-to-parallel routing
+    • Device control
+    • Data transmission
+    • Digital switching
+
+------------------------------------------------------------
+COMMUNICATION EXAMPLE
+------------------------------------------------------------
+
+Suppose one communication line carries data that must be
+sent to one of four devices.
+
+        Data
+         |
+         v
+       DEMUX
+      / | | \
+     /  | |  \
+   D0  D1 D2  D3
+
+Select lines determine which device receives the data.
+
+============================================================
+7.29 MUX vs SWITCH
+============================================================
+
+A MUX behaves somewhat like a digital switch.
+
+Example:
+
+        I0 ----\
+               |
+        I1 ----+----> Y
+               |
+        I2 ----/
+               ^
+               |
+             Select
+
+The select input decides which path is connected to the
+output logically.
+
+This analogy makes MUX behavior easier to remember.
+
+============================================================
+7.30 COMMON EXAM TRAPS
+============================================================
+
+TRAP 1:
+
+"How many select lines does an 8:1 MUX have?"
+
+Do NOT answer 8.
+
+Use:
+
+        2^n = 8
+
+Therefore:
+
+        n = 3
+
+Answer:
+
+        3 select lines.
+
+
+TRAP 2:
+
+"How many outputs does a 4:1 MUX have?"
+
+Answer:
+
+        1
+
+The "4:1" means:
+
+        4 inputs → 1 output.
+
+
+TRAP 3:
+
+"How many inputs does a 1:8 DEMUX have?"
+
+Answer:
+
+        1 data input
+
+The "1:8" means:
+
+        1 input → 8 outputs.
+
+
+TRAP 4:
+
+"Can a MUX implement Boolean functions?"
+
+YES.
+
+This is an important application of MUXes.
+
+
+TRAP 5:
+
+"Does DEMUX simply copy data to all outputs?"
+
+NO.
+
+It sends the data to ONE selected output.
+
+============================================================
+7.31 FAST SOLVING TECHNIQUE FOR MUX QUESTIONS
+============================================================
+
+If given a MUX selection problem:
+
+STEP 1:
+    Identify select lines.
+
+STEP 2:
+    Convert select lines to binary.
+
+STEP 3:
+    Find selected input.
+
+STEP 4:
+    Output = selected input.
+
+Example:
+
+        8:1 MUX
+
+        S2S1S0 = 101
+
+Binary:
+
+        101₂ = 5
+
+Therefore:
+
+        Selected input = I5
+
+So:
+
+        Y = I5
+
+------------------------------------------------------------
+FAST SOLVING TECHNIQUE FOR DEMUX
+------------------------------------------------------------
+
+Example:
+
+        1:8 DEMUX
+
+        S2S1S0 = 110
+
+Binary:
+
+        110₂ = 6
+
+Therefore:
+
+        D goes to Y6
+
+All other outputs:
+
+        0
+
+============================================================
+7.32 BOOLEAN FUNCTION USING 4:1 MUX — IMPORTANT EXAMPLE
+============================================================
+
+Implement:
+
+        F(A,B) = A'B + AB'
+
+This is XOR.
+
+We know:
+
+        F = A ⊕ B
+
+Use a 4:1 MUX.
+
+Select:
+
+        S1 = A
+        S0 = B
+
+Truth table:
+
+A B | F
+--------
+0 0 | 0
+0 1 | 1
+1 0 | 1
+1 1 | 0
+
+Therefore:
+
+        I0 = 0
+        I1 = 1
+        I2 = 1
+        I3 = 0
+
+Circuit:
+
+A ----------------> S1
+B ----------------> S0
+
+0 ----------------> I0
+1 ----------------> I1
+1 ----------------> I2
+0 ----------------> I3
+
+                  +----------+
+0 -------------->| I0       |
+1 -------------->| I1       |
+1 -------------->| I2  4:1  |----> F
+0 -------------->| I3  MUX  |
+                  +----------+
+                    ^      ^
+                    |      |
+                    A      B
+
+Therefore the MUX implements XOR.
+
+============================================================
+7.33 BOOLEAN FUNCTION USING 8:1 MUX
+============================================================
+
+Suppose:
+
+        F(A,B,C) = Σm(0,2,3,6)
+
+Use an 8:1 MUX.
+
+Take:
+
+        S2 = A
+        S1 = B
+        S0 = C
+
+Set:
+
+        I0 = 1
+        I1 = 0
+        I2 = 1
+        I3 = 1
+        I4 = 0
+        I5 = 0
+        I6 = 1
+        I7 = 0
+
+Then:
+
+        MUX output = F
+
+------------------------------------------------------------
+GENERAL RULE
+------------------------------------------------------------
+
+For:
+
+        F = Σm(numbers)
+
+using a 2^n:1 MUX:
+
+        I_k = 1
+
+for every listed minterm k.
+
+All remaining inputs:
+
+        I_k = 0
+
+This is one of the easiest MUX implementation methods.
+
+============================================================
+7.34 ADVANCED IDEA — MUX USING SMALLER MUXES
+============================================================
+
+A larger MUX can be constructed from smaller MUXes.
+
+Example:
+
+        4:1 MUX
+
+can be built using:
+
+        2:1 MUXes
+
+Architecture:
+
+I0 ----\
+        [2:1] ----\
+I1 ----/           \
+                    [2:1] ---> Y
+I2 ----\           /
+        [2:1] ----/
+I3 ----/
+
+First stage:
+
+        MUX1 selects I0/I1
+        MUX2 selects I2/I3
+
+Second stage:
+
+        MUX3 selects between their outputs.
+
+Therefore:
+
+        3 × 2:1 MUX
+
+can implement:
+
+        1 × 4:1 MUX
+
+This is a very useful design concept.
+
+============================================================
+7.35 IMPORTANT FORMULAS
+============================================================
+
+2:1 MUX:
+
+        Y = S'I0 + SI1
+
+
+4:1 MUX:
+
+        Y =
+        I0S1'S0'
+        + I1S1'S0
+        + I2S1S0'
+        + I3S1S0
+
+
+1:2 DEMUX:
+
+        Y0 = DS'
+        Y1 = DS
+
+
+1:4 DEMUX:
+
+        Y0 = DS1'S0'
+        Y1 = DS1'S0
+        Y2 = DS1S0'
+        Y3 = DS1S0
+
+
+GENERAL MUX:
+
+        Number of inputs = 2^n
+
+        n = number of select lines
+
+
+GENERAL DEMUX:
+
+        Number of outputs = 2^n
+
+        n = number of select lines
+
+============================================================
+7.36 MUX AND DEMUX MEMORY MAP
+============================================================
+
+                    DATA ROUTING
+                         |
+             +-----------+-----------+
+             |                       |
+             v                       v
+            MUX                     DEMUX
+             |                       |
+          MANY → ONE              ONE → MANY
+             |                       |
+             v                       v
+        Data Selection          Data Distribution
+             |                       |
+             v                       v
+        CPU / ALU / Bus        Communication /
+        / Sensor selection      Device selection
+
+============================================================
+7.37 CHAPTER 7 — EXAM CHECKLIST
+============================================================
+
+Before moving to Chapter 8, you should be able to:
+
+[ ] Define Multiplexer.
+[ ] Explain why a MUX is called a data selector.
+[ ] Calculate select lines from number of inputs.
+[ ] Explain 2:1 MUX.
+[ ] Draw the 2:1 MUX truth table.
+[ ] Derive Y = S'I0 + SI1.
+[ ] Explain 4:1 MUX.
+[ ] Write the 4:1 MUX truth table.
+[ ] Write the 4:1 MUX equation.
+[ ] Explain 8:1 MUX.
+[ ] Explain 16:1 MUX.
+[ ] Implement Boolean functions using MUX.
+[ ] Understand MUX cascading.
+[ ] Define DEMUX.
+[ ] Explain 1:2 DEMUX.
+[ ] Explain 1:4 DEMUX.
+[ ] Explain 1:8 DEMUX.
+[ ] Understand the relation between DEMUX and decoder.
+[ ] Compare MUX and DEMUX.
+[ ] Know practical applications.
+
+============================================================
+7.38 PRACTICE QUESTIONS
+============================================================
+
+------------------------------------------------------------
+BASIC
+------------------------------------------------------------
+
+Q1. Define a multiplexer.
+
+Q2. Why is a MUX called a data selector?
+
+Q3. How many select lines are required for a 4:1 MUX?
+
+Q4. How many select lines are required for an 8:1 MUX?
+
+Q5. How many inputs does a 16:1 MUX have?
+
+Q6. How many outputs does a standard MUX have?
+
+------------------------------------------------------------
+2:1 MUX
+------------------------------------------------------------
+
+Q7. Write the truth table of a 2:1 MUX.
+
+Q8. Derive the equation of a 2:1 MUX.
+
+Q9. If:
+
+        I0 = 1
+        I1 = 0
+        S  = 0
+
+    find Y.
+
+Q10. If:
+
+        I0 = 1
+        I1 = 0
+        S  = 1
+
+    find Y.
+
+------------------------------------------------------------
+4:1 MUX
+------------------------------------------------------------
+
+Q11. Write the selection table of a 4:1 MUX.
+
+Q12. For:
+
+        S1S0 = 11
+
+    which input is selected?
+
+Q13. For:
+
+        S1S0 = 10
+
+    which input is selected?
+
+Q14. Write the Boolean equation for a 4:1 MUX.
+
+------------------------------------------------------------
+BOOLEAN FUNCTION IMPLEMENTATION
+------------------------------------------------------------
+
+Q15. Implement:
+
+        F(A,B) = Σm(1,2)
+
+    using a 4:1 MUX.
+
+Q16. Implement:
+
+        F(A,B) = A ⊕ B
+
+    using a 4:1 MUX.
+
+Q17. Implement:
+
+        F(A,B,C) = Σm(1,3,5,7)
+
+    using an 8:1 MUX.
+
+Q18. Implement:
+
+        F(A,B,C) = Σm(0,2,4,6)
+
+    using an 8:1 MUX.
+
+------------------------------------------------------------
+DEMUX
+------------------------------------------------------------
+
+Q19. Define a demultiplexer.
+
+Q20. How many select lines are required for a 1:8 DEMUX?
+
+Q21. Write the truth table of a 1:2 DEMUX.
+
+Q22. Write the equations for a 1:2 DEMUX.
+
+Q23. In a 1:4 DEMUX, if:
+
+        S1S0 = 10
+
+    which output receives D?
+
+------------------------------------------------------------
+CONCEPTUAL
+------------------------------------------------------------
+
+Q24. Compare MUX and DEMUX.
+
+Q25. Explain the relationship between a DEMUX and decoder.
+
+Q26. Explain MUX cascading.
+
+Q27. How can three 2:1 MUXes be used to construct a 4:1
+     MUX?
+
+Q28. Explain two practical applications of a MUX.
+
+Q29. Explain two practical applications of a DEMUX.
+
+============================================================
+7.39 COMPETITIVE-EXAM STYLE QUESTIONS
+============================================================
+
+Q30.
+
+An 8:1 MUX has select lines:
+
+        S2S1S0 = 101
+
+Which input is connected to the output?
+
+A) I3
+B) I4
+C) I5
+D) I6
+
+
+Q31.
+
+A 16:1 MUX requires how many select lines?
+
+A) 2
+B) 3
+C) 4
+D) 5
+
+
+Q32.
+
+A 1:8 DEMUX requires how many select lines?
+
+A) 2
+B) 3
+C) 4
+D) 8
+
+
+Q33.
+
+A 4:1 MUX has:
+
+        I0 = 0
+        I1 = 1
+        I2 = 1
+        I3 = 0
+
+If:
+
+        S1S0 = 01
+
+then Y is:
+
+A) 0
+B) 1
+C) I2
+D) X
+
+
+Q34.
+
+Which circuit is primarily used for data selection?
+
+A) Decoder
+B) Encoder
+C) MUX
+D) Comparator
+
+
+Q35.
+
+Which circuit is primarily used for data distribution?
+
+A) MUX
+B) DEMUX
+C) Comparator
+D) Adder
+
+============================================================
+7.40 FINAL REVISION
+============================================================
+
+                 MULTIPLEXER
+                     |
+              MANY INPUTS
+                     |
+                  SELECT
+                     |
+                     v
+                 ONE OUTPUT
+
+                 DEMULTIPLEXER
+                     |
+                 ONE INPUT
+                     |
+                  SELECT
+                     |
+                     v
+               MANY OUTPUTS
+
+
+2:1 MUX:
+
+        S=0 → I0
+        S=1 → I1
+
+        Y = S'I0 + SI1
+
+
+4:1 MUX:
+
+        00 → I0
+        01 → I1
+        10 → I2
+        11 → I3
+
+
+8:1 MUX:
+
+        000 → I0
+        ...
+        111 → I7
+
+
+1:2 DEMUX:
+
+        S=0 → Y0=D
+        S=1 → Y1=D
+
+
+1:4 DEMUX:
+
+        00 → Y0
+        01 → Y1
+        10 → Y2
+        11 → Y3
+
+
+CORE FORMULAS:
+
+        MUX inputs = 2^n
+
+        DEMUX outputs = 2^n
+
+        Select lines = log2(number of choices)
+
+
+MOST IMPORTANT MEMORY:
+
+        MUX:
+        "SELECT ONE"
+
+        DEMUX:
+        "SEND TO ONE"
+
+============================================================
+CHAPTER 7 COMPLETE
+============================================================
+
+You have now learned the major combinational building
+blocks:
+
+    Chapter 5:
+        Adders, Subtractors, RCA, CLA, BCD Adder
+
+    Chapter 6:
+        Comparators, Decoders, Encoders
+
+    Chapter 7:
+        MUX and DEMUX
+
+These circuits form the foundation of larger digital
+systems such as:
+
+        CPU
+        ALU
+        Memory systems
+        Communication systems
+        Control units
+        Datapaths
+
+============================================================
+NEXT TOPIC
+============================================================
+
+CHAPTER 8 — SEQUENTIAL LOGIC FUNDAMENTALS
+
+We now make a major transition.
+
+So far:
+
+        COMBINATIONAL LOGIC
+        ↓
+        Output depends only on present inputs.
+
+Chapter 8 introduces:
+
+        MEMORY
+        ↓
+        FEEDBACK
+        ↓
+        CLOCK
+        ↓
+        STATE
+        ↓
+        SEQUENTIAL LOGIC
+
+We will learn:
+
+    8.1 Combinational vs Sequential Logic
+    8.2 Memory concept
+    8.3 SR Latch
+    8.4 NOR-based SR Latch
+    8.5 NAND-based SR Latch
+    8.6 Invalid condition
+    8.7 Enable-controlled latch
+    8.8 D Latch
+    8.9 Flip-Flops
+    8.10 Edge triggering
+    8.11 SR, JK, D and T Flip-Flops
+
+KEY IDEA:
+
+        Combinational:
+            "What is the input NOW?"
+
+        Sequential:
+            "What is the input NOW,
+             AND what was the previous state?"
+
+============================================================

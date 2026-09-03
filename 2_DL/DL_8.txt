@@ -1,0 +1,2584 @@
+============================================================
+CHAPTER 8 — SEQUENTIAL LOGIC FUNDAMENTALS
+============================================================
+Level: B.Tech 1st Year
+Starting Point: ZERO → FOUNDATION → EXAM READY
+
+MAIN GOAL:
+Understand how digital circuits can REMEMBER information.
+
+============================================================
+8.0 CHAPTER ROADMAP
+============================================================
+
+In Chapters 1–7, we mainly studied COMBINATIONAL circuits.
+
+COMBINATIONAL LOGIC:
+
+        Inputs ───────> Logic ───────> Output
+
+The output depends only on the PRESENT input.
+
+Examples:
+    • Adder
+    • Subtractor
+    • Comparator
+    • Decoder
+    • Encoder
+    • MUX
+    • DEMUX
+
+But computers need MEMORY.
+
+For example:
+
+    • Registers must remember data.
+    • Counters must remember their current count.
+    • CPUs must remember states.
+    • Memory systems must store bits.
+    • Controllers must remember what happened previously.
+
+This requires:
+
+        SEQUENTIAL LOGIC
+
+------------------------------------------------------------
+CHAPTER TOPICS
+------------------------------------------------------------
+
+8.1 Combinational vs Sequential Logic
+8.2 Memory Concept
+8.3 Feedback
+8.4 Clock
+8.5 State
+8.6 Latches
+8.7 SR Latch using NOR gates
+8.8 SR Latch using NAND gates
+8.9 Invalid Condition
+8.10 Enable-Controlled Latch
+8.11 D Latch
+8.12 Latch vs Flip-Flop
+8.13 Edge Triggering
+8.14 SR Flip-Flop
+8.15 JK Flip-Flop
+8.16 D Flip-Flop
+8.17 T Flip-Flop
+8.18 Race-Around Condition
+8.19 Applications
+8.20 Exam Techniques
+8.21 Practice Questions
+============================================================
+
+
+============================================================
+8.1 COMBINATIONAL LOGIC
+============================================================
+
+DEFINITION:
+
+A combinational circuit is a digital circuit whose output
+depends only on the PRESENT values of its inputs.
+
+Mathematically:
+
+        Output = f(Present Inputs)
+
+There is NO memory.
+
+------------------------------------------------------------
+EXAMPLE
+------------------------------------------------------------
+
+For an AND gate:
+
+        Y = A · B
+
+If:
+
+        A = 1
+        B = 1
+
+then:
+
+        Y = 1
+
+If B changes to 0:
+
+        Y = 0
+
+The circuit does not care what happened previously.
+
+------------------------------------------------------------
+ASCII DIAGRAM
+------------------------------------------------------------
+
+        A --------\
+                   AND --------> Y
+        B --------/
+
+        Present input
+              ↓
+           OUTPUT
+
+------------------------------------------------------------
+EXAMPLES OF COMBINATIONAL CIRCUITS
+------------------------------------------------------------
+
+    AND gate
+    OR gate
+    NOT gate
+    XOR gate
+    Adder
+    Subtractor
+    Comparator
+    Decoder
+    Encoder
+    MUX
+    DEMUX
+
+============================================================
+8.2 SEQUENTIAL LOGIC
+============================================================
+
+DEFINITION:
+
+A sequential circuit is a digital circuit whose output
+depends on:
+
+    1. Present input
+    2. Previous state/history
+
+Therefore:
+
+        Output = f(Present Input, Previous State)
+
+This is the fundamental difference.
+
+------------------------------------------------------------
+ASCII DIAGRAM
+------------------------------------------------------------
+
+                 +-------------------+
+                 |                   |
+Inputs --------->| Sequential Logic  |-----> Output
+                 |                   |
+                 +---------+---------+
+                           |
+                           v
+                         State
+                           |
+                           |
+                           +---------- feedback --------+
+                                                        |
+                                                        |
+                                                        v
+                                               Sequential Logic
+
+The feedback allows the circuit to REMEMBER.
+
+------------------------------------------------------------
+MEMORY TRICK
+------------------------------------------------------------
+
+COMBINATIONAL:
+
+        "What is happening NOW?"
+
+SEQUENTIAL:
+
+        "What is happening NOW
+         + what happened BEFORE?"
+
+============================================================
+8.3 COMBINATIONAL vs SEQUENTIAL
+============================================================
+
++----------------------+------------------------+
+| Combinational       | Sequential             |
++----------------------+------------------------+
+| No memory           | Has memory             |
+| Present input only  | Present + previous     |
+| No feedback needed  | Feedback commonly used |
+| Clock not required  | Clock often used       |
+| Output changes      | Output depends on state|
+| immediately         | and timing             |
++----------------------+------------------------+
+
+------------------------------------------------------------
+EXAMPLES
+------------------------------------------------------------
+
+Combinational:
+
+        Adder
+        MUX
+        Decoder
+        Comparator
+
+Sequential:
+
+        Register
+        Counter
+        Shift register
+        Flip-flop
+        Memory element
+
+============================================================
+8.4 WHY DO WE NEED MEMORY?
+============================================================
+
+Consider a digital counter.
+
+Suppose we want:
+
+        000
+        001
+        010
+        011
+        100
+        ...
+
+How can the circuit know that after:
+
+        011
+
+it should produce:
+
+        100
+
+It must REMEMBER the previous state.
+
+Therefore:
+
+        Counter = Sequential circuit
+
+------------------------------------------------------------
+ANOTHER EXAMPLE: DIGITAL LOCK
+------------------------------------------------------------
+
+Suppose the correct password is:
+
+        1 → 0 → 1
+
+The circuit receives:
+
+        First input: 1
+        Second input: 0
+        Third input: 1
+
+When the third input arrives, the circuit must know that
+the previous inputs were 1 and 0.
+
+Therefore it needs MEMORY.
+
+============================================================
+8.5 MEMORY IN DIGITAL LOGIC
+============================================================
+
+The smallest useful unit of digital memory is:
+
+        1 BIT
+
+A bit can store:
+
+        0
+
+or:
+
+        1
+
+A circuit capable of storing one bit is called a:
+
+        MEMORY ELEMENT
+
+Latches and flip-flops are important memory elements.
+
+------------------------------------------------------------
+ONE-BIT MEMORY
+------------------------------------------------------------
+
+        +----------------+
+        | Memory Element |
+        +----------------+
+              |
+              v
+             Q
+
+Q can store:
+
+        0
+
+or:
+
+        1
+
+============================================================
+8.6 FEEDBACK
+============================================================
+
+One of the key ideas behind sequential circuits is:
+
+        FEEDBACK
+
+Feedback means taking part of the output and feeding it
+back to the input.
+
+------------------------------------------------------------
+GENERAL IDEA
+------------------------------------------------------------
+
+        Input
+          |
+          v
+      +-------+
+      | Logic |
+      +---+---+
+          |
+          v
+        Output
+          |
+          |
+          +----------+
+                     |
+                     v
+                   Input
+
+This creates a circuit that can maintain a state.
+
+------------------------------------------------------------
+WHY IS FEEDBACK IMPORTANT?
+------------------------------------------------------------
+
+Without feedback:
+
+        Present input → Output
+
+With feedback:
+
+        Present input
+             +
+        Previous output
+             ↓
+          New output
+
+Therefore feedback can create MEMORY.
+
+============================================================
+8.7 WHAT IS A LATCH?
+============================================================
+
+DEFINITION:
+
+A latch is a basic sequential circuit capable of storing
+ONE BIT of information.
+
+A latch generally responds to its input while an enable
+condition is active.
+
+The important characteristic is:
+
+        LATCH = LEVEL-SENSITIVE
+
+We will understand "level-sensitive" shortly.
+
+------------------------------------------------------------
+ONE-BIT STORAGE
+------------------------------------------------------------
+
+        Input
+          |
+          v
+       +------+
+       |Latch |
+       +------+
+          |
+          v
+          Q
+
+The latch can remember:
+
+        Q = 0
+
+or:
+
+        Q = 1
+
+============================================================
+8.8 SR LATCH
+============================================================
+
+The SR latch is one of the simplest memory circuits.
+
+SR means:
+
+        S = SET
+        R = RESET
+
+SET means:
+
+        Store 1
+
+RESET means:
+
+        Store 0
+
+The SR latch has two outputs:
+
+        Q
+        Q'
+
+Ideally:
+
+        Q' = complement of Q
+
+Therefore:
+
+If:
+
+        Q = 1
+
+then:
+
+        Q' = 0
+
+If:
+
+        Q = 0
+
+then:
+
+        Q' = 1
+
+------------------------------------------------------------
+BASIC IDEA
+------------------------------------------------------------
+
+        S ───────> [ SR LATCH ] ───────> Q
+        R ───────> [           ] ───────> Q'
+
+============================================================
+8.9 NOR-BASED SR LATCH
+============================================================
+
+An SR latch can be constructed using two cross-coupled
+NOR gates.
+
+"Cross-coupled" means the output of one gate is connected
+to an input of the other gate.
+
+------------------------------------------------------------
+ASCII DIAGRAM
+------------------------------------------------------------
+
+                  +---------+
+        S ------->|   NOR   |-------> Q
+                  |         |
+                  +----+----+
+                       |
+                       |
+                       | feedback
+                       |
+                       v
+                  +---------+
+        R ------->|   NOR   |-------> Q'
+                  |         |
+                  +----+----+
+                       |
+                       |
+                       +-------------------+
+                                           |
+                                           |
+                  +------------------------+
+                  |
+                  v
+              back to first NOR
+
+The exact physical arrangement is less important initially
+than understanding:
+
+        S = SET
+        R = RESET
+        Cross-coupling = MEMORY
+
+============================================================
+8.10 NOR SR LATCH TRUTH TABLE
+============================================================
+
+For a NOR-based SR latch:
+
++---+---+--------+------------------+
+| S | R | Q(next)| Operation        |
++---+---+--------+------------------+
+| 0 | 0 | Q      | HOLD             |
+| 0 | 1 | 0      | RESET            |
+| 1 | 0 | 1      | SET              |
+| 1 | 1 | Invalid | FORBIDDEN        |
++---+---+--------+------------------+
+
+This table is extremely important.
+
+------------------------------------------------------------
+CASE 1: S=0, R=0
+------------------------------------------------------------
+
+Operation:
+
+        HOLD
+
+The latch keeps its previous state.
+
+If previously:
+
+        Q = 1
+
+then:
+
+        Q remains 1
+
+If previously:
+
+        Q = 0
+
+then:
+
+        Q remains 0
+
+Therefore:
+
+        00 → NO CHANGE
+
+This is the MEMORY condition.
+
+------------------------------------------------------------
+CASE 2: S=1, R=0
+------------------------------------------------------------
+
+Operation:
+
+        SET
+
+Therefore:
+
+        Q = 1
+
+Memory trick:
+
+        S = 1 → SET → Q = 1
+
+------------------------------------------------------------
+CASE 3: S=0, R=1
+------------------------------------------------------------
+
+Operation:
+
+        RESET
+
+Therefore:
+
+        Q = 0
+
+Memory trick:
+
+        R = 1 → RESET → Q = 0
+
+------------------------------------------------------------
+CASE 4: S=1, R=1
+------------------------------------------------------------
+
+This is the:
+
+        INVALID / FORBIDDEN
+
+condition for the NOR SR latch.
+
+Why?
+
+Both outputs can be forced into an unacceptable condition.
+
+Therefore:
+
+        11 → Invalid
+
+============================================================
+8.11 UNDERSTANDING "HOLD"
+============================================================
+
+This is the first major concept of memory.
+
+Suppose:
+
+        S = 0
+        R = 0
+
+and currently:
+
+        Q = 1
+
+Then:
+
+        Q remains 1
+
+Later, if:
+
+        Q = 0
+
+and again:
+
+        S = 0
+        R = 0
+
+then:
+
+        Q remains 0
+
+Therefore the circuit remembers its previous state.
+
+------------------------------------------------------------
+MEMORY VIEW
+------------------------------------------------------------
+
+        S R = 00
+
+             ↓
+
+        "Don't change anything."
+
+             ↓
+
+        Keep previous Q.
+
+============================================================
+8.12 SET AND RESET
+============================================================
+
+Think about the words.
+
+SET:
+
+        Set a bit to 1.
+
+RESET:
+
+        Reset a bit to 0.
+
+Therefore:
+
+        SET   → Q = 1
+        RESET → Q = 0
+
+This terminology appears throughout digital electronics.
+
+============================================================
+8.13 WHY IS SR CALLED SR?
+============================================================
+
+Because its control inputs are:
+
+        S → Set
+        R → Reset
+
+Thus:
+
+        S R Latch
+
+means:
+
+        Set-Reset Latch
+
+============================================================
+8.14 NAND-BASED SR LATCH
+============================================================
+
+An SR latch can also be built using NAND gates.
+
+But there is an important difference:
+
+The inputs are usually ACTIVE-LOW.
+
+They are commonly written:
+
+        S'
+        R'
+
+or:
+
+        S̅
+        R̅
+
+The bar means:
+
+        ACTIVE LOW
+
+------------------------------------------------------------
+IMPORTANT
+------------------------------------------------------------
+
+NOR SR latch:
+
+        Inputs are active HIGH.
+
+NAND SR latch:
+
+        Inputs are active LOW.
+
+This distinction is a common examination question.
+
+============================================================
+8.15 NAND SR LATCH TRUTH TABLE
+============================================================
+
+For the NAND-based latch:
+
++-----+-----+--------+----------------+
+| S'  | R'  | Q(next)| Operation      |
++-----+-----+--------+----------------+
+|  1  |  1  | Q      | HOLD           |
+|  0  |  1  | 1      | SET            |
+|  1  |  0  | 0      | RESET          |
+|  0  |  0  | Invalid| FORBIDDEN      |
++-----+-----+--------+----------------+
+
+Notice the difference.
+
+NOR:
+
+        00 → HOLD
+        10 → SET
+        01 → RESET
+        11 → INVALID
+
+NAND:
+
+        11 → HOLD
+        01 → SET
+        10 → RESET
+        00 → INVALID
+
+============================================================
+8.16 ACTIVE-HIGH vs ACTIVE-LOW
+============================================================
+
+ACTIVE HIGH means:
+
+        Input = 1 → operation occurs.
+
+Example:
+
+        NOR SR latch
+
+        S = 1 → SET
+
+ACTIVE LOW means:
+
+        Input = 0 → operation occurs.
+
+Example:
+
+        NAND SR latch
+
+        S' = 0 → SET
+
+------------------------------------------------------------
+MEMORY TRICK
+------------------------------------------------------------
+
+NOR:
+
+        HIGH = ACTIVE
+
+NAND:
+
+        LOW = ACTIVE
+
+============================================================
+8.17 WHY IS THE INVALID STATE A PROBLEM?
+============================================================
+
+For a proper latch we generally want:
+
+        Q' = NOT Q
+
+For example:
+
+        Q  = 1
+        Q' = 0
+
+or:
+
+        Q  = 0
+        Q' = 1
+
+But during the forbidden condition, the outputs may become
+equal or the circuit may enter an uncertain state.
+
+Therefore the invalid input condition should be avoided.
+
+------------------------------------------------------------
+EXAM POINT
+------------------------------------------------------------
+
+NOR SR latch:
+
+        Invalid = S=R=1
+
+NAND SR latch:
+
+        Invalid = S'=R'=0
+
+============================================================
+8.18 ENABLE-CONTROLLED LATCH
+============================================================
+
+An ordinary latch responds directly to its inputs.
+
+But sometimes we want:
+
+        "Only change the stored value when ENABLE is active."
+
+Therefore we introduce:
+
+        ENABLE
+
+Usually written:
+
+        E
+
+or:
+
+        EN
+
+------------------------------------------------------------
+GENERAL IDEA
+------------------------------------------------------------
+
+             +----------------+
+D ---------->|                |
+             | Enable Latch   |----> Q
+E ---------->|                |
+             +----------------+
+
+When:
+
+        E = 1
+
+the latch can respond to the input.
+
+When:
+
+        E = 0
+
+the latch holds its previous value.
+
+============================================================
+8.19 D LATCH
+============================================================
+
+The SR latch has a problem:
+
+        Certain combinations are forbidden.
+
+We can design a better latch using one data input:
+
+        D
+
+This produces the:
+
+        D LATCH
+
+D means:
+
+        DATA
+
+or sometimes:
+
+        DELAY
+
+The D latch eliminates the invalid SR input combination.
+
+------------------------------------------------------------
+BASIC IDEA
+------------------------------------------------------------
+
+        D --------> +---------+
+                    | D Latch |----> Q
+        Enable ---->|         |
+                    +---------+
+
+============================================================
+8.20 D LATCH OPERATION
+============================================================
+
+For an active-high D latch:
+
++----------+-----------+
+| Enable   | Q(next)   |
++----------+-----------+
+|    0     | Q         |
+|    1     | D         |
++----------+-----------+
+
+Meaning:
+
+If:
+
+        Enable = 1
+
+then:
+
+        Q = D
+
+If:
+
+        Enable = 0
+
+then:
+
+        Q = previous Q
+
+------------------------------------------------------------
+MEMORY TRICK
+------------------------------------------------------------
+
+        Enable = 1
+             ↓
+        "Follow D"
+
+        Enable = 0
+             ↓
+        "Hold Q"
+
+============================================================
+8.21 D LATCH EXAMPLE
+============================================================
+
+Suppose:
+
+        D = 1
+        Enable = 1
+
+Then:
+
+        Q = 1
+
+Now:
+
+        D = 0
+        Enable = 1
+
+Then:
+
+        Q = 0
+
+Now:
+
+        D = 1
+        Enable = 0
+
+Then:
+
+        Q stays 0
+
+because the latch is disabled.
+
+------------------------------------------------------------
+IMPORTANT
+------------------------------------------------------------
+
+When enable is active, the latch is TRANSPARENT.
+
+"Transparent" means:
+
+        Q follows D.
+
+Example:
+
+        D = 1 → Q = 1
+        D = 0 → Q = 0
+        D = 1 → Q = 1
+
+as long as:
+
+        Enable = 1
+
+============================================================
+8.22 WHY IS D LATCH BETTER THAN SR LATCH?
+============================================================
+
+The SR latch has an invalid condition.
+
+The D latch avoids this by ensuring that the two SR inputs
+cannot request contradictory operations simultaneously.
+
+Conceptually:
+
+        S = D
+        R = D'
+
+Therefore:
+
+If D=1:
+
+        S=1
+        R=0
+
+SET
+
+If D=0:
+
+        S=0
+        R=1
+
+RESET
+
+There is no:
+
+        S=R=1
+
+condition.
+
+============================================================
+8.23 LATCH vs FLIP-FLOP
+============================================================
+
+This distinction is VERY IMPORTANT.
+
+LATCH:
+
+        Level-sensitive
+
+FLIP-FLOP:
+
+        Edge-triggered
+
+------------------------------------------------------------
+LATCH
+------------------------------------------------------------
+
+A latch can respond throughout an active level of its
+control signal.
+
+For example:
+
+        Enable = 1
+
+The D latch can follow D during the entire HIGH level.
+
+------------------------------------------------------------
+FLIP-FLOP
+------------------------------------------------------------
+
+A flip-flop typically changes state only at a clock edge.
+
+For example:
+
+        Rising edge:
+
+             ___
+            /
+        ___/
+
+The important instant is:
+
+        ↑
+
+============================================================
+8.24 LEVEL TRIGGERING
+============================================================
+
+A level-sensitive circuit responds while a signal remains
+at a particular level.
+
+For an active-high D latch:
+
+        Enable = HIGH
+
+The latch is active throughout that HIGH interval.
+
+ASCII:
+
+Enable:
+
+        _________
+                 |         |
+                 |  HIGH   |
+_________________|         |________
+
+                 <-------->
+                 Active period
+
+During this interval:
+
+        Q can follow D.
+
+============================================================
+8.25 EDGE TRIGGERING
+============================================================
+
+An edge-triggered circuit responds only at a transition.
+
+Two major edges:
+
+    1. Rising edge
+    2. Falling edge
+
+------------------------------------------------------------
+RISING EDGE
+------------------------------------------------------------
+
+        LOW → HIGH
+
+        ______
+              |
+              |
+              +────────
+
+               ↑
+          Rising edge
+
+------------------------------------------------------------
+FALLING EDGE
+------------------------------------------------------------
+
+        HIGH → LOW
+
+        ────────
+               |
+               |
+        _______|
+
+              ↓
+         Falling edge
+
+============================================================
+8.26 WHY DO WE USE CLOCKS?
+============================================================
+
+A clock provides a common timing reference.
+
+A digital system can coordinate operations using:
+
+        CLOCK
+
+Example:
+
+        Clock:  ↑   ↑   ↑   ↑   ↑
+
+At each clock edge, storage elements can update.
+
+This allows large digital systems to operate in an organized
+and predictable manner.
+
+------------------------------------------------------------
+CLOCK SIGNAL
+------------------------------------------------------------
+
+        HIGH      HIGH
+          |         |
+          |         |
+__________|         |________
+          ^         ^
+        edges     edges
+
+The clock repeatedly transitions between:
+
+        0 and 1
+
+============================================================
+8.27 FLIP-FLOP
+============================================================
+
+DEFINITION:
+
+A flip-flop is a clock-controlled sequential storage
+element capable of storing one bit of information.
+
+It has:
+
+        2 stable states
+
+representing:
+
+        0
+        1
+
+------------------------------------------------------------
+GENERAL SYMBOL
+------------------------------------------------------------
+
+             +-----------+
+        D -->|           |----> Q
+             | D Flip-   |
+      CLK -->|   Flop    |
+             |           |----> Q'
+             +-----------+
+
+The triangle on the clock input commonly represents
+edge-triggering.
+
+============================================================
+8.28 TYPES OF FLIP-FLOPS
+============================================================
+
+The four fundamental types are:
+
+        1. SR Flip-Flop
+        2. JK Flip-Flop
+        3. D Flip-Flop
+        4. T Flip-Flop
+
+We will study their behavior now.
+
+============================================================
+8.29 SR FLIP-FLOP
+============================================================
+
+The SR flip-flop has:
+
+        S = Set
+        R = Reset
+        CLK = Clock
+
+The important idea is that the state changes according to
+the clocking mechanism.
+
+------------------------------------------------------------
+CHARACTERISTIC TABLE
+------------------------------------------------------------
+
++---+---+-------------+
+| S | R | Q(next)     |
++---+---+-------------+
+| 0 | 0 | Q           |
+| 0 | 1 | 0           |
+| 1 | 0 | 1           |
+| 1 | 1 | Invalid     |
++---+---+-------------+
+
+This resembles the SR latch behavior, but the flip-flop
+operates with clock control.
+
+------------------------------------------------------------
+CHARACTERISTIC EQUATION
+------------------------------------------------------------
+
+For valid inputs:
+
+        Q(next) = S + R'Q
+
+with the invalid condition excluded.
+
+============================================================
+8.30 JK FLIP-FLOP
+============================================================
+
+The JK flip-flop improves the SR flip-flop.
+
+Inputs:
+
+        J
+        K
+
+Conceptually:
+
+        J ≈ SET
+        K ≈ RESET
+
+But unlike SR:
+
+        J = K = 1
+
+is NOT invalid.
+
+Instead:
+
+        TOGGLE
+
+------------------------------------------------------------
+TRUTH TABLE
+------------------------------------------------------------
+
++---+---+-------------+
+| J | K | Q(next)     |
++---+---+-------------+
+| 0 | 0 | Q           |
+| 0 | 1 | 0           |
+| 1 | 0 | 1           |
+| 1 | 1 | Q'          |
++---+---+-------------+
+
+This table is extremely important.
+
+------------------------------------------------------------
+MEMORY TRICK
+------------------------------------------------------------
+
+        JK = 00 → HOLD
+        JK = 01 → RESET
+        JK = 10 → SET
+        JK = 11 → TOGGLE
+
+============================================================
+8.31 WHAT IS TOGGLE?
+============================================================
+
+Toggle means:
+
+        0 → 1
+
+or:
+
+        1 → 0
+
+So if:
+
+        Q = 0
+
+and:
+
+        J=K=1
+
+then after the active clock:
+
+        Q = 1
+
+If again:
+
+        J=K=1
+
+then:
+
+        Q = 0
+
+Therefore:
+
+        0 → 1 → 0 → 1 → 0 ...
+
+This makes JK flip-flops useful in counters.
+
+============================================================
+8.32 JK EXAMPLE
+============================================================
+
+Suppose:
+
+        Initial Q = 0
+
+and:
+
+        J = 1
+        K = 1
+
+At each active clock edge:
+
+        Q toggles.
+
+Clock 1:
+
+        Q: 0 → 1
+
+Clock 2:
+
+        Q: 1 → 0
+
+Clock 3:
+
+        Q: 0 → 1
+
+Clock 4:
+
+        Q: 1 → 0
+
+Therefore the output frequency is divided by 2.
+
+============================================================
+8.33 D FLIP-FLOP
+============================================================
+
+The D flip-flop is one of the most widely used flip-flops.
+
+Input:
+
+        D
+
+Output:
+
+        Q
+
+Main rule:
+
+        Q(next) = D
+
+at the active clock edge.
+
+------------------------------------------------------------
+TRUTH TABLE
+------------------------------------------------------------
+
++---+-------------+
+| D | Q(next)     |
++---+-------------+
+| 0 | 0           |
+| 1 | 1           |
++---+-------------+
+
+Therefore:
+
+        D = 0 → Q becomes 0
+
+        D = 1 → Q becomes 1
+
+------------------------------------------------------------
+CHARACTERISTIC EQUATION
+------------------------------------------------------------
+
+        Q(next) = D
+
+This is one of the simplest equations in digital logic.
+
+============================================================
+8.34 D FLIP-FLOP EXAMPLE
+============================================================
+
+Suppose:
+
+        D = 1
+
+and a rising clock edge occurs.
+
+Then:
+
+        Q becomes 1.
+
+If D changes after the edge, Q does not immediately change
+because the flip-flop waits for the next active edge.
+
+This is the major difference from a level-sensitive D latch.
+
+------------------------------------------------------------
+COMPARISON
+------------------------------------------------------------
+
+D LATCH:
+
+        Enable HIGH
+        → Q follows D
+
+D FLIP-FLOP:
+
+        Clock edge
+        → Q samples D
+
+============================================================
+8.35 T FLIP-FLOP
+============================================================
+
+T means:
+
+        TOGGLE
+
+The T flip-flop has one input:
+
+        T
+
+------------------------------------------------------------
+TRUTH TABLE
+------------------------------------------------------------
+
++---+-------------+
+| T | Q(next)     |
++---+-------------+
+| 0 | Q           |
+| 1 | Q'          |
++---+-------------+
+
+Therefore:
+
+        T = 0 → HOLD
+
+        T = 1 → TOGGLE
+
+------------------------------------------------------------
+CHARACTERISTIC EQUATION
+------------------------------------------------------------
+
+        Q(next) = T ⊕ Q
+
+============================================================
+8.36 T FLIP-FLOP EXAMPLE
+============================================================
+
+Suppose:
+
+        Q = 0
+        T = 1
+
+After clock:
+
+        Q = 1
+
+Next clock:
+
+        Q = 0
+
+Next:
+
+        Q = 1
+
+Therefore:
+
+        0 → 1 → 0 → 1 ...
+
+This is why T flip-flops are extremely useful in counters
+and frequency division.
+
+============================================================
+8.37 MASTER MEMORY TABLE
+============================================================
+
+MEMORIZE THIS TABLE:
+
++------+-----------------------------+
+| FF   | Operation                   |
++------+-----------------------------+
+| SR   | Set / Reset / Hold          |
+| JK   | Set / Reset / Hold / Toggle |
+| D    | Data transfer               |
+| T    | Toggle / Hold               |
++------+-----------------------------+
+
+------------------------------------------------------------
+MOST IMPORTANT TRUTH TABLES
+------------------------------------------------------------
+
+SR:
+
+        00 → HOLD
+        01 → RESET
+        10 → SET
+        11 → INVALID
+
+JK:
+
+        00 → HOLD
+        01 → RESET
+        10 → SET
+        11 → TOGGLE
+
+D:
+
+        0 → 0
+        1 → 1
+
+T:
+
+        0 → HOLD
+        1 → TOGGLE
+
+============================================================
+8.38 CHARACTERISTIC EQUATIONS
+============================================================
+
+SR:
+
+        Q(next) = S + R'Q
+        (valid conditions only)
+
+JK:
+
+        Q(next) = JQ' + K'Q
+
+D:
+
+        Q(next) = D
+
+T:
+
+        Q(next) = T ⊕ Q
+
+These equations become very important in Chapter 9.
+
+============================================================
+8.39 RACE-AROUND CONDITION
+============================================================
+
+This is an important concept associated with the JK
+flip-flop.
+
+Consider:
+
+        J = 1
+        K = 1
+
+The JK flip-flop should toggle.
+
+But in a level-triggered JK flip-flop, if the clock pulse
+remains active for too long compared with the propagation
+delay, the output may toggle repeatedly during the same
+clock pulse.
+
+Example:
+
+        Q = 0
+
+During the clock pulse:
+
+        0 → 1 → 0 → 1 → 0 ...
+
+The final state becomes uncertain.
+
+This is called:
+
+        RACE-AROUND CONDITION
+
+------------------------------------------------------------
+WHY DOES IT HAPPEN?
+------------------------------------------------------------
+
+Because:
+
+        J = K = 1
+
+causes toggling.
+
+If the clock pulse is sufficiently long, the output change
+can feed back and cause another change.
+
+Thus:
+
+        Repeated toggling
+              ↓
+        Race-around condition
+
+============================================================
+8.40 HOW TO AVOID RACE-AROUND?
+============================================================
+
+Common solutions:
+
+    1. Use a master-slave JK flip-flop.
+    2. Use an edge-triggered flip-flop.
+    3. Keep the clock pulse width sufficiently small.
+
+------------------------------------------------------------
+MASTER-SLAVE IDEA
+------------------------------------------------------------
+
+Two stages are used:
+
+        Master → Slave
+
+The master responds during one clock phase and the slave
+during the opposite phase.
+
+This prevents uncontrolled repeated toggling.
+
+------------------------------------------------------------
+EDGE-TRIGGERED SOLUTION
+------------------------------------------------------------
+
+An edge-triggered flip-flop changes state only at:
+
+        ↑ rising edge
+
+or:
+
+        ↓ falling edge
+
+Therefore there is no opportunity for repeated toggling
+throughout the entire clock level.
+
+============================================================
+8.41 LATCH vs FLIP-FLOP
+============================================================
+
+This is a VERY common exam question.
+
++----------------------+------------------------+
+| Latch               | Flip-Flop             |
++----------------------+------------------------+
+| Level-sensitive     | Edge-triggered        |
+| Controlled by level | Controlled by edge    |
+| Simpler             | More controlled        |
+| Can be transparent  | Samples at clock edge |
+| Used for storage    | Used for synchronous   |
+|                     | digital systems       |
++----------------------+------------------------+
+
+------------------------------------------------------------
+ONE-LINE MEMORY
+------------------------------------------------------------
+
+        LATCH = LEVEL
+
+        FLIP-FLOP = EDGE
+
+============================================================
+8.42 SYNCHRONOUS vs ASYNCHRONOUS IDEA
+============================================================
+
+Sequential circuits can be broadly associated with:
+
+        Synchronous systems
+        Asynchronous systems
+
+SYNCHRONOUS:
+
+    Operations are coordinated using a clock.
+
+Example:
+
+        Registers
+        Synchronous counters
+        CPU datapaths
+
+ASYNCHRONOUS:
+
+    Operations do not necessarily wait for a common clock.
+
+For B.Tech digital logic, the main idea to remember is:
+
+        CLOCK = timing reference
+
+============================================================
+8.43 CLOCK PARAMETERS — BASIC INTRODUCTION
+============================================================
+
+A clock is a periodic signal.
+
+Suppose:
+
+        Frequency = f
+
+Then:
+
+        Period T = 1/f
+
+Example:
+
+        f = 1 MHz
+
+Therefore:
+
+        T = 1 / 1,000,000
+
+        T = 1 µs
+
+This relationship becomes important in timing analysis.
+
+============================================================
+8.44 DUTY CYCLE — BASIC IDEA
+============================================================
+
+Duty cycle tells us how much of one clock period the signal
+remains HIGH.
+
+Formula:
+
+        Duty Cycle =
+        (HIGH time / Total period) × 100%
+
+Example:
+
+        HIGH time = 4 µs
+        Period    = 10 µs
+
+Then:
+
+        Duty Cycle =
+        (4/10) × 100%
+
+        = 40%
+
+============================================================
+8.45 ASYNCHRONOUS PRESET AND CLEAR — INTRODUCTION
+============================================================
+
+Many practical flip-flops have additional inputs such as:
+
+        PRESET
+        CLEAR
+
+These allow the flip-flop to be initialized.
+
+PRESET:
+
+        Force Q = 1
+
+CLEAR:
+
+        Force Q = 0
+
+They are often asynchronous, meaning they can affect the
+output independently of the normal clock.
+
+We will study these more deeply later.
+
+============================================================
+8.46 APPLICATIONS OF LATCHES
+============================================================
+
+Latches are used for:
+
+    • Temporary data storage
+    • Data buffering
+    • Control circuits
+    • Memory elements
+    • Timing circuits
+    • Building blocks for flip-flops
+
+============================================================
+8.47 APPLICATIONS OF FLIP-FLOPS
+============================================================
+
+Flip-flops are used extensively in:
+
+    • Registers
+    • Counters
+    • Shift registers
+    • Frequency dividers
+    • State machines
+    • Memory systems
+    • CPU control circuits
+    • Digital clocks
+    • Communication systems
+
+============================================================
+8.48 WHY FLIP-FLOPS ARE IMPORTANT IN A CPU
+============================================================
+
+A CPU needs to store temporary information.
+
+For example:
+
+        Register:
+            stores binary data
+
+A register can be built using:
+
+        multiple flip-flops
+
+If one flip-flop stores:
+
+        1 bit
+
+then:
+
+        8 flip-flops → 8-bit register
+
+        16 flip-flops → 16-bit register
+
+        32 flip-flops → 32-bit register
+
+        64 flip-flops → 64-bit register
+
+This is why flip-flops are fundamental building blocks of
+digital computers.
+
+============================================================
+8.49 IMPORTANT CONCEPT — STATE
+============================================================
+
+The state of a sequential circuit represents its stored
+information at a particular time.
+
+For one flip-flop:
+
+        State = Q
+
+Possible states:
+
+        Q = 0
+
+or:
+
+        Q = 1
+
+For multiple flip-flops, there can be many states.
+
+Example:
+
+Two flip-flops:
+
+        Q1 Q0
+
+Possible states:
+
+        00
+        01
+        10
+        11
+
+Therefore:
+
+        2 flip-flops → 2² = 4 states
+
+Three flip-flops:
+
+        2³ = 8 states
+
+This concept becomes extremely important in counters and
+finite state machines.
+
+============================================================
+8.50 BIG PICTURE
+============================================================
+
+                 DIGITAL LOGIC
+                      |
+          +-----------+-----------+
+          |                       |
+          v                       v
+   COMBINATIONAL            SEQUENTIAL
+          |                       |
+   No memory                 Memory
+          |                       |
+   Current input             Current input
+          |                    +
+          |                 Previous state
+          |                       |
+          v                       v
+       Output                  Output
+                                  |
+                                  v
+                               State
+                                  |
+                                  +---- feedback
+
+
+============================================================
+8.51 QUICK COMPARISON OF MEMORY ELEMENTS
+============================================================
+
++----------------+-------------------------------+
+| Element        | Main Idea                     |
++----------------+-------------------------------+
+| SR Latch       | Set / Reset                   |
+| D Latch        | Store D when enabled          |
+| SR Flip-Flop   | Clocked Set / Reset           |
+| JK Flip-Flop   | Set / Reset / Toggle          |
+| D Flip-Flop    | Store D at clock edge         |
+| T Flip-Flop    | Toggle when T=1              |
++----------------+-------------------------------+
+
+============================================================
+8.52 EXAM MEMORY SHEET
+============================================================
+
+                SR LATCH
+        -------------------------
+        S R | Operation
+        0 0 | HOLD
+        0 1 | RESET
+        1 0 | SET
+        1 1 | INVALID
+
+
+                JK FLIP-FLOP
+        -------------------------
+        J K | Operation
+        0 0 | HOLD
+        0 1 | RESET
+        1 0 | SET
+        1 1 | TOGGLE
+
+
+                D FLIP-FLOP
+        -------------------------
+        D | Q(next)
+        0 | 0
+        1 | 1
+
+
+                T FLIP-FLOP
+        -------------------------
+        T | Operation
+        0 | HOLD
+        1 | TOGGLE
+
+
+CHARACTERISTIC EQUATIONS:
+
+        D:
+            Q(next) = D
+
+        T:
+            Q(next) = T ⊕ Q
+
+        JK:
+            Q(next) = JQ' + K'Q
+
+============================================================
+8.53 COMMON EXAM TRAPS
+============================================================
+
+TRAP 1:
+
+"Which is level-sensitive?"
+
+Answer:
+
+        LATCH
+
+
+TRAP 2:
+
+"Which is edge-triggered?"
+
+Answer:
+
+        FLIP-FLOP
+
+
+TRAP 3:
+
+"In a NOR SR latch, what is S=R=1?"
+
+Answer:
+
+        INVALID
+
+
+TRAP 4:
+
+"In a NAND SR latch, what is S'=R'=0?"
+
+Answer:
+
+        INVALID
+
+
+TRAP 5:
+
+"In JK flip-flop, what happens when J=K=1?"
+
+Answer:
+
+        TOGGLE
+
+
+TRAP 6:
+
+"In T flip-flop, what happens when T=0?"
+
+Answer:
+
+        HOLD
+
+
+TRAP 7:
+
+"In T flip-flop, what happens when T=1?"
+
+Answer:
+
+        TOGGLE
+
+
+TRAP 8:
+
+"What does D flip-flop do?"
+
+Answer:
+
+        Q(next) = D
+
+
+TRAP 9:
+
+"Which flip-flop is commonly used for data storage?"
+
+Answer:
+
+        D flip-flop
+
+
+TRAP 10:
+
+"Which flip-flop is useful for counters?"
+
+Answer:
+
+        T flip-flop
+        and JK flip-flop
+
+============================================================
+8.54 PRACTICE QUESTIONS
+============================================================
+
+------------------------------------------------------------
+BASIC CONCEPTS
+------------------------------------------------------------
+
+Q1. Define a sequential circuit.
+
+Q2. What is the main difference between combinational and
+    sequential circuits?
+
+Q3. Why does a sequential circuit require memory?
+
+Q4. What is feedback?
+
+Q5. What is a state?
+
+Q6. What is the purpose of a clock?
+
+Q7. Define a latch.
+
+Q8. Define a flip-flop.
+
+------------------------------------------------------------
+SR LATCH
+------------------------------------------------------------
+
+Q9. What does SR stand for?
+
+Q10. For a NOR SR latch, what happens when:
+
+        S=0, R=0?
+
+Q11. For a NOR SR latch, what happens when:
+
+        S=1, R=0?
+
+Q12. For a NOR SR latch, what happens when:
+
+        S=0, R=1?
+
+Q13. What is the invalid condition of a NOR SR latch?
+
+Q14. What is the invalid condition of a NAND SR latch?
+
+------------------------------------------------------------
+D LATCH
+------------------------------------------------------------
+
+Q15. Why was the D latch introduced?
+
+Q16. What happens when Enable=1 in a D latch?
+
+Q17. What happens when Enable=0 in a D latch?
+
+Q18. Why is a D latch called transparent?
+
+------------------------------------------------------------
+FLIP-FLOPS
+------------------------------------------------------------
+
+Q19. Write the truth table of a JK flip-flop.
+
+Q20. What happens when J=K=1?
+
+Q21. Write the characteristic equation of a D flip-flop.
+
+Q22. Write the characteristic equation of a T flip-flop.
+
+Q23. What happens when T=0?
+
+Q24. What happens when T=1?
+
+------------------------------------------------------------
+CONCEPTUAL
+------------------------------------------------------------
+
+Q25. Differentiate between latch and flip-flop.
+
+Q26. Differentiate between level triggering and edge
+     triggering.
+
+Q27. Explain rising edge and falling edge.
+
+Q28. Explain the race-around condition.
+
+Q29. How can race-around be avoided?
+
+Q30. Why are flip-flops important in registers?
+
+============================================================
+8.55 MCQ PRACTICE
+============================================================
+
+Q31. Which circuit has memory?
+
+A) Adder
+B) MUX
+C) Sequential circuit
+D) Decoder
+
+
+Q32. A latch is generally:
+
+A) Edge-sensitive
+B) Level-sensitive
+C) Frequency-sensitive
+D) Voltage-independent
+
+
+Q33. A flip-flop is generally:
+
+A) Level-sensitive
+B) Edge-triggered
+C) Analog
+D) Combinational
+
+
+Q34. In a NOR-based SR latch, S=1 and R=0 means:
+
+A) Hold
+B) Reset
+C) Set
+D) Invalid
+
+
+Q35. In a NOR-based SR latch, S=0 and R=1 means:
+
+A) Set
+B) Reset
+C) Toggle
+D) Hold
+
+
+Q36. In a NOR-based SR latch, S=R=1 is:
+
+A) Set
+B) Reset
+C) Hold
+D) Invalid
+
+
+Q37. In a JK flip-flop, J=K=1 produces:
+
+A) Hold
+B) Reset
+C) Set
+D) Toggle
+
+
+Q38. In a T flip-flop, T=0 produces:
+
+A) Toggle
+B) Set
+C) Hold
+D) Reset
+
+
+Q39. The characteristic equation of a D flip-flop is:
+
+A) Q(next)=Q
+B) Q(next)=D
+C) Q(next)=D'
+D) Q(next)=Q'
+
+
+Q40. Which flip-flop is especially useful for data storage?
+
+A) D
+B) T
+C) SR only
+D) None
+
+
+============================================================
+8.56 COMPETITIVE-EXAM STYLE QUESTIONS
+============================================================
+
+Q41.
+
+A circuit has two inputs S and R and uses cross-coupled
+NOR gates. If S=R=0, the circuit:
+
+A) Sets
+B) Resets
+C) Holds previous state
+D) Becomes invalid
+
+
+Q42.
+
+A JK flip-flop initially has:
+
+        Q = 0
+
+If:
+
+        J=1
+        K=1
+
+then after one active clock edge:
+
+A) Q=0
+B) Q=1
+C) Invalid
+D) High impedance
+
+
+Q43.
+
+A T flip-flop initially has:
+
+        Q=1
+
+If:
+
+        T=1
+
+then after the active clock edge:
+
+A) Q=0
+B) Q=1
+C) Invalid
+D) Depends only on D
+
+
+Q44.
+
+A D flip-flop has:
+
+        D=1
+
+Immediately before an active clock edge. After the edge,
+assuming normal operation:
+
+A) Q becomes 0
+B) Q becomes 1
+C) Q toggles
+D) Q becomes invalid
+
+
+Q45.
+
+Which statement is correct?
+
+A) Latch is edge-sensitive
+B) Flip-flop is always combinational
+C) Latch is level-sensitive
+D) Neither has memory
+
+
+============================================================
+8.57 PROBLEM-SOLVING TECHNIQUE
+============================================================
+
+When solving flip-flop questions:
+
+STEP 1:
+    Identify the flip-flop type.
+
+STEP 2:
+    Write its characteristic table.
+
+STEP 3:
+    Identify the input values.
+
+STEP 4:
+    Determine the operation.
+
+STEP 5:
+    Find Q(next).
+
+Example:
+
+        JK flip-flop
+
+        J=1
+        K=1
+        Q=0
+
+From JK table:
+
+        11 → TOGGLE
+
+Therefore:
+
+        Q(next) = 1
+
+------------------------------------------------------------
+T FLIP-FLOP EXAMPLE
+------------------------------------------------------------
+
+Given:
+
+        T=1
+        Q=1
+
+Since:
+
+        T=1 → TOGGLE
+
+Therefore:
+
+        Q(next)=0
+
+============================================================
+8.58 ONE-PAGE REVISION
+============================================================
+
+COMBINATIONAL:
+
+        Output = f(Present Inputs)
+
+SEQUENTIAL:
+
+        Output = f(Present Inputs, Previous State)
+
+
+LATCH:
+
+        Level-sensitive
+
+
+FLIP-FLOP:
+
+        Edge-triggered
+
+
+NOR SR:
+
+        00 → HOLD
+        01 → RESET
+        10 → SET
+        11 → INVALID
+
+
+NAND SR:
+
+        11 → HOLD
+        01 → SET
+        10 → RESET
+        00 → INVALID
+
+
+JK:
+
+        00 → HOLD
+        01 → RESET
+        10 → SET
+        11 → TOGGLE
+
+
+D:
+
+        Q(next)=D
+
+
+T:
+
+        0 → HOLD
+        1 → TOGGLE
+
+
+MEMORY TRICKS:
+
+        SR → Set/Reset
+
+        JK → Set/Reset/Toggle
+
+        D  → Data
+
+        T  → Toggle
+
+
+LATCH:
+
+        LEVEL
+
+
+FLIP-FLOP:
+
+        EDGE
+
+
+RACE-AROUND:
+
+        JK + J=K=1 + long active clock
+        → repeated toggling
+
+
+============================================================
+8.59 CHAPTER 8 FINAL UNDERSTANDING
+============================================================
+
+The most important conceptual transition is:
+
+        CHAPTERS 1–7
+              ↓
+        No memory
+              ↓
+        Combinational logic
+
+                 ↓↓↓
+
+        CHAPTER 8
+              ↓
+        MEMORY
+              ↓
+        Sequential logic
+              ↓
+        Latches
+              ↓
+        Flip-flops
+              ↓
+        Registers
+              ↓
+        Counters
+              ↓
+        State machines
+
+So remember:
+
+        A COMBINATIONAL CIRCUIT
+        answers:
+
+            "What should the output be
+             for these inputs?"
+
+        A SEQUENTIAL CIRCUIT
+        answers:
+
+            "What should the output be
+             for these inputs AND the
+             previous state?"
+
+That single idea is the foundation of
+sequential digital logic.
+
+============================================================
+CHAPTER 8 COMPLETE
+============================================================
+
+NEXT TOPIC:
+
+CHAPTER 9 — FLIP-FLOP ANALYSIS & DESIGN
+
+In Chapter 9 we will go deeper into:
+
+    • Characteristic tables
+    • Characteristic equations
+    • Excitation tables
+    • SR excitation table
+    • JK excitation table
+    • D excitation table
+    • T excitation table
+    • Flip-flop conversion
+    • SR → JK
+    • SR → D
+    • SR → T
+    • JK → D
+    • JK → T
+    • D → JK
+    • D → T
+    • Setup time
+    • Hold time
+    • Propagation delay
+    • Clock-to-Q delay
+    • Maximum clock frequency
+    • Race-around analysis
+
+The key new question will be:
+
+        "Given a PRESENT state and a
+         DESIRED NEXT state, what inputs
+         must I give the flip-flop?"
+
+That is the foundation of sequential-circuit design.
+
+============================================================

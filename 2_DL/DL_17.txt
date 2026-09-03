@@ -1,0 +1,2233 @@
+============================================================
+CHAPTER 17 — HAZARDS & GLITCHES
+============================================================
+Level: B.Tech 1st Year / Computer Science
+Prerequisite: Chapter 16 — Timing & Digital Characteristics
+
+GOAL:
+Understand why unwanted temporary changes (glitches) occur
+in digital circuits, how to detect them, and how to eliminate
+them using Boolean logic and K-maps.
+
+============================================================
+17.1 WHY DO WE NEED TO STUDY HAZARDS?
+============================================================
+
+In Boolean algebra, we assume:
+
+    Inputs change
+        ↓
+    Output changes correctly
+
+But real gates have PROPAGATION DELAY.
+
+Consider:
+
+        A ───────┐
+                 │
+                 AND ────┐
+        B ───────┘       │
+                         OR ─── Y
+        C ───────────────┘
+
+The two paths may have different delays.
+
+Therefore, when an input changes, different signals
+may reach the output at different times.
+
+This can produce a temporary incorrect output.
+
+That temporary unwanted output is called a:
+
+                    GLITCH
+
+
+A circuit condition that can cause such unwanted
+transitions is called a:
+
+                    HAZARD
+
+
+============================================================
+17.2 HAZARD — DEFINITION
+============================================================
+
+A HAZARD is an unwanted switching behavior in a
+digital circuit caused mainly by unequal propagation
+delays along different signal paths.
+
+Simple definition:
+
+    HAZARD =
+    Possibility of an unwanted transient output
+    caused by different circuit delays.
+
+
+IMPORTANT:
+
+    Hazard = circuit condition
+
+    Glitch = unwanted transient pulse actually observed
+
+
+Think:
+
+        HAZARD
+           ↓
+    possibility of problem
+           ↓
+        GLITCH
+           ↓
+    actual unwanted pulse
+
+
+============================================================
+17.3 IDEAL CIRCUIT VS REAL CIRCUIT
+============================================================
+
+IDEAL:
+
+Input:
+    _________|‾‾‾‾‾‾‾‾
+
+Output:
+    ‾‾‾‾‾‾‾‾|_________
+
+Output changes exactly when expected.
+
+
+REAL:
+
+Input:
+    _________|‾‾‾‾‾‾‾‾
+
+
+Output:
+    ‾‾‾‾‾‾\_/‾‾‾|_____
+             ↑
+           glitch
+
+
+The small unwanted pulse is a GLITCH.
+
+
+============================================================
+17.4 WHY DO GLITCHES OCCUR?
+============================================================
+
+Main reason:
+
+        DIFFERENT PROPAGATION DELAYS
+
+
+Suppose:
+
+        Path 1 delay = 2 ns
+
+        Path 2 delay = 8 ns
+
+
+Then the two signals do not arrive simultaneously.
+
+        Input
+          |
+       +--+--+
+       |     |
+       v     v
+      G1     G2
+       |     |
+       |     |
+      2ns   8ns
+       |     |
+       +--+--+
+          |
+        Output
+
+
+Difference in arrival times:
+
+        8 - 2 = 6 ns
+
+
+This mismatch can produce a transient output.
+
+
+============================================================
+17.5 MAIN TYPES OF HAZARDS
+============================================================
+
+There are three important categories:
+
+        HAZARDS
+           |
+     +-----+-----+
+     |           |
+   STATIC      DYNAMIC
+     |
+ +---+---+
+ |       |
+S-1     S-0
+
+
+Therefore:
+
+    1. Static-1 hazard
+    2. Static-0 hazard
+    3. Dynamic hazard
+
+
+============================================================
+17.6 STATIC HAZARD
+============================================================
+
+In a static hazard, the output is supposed to
+remain at the SAME logic level.
+
+But because of unequal delays, it temporarily
+changes to the opposite level.
+
+There are two types:
+
+        Static-1
+        Static-0
+
+
+============================================================
+17.7 STATIC-1 HAZARD
+============================================================
+
+Definition:
+
+A STATIC-1 HAZARD occurs when the output should
+remain HIGH (1), but temporarily becomes LOW (0).
+
+
+Expected:
+
+        Y = 1
+        ─────────────────────────
+
+
+Actual:
+
+        Y = 1 ─────\___/───────── 1
+                    ↑
+                 glitch to 0
+
+
+The output should stay 1 but briefly becomes 0.
+
+
+Therefore:
+
+        Static-1 hazard
+        = 1 → 0 → 1
+
+
+============================================================
+17.8 STATIC-0 HAZARD
+============================================================
+
+Definition:
+
+A STATIC-0 HAZARD occurs when the output should
+remain LOW (0), but temporarily becomes HIGH (1).
+
+
+Expected:
+
+        Y = 0
+        ─────────────────────────
+
+
+Actual:
+
+        Y = 0 ─────/‾‾‾\───────── 0
+                    ↑
+                 glitch to 1
+
+
+Therefore:
+
+        Static-0 hazard
+        = 0 → 1 → 0
+
+
+============================================================
+17.9 STATIC HAZARD MEMORY TRICK
+============================================================
+
+STATIC-1:
+
+        Should stay 1
+        but goes 0 temporarily.
+
+        1 → 0 → 1
+
+
+STATIC-0:
+
+        Should stay 0
+        but goes 1 temporarily.
+
+        0 → 1 → 0
+
+
+Easy memory:
+
+        STATIC-1 = unwanted dip
+
+        STATIC-0 = unwanted spike
+
+
+============================================================
+17.10 STATIC-1 HAZARD IN SOP CIRCUITS
+============================================================
+
+Static-1 hazards commonly occur in
+SUM-OF-PRODUCTS (SOP) circuits.
+
+
+Example:
+
+        Y = AB + A'C
+
+
+Circuit:
+
+             A ─────┐
+                    AND ────┐
+             B ─────┘       │
+                            OR ─── Y
+             A ──NOT─┐      │
+                    AND ────┘
+             C ─────┘
+
+
+Notice:
+
+        AB
+        and
+        A'C
+
+
+share variables involving A and A'.
+
+
+Suppose:
+
+        B = 1
+        C = 1
+
+
+Then:
+
+        Y = AB + A'C
+
+If A = 1:
+
+        Y = 1(1) + 0(1)
+          = 1
+
+
+If A = 0:
+
+        Y = 0(1) + 1(1)
+          = 1
+
+
+So logically:
+
+        Y should remain 1
+
+
+But during the transition:
+
+        A: 1 → 0
+
+
+the two paths may not switch at exactly
+the same time.
+
+
+This can create:
+
+        1 → 0 → 1
+
+
+which is a static-1 hazard.
+
+
+============================================================
+17.11 WHY THE GLITCH HAPPENS
+============================================================
+
+For:
+
+        Y = AB + A'C
+
+
+Suppose:
+
+        B = 1
+        C = 1
+
+
+When:
+
+        A = 1
+
+AB = 1
+A'C = 0
+
+
+When A changes to 0:
+
+AB should become 0
+A'C should become 1
+
+
+Ideal:
+
+        AB: 111111000000
+
+        A'C: 000000111111
+
+        Y:   111111111111
+
+
+Real circuit:
+
+        AB:  111111110000
+
+        A'C: 000000001111
+
+
+There may be a short interval:
+
+        AB = 0
+        A'C = 0
+
+
+Therefore:
+
+        Y = 0
+
+
+A temporary 0 appears.
+
+
+That is the glitch.
+
+
+============================================================
+17.12 STATIC-1 HAZARD REMOVAL
+============================================================
+
+Add a REDUNDANT CONSENSUS TERM.
+
+
+Original:
+
+        Y = AB + A'C
+
+
+Add:
+
+        BC
+
+
+New expression:
+
+        Y = AB + A'C + BC
+
+
+The term BC does not change the required
+logical function under the relevant condition,
+but it provides an overlapping path.
+
+
+Circuit concept:
+
+        AB ──────┐
+                 │
+        A'C ─────┼── OR ── Y
+                 │
+        BC ──────┘
+
+
+Now when A changes:
+
+        AB path may turn OFF
+        A'C path may turn ON
+
+
+but:
+
+        BC = 1
+
+
+keeps the output HIGH.
+
+
+Therefore:
+
+        STATIC-1 HAZARD IS REMOVED.
+
+
+============================================================
+17.13 CONSENSUS THEOREM
+============================================================
+
+A very useful Boolean identity is:
+
+        XY + X'Z + YZ
+        =
+        XY + X'Z
+
+
+The term:
+
+        YZ
+
+is called the CONSENSUS TERM.
+
+
+Example:
+
+        AB + A'C + BC
+        =
+        AB + A'C
+
+
+Logically, BC is redundant for steady-state
+Boolean simplification.
+
+BUT:
+
+        BC can be important for
+        HAZARD-FREE implementation.
+
+
+This is a very important exam concept.
+
+
+============================================================
+17.14 IMPORTANT EXAM POINT
+============================================================
+
+A term can be:
+
+        REDUNDANT logically
+
+but:
+
+        NECESSARY physically
+
+
+Why?
+
+Because the redundant term may remove a
+hazard caused by propagation delays.
+
+
+Therefore:
+
+        Minimum Boolean expression
+        ≠
+        Always best hazard-free circuit
+
+
+This distinction is extremely important.
+
+
+============================================================
+17.15 K-MAP VIEW OF STATIC-1 HAZARD
+============================================================
+
+Consider:
+
+        Y = AB + A'C
+
+
+Minterms:
+
+        AB covers:
+        A=1, B=1
+
+        A'C covers:
+        A=0, C=1
+
+
+There is an adjacent transition between
+two groups.
+
+For hazard-free SOP design:
+
+        EVERY ADJACENT PAIR OF 1-CELLS
+        that may be involved in a transition
+        should have overlapping coverage.
+
+
+The consensus term:
+
+        BC
+
+creates the required overlap.
+
+
+Conceptually:
+
+        +-----+-----+
+        |     |     |
+        |  1  |  1  |
+        |     |     |
+        +-----+-----+
+          ↑     ↑
+          \_____/
+           overlap
+
+
+The overlap prevents the output from
+temporarily dropping.
+
+
+============================================================
+17.16 STATIC-0 HAZARDS
+============================================================
+
+Static-0 hazards are commonly associated
+with PRODUCT-OF-SUMS (POS) circuits.
+
+
+For a POS circuit, the output should remain:
+
+        0
+
+
+but may temporarily become:
+
+        1
+
+
+Example concept:
+
+        Y = (A + B)(A' + C)
+
+
+During an input transition, unequal delays
+can cause both sum terms to temporarily
+become 1.
+
+
+Then:
+
+        Y = 1
+
+
+even though it should remain 0.
+
+
+============================================================
+17.17 STATIC-0 HAZARD REMOVAL
+============================================================
+
+For static-0 hazards:
+
+        Add an appropriate REDUNDANT SUM TERM
+
+
+The exact term is determined using Boolean
+algebra/K-map analysis.
+
+
+For POS hazard-free design:
+
+        Adjacent 0-cells should have
+        appropriate overlapping coverage.
+
+
+Memory:
+
+        SOP → usually check Static-1 hazards
+
+        POS → usually check Static-0 hazards
+
+
+============================================================
+17.18 DYNAMIC HAZARD
+============================================================
+
+A DYNAMIC HAZARD occurs when the output is
+supposed to change only ONCE but instead
+changes multiple times before settling.
+
+
+Expected:
+
+        0 ─────────────────── 1
+
+
+Actual:
+
+        0 ───/‾\_/‾\───────── 1
+               ↑ ↑
+             unwanted
+             transitions
+
+
+So:
+
+        Dynamic hazard
+        = multiple unwanted transitions
+
+
+============================================================
+17.19 STATIC VS DYNAMIC HAZARD
+============================================================
+
+STATIC-1:
+
+        Expected:
+            1
+
+        Actual:
+            1 → 0 → 1
+
+
+STATIC-0:
+
+        Expected:
+            0
+
+        Actual:
+            0 → 1 → 0
+
+
+DYNAMIC:
+
+        Expected:
+            0 → 1
+
+        Actual:
+            0 → 1 → 0 → 1
+
+
+Summary:
+
+        +-------------+-------------------+
+        | Hazard      | Unwanted behavior |
+        +-------------+-------------------+
+        | Static-1    | 1 → 0 → 1         |
+        | Static-0    | 0 → 1 → 0         |
+        | Dynamic     | Multiple changes  |
+        +-------------+-------------------+
+
+
+============================================================
+17.20 WHY DYNAMIC HAZARDS OCCUR
+============================================================
+
+Dynamic hazards usually occur in
+MULTI-LEVEL logic circuits.
+
+
+Example:
+
+        Input
+          |
+        Level 1
+          |
+        Level 2
+          |
+        Level 3
+          |
+        Output
+
+
+There may be several reconvergent paths
+with different delays.
+
+
+A signal may therefore cause:
+
+        Output:
+        0 → 1 → 0 → 1
+
+
+before settling.
+
+
+============================================================
+17.21 RECONVERGENT PATHS
+============================================================
+
+A reconvergent path occurs when a signal splits
+into multiple paths and later combines again.
+
+
+Example:
+
+              +--> G1 --+
+        A ----+          |
+              +--> G2 ---+--> G3 --> Y
+
+
+Signal A travels through:
+
+        Path 1:
+        A → G1 → G3
+
+
+        Path 2:
+        A → G2 → G3
+
+
+If their delays differ significantly,
+hazards may occur.
+
+
+This is called:
+
+        RECONVERGENCE
+
+
+============================================================
+17.22 STATIC VS DYNAMIC — IMPORTANT
+============================================================
+
+STATIC HAZARD:
+
+        Output should NOT change,
+        but changes once temporarily.
+
+
+DYNAMIC HAZARD:
+
+        Output SHOULD change,
+        but changes multiple times.
+
+
+Memory:
+
+        STATIC:
+        "Stay same, but changes."
+
+
+        DYNAMIC:
+        "Change once, but changes repeatedly."
+
+
+============================================================
+17.23 HAZARD DETECTION
+============================================================
+
+Hazards can be detected using:
+
+        1. Circuit structure
+        2. Propagation-delay analysis
+        3. Boolean algebra
+        4. K-map
+
+
+For exams, K-map analysis is especially useful.
+
+
+============================================================
+17.24 STATIC-1 HAZARD DETECTION USING K-MAP
+============================================================
+
+For SOP:
+
+        Group the 1s.
+
+
+Then inspect adjacent 1-cells.
+
+
+If two adjacent 1-cells are covered by
+different groups but NOT by a common group,
+a static-1 hazard may exist when the input
+changes between those cells.
+
+
+Hazard-free rule:
+
+        Every relevant pair of adjacent 1s
+        should be covered by at least one
+        common implicant.
+
+
+============================================================
+17.25 EXAMPLE OF K-MAP HAZARD ANALYSIS
+============================================================
+
+Suppose:
+
+        F(A,B,C) = Σm(2,3,6,7)
+
+
+Binary:
+
+        m2 = 010
+        m3 = 011
+        m6 = 110
+        m7 = 111
+
+
+The function simplifies to:
+
+        F = B
+
+
+This particular function has broad coverage.
+
+The four 1-cells form one group.
+
+Therefore there is no uncovered adjacent
+transition between separate implicants.
+
+
+The larger grouping is naturally robust.
+
+
+============================================================
+17.26 WHY LARGER GROUPS CAN HELP
+============================================================
+
+Suppose two adjacent 1-cells are covered
+by separate small groups.
+
+
+Potential:
+
+        Group A      Group B
+          \            /
+           \          /
+             Output
+
+
+If one group turns OFF before the other
+turns ON:
+
+        temporary 0
+
+
+If we create an overlapping larger group:
+
+             Group
+          +-----------+
+          |   1   1   |
+          +-----------+
+
+
+the output can remain HIGH during the transition.
+
+
+Therefore:
+
+        OVERLAPPING GROUPS
+        can provide hazard-free operation.
+
+
+============================================================
+17.27 HAZARD-FREE SOP DESIGN PROCEDURE
+============================================================
+
+STEP 1:
+    Write the Boolean function.
+
+STEP 2:
+    Draw the K-map.
+
+STEP 3:
+    Group the 1s for functional minimization.
+
+STEP 4:
+    Identify adjacent 1-cell transitions.
+
+STEP 5:
+    Check whether each relevant adjacent pair
+    has a common implicant.
+
+STEP 6:
+    If not, add a redundant group covering
+    that pair.
+
+STEP 7:
+    Convert the resulting groups into SOP terms.
+
+STEP 8:
+    Implement the circuit.
+
+
+Important:
+
+    The additional term may not be required
+    for ordinary Boolean minimization.
+
+
+============================================================
+17.28 HAZARD-FREE POS DESIGN PROCEDURE
+============================================================
+
+STEP 1:
+    Write the POS function.
+
+STEP 2:
+    Draw the K-map.
+
+STEP 3:
+    Group the 0s.
+
+STEP 4:
+    Check adjacent 0-cell transitions.
+
+STEP 5:
+    Ensure relevant adjacent 0s have
+    common coverage.
+
+STEP 6:
+    Add redundant grouping if necessary.
+
+STEP 7:
+    Obtain the hazard-free POS expression.
+
+
+Memory:
+
+        SOP → group 1s
+
+        POS → group 0s
+
+
+============================================================
+17.29 BOOLEAN SIMPLIFICATION VS HAZARD REMOVAL
+============================================================
+
+Normal simplification asks:
+
+        "How can I use the fewest terms/gates?"
+
+
+Hazard-free design asks:
+
+        "How can I prevent unwanted transient
+         behavior?"
+
+
+These objectives can be different.
+
+
+Example:
+
+        AB + A'C + BC
+
+
+Normal simplification:
+
+        AB + A'C
+
+
+Hazard-free implementation:
+
+        AB + A'C + BC
+
+
+The extra BC is intentionally retained.
+
+
+============================================================
+17.30 REDUNDANT LOGIC
+============================================================
+
+Redundant logic means adding an extra logical
+path that does not change the steady-state
+Boolean function but improves reliability
+during transitions.
+
+
+Example:
+
+        AB
+        A'C
+        BC
+
+
+The BC term is redundant from a Boolean
+minimization perspective but useful for
+hazard elimination.
+
+
+============================================================
+17.31 CONSENSUS TERM — HOW TO FIND IT
+============================================================
+
+Given:
+
+        XY + X'Z
+
+
+The consensus term is:
+
+        YZ
+
+
+General pattern:
+
+        XY + X'Z + YZ
+
+
+Therefore:
+
+        XY + X'Z
+
+may have a static-1 hazard.
+
+
+Add:
+
+        YZ
+
+
+For:
+
+        AB + A'C
+
+
+Consensus:
+
+        BC
+
+
+Therefore hazard-free:
+
+        AB + A'C + BC
+
+
+============================================================
+17.32 ANOTHER EXAMPLE
+============================================================
+
+Given:
+
+        F = CD + C'E
+
+
+Identify:
+
+        XY + X'Z
+
+
+Let:
+
+        X = C
+        Y = D
+        Z = E
+
+
+Consensus:
+
+        DE
+
+
+Therefore hazard-free expression:
+
+        F = CD + C'E + DE
+
+
+This is a common competitive-exam pattern.
+
+
+============================================================
+17.33 IMPORTANT LIMITATION
+============================================================
+
+Simply adding a consensus term is mainly a
+method for dealing with the corresponding
+STATIC-1 hazard in an SOP-style structure.
+
+
+For complicated multi-level circuits,
+dynamic hazards may require restructuring
+the circuit rather than simply adding one
+consensus term.
+
+
+Therefore:
+
+        Static hazard:
+        Boolean/K-map redundancy can often
+        solve it.
+
+
+        Dynamic hazard:
+        Often requires careful multi-level
+        redesign or suitable circuit structure.
+
+
+============================================================
+17.34 HOW TO REMOVE DYNAMIC HAZARDS
+============================================================
+
+Common approaches include:
+
+        1. Reduce logic levels.
+        2. Avoid unnecessary reconvergent paths.
+        3. Use hazard-free circuit structures.
+        4. Balance path delays where appropriate.
+        5. Use synchronous design techniques.
+        6. Add suitable redundant logic where applicable.
+
+
+Main idea:
+
+        CONTROL THE PATH DELAYS
+        AND
+        AVOID UNNECESSARY RECONVERGENCE
+
+
+============================================================
+17.35 HAZARDS IN ASYNCHRONOUS SYSTEMS
+============================================================
+
+Hazards are particularly important in
+asynchronous circuits because outputs may be
+used immediately without waiting for a clock.
+
+
+Example:
+
+        Input
+          |
+        Logic
+          |
+        Output
+          |
+        Next circuit
+
+
+A short glitch may be interpreted as
+a real signal transition.
+
+
+In synchronous systems, a glitch may disappear
+before the next active clock edge, although it
+can still be dangerous if it reaches a clock,
+reset, latch enable, asynchronous control,
+or another sensitive path.
+
+
+============================================================
+17.36 CLOCK SIGNALS AND GLITCHES
+============================================================
+
+A glitch on an ordinary data signal may sometimes
+be harmless if it does not reach a sampling point.
+
+
+But a glitch on:
+
+        CLOCK
+        RESET
+        ENABLE
+        SET
+        CONTROL SIGNAL
+
+
+can be extremely dangerous.
+
+
+Example:
+
+        Intended clock:
+
+        __/‾‾\__/‾‾\__/‾‾\__
+
+
+        Glitched clock:
+
+        __/‾\_/‾‾\__/‾‾\____
+            ↑
+         extra edge
+
+
+An extra clock edge can cause unintended
+flip-flop operation.
+
+
+============================================================
+17.37 HAZARD VS RACE-AROUND CONDITION
+============================================================
+
+Do NOT confuse these concepts.
+
+
+HAZARD:
+
+        Caused by unequal propagation delays
+        in combinational paths.
+
+
+RACE-AROUND:
+
+        Associated particularly with level-triggered
+        JK flip-flops when J=K=1 and the clock pulse
+        remains active long enough for repeated toggling.
+
+
+Hazard:
+
+        Combinational timing problem.
+
+
+Race-around:
+
+        Flip-flop timing problem.
+
+
+============================================================
+17.38 HAZARD VS METASTABILITY
+============================================================
+
+Also do not confuse these.
+
+
+HAZARD:
+
+        Unwanted transient due to unequal
+        propagation delays.
+
+
+METASTABILITY:
+
+        Flip-flop enters an uncertain internal
+        state due to sampling/timing violations.
+
+
+Both involve timing, but they are different
+phenomena.
+
+
+============================================================
+17.39 PRACTICAL EXAMPLE — DIGITAL CONTROL
+============================================================
+
+Imagine:
+
+        Sensor
+          |
+          v
+        Logic
+          |
+          v
+      Motor Control
+
+
+If a hazard creates:
+
+        0 → 1 → 0
+
+
+for a very short time, the motor control
+could interpret it as a command.
+
+
+Therefore hazard-free logic can improve
+system reliability.
+
+
+============================================================
+17.40 PRACTICAL EXAMPLE — ADDRESS DECODER
+============================================================
+
+Consider a memory address decoder.
+
+
+        Address bits
+        A B C
+         \|/
+          v
+      +---------+
+      | Decoder |
+      +---------+
+          |
+          v
+      Memory select
+
+
+During address transitions, different decoder
+paths may have different delays.
+
+
+A temporary wrong select signal can occur.
+
+
+This can potentially cause:
+
+        Wrong memory selection
+
+
+Therefore timing and hazard analysis are important.
+
+
+============================================================
+17.41 PRACTICAL EXAMPLE — MUX
+============================================================
+
+A MUX contains multiple logic paths.
+
+
+        D0 ----\
+        D1 -----\
+        D2 ------ MUX ---- Y
+        D3 -----/
+               /
+          Select
+
+
+When select lines change, internal paths
+may switch at different times.
+
+
+This can create transient output glitches.
+
+
+Therefore MUX-based logic should be considered
+carefully in high-speed designs.
+
+
+============================================================
+17.42 HAZARD PREVENTION STRATEGY
+============================================================
+
+A practical strategy:
+
+        STEP 1
+        Understand all signal paths.
+
+
+        STEP 2
+        Identify reconvergent paths.
+
+
+        STEP 3
+        Determine propagation delays.
+
+
+        STEP 4
+        Determine whether output should
+        remain constant or change.
+
+
+        STEP 5
+        Check for static hazards.
+
+
+        STEP 6
+        Check for dynamic hazards.
+
+
+        STEP 7
+        Add redundant coverage or
+        restructure the logic.
+
+
+============================================================
+17.43 IMPORTANT COMPARISON TABLE
+============================================================
+
++----------------+----------------------------+
+| Feature        | Hazard                     |
++----------------+----------------------------+
+| Cause          | Unequal propagation delay  |
+| Main effect    | Unwanted transition       |
+| Static-1       | 1 → 0 → 1                 |
+| Static-0       | 0 → 1 → 0                 |
+| Dynamic        | Multiple transitions      |
+| Detection      | K-map + timing analysis   |
+| Removal        | Redundancy/restructuring  |
++----------------+----------------------------+
+
+
+============================================================
+17.44 STATIC-1 VS STATIC-0
+============================================================
+
++------------+----------------+----------------+
+| Type       | Expected       | Actual         |
++------------+----------------+----------------+
+| Static-1   | Stay at 1      | 1→0→1          |
+| Static-0   | Stay at 0      | 0→1→0          |
++------------+----------------+----------------+
+
+
+Memory:
+
+        Static-1:
+            unwanted LOW pulse
+
+
+        Static-0:
+            unwanted HIGH pulse
+
+
+============================================================
+17.45 SOP VS POS HAZARDS
+============================================================
+
+SOP:
+
+        Sum of Products
+
+        Example:
+        AB + A'C
+
+
+Usually associated with:
+
+        STATIC-1 HAZARD
+
+
+Hazard-free technique:
+
+        Add redundant PRODUCT term.
+
+
+POS:
+
+        Product of Sums
+
+        Example:
+        (A+B)(A'+C)
+
+
+Usually associated with:
+
+        STATIC-0 HAZARD
+
+
+Hazard-free technique:
+
+        Add appropriate redundant SUM term.
+
+
+============================================================
+17.46 EXAM TRAP
+============================================================
+
+Question:
+
+    "Is a redundant term always unnecessary?"
+
+Answer:
+
+    NO.
+
+
+For Boolean minimization:
+
+    It may be unnecessary.
+
+
+For hazard-free hardware:
+
+    It may be essential.
+
+
+Therefore remember:
+
+        LOGICAL REDUNDANCY
+              ≠
+        PHYSICAL USELESSNESS
+
+
+============================================================
+17.47 EXAM TRAP — HAZARD VS GLITCH
+============================================================
+
+Hazard:
+
+        Potential condition caused by
+        unequal delays.
+
+
+Glitch:
+
+        Actual unwanted transient pulse.
+
+
+Simple memory:
+
+        Hazard = danger
+
+        Glitch = symptom
+
+
+============================================================
+17.48 EXAM TRAP — STATIC VS DYNAMIC
+============================================================
+
+Static hazard:
+
+        Output should remain unchanged.
+
+
+Dynamic hazard:
+
+        Output should change once.
+
+
+Therefore:
+
+        Static:
+        "should stay"
+
+
+        Dynamic:
+        "should change"
+
+
+============================================================
+17.49 SOLVED PROBLEM 1
+============================================================
+
+Given:
+
+        F = AB + A'C
+
+
+Find a hazard-free SOP expression.
+
+
+Step 1:
+
+        Identify the changing variable:
+
+        A
+
+
+Step 2:
+
+        Terms:
+
+        AB
+        A'C
+
+
+Step 3:
+
+        They differ in A and A'.
+
+
+Step 4:
+
+        Find consensus:
+
+        BC
+
+
+Step 5:
+
+        Add BC.
+
+
+Therefore:
+
+        Fhazard-free
+        =
+        AB + A'C + BC
+
+
+ANSWER:
+
+        AB + A'C + BC
+
+
+============================================================
+17.50 SOLVED PROBLEM 2
+============================================================
+
+Given:
+
+        F = CD + C'E
+
+
+Find consensus term.
+
+
+Compare:
+
+        CD
+        C'E
+
+
+Common complemented variable pair:
+
+        C and C'
+
+
+Remaining variables:
+
+        D and E
+
+
+Therefore:
+
+        Consensus = DE
+
+
+Hazard-free expression:
+
+        F = CD + C'E + DE
+
+
+============================================================
+17.51 SOLVED PROBLEM 3
+============================================================
+
+A circuit output should remain HIGH during
+an input transition, but temporarily falls
+LOW.
+
+Identify the hazard.
+
+
+Expected:
+
+        1
+
+
+Actual:
+
+        1 → 0 → 1
+
+
+Therefore:
+
+        STATIC-1 HAZARD
+
+
+============================================================
+17.52 SOLVED PROBLEM 4
+============================================================
+
+A circuit output should remain LOW, but
+temporarily rises HIGH.
+
+
+Expected:
+
+        0
+
+
+Actual:
+
+        0 → 1 → 0
+
+
+Therefore:
+
+        STATIC-0 HAZARD
+
+
+============================================================
+17.53 SOLVED PROBLEM 5
+============================================================
+
+A circuit should change:
+
+        0 → 1
+
+
+But due to multiple internal transitions,
+the output becomes:
+
+        0 → 1 → 0 → 1
+
+
+Identify the hazard.
+
+
+Answer:
+
+        DYNAMIC HAZARD
+
+
+============================================================
+17.54 PRACTICE QUESTIONS — BASIC
+============================================================
+
+Q1.
+Define a hazard.
+
+
+Q2.
+What is a glitch?
+
+
+Q3.
+Why do hazards occur?
+
+
+Q4.
+What is a static hazard?
+
+
+Q5.
+What is a static-1 hazard?
+
+
+Q6.
+What is a static-0 hazard?
+
+
+Q7.
+What is a dynamic hazard?
+
+
+Q8.
+Why are hazards related to propagation delay?
+
+
+Q9.
+What is a reconvergent path?
+
+
+Q10.
+Why are hazards especially important in
+asynchronous circuits?
+
+
+============================================================
+17.55 PRACTICE QUESTIONS — CONCEPTUAL
+============================================================
+
+Q11.
+Differentiate between hazard and glitch.
+
+
+Q12.
+Differentiate between static-1 and static-0 hazard.
+
+
+Q13.
+Differentiate between static and dynamic hazard.
+
+
+Q14.
+Why can redundant logic be useful?
+
+
+Q15.
+Why can a minimum Boolean expression still
+have a hazard?
+
+
+Q16.
+Why are glitches on clock signals dangerous?
+
+
+Q17.
+How can K-maps help detect static hazards?
+
+
+Q18.
+Why are multi-level circuits more susceptible
+to dynamic hazards?
+
+
+Q19.
+Differentiate hazard and metastability.
+
+
+Q20.
+Differentiate hazard and race-around condition.
+
+
+============================================================
+17.56 PRACTICE QUESTIONS — NUMERICAL/LOGIC
+============================================================
+
+Q21.
+For:
+
+        F = AB + A'C
+
+find the consensus term.
+
+
+Q22.
+For:
+
+        F = CD + C'E
+
+find a hazard-free SOP expression.
+
+
+Q23.
+For:
+
+        F = XY + X'Z
+
+find the consensus term.
+
+
+Q24.
+If an output should remain 1 but produces
+1 → 0 → 1, identify the hazard.
+
+
+Q25.
+If an output should remain 0 but produces
+0 → 1 → 0, identify the hazard.
+
+
+Q26.
+If an output should change 0 → 1 but produces:
+
+        0 → 1 → 0 → 1
+
+identify the hazard.
+
+
+============================================================
+17.57 MCQs
+============================================================
+
+Q1.
+A hazard is mainly caused by:
+
+A) Boolean constants
+B) Unequal propagation delays
+C) Number systems
+D) Memory size
+
+
+Q2.
+A glitch is:
+
+A) Permanent logic failure
+B) Unwanted transient pulse
+C) Clock frequency
+D) Fan-in
+
+
+Q3.
+Static-1 hazard means:
+
+A) 1 → 0 → 1
+B) 0 → 1 → 0
+C) 0 → 1
+D) 1 → 0
+
+
+Q4.
+Static-0 hazard means:
+
+A) 1 → 0 → 1
+B) 0 → 1 → 0
+C) 0 → 1
+D) 1 → 1
+
+
+Q5.
+A dynamic hazard involves:
+
+A) No transition
+B) Multiple unwanted transitions
+C) Only one input
+D) Memory expansion
+
+
+Q6.
+Static-1 hazards are commonly associated with:
+
+A) SOP circuits
+B) POS circuits only
+C) RAM
+D) ADC
+
+
+Q7.
+Static-0 hazards are commonly associated with:
+
+A) SOP
+B) POS
+C) Counters only
+D) Registers only
+
+
+Q8.
+For:
+
+        AB + A'C
+
+the consensus term is:
+
+A) A
+B) B
+C) C
+D) BC
+
+
+Q9.
+A hazard-free version of:
+
+        AB + A'C
+
+is:
+
+A) AB
+B) A'C
+C) AB + A'C + BC
+D) ABC
+
+
+Q10.
+The consensus term is mainly used to:
+
+A) Increase frequency
+B) Remove certain static hazards
+C) Increase memory
+D) Reduce voltage
+
+
+Q11.
+A reconvergent path means:
+
+A) Signal never splits
+B) Signal splits and later combines
+C) Signal is stored in RAM
+D) Clock is disabled
+
+
+Q12.
+A hazard-free circuit may contain:
+
+A) Only minimum terms
+B) Redundant terms
+C) No gates
+D) No propagation delay
+
+
+Q13.
+A glitch on a clock can:
+
+A) Be completely irrelevant
+B) Cause unintended clocking
+C) Increase RAM size
+D) Change radix
+
+
+Q14.
+Which is true?
+
+A) Hazard and glitch are exactly identical terms
+B) Hazard is a potential condition; glitch is an observed transient
+C) Hazard only occurs in memory
+D) Glitch only occurs in analog systems
+
+
+Q15.
+Dynamic hazards are more likely in:
+
+A) Simple single-level logic
+B) Multi-level logic with reconvergent paths
+C) Pure wires
+D) Decimal arithmetic
+
+
+============================================================
+17.58 MCQ ANSWERS
+============================================================
+
+Q1  → B
+Q2  → B
+Q3  → A
+Q4  → B
+Q5  → B
+Q6  → A
+Q7  → B
+Q8  → D
+Q9  → C
+Q10 → B
+Q11 → B
+Q12 → B
+Q13 → B
+Q14 → B
+Q15 → B
+
+
+============================================================
+17.59 QUICK REVISION
+============================================================
+
+HAZARD:
+
+    Unwanted switching condition caused
+    mainly by unequal propagation delays.
+
+
+GLITCH:
+
+    Actual unwanted temporary pulse.
+
+
+STATIC-1:
+
+    Expected 1
+
+    Actual:
+        1 → 0 → 1
+
+
+STATIC-0:
+
+    Expected 0
+
+    Actual:
+        0 → 1 → 0
+
+
+DYNAMIC:
+
+    Expected one transition
+
+    Actual:
+        Multiple transitions
+
+
+SOP:
+
+    Commonly associated with static-1 hazards.
+
+
+POS:
+
+    Commonly associated with static-0 hazards.
+
+
+CONSENSUS THEOREM:
+
+    XY + X'Z + YZ = XY + X'Z
+
+
+For:
+
+    AB + A'C
+
+Consensus:
+
+    BC
+
+
+Hazard-free:
+
+    AB + A'C + BC
+
+
+KEY IDEA:
+
+    A redundant term may be unnecessary
+    for Boolean minimization but necessary
+    for hazard-free hardware.
+
+
+============================================================
+17.60 ONE-PAGE MEMORY MAP
+============================================================
+
+                    HAZARDS
+                       |
+             +---------+---------+
+             |                   |
+           STATIC              DYNAMIC
+             |                   |
+       +-----+-----+       Multiple changes
+       |           |
+    Static-1    Static-0
+       |           |
+    1→0→1       0→1→0
+       |           |
+     SOP          POS
+       |           |
+   Add overlap / redundant logic
+             |
+             v
+        HAZARD-FREE
+          CIRCUIT
+
+
+============================================================
+17.61 CHAPTER 17 MASTER CHECKLIST
+============================================================
+
+[ ] Define hazard.
+[ ] Define glitch.
+[ ] Explain propagation-delay mismatch.
+[ ] Understand static hazards.
+[ ] Understand static-1 hazard.
+[ ] Understand static-0 hazard.
+[ ] Understand dynamic hazard.
+[ ] Understand reconvergent paths.
+[ ] Understand consensus theorem.
+[ ] Find consensus terms.
+[ ] Detect static-1 hazards.
+[ ] Detect static-0 hazards.
+[ ] Use K-maps for hazard analysis.
+[ ] Add redundant terms.
+[ ] Understand hazard-free SOP.
+[ ] Understand hazard-free POS.
+[ ] Understand dynamic hazard removal.
+[ ] Distinguish hazard from glitch.
+[ ] Distinguish hazard from metastability.
+[ ] Distinguish hazard from race-around.
+[ ] Understand practical importance of glitches.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+                    CHAPTER 18
+                        ↓
+               A/D & D/A CONVERSION
+                        |
+          +-------------+-------------+
+          |                           |
+         DAC                         ADC
+          |                           |
+   Digital → Analog           Analog → Digital
+          |                           |
+     Resolution                 Sampling
+     Accuracy                  Quantization
+     Conversion time           Encoding
+          |                           |
+   +------+-------+            +------+-------+
+   |              |            |      |      |
+Binary-weighted  R-2R       Flash   SAR   Dual-slope
+   DAC           ladder       ADC    ADC      ADC
+                                      |
+                                      v
+                              Sampling theorem
+                                      |
+                               Nyquist rate
+                                      |
+                                   Aliasing
+
+
+KEY IDEA:
+
+Chapter 17 answered:
+
+    "How can unequal propagation delays create
+     unwanted glitches?"
+
+Chapter 18 will answer:
+
+    "How can a digital system convert DIGITAL
+     information to ANALOG signals and ANALOG
+     signals back into DIGITAL data?"
+
+============================================================

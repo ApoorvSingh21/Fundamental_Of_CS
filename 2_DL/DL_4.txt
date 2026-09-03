@@ -1,0 +1,3165 @@
+# CHAPTER 4 — BOOLEAN FUNCTION SIMPLIFICATION & K-MAPS
+
+LEVEL: B.Tech 1st Year
+STARTING LEVEL: ZERO KNOWLEDGE
+GOAL: Learn how to simplify Boolean expressions and design smaller,
+faster, cheaper digital circuits.
+
+
+============================================================
+4.0 WHY DO WE NEED BOOLEAN SIMPLIFICATION?
+============================================================
+
+In Chapter 2, we learned Boolean algebra.
+
+In Chapter 3, we learned logic gates.
+
+Now we combine both.
+
+Suppose a circuit has:
+
+    Y = AB + AB'
+
+At first glance, we may think we need:
+
+    2 AND gates
+    1 OR gate
+    1 NOT gate
+
+But Boolean algebra gives:
+
+    Y = A(B+B')
+      = A(1)
+      = A
+
+So the entire circuit can be replaced by:
+
+    Y = A
+
+
+Instead of:
+
+    Several gates
+
+we need:
+
+    One direct connection
+
+
+This is called:
+
+    BOOLEAN FUNCTION SIMPLIFICATION
+
+
+------------------------------------------------------------
+Benefits of simplification
+------------------------------------------------------------
+
+Simplification can reduce:
+
+    • Number of gates
+    • Number of inputs to gates
+    • Hardware cost
+    • Power consumption
+    • Propagation delay
+    • Circuit complexity
+    • Physical size
+
+Therefore:
+
+    More complex expression
+             ↓
+       Simplification
+             ↓
+       Smaller circuit
+             ↓
+       Faster / cheaper design
+
+
+============================================================
+4.1 EXAMPLE OF CIRCUIT OPTIMIZATION
+============================================================
+
+Suppose:
+
+    Y = AB + AB'
+
+
+Original circuit:
+
+        A --------+----------[AND]----\
+                  |                     \
+                  |                      [OR]---- Y
+                  |                     /
+                  +---[NOT]--- B' -----[AND]
+                           
+
+Boolean expression:
+
+    Y = AB + AB'
+
+
+Factor A:
+
+    Y = A(B+B')
+
+
+Using complement law:
+
+    B+B' = 1
+
+Therefore:
+
+    Y = A(1)
+
+    Y = A
+
+
+Optimized circuit:
+
+    A -------------------------- Y
+
+
+A complicated-looking circuit becomes:
+
+    A simple wire.
+
+
+============================================================
+4.2 TWO MAIN METHODS OF SIMPLIFICATION
+============================================================
+
+Boolean functions can mainly be simplified using:
+
+    METHOD 1:
+    Algebraic simplification
+
+    METHOD 2:
+    Karnaugh Map (K-Map)
+
+
+There is also a systematic tabulation method:
+
+    Quine-McCluskey method
+
+
+We will learn all three.
+
+For B.Tech and competitive exams, K-Maps are especially important.
+
+
+============================================================
+4.3 ALGEBRAIC SIMPLIFICATION
+============================================================
+
+Algebraic simplification means using Boolean laws and theorems
+to reduce an expression.
+
+Important laws from Chapter 2:
+
+    Identity:
+        A+0=A
+        A·1=A
+
+    Null:
+        A+1=1
+        A·0=0
+
+    Idempotent:
+        A+A=A
+        AA=A
+
+    Complement:
+        A+A'=1
+        AA'=0
+
+    Absorption:
+        A+AB=A
+        A(A+B)=A
+
+    De Morgan:
+        (A+B)'=A'B'
+        (AB)'=A'+B'
+
+
+============================================================
+4.4 ALGEBRAIC SIMPLIFICATION — EXAMPLE 1
+============================================================
+
+Simplify:
+
+    Y = A + AB
+
+
+Using absorption:
+
+    A + AB = A
+
+
+Therefore:
+
+    Y = A
+
+
+------------------------------------------------------------
+Circuit idea
+
+Before:
+
+    A ----\
+           [AND]----\
+    B ----/          \
+                     [OR]---- Y
+    A ---------------/
+
+
+After:
+
+    A ------------------------ Y
+
+
+============================================================
+4.5 ALGEBRAIC SIMPLIFICATION — EXAMPLE 2
+============================================================
+
+Simplify:
+
+    Y = AB + AB'
+
+
+Step 1: Factor A.
+
+    Y = A(B+B')
+
+
+Step 2: Complement law.
+
+    B+B' = 1
+
+Therefore:
+
+    Y = A(1)
+
+Step 3:
+
+    Y = A
+
+
+Final:
+
+    Y = A
+
+
+============================================================
+4.6 ALGEBRAIC SIMPLIFICATION — EXAMPLE 3
+============================================================
+
+Simplify:
+
+    Y = AB + A'C + BC
+
+
+The expression contains:
+
+    AB
+    A'C
+    BC
+
+
+Using the consensus theorem:
+
+    AB + A'C + BC
+    = AB + A'C
+
+
+Therefore:
+
+    Y = AB + A'C
+
+
+The term:
+
+    BC
+
+is redundant for Boolean functionality.
+
+IMPORTANT:
+
+The consensus term becomes important later when studying
+hazards and hazard-free circuits.
+
+
+============================================================
+4.7 ALGEBRAIC SIMPLIFICATION — EXAMPLE 4
+============================================================
+
+Simplify:
+
+    Y = (A+B)(A+B')
+
+
+Use:
+
+    (X+Y)(X+Z) = X+YZ
+
+Therefore:
+
+    Y = A + BB'
+
+Since:
+
+    BB' = 0
+
+we get:
+
+    Y = A+0
+
+Therefore:
+
+    Y = A
+
+
+============================================================
+4.8 LIMITATION OF ALGEBRAIC SIMPLIFICATION
+============================================================
+
+Algebraic simplification works well for small expressions.
+
+But consider:
+
+    Y(A,B,C,D)
+    = A'B'C'D + A'B'CD + A'BC'D + ...
+    + many more terms
+
+Trying to simplify such expressions manually can become:
+
+    • Time-consuming
+    • Error-prone
+    • Difficult to visualize
+
+We need a more systematic method.
+
+That method is:
+
+    KARNaugh MAP
+
+Usually called:
+
+    K-MAP
+
+
+============================================================
+4.9 WHAT IS A K-MAP?
+============================================================
+
+A Karnaugh Map is a graphical method used to simplify Boolean
+functions.
+
+It converts Boolean expressions into a map of cells.
+
+Each cell represents one minterm.
+
+Then we group adjacent cells to eliminate variables.
+
+The basic idea:
+
+    Boolean function
+          ↓
+       K-Map
+          ↓
+     Group adjacent 1s
+          ↓
+    Remove changing variables
+          ↓
+    Simplified expression
+
+
+K-Map is especially useful for:
+
+    2 variables
+    3 variables
+    4 variables
+
+and can be extended to:
+
+    5 variables
+
+
+============================================================
+4.10 K-MAP CELL COUNT
+============================================================
+
+For n variables:
+
+    Number of cells = 2^n
+
+
+Therefore:
+
+    2 variables:
+        2² = 4 cells
+
+    3 variables:
+        2³ = 8 cells
+
+    4 variables:
+        2⁴ = 16 cells
+
+    5 variables:
+        2⁵ = 32 cells
+
+
+Very important:
+
+    n variables → 2^n K-map cells
+
+
+============================================================
+4.11 WHY K-MAPS USE GRAY CODE
+============================================================
+
+This is one of the most important ideas in K-Maps.
+
+K-Map rows and columns are NOT normally arranged as:
+
+    00
+    01
+    10
+    11
+
+because:
+
+    01 → 10
+
+changes TWO bits.
+
+Instead, we use:
+
+    00
+    01
+    11
+    10
+
+
+This is called:
+
+    Gray-code ordering
+
+
+Notice:
+
+    00 → 01
+         only one bit changes
+
+    01 → 11
+         only one bit changes
+
+    11 → 10
+         only one bit changes
+
+
+This allows adjacent cells to differ in exactly ONE variable.
+
+That property is the foundation of K-Map simplification.
+
+
+============================================================
+4.12 TWO-VARIABLE K-MAP
+============================================================
+
+For variables:
+
+    A, B
+
+there are:
+
+    2² = 4 cells
+
+
+The K-Map is:
+
+             B
+            0   1
+          +---+---+
+       A  |   |   |
+       0  +---+---+
+          |   |   |
+       1  +---+---+
+
+
+Cell arrangement:
+
+             B
+            0   1
+          +---+---+
+    A=0   | 0 | 1 |
+          +---+---+
+    A=1   | 2 | 3 |
+          +---+---+
+
+
+Therefore:
+
+    m0 → 00
+    m1 → 01
+    m2 → 10
+    m3 → 11
+
+
+For two variables, Gray-code ordering is not very noticeable,
+because:
+
+    0,1
+
+already differs by one bit.
+
+
+============================================================
+4.13 K-MAP FROM A TRUTH TABLE
+============================================================
+
+Suppose:
+
+    F(A,B) = Σm(1,3)
+
+
+Truth table:
+
+    A B | F
+    ---------
+    0 0 | 0
+    0 1 | 1
+    1 0 | 0
+    1 1 | 1
+
+
+Put 1 in cells:
+
+    m1
+    m3
+
+
+K-map:
+
+             B
+            0   1
+          +---+---+
+    A=0   | 0 | 1 |
+          +---+---+
+    A=1   | 0 | 1 |
+          +---+---+
+
+Now group the two 1s vertically:
+
+          +---+---+
+          | 0 | 1 | ← group
+          +---+---+
+          | 0 | 1 | ← group
+          +---+---+
+
+
+What remains constant?
+
+    B = 1
+
+
+A changes:
+
+    0 → 1
+
+Therefore A is eliminated.
+
+Final:
+
+    F = B
+
+
+============================================================
+4.14 BASIC K-MAP RULE
+============================================================
+
+For SOP simplification:
+
+    GROUP THE 1s.
+
+
+For POS simplification:
+
+    GROUP THE 0s.
+
+
+This distinction is extremely important.
+
+
+------------------------------------------------------------
+SOP
+
+    Group 1s
+        ↓
+    Obtain product terms
+        ↓
+    OR the terms
+
+
+------------------------------------------------------------
+POS
+
+    Group 0s
+        ↓
+    Obtain sum terms
+        ↓
+    AND the terms
+
+
+Memory:
+
+    SOP → 1s
+
+    POS → 0s
+
+
+============================================================
+4.15 VALID GROUP SIZES
+============================================================
+
+K-Map groups must contain:
+
+    1
+    2
+    4
+    8
+    16
+    ...
+
+cells
+
+In other words:
+
+    Group size = power of 2
+
+
+Valid:
+
+    1
+    2
+    4
+    8
+    16
+
+
+Invalid:
+
+    3
+    5
+    6
+    7
+    10
+
+
+This is one of the most important K-Map rules.
+
+
+============================================================
+4.16 WHY GROUPS MUST BE POWERS OF 2
+============================================================
+
+Suppose a group contains:
+
+    2 cells
+
+One variable changes.
+
+Therefore:
+
+    One variable can be eliminated.
+
+
+For:
+
+    4 cells
+
+two variables change.
+
+Therefore:
+
+    Two variables can be eliminated.
+
+
+For:
+
+    8 cells
+
+three variables change.
+
+Therefore:
+
+    Three variables can be eliminated.
+
+
+So:
+
+    Larger group
+        ↓
+    More variables eliminated
+        ↓
+    Simpler expression
+
+
+============================================================
+4.17 K-MAP GROUPING RULES
+============================================================
+
+For SOP minimization:
+
+    RULE 1:
+    Group only 1s.
+
+    RULE 2:
+    Group 1,2,4,8,16,... cells.
+
+    RULE 3:
+    Make groups as large as possible.
+
+    RULE 4:
+    Groups must be rectangular.
+
+    RULE 5:
+    Groups may overlap.
+
+    RULE 6:
+    Wrapping around the edges is allowed.
+
+    RULE 7:
+    Diagonal cells are NOT adjacent.
+
+    RULE 8:
+    Every required 1 must be covered.
+
+    RULE 9:
+    A 1 may belong to more than one group.
+
+    RULE 10:
+    Avoid unnecessary groups.
+
+
+============================================================
+4.18 ADJACENCY IN K-MAP
+============================================================
+
+Two cells are adjacent if they differ in exactly one variable.
+
+Example:
+
+    00
+    01
+
+These differ in one bit.
+
+Therefore:
+
+    adjacent
+
+
+But:
+
+    00
+    11
+
+differ in two bits.
+
+Therefore:
+
+    NOT adjacent
+
+
+Very important:
+
+    Diagonal cells are NOT adjacent.
+
+
+Example:
+
+    +---+---+
+    | 1 | 0 |
+    +---+---+
+    | 0 | 1 |
+    +---+---+
+
+The two 1s are diagonal.
+
+You CANNOT group them.
+
+
+============================================================
+4.19 WRAPPING / EDGE ADJACENCY
+============================================================
+
+One of the most confusing K-Map concepts for beginners:
+
+    The edges wrap around.
+
+
+For example, in a row:
+
+    +---+---+---+---+
+    | 1 | 0 | 0 | 1 |
+    +---+---+---+---+
+
+The first and last cells are adjacent.
+
+Think of the map as if the edges are connected:
+
+    +-------------------+
+    |                   |
+    |                   |
+    +-------------------+
+
+The left edge touches the right edge.
+
+
+Similarly:
+
+    Top edge touches bottom edge.
+
+
+This allows groups to cross boundaries.
+
+
+============================================================
+4.20 WHY WRAPPING IS ALLOWED
+============================================================
+
+Suppose the first and last cells differ in only one variable.
+
+Because K-Map is arranged using Gray code, the edge cells are
+logically adjacent.
+
+Therefore:
+
+    Left edge ↔ Right edge
+
+and:
+
+    Top edge ↔ Bottom edge
+
+
+A K-Map can conceptually be viewed as a folded surface.
+
+For a 4-variable map, you can imagine it wrapping around like a
+torus.
+
+You do NOT need to physically draw a torus in an exam.
+
+Just remember:
+
+    EDGES ARE ADJACENT.
+
+
+============================================================
+4.21 THREE-VARIABLE K-MAP
+============================================================
+
+For:
+
+    A, B, C
+
+we need:
+
+    2³ = 8 cells
+
+
+A common arrangement is:
+
+                 BC
+               00  01  11  10
+             +---+---+---+---+
+        A=0  |   |   |   |   |
+             +---+---+---+---+
+        A=1  |   |   |   |   |
+             +---+---+---+---+
+
+
+Notice the column ordering:
+
+    00
+    01
+    11
+    10
+
+NOT:
+
+    00
+    01
+    10
+    11
+
+
+Because:
+
+    01 → 11 = one bit changes
+
+    11 → 10 = one bit changes
+
+
+============================================================
+4.22 THREE-VARIABLE CELL NUMBERING
+============================================================
+
+For:
+
+    A | BC
+
+we have:
+
+                 BC
+               00  01  11  10
+             +---+---+---+---+
+        A=0  | 0 | 1 | 3 | 2 |
+             +---+---+---+---+
+        A=1  | 4 | 5 | 7 | 6 |
+             +---+---+---+---+
+
+
+So:
+
+    m0 → 000
+    m1 → 001
+    m2 → 010
+    m3 → 011
+    m4 → 100
+    m5 → 101
+    m6 → 110
+    m7 → 111
+
+
+Notice the cell arrangement:
+
+    0,1,3,2
+    4,5,7,6
+
+This is Gray-code ordering.
+
+
+============================================================
+4.23 THREE-VARIABLE K-MAP — EXAMPLE 1
+============================================================
+
+Simplify:
+
+    F(A,B,C) = Σm(1,3,5,7)
+
+
+Place 1s:
+
+                 BC
+               00  01  11  10
+             +---+---+---+---+
+        A=0  | 0 | 1 | 1 | 0 |
+             +---+---+---+---+
+        A=1  | 0 | 1 | 1 | 0 |
+             +---+---+---+---+
+
+
+Group all four 1s:
+
+             +---+---+---+---+
+        A=0  | 0 | 1 | 1 | 0 |
+             +---+===+===+---+
+        A=1  | 0 | 1 | 1 | 0 |
+             +---+===+===+---+
+
+
+What remains constant?
+
+In the grouped columns:
+
+    C = 1
+
+B changes.
+
+A changes.
+
+Therefore:
+
+    F = C
+
+
+Final:
+
+    F = C
+
+
+Notice how a group of four cells eliminated:
+
+    A
+    B
+
+leaving only:
+
+    C
+
+
+============================================================
+4.24 THREE-VARIABLE K-MAP — EXAMPLE 2
+============================================================
+
+Simplify:
+
+    F = Σm(0,1,2,3)
+
+
+K-map:
+
+                 BC
+               00  01  11  10
+             +---+---+---+---+
+        A=0  | 1 | 1 | 1 | 1 |
+             +---+---+---+---+
+        A=1  | 0 | 0 | 0 | 0 |
+             +---+---+---+---+
+
+
+Group the four 1s in the top row.
+
+What remains constant?
+
+    A = 0
+
+Therefore:
+
+    A'
+
+Final:
+
+    F = A'
+
+
+============================================================
+4.25 THREE-VARIABLE K-MAP — EXAMPLE 3
+============================================================
+
+Simplify:
+
+    F = Σm(4,5,6,7)
+
+
+K-map:
+
+                 BC
+               00  01  11  10
+             +---+---+---+---+
+        A=0  | 0 | 0 | 0 | 0 |
+             +---+---+---+---+
+        A=1  | 1 | 1 | 1 | 1 |
+             +---+---+---+---+
+
+
+All four 1s are grouped.
+
+Constant:
+
+    A = 1
+
+Therefore:
+
+    F = A
+
+
+============================================================
+4.26 THREE-VARIABLE K-MAP — PAIR
+============================================================
+
+Consider:
+
+    F = Σm(1,3)
+
+
+K-map:
+
+                 BC
+               00  01  11  10
+             +---+---+---+---+
+        A=0  | 0 | 1 | 1 | 0 |
+             +---+---+---+---+
+        A=1  | 0 | 0 | 0 | 0 |
+             +---+---+---+---+
+
+
+Group:
+
+    m1 and m3
+
+
+Binary:
+
+    m1 = 001
+    m3 = 011
+
+Compare:
+
+    0 0 1
+    0 1 1
+    -------
+    A B C
+
+A stays 0.
+
+B changes.
+
+C stays 1.
+
+Therefore:
+
+    A'C
+
+
+Final:
+
+    F = A'C
+
+
+============================================================
+4.27 THE CORE K-MAP IDEA
+============================================================
+
+When you group cells:
+
+    Keep variables that remain constant.
+
+    Eliminate variables that change.
+
+
+Example:
+
+    101
+    111
+
+Compare:
+
+    A = 1 → same
+    B = 0→1 → changes
+    C = 1 → same
+
+Therefore:
+
+    A C
+
+The changing variable B disappears.
+
+
+This is the single most important idea in K-Map simplification.
+
+
+============================================================
+4.28 FOUR-VARIABLE K-MAP
+============================================================
+
+For variables:
+
+    A, B, C, D
+
+we need:
+
+    2⁴ = 16 cells
+
+
+Standard arrangement:
+
+                   CD
+                00  01  11  10
+              +---+---+---+---+
+        AB=00 |   |   |   |   |
+              +---+---+---+---+
+        AB=01 |   |   |   |   |
+              +---+---+---+---+
+        AB=11 |   |   |   |   |
+              +---+---+---+---+
+        AB=10 |   |   |   |   |
+              +---+---+---+---+
+
+
+Notice BOTH dimensions use Gray code:
+
+    00
+    01
+    11
+    10
+
+
+============================================================
+4.29 FOUR-VARIABLE CELL NUMBERING
+============================================================
+
+Standard 4-variable K-map:
+
+                   CD
+                00  01  11  10
+              +---+---+---+---+
+       AB=00  | 0 | 1 | 3 | 2 |
+              +---+---+---+---+
+       AB=01  | 4 | 5 | 7 | 6 |
+              +---+---+---+---+
+       AB=11  |12 |13 |15 |14 |
+              +---+---+---+---+
+       AB=10  | 8 | 9 |11 |10 |
+              +---+---+---+---+
+
+
+MEMORIZE THIS MAP:
+
+    0   1   3   2
+    4   5   7   6
+   12  13  15  14
+    8   9  11  10
+
+
+============================================================
+4.30 FOUR-VARIABLE K-MAP — EXAMPLE
+============================================================
+
+Simplify:
+
+    F(A,B,C,D) = Σm(0,1,2,3)
+
+
+Place 1s:
+
+                   CD
+                00  01  11  10
+              +---+---+---+---+
+       AB=00  | 1 | 1 | 1 | 1 |
+              +---+---+---+---+
+       AB=01  | 0 | 0 | 0 | 0 |
+              +---+---+---+---+
+       AB=11  | 0 | 0 | 0 | 0 |
+              +---+---+---+---+
+       AB=10  | 0 | 0 | 0 | 0 |
+              +---+---+---+---+
+
+
+Group the four cells in the first row.
+
+AB=00 remains constant.
+
+Therefore:
+
+    A=0 → A'
+    B=0 → B'
+
+C changes.
+
+D changes.
+
+Thus:
+
+    F = A'B'
+
+
+Final:
+
+    F = A'B'
+
+
+============================================================
+4.31 FOUR-VARIABLE K-MAP — QUAD
+============================================================
+
+Consider:
+
+    F = Σm(0,1,4,5)
+
+
+K-map:
+
+                   CD
+                00  01  11  10
+              +---+---+---+---+
+       AB=00  | 1 | 1 | 0 | 0 |
+              +---+---+---+---+
+       AB=01  | 1 | 1 | 0 | 0 |
+              +---+---+---+---+
+       AB=11  | 0 | 0 | 0 | 0 |
+              +---+---+---+---+
+       AB=10  | 0 | 0 | 0 | 0 |
+              +---+---+---+---+
+
+
+Group four:
+
+    m0,m1,m4,m5
+
+
+Constant variables:
+
+    A = 0
+    C = 0
+
+Changing:
+
+    B
+    D
+
+
+Therefore:
+
+    F = A'C'
+
+
+Final:
+
+    F = A'C'
+
+
+============================================================
+4.32 FOUR-VARIABLE K-MAP — OCTET
+============================================================
+
+Suppose eight adjacent cells contain 1.
+
+Then we can form an:
+
+    OCTET
+
+
+A group of 8 eliminates:
+
+    3 variables
+
+and leaves:
+
+    1 variable
+
+
+For example, if all cells with:
+
+    A=1
+
+are 1:
+
+    F = A
+
+
+The octet contains all combinations of:
+
+    B,C,D
+
+while A remains fixed.
+
+
+============================================================
+4.33 PAIR, QUAD, OCTET
+============================================================
+
+Remember:
+
+    Pair:
+        2 cells
+        eliminates 1 variable
+
+
+    Quad:
+        4 cells
+        eliminates 2 variables
+
+
+    Octet:
+        8 cells
+        eliminates 3 variables
+
+
+    16-cell group:
+        eliminates 4 variables
+        → function becomes 1
+
+
+For an n-variable K-map:
+
+    Group of 2^k cells
+    eliminates k variables.
+
+
+============================================================
+4.34 LARGEST GROUPING RULE
+============================================================
+
+Always try to make the largest possible groups.
+
+Example:
+
+    Suppose four adjacent 1s exist.
+
+Do NOT make:
+
+    two pairs
+
+if one quad can cover them.
+
+Why?
+
+Pair:
+
+    eliminates 1 variable
+
+
+Quad:
+
+    eliminates 2 variables
+
+
+Therefore:
+
+    Quad gives a simpler expression.
+
+
+General rule:
+
+    OCTET > QUAD > PAIR > SINGLE
+
+
+provided the group is valid and useful.
+
+
+============================================================
+4.35 OVERLAPPING GROUPS
+============================================================
+
+Groups are allowed to overlap.
+
+Example:
+
+    +---+---+---+---+
+    | 1 | 1 | 1 | 0 |
+    +---+---+---+---+
+    | 1 | 1 | 1 | 0 |
+    +---+---+---+---+
+
+
+The center cells may belong to multiple groups.
+
+This is completely valid.
+
+
+Why overlap?
+
+Because overlapping may allow:
+
+    Larger groups
+
+and therefore:
+
+    Simpler expression.
+
+
+IMPORTANT:
+
+    A cell can belong to more than one group.
+
+
+============================================================
+4.36 ESSENTIAL PRIME IMPLICANT
+============================================================
+
+These terms sound difficult, but the idea is simple.
+
+### Implicant
+
+A group of 1s that produces a product term.
+
+### Prime implicant
+
+A group that cannot be enlarged further without including a 0.
+
+### Essential prime implicant
+
+A prime implicant that covers at least one 1 that no other prime
+implicant covers.
+
+
+In simple words:
+
+    If a particular 1 can be covered by only one valid largest group,
+    that group is essential.
+
+
+Exam shortcut:
+
+    "Unique coverage" → Essential.
+
+
+============================================================
+4.37 DON'T-CARE CONDITIONS
+============================================================
+
+Sometimes certain input combinations never occur or their output
+doesn't matter.
+
+These are called:
+
+    DON'T-CARE CONDITIONS
+
+
+They are commonly represented by:
+
+    X
+
+or:
+
+    d
+
+
+Example:
+
+    F = Σm(1,3,5) + d(7)
+
+
+Here:
+
+    1,3,5
+
+are required 1s.
+
+And:
+
+    7
+
+is a don't-care.
+
+
+For K-Map simplification, a don't-care cell may be treated as:
+
+    1
+
+if that helps make a larger group,
+
+or:
+
+    0
+
+if it does not help.
+
+
+Important:
+
+    You are NOT required to use every don't-care.
+
+
+============================================================
+4.38 DON'T-CARE EXAMPLE
+============================================================
+
+Suppose:
+
+    F = Σm(1,3,7) + d(5)
+
+
+K-map contains:
+
+    m1 = 1
+    m3 = 1
+    m7 = 1
+    m5 = X
+
+
+Because m5 is X, we can treat it as 1 if useful.
+
+Then:
+
+    m1,m3,m5,m7
+
+can form a quad.
+
+This may eliminate more variables and produce a simpler result.
+
+
+Key idea:
+
+    Don't-care = "I don't care whether output is 0 or 1 for this
+    input combination."
+
+
+============================================================
+4.39 SOP MINIMIZATION USING K-MAP
+============================================================
+
+Procedure:
+
+    STEP 1:
+    Write the Boolean function.
+
+    STEP 2:
+    Convert it to minterms if necessary.
+
+    STEP 3:
+    Draw the correct K-map.
+
+    STEP 4:
+    Place 1s in the required minterm cells.
+
+    STEP 5:
+    Place X for don't-care cells.
+
+    STEP 6:
+    Make the largest possible groups.
+
+    STEP 7:
+    Groups must contain 1,2,4,8,... cells.
+
+    STEP 8:
+    Every required 1 must be covered.
+
+    STEP 9:
+    Determine the constant variables in each group.
+
+    STEP 10:
+    OR the resulting product terms.
+
+
+Final result:
+
+    MINIMAL SOP
+
+
+============================================================
+4.40 COMPLETE SOP EXAMPLE
+============================================================
+
+Simplify:
+
+    F(A,B,C) = Σm(1,2,3,5,7)
+
+
+K-map:
+
+                 BC
+               00  01  11  10
+             +---+---+---+---+
+        A=0  | 0 | 1 | 1 | 1 |
+             +---+---+---+---+
+        A=1  | 0 | 1 | 1 | 0 |
+             +---+---+---+---+
+
+
+Now make groups.
+
+### Group 1:
+
+    m1,m3,m5,m7
+
+This is a quad.
+
+These cells all have:
+
+    C=1
+
+Therefore:
+
+    C
+
+
+### Group 2:
+
+    m2,m3
+
+These cells have:
+
+    A=0
+    B=1
+
+C changes.
+
+Therefore:
+
+    A'B
+
+
+So:
+
+    F = C + A'B
+
+
+Final:
+
+    F = C + A'B
+
+
+============================================================
+4.41 POS MINIMIZATION
+============================================================
+
+For POS:
+
+    Group 0s instead of 1s.
+
+
+Procedure:
+
+    1. Draw K-map.
+    2. Place 0s.
+    3. Group the largest possible sets of 0s.
+    4. Determine constant variables.
+    5. Form sum terms.
+    6. AND the sum terms.
+
+
+Remember:
+
+    SOP → group 1s
+
+    POS → group 0s
+
+
+============================================================
+4.42 SOP VS POS K-MAP RULE
+============================================================
+
+                K-MAP
+                  |
+          +-------+-------+
+          |               |
+          v               v
+        SOP               POS
+          |               |
+       Group 1s         Group 0s
+          |               |
+          v               v
+    Product terms      Sum terms
+          |               |
+          v               v
+        OR them          AND them
+
+
+This diagram is worth remembering.
+
+
+============================================================
+4.43 HOW TO FORM AN SOP TERM
+============================================================
+
+Suppose a group of 1s has:
+
+    A = 1
+    B = 0
+    C changes
+
+
+For SOP:
+
+    A stays 1 → A
+
+    B stays 0 → B'
+
+    C changes → eliminate C
+
+
+Therefore:
+
+    Product term = AB'
+
+
+------------------------------------------------------------
+Another example
+
+Suppose:
+
+    A=0
+    B=1
+    C=1
+    D changes
+
+
+Then:
+
+    A'BC
+
+
+because:
+
+    A=0 → A'
+    B=1 → B
+    C=1 → C
+    D changes → eliminate D
+
+
+============================================================
+4.44 HOW TO FORM A POS TERM
+============================================================
+
+For POS, the rule reverses.
+
+Suppose a group of 0s has:
+
+    A = 0
+    B = 1
+    C changes
+
+
+The corresponding sum term is:
+
+    (A+B')
+
+
+Why?
+
+For POS:
+
+    variable = 0 → uncomplemented
+
+    variable = 1 → complemented
+
+So:
+
+    A=0 → A
+
+    B=1 → B'
+
+Therefore:
+
+    (A+B')
+
+
+This is opposite to the minterm/SOP rule.
+
+
+============================================================
+4.45 MINTERM VS MAXTERM RULES
+============================================================
+
+This is extremely important.
+
+### MINTERM / SOP
+
+    0 → complement
+    1 → normal
+
+
+Example:
+
+    101
+
+becomes:
+
+    AB'C
+
+
+### MAXTERM / POS
+
+    0 → normal
+    1 → complement
+
+
+Example:
+
+    101
+
+becomes:
+
+    (A'+B+C')
+
+
+Memory:
+
+    Minterm:
+        "0 gets bar"
+
+    Maxterm:
+        "1 gets bar"
+
+
+============================================================
+4.46 5-VARIABLE K-MAP
+============================================================
+
+For 5 variables:
+
+    A,B,C,D,E
+
+Number of cells:
+
+    2⁵ = 32
+
+
+A common method is to use:
+
+    Two 4-variable K-maps
+
+One for:
+
+    A=0
+
+and one for:
+
+    A=1
+
+
+Conceptually:
+
+        A = 0                 A = 1
+
+    +-----------+          +-----------+
+    | 16 cells  |          | 16 cells  |
+    |           |          |           |
+    | K-map     |          | K-map     |
+    +-----------+          +-----------+
+
+
+Corresponding cells across the two maps can be adjacent.
+
+
+For first-year courses, you should understand the concept even
+if most numerical problems focus on 2-, 3-, and 4-variable maps.
+
+
+============================================================
+4.47 PRIME IMPLICANTS
+============================================================
+
+Let's formalize this.
+
+### Implicant
+
+Any valid group of 1s corresponding to a product term.
+
+### Prime implicant
+
+An implicant that cannot be combined into a larger valid group.
+
+### Essential prime implicant
+
+A prime implicant covering at least one minterm that is not covered
+by another prime implicant.
+
+
+Hierarchy:
+
+    Implicant
+        ↓
+    Prime implicant
+        ↓
+    Essential prime implicant
+
+
+============================================================
+4.48 PRIME-IMPLICANT THINKING
+============================================================
+
+Suppose:
+
+    One group = 4 cells
+
+and it can be expanded to:
+
+    8 cells
+
+Then the 4-cell group is not prime.
+
+The 8-cell group is better.
+
+Therefore:
+
+    Always try to expand a valid group.
+
+
+But:
+
+    Do NOT include a 0 in an SOP group.
+
+
+Don't-cares can be included.
+
+So:
+
+    1 + X
+
+can be grouped.
+
+But:
+
+    1 + 0
+
+cannot.
+
+
+============================================================
+4.49 K-MAP EDGE WRAPPING EXAMPLE
+============================================================
+
+Consider:
+
+    +---+---+---+---+
+    | 1 | 0 | 0 | 1 |
+    +---+---+---+---+
+    | 0 | 0 | 0 | 0 |
+    +---+---+---+---+
+
+
+The two 1s appear far apart.
+
+But:
+
+    FIRST COLUMN ↔ LAST COLUMN
+
+They are adjacent because of wrapping.
+
+Therefore they can form a pair.
+
+
+This is one of the most common exam traps.
+
+Remember:
+
+    LEFT ↔ RIGHT
+
+    TOP ↔ BOTTOM
+
+
+============================================================
+4.50 FOUR CORNERS RULE
+============================================================
+
+In a 4-variable K-map, the four corner cells are adjacent through
+wrapping.
+
+Example:
+
+    +---+---+---+---+
+    | 1 | 0 | 0 | 1 |
+    +---+---+---+---+
+    | 0 | 0 | 0 | 0 |
+    +---+---+---+---+
+    | 0 | 0 | 0 | 0 |
+    +---+---+---+---+
+    | 1 | 0 | 0 | 1 |
+    +---+---+---+---+
+
+
+All four corners can form a group of 4.
+
+This is valid because of:
+
+    horizontal wrapping
+    +
+    vertical wrapping
+
+
+This is a very useful competitive-exam pattern.
+
+
+============================================================
+4.51 K-MAP GROUPING PRIORITY
+============================================================
+
+When simplifying, generally follow:
+
+    1. Look for octets.
+    2. Then quads.
+    3. Then pairs.
+    4. Finally, isolated single 1s.
+
+
+But remember:
+
+    The final objective is minimum expression,
+    not blindly choosing the largest group.
+
+Sometimes overlapping groups are required.
+
+
+============================================================
+4.52 ESSENTIAL GROUP STRATEGY
+============================================================
+
+A practical strategy:
+
+    STEP 1:
+    Identify all possible large groups.
+
+    STEP 2:
+    Find any 1 that can be covered by only one group.
+
+    STEP 3:
+    Select that group.
+
+    STEP 4:
+    Cover remaining 1s with the largest useful groups.
+
+    STEP 5:
+    Remove redundant groups if possible.
+
+
+This gives a minimal or near-minimal SOP.
+
+
+============================================================
+4.53 K-MAP AND CIRCUIT COST
+============================================================
+
+Suppose:
+
+    Original:
+
+    F = AB + AC + AD + AE
+
+
+This requires several gates.
+
+After simplification, suppose:
+
+    F = A(B+C+D+E)
+
+Depending on the available gate structure, this can reduce:
+
+    Number of gates
+    Number of literals
+    Wiring
+    Power
+    Delay
+
+
+Therefore K-Maps are not just mathematical tricks.
+
+They are tools for:
+
+    REAL CIRCUIT OPTIMIZATION.
+
+
+============================================================
+4.54 QUINE-MCCLUSKEY METHOD
+============================================================
+
+K-Maps are excellent for small numbers of variables.
+
+But for many variables, drawing and grouping K-Maps becomes
+difficult.
+
+A systematic tabulation method is:
+
+    Quine-McCluskey method
+
+
+It is also called:
+
+    Tabulation method
+
+
+Basic idea:
+
+    Minterms
+       ↓
+    Group by number of 1s
+       ↓
+    Compare terms
+       ↓
+    Combine terms differing in one bit
+       ↓
+    Repeat
+       ↓
+    Find prime implicants
+       ↓
+    Prime implicant chart
+       ↓
+    Select essential prime implicants
+       ↓
+    Final minimized expression
+
+
+============================================================
+4.55 QUINE-MCCLUSKEY — BASIC IDEA
+============================================================
+
+Suppose two binary terms are:
+
+    000
+    001
+
+
+They differ in one position.
+
+So they can combine:
+
+    00-
+
+
+The dash means:
+
+    This variable is eliminated / don't care.
+
+
+Another:
+
+    010
+    011
+
+combine to:
+
+    01-
+
+
+Then larger groups can be combined further.
+
+This method is systematic and suitable for computer-based
+simplification.
+
+
+============================================================
+4.56 K-MAP VS QUINE-MCCLUSKEY
+============================================================
+
+    Feature              K-Map              Quine-McCluskey
+    --------------------------------------------------------
+    Method               Graphical          Tabular
+
+    Easy for             Few variables      Many variables
+
+    Visualization        Excellent          Moderate
+
+    Manual work          Easy for 2-4       Can become lengthy
+
+    Systematic           Less formal        Highly systematic
+
+    Computer use         Less convenient    More convenient
+
+
+For first-year exams:
+
+    K-Map is extremely important.
+
+
+============================================================
+4.57 COMPLETE K-MAP SOLVING ALGORITHM
+============================================================
+
+When you see:
+
+    F(A,B,C,D) = Σm(...)
+
+do this:
+
+    STEP 1
+    Count variables.
+
+    STEP 2
+    Draw correct K-map.
+
+    STEP 3
+    Remember Gray-code order:
+
+        00, 01, 11, 10
+
+    STEP 4
+    Fill 1s.
+
+    STEP 5
+    Check for don't-cares.
+
+    STEP 6
+    Search for largest groups.
+
+    STEP 7
+    Use only powers of two:
+
+        1,2,4,8,16,...
+
+    STEP 8
+    Use wrapping when useful.
+
+    STEP 9
+    Allow overlap when useful.
+
+    STEP 10
+    Make sure every required 1 is covered.
+
+    STEP 11
+    For each group:
+        Keep constant variables.
+        Remove changing variables.
+
+    STEP 12
+    OR all resulting product terms.
+
+    STEP 13
+    Check whether the result can be simplified further.
+
+
+============================================================
+4.58 FULL WORKED EXAMPLE — 4 VARIABLES
+============================================================
+
+Simplify:
+
+    F(A,B,C,D) = Σm(0,1,2,3,8,9,10,11)
+
+
+Step 1:
+
+There are 4 variables.
+
+Therefore:
+
+    16-cell K-map.
+
+
+Step 2:
+
+Place 1s:
+
+                   CD
+                00  01  11  10
+              +---+---+---+---+
+       AB=00  | 1 | 1 | 1 | 1 |
+              +---+---+---+---+
+       AB=01  | 0 | 0 | 0 | 0 |
+              +---+---+---+---+
+       AB=11  | 0 | 0 | 0 | 0 |
+              +---+---+---+---+
+       AB=10  | 1 | 1 | 1 | 1 |
+              +---+---+---+---+
+
+
+Step 3:
+
+Observe that the top and bottom rows are adjacent through
+vertical wrapping.
+
+So all 8 cells can be grouped.
+
+Group:
+
+    m0,m1,m2,m3,m8,m9,m10,m11
+
+
+Step 4:
+
+What remains constant?
+
+Rows:
+
+    AB=00
+    AB=10
+
+Compare:
+
+    A changes:
+        0 → 1
+
+    B remains:
+        0
+
+Therefore:
+
+    B=0 → B'
+
+
+C and D change.
+
+So:
+
+    F = B'
+
+
+Final:
+
+    F = B'
+
+
+This demonstrates why wrapping is powerful.
+
+
+============================================================
+4.59 FULL WORKED EXAMPLE — OVERLAPPING
+============================================================
+
+Suppose:
+
+    F = Σm(0,1,2,3,5,7)
+
+
+K-map:
+
+                   CD
+                00  01  11  10
+              +---+---+---+---+
+       AB=00  | 1 | 1 | 1 | 1 |
+              +---+---+---+---+
+       AB=01  | 0 | 1 | 1 | 0 |
+              +---+---+---+---+
+       AB=11  | 0 | 0 | 0 | 0 |
+              +---+---+---+---+
+       AB=10  | 0 | 0 | 0 | 0 |
+              +---+---+---+---+
+
+
+Group 1:
+
+    Top-row quad:
+
+    m0,m1,m2,m3
+
+Constant:
+
+    A=0
+    B=0
+
+Therefore:
+
+    A'B'
+
+
+Group 2:
+
+    m1,m3,m5,m7
+
+This is a quad.
+
+Constant:
+
+    C=1
+
+Therefore:
+
+    C
+
+
+Final:
+
+    F = A'B' + C
+
+
+Notice:
+
+    m1 and m3
+
+are part of both groups.
+
+That is:
+
+    OVERLAPPING
+
+
+And it is completely valid.
+
+
+============================================================
+4.60 COMMON K-MAP MISTAKES
+============================================================
+
+### Mistake 1
+
+Using normal binary order:
+
+    00,01,10,11
+
+Instead of:
+
+    00,01,11,10
+
+Correct:
+
+    00,01,11,10
+
+
+### Mistake 2
+
+Grouping diagonal cells.
+
+Diagonal cells are not adjacent.
+
+
+### Mistake 3
+
+Making groups of 3.
+
+Invalid.
+
+Groups must contain:
+
+    1,2,4,8,16,...
+
+
+### Mistake 4
+
+Forgetting wrapping.
+
+Remember:
+
+    Left touches right.
+
+    Top touches bottom.
+
+
+### Mistake 5
+
+Using a 0 in an SOP group.
+
+SOP groups normally contain:
+
+    1s
+
+and optionally:
+
+    Xs
+
+
+### Mistake 6
+
+Not making the largest possible group.
+
+Always check:
+
+    Can this pair become a quad?
+
+    Can this quad become an octet?
+
+
+### Mistake 7
+
+Forgetting overlap.
+
+Overlap is allowed and often necessary.
+
+
+### Mistake 8
+
+Eliminating a variable that actually remains constant.
+
+For every group, compare each variable carefully.
+
+
+### Mistake 9
+
+Confusing SOP and POS.
+
+Remember:
+
+    SOP → 1s
+
+    POS → 0s
+
+
+============================================================
+4.61 FAST EXAM TECHNIQUES
+============================================================
+
+### Technique 1
+
+Memorize:
+
+    2^n cells
+
+
+### Technique 2
+
+Memorize Gray order:
+
+    00 → 01 → 11 → 10
+
+
+### Technique 3
+
+Remember:
+
+    Pair  → remove 1 variable
+
+    Quad  → remove 2 variables
+
+    Octet → remove 3 variables
+
+
+### Technique 4
+
+For SOP:
+
+    Group 1s.
+
+
+For POS:
+
+    Group 0s.
+
+
+### Technique 5
+
+Always check the edges.
+
+    Left ↔ Right
+
+    Top ↔ Bottom
+
+
+### Technique 6
+
+Always look for:
+
+    Octet first
+    Quad second
+    Pair third
+    Single last
+
+
+============================================================
+4.62 PRACTICE QUESTIONS — LEVEL 1
+============================================================
+
+Try these without looking at the answers.
+
+### Q1
+
+How many cells are there in a 3-variable K-map?
+
+
+### Q2
+
+How many cells are there in a 4-variable K-map?
+
+
+### Q3
+
+What is the Gray-code order for two bits?
+
+
+### Q4
+
+Is a group of 3 cells valid?
+
+
+### Q5
+
+For SOP minimization, do we group 1s or 0s?
+
+
+### Q6
+
+For POS minimization, do we group 1s or 0s?
+
+
+### Q7
+
+Can K-map groups overlap?
+
+
+### Q8
+
+Are diagonal cells adjacent?
+
+
+### Q9
+
+Are the first and last columns adjacent?
+
+
+### Q10
+
+What is the maximum valid group size in a 4-variable K-map?
+
+
+------------------------------------------------------------
+ANSWERS
+------------------------------------------------------------
+
+Q1:
+
+    2³ = 8
+
+
+Q2:
+
+    2⁴ = 16
+
+
+Q3:
+
+    00, 01, 11, 10
+
+
+Q4:
+
+    No.
+
+
+Q5:
+
+    1s
+
+
+Q6:
+
+    0s
+
+
+Q7:
+
+    Yes.
+
+
+Q8:
+
+    No.
+
+
+Q9:
+
+    Yes.
+
+
+Q10:
+
+    16
+
+
+============================================================
+4.63 PRACTICE QUESTIONS — LEVEL 2
+============================================================
+
+### Q11
+
+Simplify:
+
+    F = AB + AB'
+
+
+### Q12
+
+Simplify:
+
+    F = A + AB
+
+
+### Q13
+
+Simplify:
+
+    F = AB + A'B
+
+
+### Q14
+
+Simplify:
+
+    F = (A+B)(A+B')
+
+
+### Q15
+
+Simplify using K-map:
+
+    F(A,B,C) = Σm(1,3,5,7)
+
+
+### Q16
+
+Simplify:
+
+    F(A,B,C) = Σm(0,1,2,3)
+
+
+### Q17
+
+Simplify:
+
+    F(A,B,C) = Σm(4,5,6,7)
+
+
+### Q18
+
+For:
+
+    F(A,B,C,D)=Σm(0,1,2,3)
+
+identify the simplified expression.
+
+
+------------------------------------------------------------
+ANSWERS
+------------------------------------------------------------
+
+Q11:
+
+    AB+AB'
+    = A(B+B')
+    = A
+
+
+Q12:
+
+    A+AB = A
+
+
+Q13:
+
+    AB+A'B
+    = B(A+A')
+    = B
+
+
+Q14:
+
+    (A+B)(A+B')
+    = A
+
+
+Q15:
+
+    F=C
+
+
+Q16:
+
+    F=A'
+
+
+Q17:
+
+    F=A
+
+
+Q18:
+
+    F=A'B'
+
+
+============================================================
+4.64 PRACTICE QUESTIONS — LEVEL 3
+============================================================
+
+### Q19
+
+Simplify:
+
+    F(A,B,C) = Σm(1,2,3,5,7)
+
+
+### Q20
+
+Simplify:
+
+    F(A,B,C,D)
+    = Σm(0,1,2,3,8,9,10,11)
+
+
+### Q21
+
+Explain why:
+
+    00
+
+and:
+
+    11
+
+are not adjacent in a K-map.
+
+
+### Q22
+
+Why is:
+
+    00
+
+adjacent to:
+
+    01?
+
+
+### Q23
+
+What is the purpose of Gray-code ordering?
+
+
+### Q24
+
+Why are larger groups preferred in K-Maps?
+
+
+### Q25
+
+What is an essential prime implicant?
+
+
+### Q26
+
+What does X represent in a K-map?
+
+
+============================================================
+ANSWERS
+============================================================
+
+Q19:
+
+    F = C + A'B
+
+
+Q20:
+
+    F = B'
+
+
+Q21:
+
+    They differ in two bits.
+
+    00 → 11
+
+    Therefore they are not adjacent.
+
+
+Q22:
+
+    They differ in only one bit.
+
+    00 → 01
+
+
+Q23:
+
+    To ensure adjacent cells differ in exactly one variable.
+
+
+Q24:
+
+    Larger groups eliminate more variables and produce simpler
+    expressions.
+
+
+Q25:
+
+    A prime implicant that covers at least one required 1 that
+    no other prime implicant covers.
+
+
+Q26:
+
+    Don't-care condition.
+
+
+============================================================
+4.65 EXAM-READY SUMMARY
+============================================================
+
+    Boolean simplification:
+        Reduce a Boolean expression while preserving its function.
+
+    K-map:
+        Graphical Boolean simplification method.
+
+    n variables:
+        2^n cells.
+
+    Gray order:
+        00,01,11,10
+
+    SOP:
+        Group 1s.
+
+    POS:
+        Group 0s.
+
+    Valid groups:
+        1,2,4,8,16,...
+
+    Pair:
+        Eliminates 1 variable.
+
+    Quad:
+        Eliminates 2 variables.
+
+    Octet:
+        Eliminates 3 variables.
+
+    Largest groups:
+        Preferred.
+
+    Overlap:
+        Allowed.
+
+    Wrapping:
+        Allowed.
+
+    Diagonal grouping:
+        Not allowed.
+
+    Don't-care:
+        X or d; use when helpful.
+
+    Prime implicant:
+        Cannot be enlarged.
+
+    Essential prime implicant:
+        Covers a unique required minterm.
+
+
+============================================================
+4.66 MASTER K-MAP CHECKLIST
+============================================================
+
+Before submitting a K-Map answer, ask:
+
+    [ ] Did I use the correct number of cells?
+
+    [ ] Did I use Gray-code ordering?
+
+    [ ] Did I place all minterms correctly?
+
+    [ ] Did I group 1s for SOP?
+
+    [ ] Did I group 0s for POS?
+
+    [ ] Are all groups powers of 2?
+
+    [ ] Did I make groups as large as possible?
+
+    [ ] Did I check edge wrapping?
+
+    [ ] Did I check for useful overlap?
+
+    [ ] Did I avoid diagonal grouping?
+
+    [ ] Did I cover every required 1?
+
+    [ ] Did I use don't-cares correctly?
+
+    [ ] Did I eliminate changing variables?
+
+    [ ] Did I keep constant variables?
+
+    [ ] Is the final expression actually simpler?
+
+
+============================================================
+4.67 CHAPTER 4 MENTAL MAP
+============================================================
+
+              BOOLEAN FUNCTION
+                     |
+                     v
+              Simplification
+                     |
+          +----------+----------+
+          |                     |
+          v                     v
+      Algebraic              K-MAP
+          |                     |
+          |             +-------+-------+
+          |             |               |
+          |             v               v
+          |            SOP             POS
+          |             |               |
+          |           Group 1s        Group 0s
+          |             |               |
+          |             v               v
+          |         Product terms    Sum terms
+          |             |               |
+          |             +-------+-------+
+          |                     |
+          +---------------------+
+                                |
+                                v
+                        Simplified Function
+                                |
+                                v
+                        Smaller Circuit
+                                |
+                +---------------+---------------+
+                |               |               |
+                v               v               v
+             Lower cost      Lower power     Lower delay
+
+
+============================================================
+4.68 WHAT YOU SHOULD NOW KNOW
+============================================================
+
+After Chapter 4, you should be able to:
+
+    ✓ Explain why Boolean simplification is needed.
+
+    ✓ Perform algebraic simplification.
+
+    ✓ Use Boolean laws for simplification.
+
+    ✓ Use the consensus theorem.
+
+    ✓ Define a Karnaugh Map.
+
+    ✓ Determine K-map size from number of variables.
+
+    ✓ Understand Gray-code ordering.
+
+    ✓ Construct 2-variable K-maps.
+
+    ✓ Construct 3-variable K-maps.
+
+    ✓ Construct 4-variable K-maps.
+
+    ✓ Number K-map cells correctly.
+
+    ✓ Group cells into pairs.
+
+    ✓ Group cells into quads.
+
+    ✓ Group cells into octets.
+
+    ✓ Understand largest-group principle.
+
+    ✓ Understand overlapping.
+
+    ✓ Understand wrapping.
+
+    ✓ Avoid diagonal grouping.
+
+    ✓ Perform SOP minimization.
+
+    ✓ Understand POS minimization.
+
+    ✓ Understand don't-care conditions.
+
+    ✓ Understand prime implicants.
+
+    ✓ Understand essential prime implicants.
+
+    ✓ Understand the basic idea of Quine-McCluskey.
+
+    ✓ Translate a simplified Boolean function into a smaller
+      logic circuit.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+# CHAPTER 5 — COMBINATIONAL LOGIC CIRCUITS
+
+Now we move from:
+
+    Boolean expressions
+            ↓
+    Logic gates
+            ↓
+    Simplification
+
+to actual useful digital circuits.
+
+Chapter 5 will introduce the first major combinational circuits:
+
+    • What is a combinational circuit?
+    • Combinational vs sequential circuits
+    • Half Adder
+    • Full Adder
+    • Half Subtractor
+    • Full Subtractor
+    • Parallel Binary Adder
+    • Ripple Carry Adder
+    • Carry propagation
+    • Propagation delay
+    • Carry Look-Ahead Adder
+    • Generate and Propagate
+    • BCD Adder
+
+The first major circuit will be:
+
+                 A --------\
+                            [ HALF ADDER ]---- Sum
+                 B --------/                 |
+                                              +---- Carry
+
+You will learn exactly how a computer performs binary addition
+using logic gates.

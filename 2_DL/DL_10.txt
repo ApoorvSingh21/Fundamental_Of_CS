@@ -1,0 +1,1852 @@
+============================================================
+CHAPTER 10 — REGISTERS
+============================================================
+Level: B.Tech 1st Year / Computer Science
+Prerequisite: Chapter 8 & Chapter 9 — Flip-Flops
+Goal: Understand how multiple flip-flops work together
+      to store and move binary data.
+============================================================
+
+
+                    CHAPTER 10 ROADMAP
+
+                         REGISTERS
+                             |
+              +--------------+--------------+
+              |              |              |
+          Basic Idea    Shift Registers   Applications
+              |              |              |
+       Register capacity     +-------------+-------------+
+              |              |             |             |
+       Register vs Memory   SISO          SIPO          PISO
+                            |              |             |
+                           PIPO      Universal Register
+                             |
+                       Data Transfer
+
+
+============================================================
+10.1 WHAT IS A REGISTER?
+============================================================
+
+A REGISTER is a group of flip-flops used to store
+and/or transfer binary information.
+
+The most important idea is:
+
+                1 flip-flop = 1 bit storage
+
+Therefore:
+
+                4 flip-flops = 4-bit register
+
+                8 flip-flops = 8-bit register
+
+               16 flip-flops = 16-bit register
+
+               32 flip-flops = 32-bit register
+
+
+Example:
+
+A 4-bit register can store:
+
+                1011
+
+A 8-bit register can store:
+
+                11001010
+
+
+------------------------------------------------------------
+SIMPLE ASCII DIAGRAM
+------------------------------------------------------------
+
+A 4-bit register can be represented as:
+
+        +-----+   +-----+   +-----+   +-----+
+        | FF3 |   | FF2 |   | FF1 |   | FF0 |
+        |  1  |   |  0  |   |  1  |   |  1  |
+        +-----+   +-----+   +-----+   +-----+
+           |         |         |         |
+          Q3        Q2        Q1        Q0
+
+Stored data:
+
+                Q3 Q2 Q1 Q0
+                 1  0  1  1
+
+Therefore:
+
+                REGISTER = 1011
+
+
+============================================================
+10.2 WHY DO WE NEED REGISTERS?
+============================================================
+
+Digital systems constantly need to:
+
+    • Store temporary data
+    • Move data
+    • Transfer data between circuits
+    • Convert serial data to parallel data
+    • Convert parallel data to serial data
+    • Delay data
+    • Store intermediate results
+    • Interface with communication systems
+
+
+For example, inside a CPU:
+
+                Data
+                  |
+                  v
+             +---------+
+             | REGISTER|
+             +---------+
+                  |
+                  v
+              ALU / CPU
+
+
+Registers are therefore fundamental building blocks
+of processors and digital systems.
+
+
+============================================================
+10.3 REGISTER = GROUP OF FLIP-FLOPS
+============================================================
+
+Suppose we have four D flip-flops.
+
+Each flip-flop stores one bit.
+
+                D3       D2       D1       D0
+                 |        |        |        |
+                 v        v        v        v
+              +----+   +----+   +----+   +----+
+ CLK -------->| D  |   | D  |   | D  |   | D  |
+              | FF |   | FF |   | FF |   | FF |
+              +----+   +----+   +----+   +----+
+                 |        |        |        |
+                 Q3       Q2       Q1       Q0
+
+
+Together:
+
+                Q3 Q2 Q1 Q0
+
+form a:
+
+                4-BIT REGISTER
+
+
+------------------------------------------------------------
+IMPORTANT
+------------------------------------------------------------
+
+All flip-flops in a synchronous register normally
+share the same clock.
+
+Therefore one clock edge can cause all stored bits
+to update simultaneously.
+
+
+============================================================
+10.4 REGISTER CAPACITY
+============================================================
+
+Register capacity means the number of bits that
+the register can store.
+
+
+Examples:
+
+    4 flip-flops → 4-bit register
+    8 flip-flops → 8-bit register
+   16 flip-flops → 16-bit register
+   32 flip-flops → 32-bit register
+   64 flip-flops → 64-bit register
+
+
+Formula:
+
+                Capacity = Number of flip-flops × 1 bit
+
+
+Example:
+
+A register contains 8 flip-flops.
+
+Capacity:
+
+                8 × 1
+              = 8 bits
+
+
+============================================================
+10.5 REGISTER VS MEMORY
+============================================================
+
+Students often confuse these two concepts.
+
+
+REGISTER:
+
+    • Usually a small collection of flip-flops
+    • Very fast
+    • Located close to processing logic
+    • Used for temporary storage
+    • Small capacity
+
+
+MEMORY:
+
+    • Much larger storage system
+    • Contains many memory cells
+    • Used to store larger amounts of information
+    • Examples: RAM, ROM
+
+
+------------------------------------------------------------
+COMPARISON
+------------------------------------------------------------
+
++----------------+---------------------------+
+| REGISTER       | MEMORY                    |
++----------------+---------------------------+
+| Small capacity | Large capacity            |
+| Very fast      | Generally slower          |
+| Flip-flop based| Memory-cell based         |
+| CPU close      | Main/secondary storage    |
+| Temporary data | Program/data storage      |
++----------------+---------------------------+
+
+
+Simple analogy:
+
+    Register = small desk drawer
+
+    Memory = large cupboard
+
+
+============================================================
+10.6 WHAT IS A SHIFT REGISTER?
+============================================================
+
+A SHIFT REGISTER is a register in which stored data
+can be shifted from one flip-flop to another.
+
+Suppose:
+
+                1011
+
+is stored.
+
+After one shift, the bits move one position.
+
+
+For a simple right shift:
+
+Before:
+
+                1 0 1 1
+
+After:
+
+                X 1 0 1
+
+where X is the new incoming bit.
+
+
+If X = 0:
+
+                0 1 0 1
+
+
+------------------------------------------------------------
+BASIC SHIFT REGISTER
+------------------------------------------------------------
+
+Suppose we have four D flip-flops:
+
+        Serial Input
+             |
+             v
+        +----+    +----+    +----+    +----+
+        | D  |--->| D  |--->| D  |--->| D  |
+ CLK -->| FF |    | FF |    | FF |    | FF |
+        +----+    +----+    +----+    +----+
+          Q3        Q2        Q1        Q0
+                                      |
+                                      v
+                                Serial Output
+
+
+At each clock pulse:
+
+                Data moves one position.
+
+
+This is why it is called:
+
+                SHIFT REGISTER
+
+
+============================================================
+10.7 HOW SHIFTING WORKS
+============================================================
+
+Consider a 4-bit register:
+
+                Q3 Q2 Q1 Q0
+
+Suppose:
+
+                1011
+
+
+For a right shift:
+
+                Q3 ← Serial Input
+                Q2 ← Q3
+                Q1 ← Q2
+                Q0 ← Q1
+
+
+Therefore:
+
+Before:
+
+                Q3 Q2 Q1 Q0
+                 1  0  1  1
+
+
+Suppose serial input = 0.
+
+After one clock:
+
+                0  1  0  1
+
+
+After another clock with input = 1:
+
+                1  0  1  0
+
+
+------------------------------------------------------------
+TABLE
+------------------------------------------------------------
+
+Initial:
+
+                1011
+
+Clock 1, input 0:
+
+                0101
+
+Clock 2, input 1:
+
+                1010
+
+Clock 3, input 1:
+
+                1101
+
+
+The data moves one position per clock pulse.
+
+
+============================================================
+10.8 WHY DOES A SHIFT REGISTER NEED A CLOCK?
+============================================================
+
+Flip-flops are sequential devices.
+
+The clock determines WHEN the stored data changes.
+
+Therefore:
+
+                Clock pulse
+                    |
+                    v
+             Shift one position
+                    |
+                    v
+             New register state
+
+
+Without proper clock control, data would not shift
+in a predictable synchronous manner.
+
+
+============================================================
+10.9 FOUR MAIN TYPES OF SHIFT REGISTERS
+============================================================
+
+There are four fundamental types:
+
+                1. SISO
+                2. SIPO
+                3. PISO
+                4. PIPO
+
+
+The letters tell us about:
+
+                Input type
+                    +
+                Output type
+
+
+S = Serial
+P = Parallel
+
+
+Therefore:
+
+
+    SISO = Serial In, Serial Out
+
+    SIPO = Serial In, Parallel Out
+
+    PISO = Parallel In, Serial Out
+
+    PIPO = Parallel In, Parallel Out
+
+
+============================================================
+10.10 SISO — SERIAL IN SERIAL OUT
+============================================================
+
+SISO means:
+
+                Serial Input
+                      ↓
+                Serial Output
+
+
+Data enters ONE BIT AT A TIME.
+
+Data leaves ONE BIT AT A TIME.
+
+
+ASCII:
+
+Serial Input
+     |
+     v
+   +----+   +----+   +----+   +----+
+-->| FF |-->| FF |-->| FF |-->| FF |----> Serial Output
+   +----+   +----+   +----+   +----+
+       ^        ^        ^        ^
+       +-------- CLOCK -----------+
+
+
+Suppose we want to load:
+
+                1011
+
+
+Bits enter sequentially:
+
+                1
+                0
+                1
+                1
+
+
+After enough clock pulses, the complete data is
+present inside the register.
+
+
+------------------------------------------------------------
+SISO APPLICATIONS
+------------------------------------------------------------
+
+    • Serial data transfer
+    • Digital delay lines
+    • Communication systems
+    • Data transmission
+
+
+------------------------------------------------------------
+MEMORY TRICK
+------------------------------------------------------------
+
+SISO:
+
+    Serial in
+          ↓
+    Serial out
+
+    "One bit enters, one bit leaves."
+
+
+============================================================
+10.11 SIPO — SERIAL IN PARALLEL OUT
+============================================================
+
+SIPO means:
+
+                Serial Input
+                      ↓
+                Parallel Output
+
+
+Data enters one bit at a time.
+
+After enough clock pulses, all bits are available
+simultaneously at the outputs.
+
+
+ASCII:
+
+Serial Input
+     |
+     v
+   +----+   +----+   +----+   +----+
+-->| FF |-->| FF |-->| FF |-->| FF |
+   +----+   +----+   +----+   +----+
+     |         |        |        |
+     v         v        v        v
+    Q3        Q2       Q1       Q0
+
+        PARALLEL OUTPUT
+
+
+------------------------------------------------------------
+EXAMPLE
+------------------------------------------------------------
+
+Suppose we want to convert serial data:
+
+                1011
+
+into parallel form.
+
+
+Bits enter:
+
+    Clock 1 → 1
+    Clock 2 → 0
+    Clock 3 → 1
+    Clock 4 → 1
+
+
+After the required clock pulses:
+
+                Q3 Q2 Q1 Q0
+                 1  0  1  1
+
+
+Therefore:
+
+                1011
+
+
+is available simultaneously.
+
+
+------------------------------------------------------------
+SIPO APPLICATION
+------------------------------------------------------------
+
+One of the most important applications is:
+
+                SERIAL → PARALLEL CONVERSION
+
+
+Example:
+
+A communication line sends data one bit at a time.
+
+The receiving digital system may need all bits
+simultaneously.
+
+SIPO performs this conversion.
+
+
+============================================================
+10.12 PISO — PARALLEL IN SERIAL OUT
+============================================================
+
+PISO means:
+
+                Parallel Input
+                       ↓
+                Serial Output
+
+
+Data is loaded simultaneously.
+
+Then it is shifted out one bit at a time.
+
+
+ASCII:
+
+Parallel Inputs:
+
+    P3       P2       P1       P0
+    |        |        |        |
+    v        v        v        v
+   +----+   +----+   +----+   +----+
+   | FF |-->| FF |-->| FF |-->| FF |----> Serial Out
+   +----+   +----+   +----+   +----+
+
+
+Suppose we load:
+
+                1011
+
+
+All bits enter together:
+
+                1 0 1 1
+
+
+Then clock pulses shift the data out serially.
+
+
+For example:
+
+                1 → 0 → 1 → 1
+
+depending on the chosen shift direction and output
+connection.
+
+
+------------------------------------------------------------
+PISO APPLICATIONS
+------------------------------------------------------------
+
+    • Parallel-to-serial conversion
+    • Serial communication
+    • Data transmission
+    • Reducing number of communication wires
+
+
+============================================================
+10.13 PIPO — PARALLEL IN PARALLEL OUT
+============================================================
+
+PIPO means:
+
+                Parallel Input
+                      ↓
+                Parallel Output
+
+
+All bits enter simultaneously.
+
+All bits leave simultaneously.
+
+
+ASCII:
+
+P3 ----> +----+ ----> Q3
+P2 ----> | FF | ----> Q2
+P1 ----> | FF | ----> Q1
+P0 ----> | FF | ----> Q0
+         +----+
+
+
+All flip-flops share the same clock.
+
+
+Example:
+
+Input:
+
+                1101
+
+
+After the clock:
+
+Output:
+
+                1101
+
+
+------------------------------------------------------------
+PIPO APPLICATIONS
+------------------------------------------------------------
+
+    • Temporary data storage
+    • CPU registers
+    • Data buffering
+    • Parallel data transfer
+
+
+============================================================
+10.14 SISO vs SIPO vs PISO vs PIPO
+============================================================
+
++------+--------------+---------------+
+| Type | Input        | Output        |
++------+--------------+---------------+
+| SISO | Serial       | Serial        |
+| SIPO | Serial       | Parallel      |
+| PISO | Parallel     | Serial        |
+| PIPO | Parallel     | Parallel      |
++------+--------------+---------------+
+
+
+MEMORY TRICK:
+
+                SISO
+                ↓ ↓
+                Serial → Serial
+
+                SIPO
+                ↓ ↓
+                Serial → Parallel
+
+                PISO
+                ↓ ↓
+                Parallel → Serial
+
+                PIPO
+                ↓ ↓
+                Parallel → Parallel
+
+
+============================================================
+10.15 SERIAL VS PARALLEL DATA
+============================================================
+
+SERIAL:
+
+Bits are transmitted one after another.
+
+Example:
+
+                1 → 0 → 1 → 1
+
+
+PARALLEL:
+
+Multiple bits are transmitted simultaneously.
+
+Example:
+
+                1
+                0
+                1
+                1
+
+at the same time.
+
+
+ASCII:
+
+SERIAL:
+
+        Bit1 → Bit2 → Bit3 → Bit4
+
+
+PARALLEL:
+
+        Bit1 ──>
+        Bit2 ──>
+        Bit3 ──>
+        Bit4 ──>
+
+
+------------------------------------------------------------
+ANALOGY
+------------------------------------------------------------
+
+Serial:
+
+    People enter through ONE door,
+    one after another.
+
+
+Parallel:
+
+    People enter through FOUR doors
+    simultaneously.
+
+
+============================================================
+10.16 SHIFT LEFT AND SHIFT RIGHT
+============================================================
+
+A register can shift in different directions.
+
+
+RIGHT SHIFT:
+
+                Q3 → Q2 → Q1 → Q0
+
+
+LEFT SHIFT:
+
+                Q0 → Q1 → Q2 → Q3
+
+
+------------------------------------------------------------
+RIGHT SHIFT EXAMPLE
+------------------------------------------------------------
+
+Initial:
+
+                1011
+
+
+Insert 0 from left:
+
+                0101
+
+
+Again insert 0:
+
+                0010
+
+
+------------------------------------------------------------
+LEFT SHIFT EXAMPLE
+------------------------------------------------------------
+
+Initial:
+
+                1011
+
+
+Insert 0 from right:
+
+                0110
+
+
+Again:
+
+                1100
+
+
+============================================================
+10.17 SHIFT REGISTER AS A DELAY ELEMENT
+============================================================
+
+Suppose a bit enters a shift register.
+
+It takes one clock pulse to move through each stage.
+
+
+For a 4-stage shift register:
+
+                Input
+                  |
+                  v
+                FF1 → FF2 → FF3 → FF4
+                                    |
+                                  Output
+
+
+A bit reaching FF4 has been delayed by several
+clock periods relative to the input.
+
+
+If:
+
+                Clock frequency = 1 MHz
+
+Then:
+
+                Clock period = 1 μs
+
+
+For a four-stage shift path, the exact delay depends
+on where input/output are defined and the flip-flop
+timing, but conceptually each stage provides about
+one clock-period of storage delay.
+
+
+Therefore shift registers can be used as:
+
+                DIGITAL DELAY LINES
+
+
+============================================================
+10.18 UNIVERSAL SHIFT REGISTER
+============================================================
+
+A UNIVERSAL SHIFT REGISTER is a highly flexible
+shift register that can perform multiple operations.
+
+
+Typically it can:
+
+    • Hold data
+    • Shift left
+    • Shift right
+    • Parallel load
+
+
+Therefore it is called:
+
+                UNIVERSAL
+
+
+------------------------------------------------------------
+BASIC CONCEPT
+------------------------------------------------------------
+
+A universal shift register generally uses:
+
+                Flip-flops
+                   +
+                 MUXes
+                   +
+              Control inputs
+
+
+ASCII:
+
+                  Control
+                    |
+                    v
+             +-------------+
+Input ------>|             |
+Feedback --->|    MUX      |----> Flip-Flop
+Parallel --->|             |
+             +-------------+
+                    |
+                   CLK
+
+
+A multiplexer selects which data should enter
+each flip-flop.
+
+
+============================================================
+10.19 UNIVERSAL SHIFT REGISTER OPERATIONS
+============================================================
+
+A typical universal shift register has control
+inputs such as:
+
+                S1, S0
+
+
+Example control table:
+
++----+----+------------------+
+| S1 | S0 | Operation        |
++----+----+------------------+
+| 0  | 0  | Hold             |
+| 0  | 1  | Shift Right      |
+| 1  | 0  | Shift Left       |
+| 1  | 1  | Parallel Load    |
++----+----+------------------+
+
+
+NOTE:
+
+The exact control coding may vary depending on
+the particular IC/design.
+
+
+The important concept is:
+
+                Control lines
+                     ↓
+                 Select operation
+
+
+============================================================
+10.20 UNIVERSAL SHIFT REGISTER — ASCII MODEL
+============================================================
+
+                    S1 S0
+                     |
+                     v
+        +--------------------------------+
+        |                                |
+        |      CONTROL / MUX LOGIC       |
+        |                                |
+        +--------------------------------+
+             |      |      |      |
+             v      v      v      v
+           +----+ +----+ +----+ +----+
+           | FF | | FF | | FF | | FF |
+           +----+ +----+ +----+ +----+
+             |      |      |      |
+             +------+------|------+
+                    SHIFT PATH
+
+Possible operations:
+
+        HOLD
+          |
+          +---- SHIFT RIGHT
+          |
+          +---- SHIFT LEFT
+          |
+          +---- PARALLEL LOAD
+
+
+============================================================
+10.21 PARALLEL LOAD
+============================================================
+
+Parallel loading means all bits are loaded
+simultaneously.
+
+
+Suppose:
+
+                P3 P2 P1 P0
+                 1  0  1  1
+
+
+When parallel-load control is enabled:
+
+                Q3 Q2 Q1 Q0
+                 ↓  ↓  ↓  ↓
+                 1  0  1  1
+
+
+The complete word is loaded in one clock event
+(subject to the device's timing).
+
+
+This is much faster than loading the same word
+serially when many bits are involved.
+
+
+============================================================
+10.22 SERIAL-TO-PARALLEL CONVERSION
+============================================================
+
+Suppose a sensor sends:
+
+                1011
+
+one bit at a time.
+
+The system receives:
+
+                1 → 0 → 1 → 1
+
+
+A SIPO register collects them.
+
+After enough clock pulses:
+
+                Q3 Q2 Q1 Q0
+                 1  0  1  1
+
+
+Thus:
+
+                SERIAL
+                   ↓
+                 SIPO
+                   ↓
+                PARALLEL
+
+
+This is widely used in communication interfaces.
+
+
+============================================================
+10.23 PARALLEL-TO-SERIAL CONVERSION
+============================================================
+
+Suppose a computer has:
+
+                1011
+
+available in parallel.
+
+A PISO register can load:
+
+                1 0 1 1
+
+simultaneously and then shift the bits out:
+
+                1 → 0 → 1 → 1
+
+
+Therefore:
+
+                PARALLEL
+                   ↓
+                 PISO
+                   ↓
+                 SERIAL
+
+
+============================================================
+10.24 REGISTER TRANSFER
+============================================================
+
+Registers are often used to transfer data between
+different parts of a digital system.
+
+
+Suppose:
+
+                Register A = 1010
+
+
+We want to transfer it to Register B.
+
+
+ASCII:
+
+        +-----------+             +-----------+
+        | REGISTER A| ----------> | REGISTER B|
+        |   1010    |             |    ????   |
+        +-----------+             +-----------+
+                 \                   /
+                  \_____ CLOCK _____/
+
+
+After the transfer:
+
+                Register B = 1010
+
+
+In processor design, register-transfer operations
+are fundamental.
+
+
+============================================================
+10.25 REGISTER TRANSFER LANGUAGE — BASIC IDEA
+============================================================
+
+A simple notation is:
+
+                B ← A
+
+
+This means:
+
+                "Copy the contents of register A
+                 into register B."
+
+
+Example:
+
+                A = 1011
+
+                B ← A
+
+After the operation:
+
+                B = 1011
+
+
+The original A remains:
+
+                A = 1011
+
+
+So:
+
+                B ← A
+
+means COPY, not destroy.
+
+
+============================================================
+10.26 REGISTER AND CPU
+============================================================
+
+Registers are extremely important inside a CPU.
+
+
+A simplified CPU:
+
+                +-----------------------+
+                |          CPU          |
+                |                       |
+                |  +------+  +-------+ |
+                |  | ALU  |  |Control| |
+                |  +------+  +-------+ |
+                |      ^        ^       |
+                |      |        |       |
+                |  +----------------+  |
+                |  |   REGISTERS    |  |
+                |  +----------------+  |
+                +-----------------------+
+
+
+Registers may hold:
+
+    • Operands
+    • Instructions
+    • Addresses
+    • Intermediate results
+    • Status information
+
+
+Examples from computer architecture include:
+
+    • Accumulator
+    • Program Counter
+    • Instruction Register
+    • Stack Pointer
+    • General-purpose registers
+
+
+These are beyond the basic digital-logic level,
+but the important idea is:
+
+                REGISTERS = FAST INTERNAL STORAGE
+
+
+============================================================
+10.27 REGISTER vs COUNTER
+============================================================
+
+Do not confuse a register with a counter.
+
+
+REGISTER:
+
+    Stores/transfers data.
+
+COUNTER:
+
+    Generates a sequence of states,
+    usually according to clock pulses.
+
+
+Example register:
+
+                1011
+                ↓
+                remains stored
+
+
+Example counter:
+
+                0000
+                ↓
+                0001
+                ↓
+                0010
+                ↓
+                0011
+                ↓
+                ...
+
+
+A counter can be built using flip-flops,
+but its purpose is different.
+
+
+============================================================
+10.28 REGISTER vs SHIFT REGISTER
+============================================================
+
+REGISTER:
+
+    Mainly stores binary data.
+
+
+SHIFT REGISTER:
+
+    Stores binary data AND allows controlled
+    movement of bits.
+
+
+Therefore:
+
+                Shift register
+                     =
+                Register + shifting capability
+
+
+============================================================
+10.29 IMPORTANT NUMERICAL EXAMPLE
+============================================================
+
+Question:
+
+An 8-bit SISO shift register initially contains:
+
+                00000000
+
+Serial input sequence:
+
+                1, 0, 1, 1
+
+What happens after four clock pulses?
+
+
+Assume right shifting with the incoming bit entering
+the left side.
+
+
+Initial:
+
+                00000000
+
+
+Clock 1, input 1:
+
+                10000000
+
+
+Clock 2, input 0:
+
+                01000000
+
+
+Clock 3, input 1:
+
+                10100000
+
+
+Clock 4, input 1:
+
+                11010000
+
+
+Therefore:
+
+                11010000
+
+
+NOTE:
+
+The exact bit ordering depends on the defined
+shift direction and which end is called Q7/Q0.
+
+
+============================================================
+10.30 ANOTHER EXAMPLE — 4-BIT SIPO
+============================================================
+
+Initial register:
+
+                0000
+
+
+Serial input sequence:
+
+                1 → 0 → 1 → 1
+
+
+Assume bits enter from the left and shift right.
+
+
+Clock 1:
+
+                1000
+
+
+Clock 2:
+
+                0100
+
+
+Clock 3:
+
+                1010
+
+
+Clock 4:
+
+                1101
+
+
+Therefore final register:
+
+                1101
+
+
+This example shows why you must always identify
+the shift direction before solving a problem.
+
+
+============================================================
+10.31 COMMON APPLICATIONS OF REGISTERS
+============================================================
+
+Registers are used in:
+
+    1. Data storage
+    2. Data transfer
+    3. Serial-to-parallel conversion
+    4. Parallel-to-serial conversion
+    5. Digital delay circuits
+    6. Communication systems
+    7. CPU data storage
+    8. Temporary buffering
+    9. Data synchronization
+   10. Digital control systems
+
+
+============================================================
+10.32 PRACTICAL EXAMPLE — LED CONTROL
+============================================================
+
+Suppose we have 8 LEDs.
+
+We want to control them using only a small number
+of connections.
+
+
+A shift register can receive serial data:
+
+                DATA
+                  |
+                  v
+             +----------+
+             | 8-bit    |
+             | Shift    |
+             | Register |
+             +----------+
+              | | | | | | | |
+              v v v v v v v v
+             LED LED LED LED ...
+
+
+A microcontroller sends:
+
+                10110010
+
+serially.
+
+The shift register converts it into eight
+parallel outputs.
+
+Therefore:
+
+                Serial data
+                     ↓
+                  SIPO
+                     ↓
+                8 LED outputs
+
+
+This is a very common practical application.
+
+
+============================================================
+10.33 PRACTICAL EXAMPLE — SERIAL COMMUNICATION
+============================================================
+
+Suppose a communication channel has only ONE
+data line.
+
+Sending 8 bits in parallel would require many
+data lines.
+
+Instead:
+
+                8-bit data
+                    |
+                    v
+                  PISO
+                    |
+                    v
+             ONE SERIAL LINE
+                    |
+                    v
+                  SIPO
+                    |
+                    v
+                8-bit data
+
+
+Thus:
+
+    Transmitter:
+        Parallel → Serial
+
+    Receiver:
+        Serial → Parallel
+
+
+PISO + communication line + SIPO
+
+is a very important practical concept.
+
+
+============================================================
+10.34 SHIFT REGISTER AS A DATA PIPELINE
+============================================================
+
+Consider:
+
+        Input → FF1 → FF2 → FF3 → FF4 → Output
+
+
+Each flip-flop represents one stage.
+
+At each clock:
+
+                Data moves forward.
+
+
+Therefore the register can act as a
+simple digital pipeline.
+
+
+Example:
+
+Clock 1:
+
+    Input bit → FF1
+
+
+Clock 2:
+
+    FF1 → FF2
+
+
+Clock 3:
+
+    FF2 → FF3
+
+
+Clock 4:
+
+    FF3 → FF4
+
+
+This idea becomes important later in
+computer architecture and digital system design.
+
+
+============================================================
+10.35 IMPORTANT EXAM QUESTIONS
+============================================================
+
+Q1.
+What is a register?
+
+Q2.
+How many flip-flops are required for an
+8-bit register?
+
+Q3.
+What is a shift register?
+
+Q4.
+Differentiate SISO, SIPO, PISO, and PIPO.
+
+Q5.
+What is serial-to-parallel conversion?
+
+Q6.
+What is parallel-to-serial conversion?
+
+Q7.
+What is a universal shift register?
+
+Q8.
+Why is a clock required in a shift register?
+
+Q9.
+What is the difference between a register
+and a memory?
+
+Q10.
+What is the difference between a register
+and a counter?
+
+Q11.
+Explain the application of a shift register
+in serial communication.
+
+Q12.
+How can a shift register act as a delay element?
+
+
+============================================================
+10.36 PRACTICE QUESTIONS
+============================================================
+
+Try these yourself first.
+
+
+------------------------------------------------------------
+Q1.
+How many bits can a 16-bit register store?
+
+A) 8
+B) 16
+C) 32
+D) 64
+
+
+------------------------------------------------------------
+Q2.
+Which register converts serial data into
+parallel data?
+
+A) SISO
+B) SIPO
+C) PISO
+D) PIPO
+
+
+------------------------------------------------------------
+Q3.
+Which register converts parallel data into
+serial data?
+
+A) SISO
+B) SIPO
+C) PISO
+D) PIPO
+
+
+------------------------------------------------------------
+Q4.
+What does SISO stand for?
+
+
+------------------------------------------------------------
+Q5.
+What does PIPO stand for?
+
+
+------------------------------------------------------------
+Q6.
+A register has 8 flip-flops. What is its capacity?
+
+
+------------------------------------------------------------
+Q7.
+What happens to the stored bits in a shift
+register when a clock pulse is applied?
+
+
+------------------------------------------------------------
+Q8.
+Which type of register is most suitable for
+parallel-to-serial conversion?
+
+
+------------------------------------------------------------
+Q9.
+Which type of register is most suitable for
+serial-to-parallel conversion?
+
+
+------------------------------------------------------------
+Q10.
+A 4-bit register contains:
+
+                1011
+
+If it performs a right shift and a 0 enters
+from the left, what is the new value?
+
+
+------------------------------------------------------------
+Q11.
+What is the main purpose of a universal
+shift register?
+
+
+------------------------------------------------------------
+Q12.
+Why are registers generally faster than
+large memory systems?
+
+
+============================================================
+10.37 ANSWERS
+============================================================
+
+Q1  → B) 16
+
+Q2  → B) SIPO
+
+Q3  → C) PISO
+
+Q4  → Serial In, Serial Out
+
+Q5  → Parallel In, Parallel Out
+
+Q6  → 8 bits
+
+Q7  → Each bit moves to the adjacent stage
+      according to the shift direction.
+
+Q8  → PISO
+
+Q9  → SIPO
+
+Q10 → 0101
+
+Q11 → To perform multiple operations such as
+      hold, shift left, shift right, and
+      parallel loading.
+
+Q12 → Registers are small, close to processing
+      logic, and designed for very fast access.
+
+
+============================================================
+10.38 QUICK MEMORY TECHNIQUE
+============================================================
+
+Remember the four types using:
+
+                INPUT → OUTPUT
+
+
+        SISO
+        S    S
+        ↓    ↓
+        Serial → Serial
+
+
+        SIPO
+        S    P
+        ↓    ↓
+        Serial → Parallel
+
+
+        PISO
+        P    S
+        ↓    ↓
+        Parallel → Serial
+
+
+        PIPO
+        P    P
+        ↓    ↓
+        Parallel → Parallel
+
+
+Easy phrase:
+
+    "First two letters tell the DATA FLOW."
+
+
+============================================================
+10.39 CHAPTER 10 — EXAM REVISION SHEET
+============================================================
+
+REGISTER:
+
+    Group of flip-flops used to store/transfer data.
+
+
+CAPACITY:
+
+    Number of flip-flops = Number of stored bits.
+
+
+SHIFT REGISTER:
+
+    Register capable of moving stored bits.
+
+
+SISO:
+
+    Serial In → Serial Out
+
+
+SIPO:
+
+    Serial In → Parallel Out
+
+
+PISO:
+
+    Parallel In → Serial Out
+
+
+PIPO:
+
+    Parallel In → Parallel Out
+
+
+UNIVERSAL SHIFT REGISTER:
+
+    Hold
+    Shift Left
+    Shift Right
+    Parallel Load
+
+
+APPLICATIONS:
+
+    Data storage
+    Data transfer
+    Serial/parallel conversion
+    Delay
+    Communication
+    CPU registers
+
+
+============================================================
+10.40 CHAPTER 10 — MASTER CHECK
+============================================================
+
+Before moving to Chapter 11, you should be able to:
+
+[ ] Define a register.
+[ ] Explain why one flip-flop stores one bit.
+[ ] Calculate register capacity.
+[ ] Explain register vs memory.
+[ ] Explain shift registers.
+[ ] Explain left and right shifting.
+[ ] Explain SISO.
+[ ] Explain SIPO.
+[ ] Explain PISO.
+[ ] Explain PIPO.
+[ ] Perform basic shift calculations.
+[ ] Explain serial-to-parallel conversion.
+[ ] Explain parallel-to-serial conversion.
+[ ] Explain universal shift registers.
+[ ] Explain register applications.
+[ ] Explain how registers are used inside CPUs.
+
+
+============================================================
+NEXT TOPIC
+============================================================
+
+                 CHAPTER 11
+                     ↓
+                   COUNTERS
+                     |
+        +------------+-------------+
+        |                          |
+  Asynchronous                  Synchronous
+    Counters                      Counters
+        |                          |
+   Ripple Counter            Binary Counter
+        |                          |
+      MOD-N                    Up/Down
+        |                          |
+        +------------+-------------+
+                     |
+              Special Counters
+                     |
+        +------------+-------------+
+        |            |             |
+       Ring       Johnson       Decade/BCD
+       Counter     Counter        Counter
+                     |
+                     v
+              Counter Design
+
+
+KEY IDEA FOR CHAPTER 11:
+
+        REGISTER
+           ↓
+      stores/moves data
+
+        COUNTER
+           ↓
+      generates a sequence
+      of states using clock pulses
+
+============================================================
