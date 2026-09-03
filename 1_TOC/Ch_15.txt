@@ -1,0 +1,2106 @@
+====================================================================
+              THEORY OF COMPUTATION — CHAPTER 15
+                  TURING MACHINE FUNDAMENTALS
+====================================================================
+
+PHASE 11 — TURING MACHINES
+
+CHAPTER 15 TOPICS
+-----------------
+15.1 Introduction to Turing Machines
+15.2 What is a Turing Machine?
+15.3 Why Turing Machines are Important
+15.4 Turing's Computational Model
+15.5 Components of a Turing Machine
+15.6 Infinite Tape
+15.7 Tape Alphabet
+15.8 Input Alphabet
+15.9 Read/Write Head
+15.10 States
+15.11 Transition Function
+15.12 Start State
+15.13 Accept State
+15.14 Reject State
+15.15 Formal Definition — Seven-Tuple
+15.16 Instantaneous Description
+15.17 Configuration
+15.18 One Transition
+15.19 Computation Sequence
+15.20 Halting
+15.21 Acceptance
+15.22 Rejection
+15.23 Infinite Computation
+15.24 Complete Example
+15.25 Important Differences
+15.26 B.Tech Exam Perspective
+15.27 GATE Perspective
+15.28 Practice Questions
+15.29 Active Recall
+15.30 Chapter Summary
+
+====================================================================
+1. INTRODUCTION TO TURING MACHINES
+====================================================================
+
+So far, we have studied several computational models:
+
+    Regular Languages
+          |
+          v
+        DFA
+          |
+          v
+        NFA
+          |
+          v
+        CFG / PDA
+          |
+          v
+     Turing Machine
+
+The important idea is:
+
+    As we move upward, the computational power increases.
+
+A DFA has very limited memory.
+
+A PDA has a stack, so it has more memory.
+
+A Turing Machine (TM) has a much more powerful memory mechanism:
+an unbounded tape on which it can READ and WRITE.
+
+Therefore, Turing Machines form one of the most important models
+of computation in Theory of Computation.
+
+
+====================================================================
+2. WHAT IS A TURING MACHINE?
+====================================================================
+
+SIMPLE DEFINITION
+-----------------
+
+A Turing Machine is an abstract mathematical machine that can:
+
+    1. Read a symbol from a tape.
+    2. Write a symbol onto the tape.
+    3. Move left or right.
+    4. Change its state.
+    5. Continue this process until it accepts, rejects, or runs forever.
+
+In simple words:
+
+    Turing Machine =
+
+    READ
+      +
+    WRITE
+      +
+    MOVE LEFT/RIGHT
+      +
+    CHANGE STATE
+
+
+FORMAL IDEA
+-----------
+
+A Turing Machine consists of:
+
+    - an infinite tape
+    - a tape head
+    - a finite set of states
+    - an input alphabet
+    - a tape alphabet
+    - a transition function
+    - a start state
+    - an accept state
+    - a reject state
+
+The machine repeatedly performs:
+
+    READ → WRITE → MOVE → CHANGE STATE
+
+
+====================================================================
+3. WHY DO WE NEED TURING MACHINES?
+====================================================================
+
+DFA has no general-purpose memory.
+
+For example, consider:
+
+        L = { 0^n 1^n | n >= 0 }
+
+Examples:
+
+        ε
+        01
+        0011
+        000111
+        00001111
+        ...
+
+A DFA cannot remember an arbitrary number of 0s and compare that
+number with the number of 1s.
+
+A PDA can solve this type of problem using a stack.
+
+But Turing Machines can solve much more complicated problems because
+they can:
+
+        READ
+        WRITE
+        MOVE LEFT
+        MOVE RIGHT
+
+over an unbounded tape.
+
+Therefore, Turing Machines are used as a fundamental mathematical
+model for general computation.
+
+
+====================================================================
+4. REAL-WORLD ANALOGY
+====================================================================
+
+Imagine a person working with an infinitely long strip of paper.
+
+Each square contains one symbol.
+
+The person has a pencil and can:
+
+    1. Look at the current square.
+    2. Erase or replace its symbol.
+    3. Move one square left or right.
+    4. Remember a small amount of information in their current state.
+    5. Repeat the process.
+
+That is essentially the basic idea of a Turing Machine.
+
+ASCII representation:
+
+       Tape
+   +-----+-----+-----+-----+-----+-----+
+   |  0  |  0  |  1  |  1  |  B  |  B  | ...
+   +-----+-----+-----+-----+-----+-----+
+                 ^
+                 |
+             Read/Write
+                Head
+
+                         |
+                         v
+
+                   +-----------+
+                   |  Control  |
+                   |   State   |
+                   +-----------+
+
+The head can:
+
+        READ
+         |
+         v
+       WRITE
+         |
+         v
+     MOVE LEFT/RIGHT
+         |
+         v
+   CHANGE STATE
+
+
+====================================================================
+5. BASIC STRUCTURE OF A TURING MACHINE
+====================================================================
+
+A simplified Turing Machine looks like this:
+
+                     FINITE CONTROL
+                  +-------------------+
+                  |       q0          |
+                  |       q1          |
+                  |       q2          |
+                  |       ...         |
+                  +---------+---------+
+                            |
+                            v
+                         HEAD
+                          ↓
+    +-----+-----+-----+-----+-----+-----+-----+
+    |  B  |  0  |  0  |  1  |  1  |  B  | B |
+    +-----+-----+-----+-----+-----+-----+-----+
+                      ^
+                      |
+                  tape head
+
+The tape can be considered unbounded.
+
+The finite control contains the current state.
+
+The head reads and writes symbols on the tape.
+
+
+====================================================================
+6. COMPONENTS OF A TURING MACHINE
+====================================================================
+
+We now study every component carefully.
+
+
+--------------------------------------------------------------------
+6.1 INFINITE TAPE
+--------------------------------------------------------------------
+
+The tape is the memory of the Turing Machine.
+
+It is divided into cells.
+
+Example:
+
+    +-----+-----+-----+-----+-----+-----+-----+
+    |  B  |  0  |  1  |  0  |  1  |  B  |  B  |
+    +-----+-----+-----+-----+-----+-----+-----+
+       -2    -1     0     1     2     3     4
+
+Each cell stores exactly one tape symbol.
+
+The tape provides memory.
+
+Unlike a DFA, a TM can modify the contents of the tape.
+
+
+IMPORTANT:
+
+The tape is conceptually unbounded.
+
+This means that there is no fixed finite limit on the amount of
+tape that the machine may use during computation.
+
+
+--------------------------------------------------------------------
+6.2 TAPE ALPHABET
+--------------------------------------------------------------------
+
+The tape alphabet is the set of all symbols that may appear on
+the tape.
+
+It is usually represented by:
+
+        Γ
+
+Gamma (Γ) = tape alphabet.
+
+
+Example:
+
+        Γ = {0, 1, B}
+
+where:
+
+        0 = symbol 0
+        1 = symbol 1
+        B = blank symbol
+
+
+IMPORTANT:
+
+The tape alphabet must contain the input alphabet.
+
+Therefore:
+
+        Σ ⊆ Γ
+
+
+For example:
+
+        Σ = {0,1}
+
+        Γ = {0,1,X,B}
+
+Here X can be used as a marker during computation.
+
+
+--------------------------------------------------------------------
+6.3 INPUT ALPHABET
+--------------------------------------------------------------------
+
+The input alphabet is the set of symbols allowed in the original
+input.
+
+It is represented by:
+
+        Σ
+
+Example:
+
+        Σ = {0,1}
+
+Possible input strings:
+
+        0
+        1
+        01
+        101
+        0011
+
+
+The blank symbol is NOT normally part of the input alphabet.
+
+Therefore:
+
+        B ∉ Σ
+
+
+--------------------------------------------------------------------
+6.4 BLANK SYMBOL
+--------------------------------------------------------------------
+
+The tape is initially filled with blank symbols except for the
+input.
+
+The blank symbol is often represented by:
+
+        B
+        or
+        □
+
+Example:
+
+Input:
+
+        0011
+
+Initially the tape can look like:
+
+    +-----+-----+-----+-----+-----+-----+-----+
+    |  B  |  0  |  0  |  1  |  1  |  B  |  B  |
+    +-----+-----+-----+-----+-----+-----+-----+
+              ^
+              |
+             Head
+
+The exact starting position depends on the convention being used.
+
+
+--------------------------------------------------------------------
+6.5 READ/WRITE HEAD
+--------------------------------------------------------------------
+
+The head performs two important operations:
+
+        READ a symbol
+
+and
+
+        WRITE a symbol
+
+It can then move:
+
+        LEFT
+        or
+        RIGHT
+
+Example:
+
+    +-----+-----+-----+-----+-----+
+    |  0  |  0  |  1  |  1  |  B  |
+    +-----+-----+-----+-----+-----+
+                    ^
+                    |
+                   Head
+
+Suppose the transition says:
+
+        Read 1
+        Write X
+        Move Right
+
+Then:
+
+    +-----+-----+-----+-----+-----+
+    |  0  |  0  |  X  |  1  |  B  |
+    +-----+-----+-----+-----+-----+
+                          ^
+                          |
+                         Head
+
+
+--------------------------------------------------------------------
+6.6 STATES
+--------------------------------------------------------------------
+
+A state represents the current condition or situation of the
+machine.
+
+Example:
+
+        q0 = starting/searching state
+        q1 = processing state
+        q2 = accepting state
+        q3 = rejecting state
+
+The machine has a finite number of states.
+
+Example:
+
+        Q = {q0, q1, qaccept, qreject}
+
+
+--------------------------------------------------------------------
+6.7 START STATE
+--------------------------------------------------------------------
+
+The machine begins computation in a special state.
+
+It is called the start state.
+
+Usually:
+
+        q0
+
+Example:
+
+        Q = {q0,q1,qaccept,qreject}
+
+        Start state = q0
+
+
+--------------------------------------------------------------------
+6.8 ACCEPT STATE
+--------------------------------------------------------------------
+
+The accept state means:
+
+        "The input is accepted."
+
+Usually written:
+
+        qaccept
+
+or
+
+        qaccept / qa
+
+
+A TM may have one designated accept state.
+
+
+--------------------------------------------------------------------
+6.9 REJECT STATE
+--------------------------------------------------------------------
+
+The reject state means:
+
+        "The input is rejected."
+
+Usually written:
+
+        qreject
+
+or
+
+        qr
+
+
+A TM may have one designated reject state.
+
+Once the machine enters the accept or reject state, computation
+halts.
+
+
+====================================================================
+7. TRANSITION FUNCTION
+====================================================================
+
+This is one of the most important concepts.
+
+The transition function tells the Turing Machine:
+
+    "Given the current state and the symbol currently being read,
+     what should the machine do?"
+
+A TM transition generally specifies THREE actions:
+
+    1. What symbol to write.
+    2. Which direction to move.
+    3. Which state to enter.
+
+Therefore:
+
+        READ
+          ↓
+        WRITE
+          ↓
+        MOVE
+          ↓
+        CHANGE STATE
+
+
+For a deterministic Turing Machine:
+
+        δ : Q × Γ → Q × Γ × {L,R}
+
+This notation looks complicated.
+
+Let's decode it.
+
+        Q
+        =
+        set of states
+
+        Γ
+        =
+        tape alphabet
+
+        {L,R}
+        =
+        possible head movements
+
+
+The transition function takes:
+
+        current state + current tape symbol
+
+and produces:
+
+        next state + symbol to write + movement
+
+
+Example:
+
+        δ(q0, 0) = (q1, X, R)
+
+Read this as:
+
+    Current state = q0
+    Current tape symbol = 0
+
+    Write X
+    Move Right
+    Go to q1
+
+
+Another example:
+
+        δ(q1, 1) = (q2, 1, L)
+
+Meaning:
+
+    In q1, if the head reads 1:
+
+        write 1
+        move Left
+        enter q2
+
+
+====================================================================
+8. TURING MACHINE TRANSITION DIAGRAM
+====================================================================
+
+A transition can be written as:
+
+        q0 ----------------------> q1
+              0 / X , R
+
+Meaning:
+
+    Current state = q0
+    Read = 0
+    Write = X
+    Move = Right
+    Next state = q1
+
+
+General notation:
+
+        read / write , movement
+
+Example:
+
+        0 / X, R
+
+means:
+
+        Read 0
+        Write X
+        Move Right
+
+
+Another example:
+
+        1 / 1, L
+
+means:
+
+        Read 1
+        Write 1
+        Move Left
+
+
+====================================================================
+9. FORMAL DEFINITION OF A TURING MACHINE
+====================================================================
+
+A standard deterministic Turing Machine is defined using a
+SEVEN-TUPLE.
+
+        M = (Q, Σ, Γ, δ, q0, qaccept, qreject)
+
+Now understand each component.
+
+
+        Q
+        ↓
+        finite set of states
+
+
+        Σ
+        ↓
+        input alphabet
+
+
+        Γ
+        ↓
+        tape alphabet
+
+
+        δ
+        ↓
+        transition function
+
+
+        q0
+        ↓
+        start state
+
+
+        qaccept
+        ↓
+        accepting state
+
+
+        qreject
+        ↓
+        rejecting state
+
+
+Therefore:
+
+        M = (Q, Σ, Γ, δ, q0, qaccept, qreject)
+
+
+IMPORTANT:
+
+        Σ ⊆ Γ
+
+and normally:
+
+        B ∈ Γ
+        B ∉ Σ
+
+Also:
+
+        qaccept ∈ Q
+        qreject ∈ Q
+
+and usually:
+
+        qaccept ≠ qreject
+
+
+====================================================================
+10. WHY IS THE TM A SEVEN-TUPLE?
+====================================================================
+
+Compare with DFA.
+
+DFA:
+
+        (Q, Σ, δ, q0, F)
+
+TM:
+
+        (Q, Σ, Γ, δ, q0, qaccept, qreject)
+
+
+Why does TM need additional information?
+
+Because a TM needs to know:
+
+    1. What states exist?
+    2. What input symbols exist?
+    3. What symbols can be written on tape?
+    4. How does it transition?
+    5. Where does it start?
+    6. What means accept?
+    7. What means reject?
+
+
+====================================================================
+11. COMPLETE SIMPLE TURING MACHINE EXAMPLE
+====================================================================
+
+Let's construct a very simple TM.
+
+Problem:
+
+    Design a TM that accepts the single-character string:
+
+        "1"
+
+and rejects:
+
+        "0"
+
+and other inputs.
+
+For simplicity:
+
+        Q = {q0, qaccept, qreject}
+
+        Σ = {0,1}
+
+        Γ = {0,1,B}
+
+
+Transitions:
+
+        δ(q0,1) = (qaccept,1,R)
+
+        δ(q0,0) = (qreject,0,R)
+
+
+Diagram:
+
+                         1 / 1,R
+                 +--------------------+
+                 |                    |
+                 v                    |
+              +------+             +---------+
+        --->  |  q0  | ----------> | qaccept |
+              +------+              +---------+
+                 |
+                 |
+                 | 0 / 0,R
+                 v
+              +---------+
+              | qreject |
+              +---------+
+
+
+Now process input:
+
+        1
+
+
+Initial configuration:
+
+        State = q0
+        Head reads = 1
+
+
+Transition:
+
+        δ(q0,1) = (qaccept,1,R)
+
+
+Therefore:
+
+        Read 1
+        Write 1
+        Move Right
+        Enter qaccept
+
+
+The machine accepts.
+
+
+====================================================================
+12. CONFIGURATION
+====================================================================
+
+A configuration describes the current situation of a Turing Machine.
+
+It tells us:
+
+    1. Current tape contents
+    2. Current head position
+    3. Current state
+
+
+For example:
+
+    Tape:
+
+        0 0 1 1 B B B ...
+
+                ^
+                |
+               Head
+
+    Current state:
+
+        q1
+
+
+This entire situation is called a configuration.
+
+In mathematical descriptions, a common notation places the state
+at the head position.
+
+Example:
+
+        001q111B
+
+The exact notation can vary by textbook, so always follow your
+course convention.
+
+
+====================================================================
+13. INSTANTANEOUS DESCRIPTION (ID)
+====================================================================
+
+An Instantaneous Description describes the current configuration
+of a Turing Machine at a particular instant.
+
+It is commonly used to show the step-by-step computation.
+
+For example:
+
+        q0 0011
+
+may represent a configuration where:
+
+        Current state = q0
+        Tape contains = 0011
+        Head is at the beginning of the represented input
+
+
+After one transition:
+
+        q0 0011
+           |
+           v
+        Xq1 011
+           |
+           v
+        X0q1 11
+           |
+           v
+        ...
+
+The exact notation depends on the position of the state marker.
+
+
+====================================================================
+14. ONE TRANSITION
+====================================================================
+
+Suppose:
+
+        δ(q0,0) = (q1,X,R)
+
+
+Current configuration:
+
+        q0 0 1 1 B B ...
+
+Head is reading:
+
+        0
+
+Apply the transition:
+
+        Read 0
+        Write X
+        Move R
+        Go to q1
+
+
+New tape:
+
+        X 1 1 B B ...
+
+New state:
+
+        q1
+
+New head position:
+
+        over the next cell
+
+
+So:
+
+        BEFORE
+
+        +-----+-----+-----+-----+
+        |  0  |  1  |  1  |  B  |
+        +-----+-----+-----+-----+
+          ^
+          |
+         Head
+         q0
+
+
+        AFTER
+
+        +-----+-----+-----+-----+
+        |  X  |  1  |  1  |  B  |
+        +-----+-----+-----+-----+
+                ^
+                |
+               Head
+               q1
+
+
+This is one TM transition.
+
+
+====================================================================
+15. COMPUTATION SEQUENCE
+====================================================================
+
+A Turing Machine performs a sequence of transitions.
+
+Example:
+
+        Configuration 0
+              |
+              v
+        Configuration 1
+              |
+              v
+        Configuration 2
+              |
+              v
+        Configuration 3
+              |
+              v
+        ACCEPT
+
+
+This complete sequence is called a computation.
+
+Symbolically:
+
+        C0 ⊢ C1 ⊢ C2 ⊢ C3 ⊢ ...
+
+where:
+
+        ⊢
+
+means:
+
+        "yields in one computational step."
+
+
+For example:
+
+        C0 ⊢ C1
+
+means C1 is obtained from C0 after one transition.
+
+
+====================================================================
+16. HALTING
+====================================================================
+
+A Turing Machine HALTS when it stops performing further transitions.
+
+There are two normal halting outcomes:
+
+        ACCEPT
+        or
+        REJECT
+
+
+Diagram:
+
+                    Computation
+                         |
+               +---------+---------+
+               |                   |
+               v                   v
+            ACCEPT               REJECT
+               |                   |
+               +--------+----------+
+                        |
+                      HALT
+
+
+A machine may also fail to halt.
+
+That means it continues forever.
+
+
+====================================================================
+17. ACCEPTANCE
+====================================================================
+
+A TM accepts an input if its computation eventually enters:
+
+        qaccept
+
+Example:
+
+        Input = 1
+
+        q0
+         |
+         | read 1
+         v
+      qaccept
+
+Therefore:
+
+        Input is ACCEPTED.
+
+
+The language recognized/accepted by a TM consists of all strings
+that the TM accepts.
+
+
+====================================================================
+18. REJECTION
+====================================================================
+
+A TM rejects an input if its computation eventually enters:
+
+        qreject
+
+Example:
+
+        Input = 0
+
+        q0
+         |
+         | read 0
+         v
+      qreject
+
+Therefore:
+
+        Input is REJECTED.
+
+
+====================================================================
+19. INFINITE COMPUTATION
+====================================================================
+
+This is a very important difference between a TM and a simple
+accept/reject machine.
+
+A TM may continue forever.
+
+Example:
+
+        q0
+         |
+         v
+        q1
+         |
+         v
+        q2
+         |
+         v
+        q1
+         |
+         v
+        q2
+         |
+         v
+        q1
+         |
+        ...
+
+The machine never reaches:
+
+        qaccept
+
+or
+
+        qreject
+
+
+Therefore:
+
+        It does NOT halt.
+
+
+This idea becomes extremely important later when we study:
+
+        Recognizers
+        Deciders
+        Decidability
+        Undecidability
+        Halting Problem
+
+
+====================================================================
+20. ACCEPT VS REJECT VS LOOP
+====================================================================
+
+There are three possible behaviors:
+
+        INPUT
+          |
+          v
+      +---+---+
+      |  TM   |
+      +---+---+
+          |
+    +-----+-----+---------+
+    |           |         |
+    v           v         v
+ ACCEPT      REJECT      LOOP
+    |           |         |
+   halt        halt     forever
+
+
+Therefore:
+
+        ACCEPT  = halt and accept
+
+        REJECT  = halt and reject
+
+        LOOP    = never halt
+
+
+This distinction is extremely important for future chapters.
+
+
+====================================================================
+21. DETAILED WORKING EXAMPLE
+====================================================================
+
+Let's create a simple TM that checks whether a one-symbol input is 1.
+
+Machine:
+
+        M = (Q,Σ,Γ,δ,q0,qaccept,qreject)
+
+where:
+
+        Q = {q0,qaccept,qreject}
+
+        Σ = {0,1}
+
+        Γ = {0,1,B}
+
+
+Transitions:
+
+        δ(q0,1) = (qaccept,1,R)
+
+        δ(q0,0) = (qreject,0,R)
+
+
+Input:
+
+        1
+
+
+STEP 0
+------
+
+Tape:
+
+    +-----+-----+-----+-----+
+    |  1  |  B  |  B  |  B  |
+    +-----+-----+-----+-----+
+      ^
+      |
+     Head
+     q0
+
+
+Current state:
+
+        q0
+
+Current symbol:
+
+        1
+
+
+STEP 1
+------
+
+Use:
+
+        δ(q0,1) = (qaccept,1,R)
+
+
+Actions:
+
+        Write 1
+        Move Right
+        Change q0 → qaccept
+
+
+Tape:
+
+    +-----+-----+-----+-----+
+    |  1  |  B  |  B  |  B  |
+    +-----+-----+-----+-----+
+            ^
+            |
+           Head
+        qaccept
+
+
+Since the machine entered qaccept:
+
+        ACCEPT
+
+
+====================================================================
+22. ANOTHER EXAMPLE — MARKING A SYMBOL
+====================================================================
+
+Suppose:
+
+        δ(q0,0) = (q1,X,R)
+
+
+Input:
+
+        001
+
+
+Initial:
+
+    +-----+-----+-----+-----+
+    |  0  |  0  |  1  |  B  |
+    +-----+-----+-----+-----+
+      ^
+      |
+     q0
+
+
+Read:
+
+        0
+
+
+Write:
+
+        X
+
+
+Move:
+
+        R
+
+
+State:
+
+        q1
+
+
+Result:
+
+    +-----+-----+-----+-----+
+    |  X  |  0  |  1  |  B  |
+    +-----+-----+-----+-----+
+            ^
+            |
+           q1
+
+
+This simple marking technique will become extremely important when
+we design Turing Machines in Chapter 16.
+
+For example, we may replace:
+
+        0 → X
+
+to remember:
+
+        "I have already processed this 0."
+
+
+====================================================================
+23. TURING MACHINE VS DFA
+====================================================================
+
+This is an extremely important B.Tech and GATE comparison.
+
+
++----------------------+----------------------+----------------------+
+| Feature              | DFA                  | Turing Machine       |
++----------------------+----------------------+----------------------+
+| Memory               | Finite states        | Unbounded tape       |
+| Read input           | Yes                  | Yes                  |
+| Write symbols        | No                   | Yes                  |
+| Move left            | No                   | Yes                  |
+| Move right           | Input progression   | Yes                  |
+| Tape modification    | No                   | Yes                  |
+| General computation  | Limited              | Very powerful        |
+| Halting forever      | No looping behavior  | Possible              |
+| Model                | Finite automaton     | General computation  |
++----------------------+----------------------+----------------------+
+
+
+Conceptually:
+
+        DFA
+
+        Input ---> ---> ---> --->
+
+        Usually moves through input in one direction.
+
+
+        TM
+
+        <--- <--- <--- 
+        +---+---+---+---+---+
+        | 0 | X | 1 | B | B |
+        +---+---+---+---+---+
+              ---> ---> --->
+
+        Can read, write and move in both directions.
+
+
+====================================================================
+24. TURING MACHINE VS PDA
+====================================================================
+
++----------------------+----------------------+----------------------+
+| Feature              | PDA                  | Turing Machine       |
++----------------------+----------------------+----------------------+
+| Main memory          | Stack                | Tape                 |
+| Read input           | Yes                  | Yes                  |
+| Write input memory   | Limited stack       | Yes                  |
+| Move left/right      | No general tape      | Yes                  |
+| Memory access        | Top of stack         | Tape cells           |
+| Computational power  | Less                 | More                 |
++----------------------+----------------------+----------------------+
+
+
+The key idea:
+
+        PDA → Stack
+
+        TM  → Tape
+
+
+====================================================================
+25. TURING MACHINE AND GENERAL COMPUTATION
+====================================================================
+
+One of the most important ideas in TOC is:
+
+    A Turing Machine is a mathematical model of general computation.
+
+It is not saying that every real computer literally looks like a
+Turing Machine.
+
+Instead, the TM gives us a precise mathematical framework for
+studying what can and cannot be computed.
+
+
+This leads to major questions:
+
+    Can every problem be solved by an algorithm?
+
+    Are there problems that no computer can solve?
+
+    How much time does a computation require?
+
+    How much memory does it require?
+
+These questions lead to:
+
+        COMPUTABILITY
+             |
+             v
+        DECIDABILITY
+             |
+             v
+       UNDECIDABILITY
+             |
+             v
+        COMPLEXITY
+
+
+====================================================================
+26. IMPORTANT TERMINOLOGY
+====================================================================
+
+TERM                  MEANING
+--------------------------------------------------------------------
+
+Turing Machine        Abstract model of computation.
+
+Tape                  Memory of a TM.
+
+Tape cell             One position on the tape.
+
+Tape alphabet Γ       Symbols allowed on tape.
+
+Input alphabet Σ      Symbols allowed in original input.
+
+Blank B               Symbol representing unused tape space.
+
+Head                  Reads/writes tape.
+
+State                 Current condition of the machine.
+
+Start state q0        State where computation begins.
+
+Accept state          State representing acceptance.
+
+Reject state          State representing rejection.
+
+Transition            One computational step.
+
+Transition function   Rule specifying the next action.
+
+Configuration         Complete current situation of the TM.
+
+Instantaneous         Representation of a configuration at one
+Description (ID)      point in computation.
+
+Halting               Stopping computation.
+
+Computation            Sequence of transitions.
+
+Loop                  Infinite computation without halting.
+
+
+====================================================================
+27. IMPORTANT MATHEMATICAL NOTATION
+====================================================================
+
+TM:
+
+        M = (Q, Σ, Γ, δ, q0, qaccept, qreject)
+
+
+Transition function:
+
+        δ : Q × Γ → Q × Γ × {L,R}
+
+
+Suppose:
+
+        δ(q0,0) = (q1,X,R)
+
+Meaning:
+
+        Current state = q0
+        Read = 0
+        Write = X
+        Move = Right
+        New state = q1
+
+
+Suppose:
+
+        δ(q1,X) = (q2,X,L)
+
+Meaning:
+
+        Current state = q1
+        Read = X
+        Write = X
+        Move = Left
+        New state = q2
+
+
+====================================================================
+28. IMPORTANT DIFFERENCE:
+    INPUT ALPHABET VS TAPE ALPHABET
+====================================================================
+
+INPUT ALPHABET:
+
+        Σ
+
+Contains symbols that can appear in the original input.
+
+Example:
+
+        Σ = {0,1}
+
+
+TAPE ALPHABET:
+
+        Γ
+
+Contains all symbols that may appear on the tape.
+
+Example:
+
+        Γ = {0,1,X,Y,B}
+
+
+Therefore:
+
+        Σ ⊆ Γ
+
+
+Why?
+
+Because the machine may introduce new symbols such as:
+
+        X
+        Y
+
+during computation.
+
+
+Example:
+
+Initial:
+
+        0011
+
+During computation:
+
+        XXYY
+
+Here X and Y were not necessarily input symbols, but they are
+valid tape symbols.
+
+
+====================================================================
+29. IMPORTANT DIFFERENCE:
+    READ VS WRITE
+====================================================================
+
+A TM does not merely read.
+
+It can also change the tape.
+
+Example:
+
+        Read:
+
+        0
+
+        Write:
+
+        X
+
+
+Before:
+
+        +---+---+---+
+        | 0 | 1 | 1 |
+        +---+---+---+
+          ^
+          |
+         Head
+
+
+After:
+
+        +---+---+---+
+        | X | 1 | 1 |
+        +---+---+---+
+          ^
+          |
+         Head
+
+
+This write capability makes TMs much more powerful than finite
+automata.
+
+
+====================================================================
+30. IMPORTANT DIFFERENCE:
+    HALT VS LOOP
+====================================================================
+
+HALT:
+
+        The machine eventually stops.
+
+Possible reasons:
+
+        ACCEPT
+        REJECT
+
+
+LOOP:
+
+        The machine never stops.
+
+Example:
+
+        q0 → q1 → q0 → q1 → q0 → ...
+
+This distinction is essential in computability theory.
+
+
+====================================================================
+31. B.TECH EXAM PERSPECTIVE
+====================================================================
+
+Very important questions from this chapter:
+
+1. Define a Turing Machine.
+
+2. Explain the components of a Turing Machine.
+
+3. Give the formal seven-tuple definition of a TM.
+
+4. Explain the transition function of a TM.
+
+5. What is a tape alphabet?
+
+6. Differentiate input alphabet and tape alphabet.
+
+7. Explain the working of a Turing Machine.
+
+8. What is an instantaneous description?
+
+9. What is a configuration?
+
+10. Explain acceptance and rejection.
+
+11. What is meant by halting?
+
+12. What is an infinite computation?
+
+13. Compare DFA, PDA and TM.
+
+14. Explain the role of the tape in a TM.
+
+15. Explain the transition:
+
+        δ(q0,0) = (q1,X,R)
+
+
+====================================================================
+32. GATE / COMPETITIVE EXAM PERSPECTIVE
+====================================================================
+
+For GATE, remember these facts carefully:
+
+    1. TM has an unbounded tape.
+
+    2. TM can read and write.
+
+    3. TM can move both left and right.
+
+    4. Tape alphabet can contain symbols not present in input
+       alphabet.
+
+    5. Σ ⊆ Γ.
+
+    6. The blank symbol belongs to Γ, not Σ.
+
+    7. A TM may fail to halt.
+
+    8. Acceptance means eventually entering qaccept.
+
+    9. Rejection means eventually entering qreject.
+
+   10. Infinite computation means the machine does not halt.
+
+   11. A transition specifies:
+       
+           write
+           move
+           next state
+
+   12. The standard deterministic TM transition function is:
+
+           δ : Q × Γ → Q × Γ × {L,R}
+
+
+====================================================================
+33. PRACTICE QUESTIONS — LEVEL 1
+====================================================================
+
+Q1. What is a Turing Machine?
+
+Q2. What is the purpose of the tape?
+
+Q3. What is a tape cell?
+
+Q4. What is a tape alphabet?
+
+Q5. What is the input alphabet?
+
+Q6. What is the blank symbol?
+
+Q7. What does the read/write head do?
+
+Q8. What is the start state?
+
+Q9. What is an accept state?
+
+Q10. What is a reject state?
+
+
+====================================================================
+34. PRACTICE QUESTIONS — LEVEL 2
+====================================================================
+
+Q11. Explain:
+
+        M = (Q,Σ,Γ,δ,q0,qaccept,qreject)
+
+
+Q12. Explain:
+
+        δ(q0,0) = (q1,X,R)
+
+
+Q13. Explain:
+
+        δ(q1,1) = (q2,1,L)
+
+
+Q14. If:
+
+        Σ = {0,1}
+
+        Γ = {0,1,X,Y,B}
+
+which symbols can appear during computation?
+
+Q15. Is it possible for a TM to write a symbol that was not in
+     the original input?
+
+Q16. Can a TM move both left and right?
+
+Q17. Can a TM modify the input?
+
+Q18. What happens when a TM enters qaccept?
+
+Q19. What happens when a TM enters qreject?
+
+Q20. What happens if the TM never reaches either state?
+
+
+====================================================================
+35. PRACTICE QUESTIONS — LEVEL 3
+====================================================================
+
+Q21. Consider:
+
+        δ(q0,0) = (q1,X,R)
+
+Input:
+
+        001
+
+Describe the tape and head position after one transition.
+
+Q22. Consider:
+
+        δ(q0,1) = (q1,Y,L)
+
+What are the three actions performed?
+
+Q23. Why must:
+
+        Σ ⊆ Γ
+
+be true?
+
+Q24. Explain why a TM is more powerful than a DFA.
+
+Q25. Explain the difference between a configuration and a
+     transition.
+
+Q26. What is an infinite computation?
+
+Q27. Can a TM accept an input without modifying the tape?
+     Explain.
+
+
+====================================================================
+36. GATE-STYLE CONCEPTUAL QUESTIONS
+====================================================================
+
+Q28. Which of the following is true?
+
+    A. TM can only read the tape.
+    B. TM can read and write the tape.
+    C. TM cannot move left.
+    D. Tape alphabet must equal input alphabet.
+
+Answer after attempting yourself.
+
+
+Q29. If:
+
+        Σ = {0,1}
+
+        Γ = {0,1,X,B}
+
+which statement is correct?
+
+    A. X cannot appear on the tape.
+    B. B must belong to Σ.
+    C. X may be written during computation.
+    D. Γ must contain only input symbols.
+
+
+Q30. A TM enters neither qaccept nor qreject and continues forever.
+What has happened?
+
+    A. Acceptance
+    B. Rejection
+    C. Halting
+    D. Infinite computation
+
+
+====================================================================
+37. ACTIVE RECALL
+====================================================================
+
+Do NOT look back at the notes.
+
+Try answering these from memory:
+
+Q1. What is a Turing Machine?
+
+Q2. Why do we need Turing Machines?
+
+Q3. What is the difference between Σ and Γ?
+
+Q4. What does the tape provide?
+
+Q5. What can the head do?
+
+Q6. What are the three things specified by a TM transition?
+
+Q7. Write the seven-tuple representation of a TM.
+
+Q8. What does:
+
+        δ(q0,0) = (q1,X,R)
+
+mean?
+
+Q9. What is a configuration?
+
+Q10. What is an instantaneous description?
+
+Q11. What does it mean for a TM to halt?
+
+Q12. What is infinite computation?
+
+Q13. What is the difference between accept and reject?
+
+Q14. Why is the ability to write important?
+
+Q15. What is the difference between DFA, PDA and TM?
+
+
+====================================================================
+38. CHAPTER 15 — MOST IMPORTANT POINTS
+====================================================================
+
+Remember this chain:
+
+        INPUT
+          |
+          v
+      +-------+
+      |  TM   |
+      +---+---+
+          |
+          v
+       READ
+          |
+          v
+       WRITE
+          |
+          v
+     MOVE L/R
+          |
+          v
+    CHANGE STATE
+          |
+          v
+       REPEAT
+          |
+      +---+---+
+      |       |
+      v       v
+   ACCEPT   REJECT
+      |       |
+      +---+---+
+          |
+         HALT
+
+
+The central idea:
+
+        Turing Machine
+              =
+        READ + WRITE + MOVE + STATE
+
+
+Formal representation:
+
+        M = (Q,Σ,Γ,δ,q0,qaccept,qreject)
+
+
+Transition:
+
+        δ : Q × Γ → Q × Γ × {L,R}
+
+
+Example:
+
+        δ(q0,0) = (q1,X,R)
+
+means:
+
+        q0
+         |
+         | read 0
+         | write X
+         | move R
+         v
+        q1
+
+
+Most important relationship:
+
+        DFA
+         |
+         | more memory
+         v
+        PDA
+         |
+         | more powerful memory
+         v
+        TM
+
+
+And:
+
+        DFA → finite-state memory
+
+        PDA → stack memory
+
+        TM  → unbounded tape memory
+
+
+====================================================================
+39. CHAPTER 15 FINAL SUMMARY
+====================================================================
+
+A Turing Machine is a mathematical model of computation.
+
+It contains:
+
+    • States
+    • Input alphabet
+    • Tape alphabet
+    • Infinite/unbounded tape
+    • Read/write head
+    • Transition function
+    • Start state
+    • Accept state
+    • Reject state
+
+The tape acts as memory.
+
+The head can:
+
+    • Read
+    • Write
+    • Move Left
+    • Move Right
+
+A transition tells the machine:
+
+    • What to write
+    • Where to move
+    • Which state to enter
+
+The formal TM representation is:
+
+        M = (Q,Σ,Γ,δ,q0,qaccept,qreject)
+
+The transition function is:
+
+        δ : Q × Γ → Q × Γ × {L,R}
+
+A TM may:
+
+        ACCEPT
+        REJECT
+        or
+        RUN FOREVER
+
+
+====================================================================
+                 CHAPTER 15 COMPLETED
+====================================================================
+
+Current position:
+
+    PHASE 11 — TURING MACHINES
+
+    CHAPTER 15 — TURING MACHINE FUNDAMENTALS
+
+    Status: COMPLETED
+
+
+NEXT CHAPTER:
+====================================================================
+
+CHAPTER 16 — DESIGNING TURING MACHINES
+
+Upcoming topic:
+
+    16.1 BASIC TM PROBLEMS
+
+First subtopic:
+
+    "Recognizing Strings Using a Turing Machine"
+
+In Chapter 16, we will move from:
+
+    "What is a Turing Machine?"
+
+to:
+
+    "How do we actually DESIGN a Turing Machine?"
+
+We will learn the design process step-by-step using:
+
+    States
+      ↓
+    Tape symbols
+      ↓
+    Marking symbols
+      ↓
+    Transitions
+      ↓
+    ASCII state diagrams
+      ↓
+    Transition tables
+      ↓
+    String-by-string execution
+
+Then we will gradually solve:
+
+    a^n b^n
+    a^n b^n c^n
+    Palindromes
+    Copying strings
+    Comparing strings
+    Counting
+    and other TM construction problems.
+
+Type:
+
+    NEXT
+
+to begin Chapter 16.
+====================================================================

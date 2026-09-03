@@ -1,0 +1,1708 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                 THEORY OF COMPUTATION — CHAPTER 10                 ║
+║              PUMPING LEMMA FOR REGULAR LANGUAGES                   ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 6 — PROPERTIES OF REGULAR LANGUAGES
+CHAPTER 10 — PUMPING LEMMA FOR REGULAR LANGUAGES
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+0. CHAPTER ROADMAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+10.1 Pumping Lemma
+     ├── Why do we need the Pumping Lemma?
+     ├── Intuition
+     ├── Formal statement
+     ├── Pumping length
+     ├── Decomposition of a string
+     ├── Pumping condition
+     └── Meaning of the lemma
+
+10.2 Proving Non-Regularity
+     ├── Choosing the pumping length
+     ├── Choosing a suitable string
+     ├── Dividing the string into xyz
+     ├── Applying the conditions
+     ├── Choosing a pumping value
+     └── Obtaining a contradiction
+
+10.3 Important Examples
+     ├── L = {0ⁿ1ⁿ | n ≥ 0}
+     ├── Equal numbers of 0s and 1s
+     ├── Palindromes
+     └── Other non-regular languages
+
+10.4 Limitations
+     ├── What Pumping Lemma can prove
+     ├── What it cannot prove
+     └── Common mistakes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER INTRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In earlier chapters, we learned:
+
+    Regular Language
+          │
+          ├── DFA
+          ├── NFA
+          ├── ε-NFA
+          └── Regular Expression
+
+Now we ask an important question:
+
+    "How can we prove that a language is NOT regular?"
+
+For example:
+
+    L = { 0ⁿ1ⁿ | n ≥ 0 }
+
+This language contains:
+
+    ε
+    01
+    0011
+    000111
+    00001111
+    ...
+
+The number of 0s must be exactly equal to the number of 1s.
+
+Can a DFA recognize this language?
+
+The Pumping Lemma gives us a mathematical tool for proving:
+
+                    LANGUAGE
+                       │
+              Is it regular?
+                 /          \
+               YES            NO
+                │              │
+          Construct/use     Pumping Lemma
+          finite automaton   can help prove
+                             non-regularity
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHY DO WE STUDY THE PUMPING LEMMA?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose someone gives us:
+
+    L = { 0ⁿ1ⁿ | n ≥ 0 }
+
+and asks:
+
+    "Is L regular?"
+
+We could try to construct every possible DFA.
+
+That is not practical.
+
+Instead, we use a property that EVERY regular language must satisfy.
+
+That property is called the:
+
+                    PUMPING LEMMA
+
+The basic idea is:
+
+    If a language is regular,
+    sufficiently long strings in that language
+    must contain some repeatable portion.
+
+Why?
+
+Because a DFA has only FINITELY MANY STATES.
+
+If a sufficiently long string is processed, the DFA
+must eventually visit some state more than once.
+
+That repeated state creates a LOOP.
+
+A loop can be repeated:
+
+    once
+    twice
+    three times
+    ...
+    zero times
+
+This is called "pumping" the string.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. IMPORTANT PREREQUISITE — FINITE NUMBER OF STATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose a DFA has only 3 states:
+
+          ┌───────┐
+          │       │
+          ▼       │
+        → q0 ──→ q1 ──→ q2
+          ▲       │
+          │       │
+          └───────┘
+
+Now suppose we process a very long string.
+
+Because there are only 3 states, eventually some state must
+be visited more than once.
+
+Example:
+
+    q0 → q1 → q2 → q1 → q2 → q1 ...
+
+Here q1 repeats.
+
+Therefore there is a loop:
+
+              ┌───────────┐
+              │           │
+              ▼           │
+             q1 ────────→ q2
+              ▲             │
+              └─────────────┘
+
+The input consumed between the two visits to q1 can be repeated.
+
+That is the fundamental idea behind the Pumping Lemma.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. SIMPLE DEFINITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Pumping Lemma for Regular Languages says:
+
+    If a language is regular, then every sufficiently long
+    string in that language can be divided into three parts
+    such that the middle part can be repeated any number
+    of times and the resulting string remains in the language.
+
+In simple words:
+
+    A long enough string accepted by a finite automaton
+    must contain a portion that can be "pumped".
+
+"Pumping" means:
+
+    Repeat that portion:
+
+        0 times
+        1 time
+        2 times
+        3 times
+        ...
+
+while still remaining inside the language.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. FORMAL STATEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Let L be a regular language.
+
+Then there exists an integer p ≥ 1 such that every string w ∈ L
+with:
+
+                    |w| ≥ p
+
+can be written as:
+
+                    w = xyz
+
+where:
+
+                    |y| > 0
+
+and:
+
+                    |xy| ≤ p
+
+and for every integer i ≥ 0:
+
+                    xyⁱz ∈ L
+
+The number p is called the:
+
+                    PUMPING LENGTH
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. UNDERSTANDING THE FORMULA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The statement:
+
+                    w = xyz
+
+means that the string w is divided into three parts:
+
+        w
+        │
+        ▼
+    ┌─────┬─────┬─────┐
+    │  x  │  y  │  z  │
+    └─────┴─────┴─────┘
+
+Here:
+
+    x = first part
+    y = pumping part
+    z = remaining part
+
+Example:
+
+    w = 000111
+
+One possible division:
+
+    x = 00
+    y = 0
+    z = 111
+
+Therefore:
+
+    xyz = 00 + 0 + 111
+        = 000111
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. THE THREE IMPORTANT CONDITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For a regular language, we must have:
+
+CONDITION 1:
+
+                    |y| > 0
+
+Meaning:
+
+    y cannot be empty.
+
+Therefore:
+
+                    y ≠ ε
+
+There must be something to pump.
+
+
+CONDITION 2:
+
+                    |xy| ≤ p
+
+Meaning:
+
+    The pumping section y must occur within
+    the first p symbols of w.
+
+
+CONDITION 3:
+
+                    xyⁱz ∈ L
+
+for every:
+
+                    i ≥ 0
+
+That means we can replace y by:
+
+    y⁰
+    y¹
+    y²
+    y³
+    ...
+
+and the resulting string must remain in L.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. WHAT DOES yⁱ MEAN?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+yⁱ means that y is repeated i times.
+
+For example, if:
+
+    y = 01
+
+then:
+
+    y⁰ = ε
+
+    y¹ = 01
+
+    y² = 0101
+
+    y³ = 010101
+
+    y⁴ = 01010101
+
+Therefore:
+
+    xyⁱz
+
+means:
+
+    x + repeated y + z
+
+
+Important:
+
+    y⁰ = ε
+
+This means y disappears completely.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. VISUAL IDEA OF PUMPING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+                    w = xyz
+
+Then:
+
+        ┌─────┬─────┬─────┐
+        │  x  │  y  │  z  │
+        └─────┴─────┴─────┘
+
+Original:
+
+                    xyz
+
+Pump down:
+
+                    xz
+
+Pump normally:
+
+                    xyz
+
+Pump once more:
+
+                    xyyz
+
+Pump again:
+
+                    xyyyz
+
+Generally:
+
+                    xyⁱz
+
+Diagram:
+
+                  PUMPING y
+                       │
+                       ▼
+        x ────── y ────── z
+                 │
+          ┌──────┼──────────────┐
+          │      │              │
+          ▼      ▼              ▼
+         y⁰     y¹             y² ...
+          │      │              │
+          ε      y             yy
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. WHY DOES THE PUMPING LEMMA WORK?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Assume L is regular.
+
+Then some DFA M recognizes L.
+
+Suppose the DFA has p states.
+
+Now give the DFA a string w where:
+
+                    |w| ≥ p
+
+The DFA must process at least p symbols.
+
+Because there are only p states, by the
+Pigeonhole Principle, at least one state must repeat.
+
+Conceptually:
+
+        Input symbols
+             ↓
+    q0 → q1 → q2 → q3
+              ↑     │
+              └─────┘
+
+A repeated state means a loop exists.
+
+The portion of input responsible for this loop is y.
+
+Therefore:
+
+    y can be repeated
+
+and the DFA can continue from the same state.
+
+So the resulting string is still accepted.
+
+This is the fundamental reason behind the lemma.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. PIGEONHOLE PRINCIPLE — SIMPLE IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose there are:
+
+    5 boxes
+
+and:
+
+    6 objects
+
+If every object must go into a box, at least one box must contain
+more than one object.
+
+Similarly:
+
+    5 states
+    6 input positions
+
+means some state must repeat.
+
+In general:
+
+    More positions than states
+                 ↓
+          State repetition
+                 ↓
+               Loop
+                 ↓
+          Pumpable portion
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. IMPORTANT TERMINOLOGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pumping Lemma
+    A necessary property of every regular language.
+
+Pumping Length (p)
+    A positive integer guaranteed to exist for a regular language.
+
+String w
+    A sufficiently long string belonging to the language.
+
+Decomposition
+    Dividing w into x, y, z.
+
+Pumping Part
+    The substring y.
+
+Pump
+    Repeat y some number of times.
+
+Pumping Condition
+    xyⁱz must remain in the language for every i ≥ 0.
+
+Contradiction
+    Showing that a pumped string is NOT in the language,
+    contradicting the assumption that the language is regular.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. MOST IMPORTANT LOGICAL POINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Pumping Lemma says:
+
+        REGULAR
+           ↓
+        satisfies
+           ↓
+     Pumping Property
+
+Therefore:
+
+    If a language FAILS the pumping property,
+    then it CANNOT be regular.
+
+Logically:
+
+    Regular → Pumpable
+
+Contrapositive:
+
+    Not Pumpable → Not Regular
+
+
+BUT:
+
+    Pumpable → Regular
+
+is NOT necessarily true.
+
+This is extremely important.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. HOW TO USE THE PUMPING LEMMA TO PROVE
+    A LANGUAGE IS NOT REGULAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use this standard strategy:
+
+STEP 1:
+    Assume that L is regular.
+
+STEP 2:
+    Let p be the pumping length.
+
+STEP 3:
+    Choose a string w ∈ L such that:
+
+                    |w| ≥ p
+
+STEP 4:
+    Consider EVERY valid decomposition:
+
+                    w = xyz
+
+such that:
+
+                    |xy| ≤ p
+                    |y| > 0
+
+STEP 5:
+    Show that some pumping value i makes:
+
+                    xyⁱz ∉ L
+
+STEP 6:
+    This contradicts the Pumping Lemma.
+
+STEP 7:
+    Therefore:
+
+                    L is NOT regular.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. STANDARD PROOF TEMPLATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+To prove L is non-regular:
+
+    Assume L is regular.
+
+    Let p be the pumping length.
+
+    Choose w ∈ L with |w| ≥ p.
+
+    Since L is regular, by the Pumping Lemma:
+
+            w = xyz
+
+    where:
+
+            |xy| ≤ p
+            |y| > 0
+
+    Because of the structure of w, y must have a particular form.
+
+    Choose an appropriate i, usually:
+
+            i = 0
+
+    or:
+
+            i = 2
+
+    Then show:
+
+            xyⁱz ∉ L
+
+    This contradicts the Pumping Lemma.
+
+    Therefore:
+
+            L is not regular.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. MAJOR EXAMPLE — L = {0ⁿ1ⁿ | n ≥ 0}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+                    L = {0ⁿ1ⁿ | n ≥ 0}
+
+Examples:
+
+    n = 0:
+        ε
+
+    n = 1:
+        01
+
+    n = 2:
+        0011
+
+    n = 3:
+        000111
+
+    n = 4:
+        00001111
+
+The important condition is:
+
+                    #0 = #1
+
+There must be exactly the same number of 0s and 1s.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. QUESTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prove that:
+
+                    L = {0ⁿ1ⁿ | n ≥ 0}
+
+is NOT regular.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. STEP 1 — ASSUME REGULARITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Assume, for contradiction, that L is regular.
+
+Then the Pumping Lemma must apply.
+
+Therefore there exists a pumping length p.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. STEP 2 — CHOOSE THE STRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Choose:
+
+                    w = 0ᵖ1ᵖ
+
+Clearly:
+
+                    w ∈ L
+
+because it has:
+
+    p zeros
+    p ones
+
+Also:
+
+                    |w| = 2p
+
+Therefore:
+
+                    |w| ≥ p
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. STEP 3 — DECOMPOSE w
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+By the Pumping Lemma:
+
+                    w = xyz
+
+with:
+
+                    |xy| ≤ p
+
+                    |y| > 0
+
+Our string is:
+
+                    000000...000111111...111
+                    <--- p ---><--- p --->
+
+Because:
+
+                    |xy| ≤ p
+
+both x and y must lie completely inside the first p symbols.
+
+The first p symbols are all 0s.
+
+Therefore y consists only of 0s.
+
+So:
+
+                    y = 0ᵏ
+
+where:
+
+                    k > 0
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. ASCII VISUALIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    w = 0ᵖ1ᵖ
+
+        ┌───────────────┬────────────────┐
+        │               │                │
+        ▼               ▼                ▼
+        x       y       z
+        │       │       │
+        ▼       ▼       ▼
+      000...0  000...0  00...0011...111
+              ↑
+           y = 0ᵏ
+
+Since y contains at least one 0:
+
+                    k > 0
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. STEP 4 — PUMP DOWN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Choose:
+
+                    i = 0
+
+Then:
+
+                    xy⁰z = xz
+
+The y portion disappears.
+
+Original:
+
+                    0ᵖ1ᵖ
+
+After removing y:
+
+                    0ᵖ⁻ᵏ1ᵖ
+
+Now compare the counts:
+
+    Number of 0s = p - k
+
+    Number of 1s = p
+
+Since:
+
+                    k > 0
+
+we have:
+
+                    p - k < p
+
+Therefore:
+
+                    #0 ≠ #1
+
+So:
+
+                    0ᵖ⁻ᵏ1ᵖ ∉ L
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. CONTRADICTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Pumping Lemma says:
+
+                    xyⁱz ∈ L
+
+for every:
+
+                    i ≥ 0
+
+But we found:
+
+                    xy⁰z ∉ L
+
+Contradiction!
+
+Therefore our original assumption was wrong.
+
+Hence:
+
+                    ┌───────────────────────────┐
+                    │ L = {0ⁿ1ⁿ | n ≥ 0}        │
+                    │ is NOT regular.           │
+                    └───────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. WHY DID WE CHOOSE i = 0?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Because removing y changes the number of 0s.
+
+Original:
+
+                    000111
+
+Suppose:
+
+                    y = 0
+
+Pump down:
+
+                    00111
+
+Now:
+
+                    #0 = 2
+                    #1 = 3
+
+Therefore the string no longer satisfies:
+
+                    #0 = #1
+
+So i = 0 gives an easy contradiction.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. ANOTHER CHOICE — i = 2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instead of removing y, we can duplicate y.
+
+Suppose:
+
+                    w = 000111
+
+and:
+
+                    y = 0
+
+Then:
+
+                    xy²z = 0000111
+
+Now:
+
+                    #0 = 4
+                    #1 = 3
+
+Again:
+
+                    #0 ≠ #1
+
+Therefore:
+
+                    xy²z ∉ L
+
+So i = 2 also gives a contradiction.
+
+Usually i = 0 or i = 2 is convenient.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. VERY IMPORTANT — "FOR ALL DECOMPOSITIONS"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is one of the most important parts of Pumping Lemma proofs.
+
+The opponent gets to choose the decomposition:
+
+                    w = xyz
+
+subject to:
+
+                    |xy| ≤ p
+                    |y| > 0
+
+You must show that NO valid decomposition can survive pumping.
+
+For:
+
+                    w = 0ᵖ1ᵖ
+
+because:
+
+                    |xy| ≤ p
+
+y MUST consist entirely of 0s.
+
+Therefore regardless of where the valid decomposition occurs:
+
+                    y = 0ᵏ
+
+with:
+
+                    k > 0
+
+Pumping changes the number of 0s but not the number of 1s.
+
+Therefore every valid decomposition fails.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. COMMON WRONG APPROACH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WRONG:
+
+    "I choose y = 0."
+
+This is incomplete.
+
+Why?
+
+Because the Pumping Lemma does not allow you to arbitrarily choose y.
+
+Instead:
+
+    You must consider an arbitrary valid decomposition.
+
+Correct reasoning:
+
+    Since |xy| ≤ p and the first p symbols are all 0s,
+    y must consist only of 0s.
+
+Therefore:
+
+                    y = 0ᵏ, k > 0
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. SECOND EXAMPLE — PALINDROMES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+                    L = { w | w is a palindrome }
+
+A palindrome reads the same forward and backward.
+
+Examples:
+
+                    ε
+                    0
+                    1
+                    00
+                    11
+                    010
+                    101
+                    0110
+                    1001
+
+Consider:
+
+                    w = 0ᵖ1 0ᵖ
+
+This is a palindrome.
+
+The first p symbols are 0s.
+
+Any valid y must therefore contain only 0s.
+
+If we pump y down:
+
+                    xy⁰z
+
+we remove some 0s from the beginning but not from the
+corresponding end.
+
+The resulting string is no longer guaranteed to be a palindrome.
+
+This can be used to prove that suitable palindrome languages
+are not regular.
+
+IMPORTANT:
+
+    Be careful when selecting the exact palindrome language
+    and proof string. Not every palindrome-related language
+    is automatically proved by the same argument.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. THIRD EXAMPLE — EQUAL NUMBER OF 0s AND 1s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    L = { w ∈ {0,1}* | number of 0s = number of 1s }
+
+Examples:
+
+    01
+    10
+    0011
+    0101
+    1010
+    0110
+    1100
+
+This language requires an unbounded comparison between
+the number of two different symbols.
+
+A finite automaton has only finitely many states.
+
+The Pumping Lemma can be used to show that this language is
+not regular.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. INTUITION BEHIND NON-REGULAR LANGUAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A DFA has finite memory.
+
+For example:
+
+    DFA:
+    
+       ┌───────────────┐
+       │ finite states │
+       └───────────────┘
+
+It can remember limited information such as:
+
+    "Have I seen a 1?"
+
+    "Is the number of 1s even?"
+
+    "Does the string end in 01?"
+
+But a DFA cannot generally remember an arbitrarily large exact count.
+
+For:
+
+                    0ⁿ1ⁿ
+
+the machine would need to remember:
+
+                    "How many 0s did I see?"
+
+and later compare that number with the number of 1s.
+
+For arbitrary n, this requires unbounded memory.
+
+That is why:
+
+                    {0ⁿ1ⁿ | n ≥ 0}
+
+is not regular.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. REGULAR VS NON-REGULAR INTUITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGULAR LANGUAGE:
+
+    Finite memory is enough.
+
+Examples:
+
+    Strings ending in 1
+    Strings containing 101
+    Strings with even number of 0s
+
+              finite states
+                   │
+                   ▼
+              ┌─────────┐
+              │   DFA   │
+              └─────────┘
+
+
+NON-REGULAR LANGUAGE:
+
+    Requires some form of unbounded memory.
+
+Examples:
+
+    {0ⁿ1ⁿ | n ≥ 0}
+    Certain palindrome languages
+    {0ⁿ1ⁿ2ⁿ | n ≥ 0}
+
+              finite states
+                   │
+                   X
+                   │
+             insufficient
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. IMPORTANT DISTINCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pumping Lemma is primarily used to prove:
+
+                    NON-REGULARITY
+
+It is NOT normally the best tool for proving:
+
+                    REGULARITY
+
+To prove that a language is regular, use methods such as:
+
+    DFA construction
+    NFA construction
+    Regular expression
+    Regular grammar
+    Closure properties
+    Known regular languages
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. NECESSARY VS SUFFICIENT CONDITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For every regular language:
+
+                    Pumping property holds.
+
+Therefore the pumping property is a:
+
+                    NECESSARY CONDITION
+
+for regularity.
+
+But it is NOT a sufficient condition.
+
+Think:
+
+    Regular
+       ↓
+    Pumpable
+
+But not necessarily:
+
+    Pumpable
+       ↓
+    Regular
+
+This distinction is extremely important in GATE questions.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. COMMON MISTAKES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MISTAKE 1:
+    Choosing p yourself.
+
+WRONG:
+    "Let p = 5."
+
+CORRECT:
+    "Let p be the pumping length."
+
+You do not normally know its exact value.
+
+
+MISTAKE 2:
+    Choosing a string shorter than p.
+
+WRONG:
+
+                    |w| < p
+
+CORRECT:
+
+                    |w| ≥ p
+
+
+MISTAKE 3:
+    Choosing y = ε.
+
+Not allowed.
+
+Must have:
+
+                    |y| > 0
+
+
+MISTAKE 4:
+    Ignoring:
+
+                    |xy| ≤ p
+
+This condition is often what forces y to contain
+only one type of symbol.
+
+
+MISTAKE 5:
+    Showing only one decomposition fails.
+
+You need to reason about every valid decomposition.
+
+
+MISTAKE 6:
+    Showing one pumped string is in the language.
+
+That does not prove regularity.
+
+The lemma requires:
+
+                    xyⁱz ∈ L
+
+for ALL i ≥ 0.
+
+
+MISTAKE 7:
+    Saying "Pumping Lemma proves the language is regular."
+
+No.
+
+It is mainly used to disprove regularity.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. STANDARD EXAM SOLUTION FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For a university exam, write:
+
+    Assume L is regular.
+
+    Let p be the pumping length.
+
+    Choose w ∈ L such that |w| ≥ p.
+
+    By the Pumping Lemma, w can be written as:
+
+                    w = xyz
+
+    where:
+
+                    |xy| ≤ p
+                    |y| > 0
+
+    Because of the structure of w, y must have the form ______.
+
+    Choose:
+
+                    i = ______
+
+    Then:
+
+                    xyⁱz = ______
+
+    But:
+
+                    xyⁱz ∉ L
+
+    This contradicts the Pumping Lemma.
+
+    Therefore:
+
+                    L is not regular.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. GATE-LEVEL THINKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For GATE-style problems, remember these points:
+
+1. Pumping length p is unknown.
+
+2. You choose w after p is introduced.
+
+3. w must belong to L.
+
+4. |w| must be at least p.
+
+5. The decomposition must satisfy:
+
+       |xy| ≤ p
+       |y| > 0
+
+6. The proof must defeat every valid decomposition.
+
+7. You can choose a useful pumping value i.
+
+8. Usually:
+
+       i = 0
+
+   or:
+
+       i = 2
+
+9. Pumping Lemma can establish non-regularity.
+
+10. Pumping Lemma does NOT characterize regular languages.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. IMPORTANT FORMULA BOX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌───────────────────────────────────────────────────────────────────┐
+│                PUMPING LEMMA — REGULAR LANGUAGES                  │
+├───────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│ If L is regular, then there exists p ≥ 1 such that every          │
+│ w ∈ L with |w| ≥ p can be written as:                             │
+│                                                                   │
+│                         w = xyz                                  │
+│                                                                   │
+│ satisfying:                                                       │
+│                                                                   │
+│                         |xy| ≤ p                                  │
+│                         |y| > 0                                   │
+│                         xyⁱz ∈ L for every i ≥ 0                  │
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. QUICK COMPARISON — REGULAR VS CFL PUMPING LEMMA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+We will study CFL Pumping Lemma later.
+
+For now:
+
+REGULAR LANGUAGE:
+
+                    w = xyz
+
+                    ┌───┬───┬───┐
+                    │ x │ y │ z │
+                    └───┴───┴───┘
+                        ↑
+                     pump y
+
+CONTEXT-FREE LANGUAGE:
+
+                    w = uvxyz
+
+                    ┌─┬─┬───┬─┬─┐
+                    │u│v│ x │y│z│
+                    └─┴─┴───┴─┴─┘
+                       ↑     ↑
+                     pump  pump
+                      v      y
+
+The CFL version is more complicated.
+
+We will study it in Chapter 14.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. B.TECH EXAM QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LEVEL 1 — BEGINNER
+
+Q1. Define the Pumping Lemma for regular languages.
+
+Q2. What is pumping length?
+
+Q3. What are the three conditions of the Pumping Lemma?
+
+Q4. What does |y| > 0 mean?
+
+Q5. What does |xy| ≤ p mean?
+
+Q6. What is meant by pumping a string?
+
+
+LEVEL 2 — B.TECH BASIC
+
+Q7. Explain the intuition behind the Pumping Lemma.
+
+Q8. Explain the relationship between finite states and pumping.
+
+Q9. Why must y be non-empty?
+
+Q10. Why is the Pumping Lemma useful for proving non-regularity?
+
+
+LEVEL 3 — UNIVERSITY EXAM
+
+Q11. Prove that:
+
+        L = {0ⁿ1ⁿ | n ≥ 0}
+
+    is not regular.
+
+Q12. Prove that a suitable palindrome language is not regular.
+
+Q13. Explain the limitations of the Pumping Lemma.
+
+Q14. Explain why the Pumping Lemma is a necessary condition
+     but not a sufficient condition for regularity.
+
+
+LEVEL 4 — COMPETITIVE
+
+Q15. Given a language, identify a suitable string w.
+
+Q16. Determine the possible form of y using |xy| ≤ p.
+
+Q17. Find a suitable pumping value i.
+
+Q18. Identify an invalid Pumping Lemma proof.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. ACTIVE RECALL — DO NOT LOOK AT THE ANSWERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Try answering these yourself:
+
+Q1. What is the main purpose of the Pumping Lemma?
+
+Q2. What does the pumping length p represent?
+
+Q3. What is the standard decomposition of w?
+
+Q4. What are the three conditions on x, y and z?
+
+Q5. Why must y be non-empty?
+
+Q6. What does xyⁱz mean?
+
+Q7. What happens when i = 0?
+
+Q8. What happens when i = 2?
+
+Q9. Why does a finite automaton create a repeated state
+    for sufficiently long inputs?
+
+Q10. Why is:
+
+        {0ⁿ1ⁿ | n ≥ 0}
+
+     not regular?
+
+Q11. Why can we assume that y consists only of 0s in the
+     standard proof for {0ⁿ1ⁿ}?
+
+Q12. Does Pumping Lemma prove that a language is regular?
+
+Q13. What is the difference between a necessary and sufficient
+     condition?
+
+Q14. Why must a non-regularity proof consider every valid
+     decomposition?
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. PRACTICE PROBLEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Try these without looking at the solution.
+
+BEGINNER:
+
+1. State the Pumping Lemma.
+
+2. Identify x, y and z in:
+
+       w = 00111
+
+   for the decomposition:
+
+       x = 0
+       y = 0
+       z = 111
+
+
+INTERMEDIATE:
+
+3. Use the Pumping Lemma to prove:
+
+       L = {0ⁿ1ⁿ | n ≥ 0}
+
+   is not regular.
+
+4. Explain why the condition |xy| ≤ p is important.
+
+5. Explain why i = 0 is useful in many proofs.
+
+
+ADVANCED:
+
+6. Investigate the regularity of:
+
+       L = {0ⁿ1ⁿ2ⁿ | n ≥ 0}
+
+7. Investigate the regularity of a language consisting of
+   binary palindromes.
+
+8. Find the mistake in this argument:
+
+       "Choose p = 10. Let w = 0¹⁰1¹⁰.
+        Choose y = 000.
+        Pump y and get a string outside L.
+        Therefore L is not regular."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. CHAPTER SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Pumping Lemma is a property of regular languages.
+
+Core idea:
+
+    DFA has finite states
+             ↓
+    sufficiently long input
+             ↓
+    repeated state
+             ↓
+          loop
+             ↓
+      repeatable section
+             ↓
+          pumping
+
+
+The formal statement:
+
+                    w = xyz
+
+with:
+
+                    |xy| ≤ p
+                    |y| > 0
+                    xyⁱz ∈ L for every i ≥ 0
+
+
+For proving non-regularity:
+
+                    Assume regular
+                           ↓
+                    Let pumping length p
+                           ↓
+                    Choose w ∈ L, |w| ≥ p
+                           ↓
+                    Consider valid xyz
+                           ↓
+                    Pump y
+                           ↓
+                    Get string outside L
+                           ↓
+                      CONTRADICTION
+                           ↓
+                    L is NOT regular
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. MOST IMPORTANT TAKEAWAYS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+★ Pumping Lemma is mainly used to prove NON-REGULARITY.
+
+★ A regular language must satisfy the Pumping Lemma.
+
+★ The string must satisfy:
+
+      |w| ≥ p
+
+★ Decomposition:
+
+      w = xyz
+
+★ Conditions:
+
+      |xy| ≤ p
+      |y| > 0
+      xyⁱz ∈ L for every i ≥ 0
+
+★ Usually try:
+
+      i = 0
+      i = 2
+
+★ Do not arbitrarily choose y.
+
+★ Use the structure of w and |xy| ≤ p to restrict y.
+
+★ A contradiction proves the language is not regular.
+
+★ Pumpable does NOT automatically mean regular.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. B.TECH / GATE MEMORY TRICK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Remember:
+
+                    "XYZ — XY, Y, ALL"
+
+X Y Z:
+    w = xyz
+
+XY:
+    |xy| ≤ p
+
+Y:
+    |y| > 0
+
+ALL:
+    xyⁱz ∈ L for ALL i ≥ 0
+
+
+For non-regularity:
+
+                    ASSUME
+                      ↓
+                       p
+                      ↓
+                       w
+                      ↓
+                     xyz
+                      ↓
+                    PUMP
+                      ↓
+                CONTRADICTION
+                      ↓
+                     NOT
+                    REGULAR
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                    CHAPTER 10 COMPLETED                            ║
+║                                                                      ║
+║ Topic covered: Pumping Lemma for Regular Languages                  ║
+║                                                                      ║
+║ You should now understand:                                          ║
+║   ✓ Why the Pumping Lemma exists                                    ║
+║   ✓ Finite-state/loop intuition                                     ║
+║   ✓ Formal Pumping Lemma                                            ║
+║   ✓ Pumping length                                                  ║
+║   ✓ w = xyz decomposition                                           ║
+║   ✓ Conditions |xy| ≤ p and |y| > 0                                 ║
+║   ✓ Pumping with i = 0, 1, 2, ...                                   ║
+║   ✓ Non-regularity proof strategy                                   ║
+║   ✓ Proof of {0ⁿ1ⁿ | n ≥ 0}                                        ║
+║   ✓ Common mistakes                                                  ║
+║   ✓ Limitations of the lemma                                        ║
+║                                                                      ║
+║ NEXT SINGLE TOPIC                                                    ║
+║                                                                      ║
+║ ➜ CHAPTER 11 — CONTEXT-FREE GRAMMARS                               ║
+║    Topic 11.1 — Grammar Fundamentals                                ║
+║    First subtopic: "What is a Grammar?"                             ║
+║                                                                      ║
+║ Type NEXT to continue.                                               ║
+╚══════════════════════════════════════════════════════════════════════╝

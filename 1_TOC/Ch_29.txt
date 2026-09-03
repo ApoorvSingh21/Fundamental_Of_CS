@@ -1,0 +1,1830 @@
+====================================================================
+                 THEORY OF COMPUTATION — CHAPTER 29
+                    ADVANCED AUTOMATA THEORY
+====================================================================
+
+PHASE 24 — ADVANCED TOC
+CHAPTER 29 — ADVANCED AUTOMATA THEORY
+
+Topics:
+29.1 Moore Machines
+29.2 Mealy Machines
+29.3 Moore vs Mealy Machines
+29.4 Finite Transducers
+29.5 Sequential Machines
+29.6 Two-Way Finite Automata
+29.7 Counter Automata
+29.8 Cellular Automata
+29.9 Omega Automata — Introduction
+
+====================================================================
+29.1 MOORE MACHINES
+====================================================================
+
+1. INTRODUCTION
+----------------
+
+A Moore machine is a finite-state machine that produces an OUTPUT
+based only on its CURRENT STATE.
+
+The important idea is:
+
+             INPUT
+               |
+               v
+        +--------------+
+        | State /      |
+        | Transition   |
+        +--------------+
+               |
+               v
+             OUTPUT
+
+In a normal DFA, we are mainly interested in whether an input string
+is ACCEPTED or REJECTED.
+
+A Moore machine is different:
+
+    It reads input
+    -> changes state
+    -> produces output associated with that state.
+
+Therefore, a Moore machine is useful when we want a machine to
+TRANSFORM an input sequence into an output sequence.
+
+--------------------------------------------------------------------
+2. SIMPLE DEFINITION
+--------------------------------------------------------------------
+
+A Moore machine is a finite-state machine in which the output depends
+only on the current state.
+
+Simple form:
+
+    Output = f(Current State)
+
+NOT:
+
+    Output = f(Current State, Current Input)
+
+That second form describes a Mealy machine.
+
+--------------------------------------------------------------------
+3. FORMAL DEFINITION
+--------------------------------------------------------------------
+
+A Moore machine can be represented by a 6-tuple:
+
+    M = (Q, Σ, Δ, δ, q0, λ)
+
+where:
+
+    Q  = finite set of states
+
+    Σ  = input alphabet
+
+    Δ  = output alphabet
+
+    δ  = transition function
+
+    q0 = initial state
+
+    λ  = output function
+
+The functions are:
+
+    δ : Q × Σ → Q
+
+and
+
+    λ : Q → Δ
+
+Notice the important difference:
+
+    Moore:
+        λ depends only on Q
+
+    Mealy:
+        λ depends on Q and input
+
+--------------------------------------------------------------------
+4. COMPONENTS
+--------------------------------------------------------------------
+
+Suppose:
+
+    Q = {q0, q1}
+
+    Σ = {0,1}
+
+    Δ = {A,B}
+
+Then:
+
+    States:
+        q0, q1
+
+    Input:
+        0 or 1
+
+    Output:
+        A or B
+
+    Start state:
+        q0
+
+--------------------------------------------------------------------
+5. ASCII DIAGRAM
+--------------------------------------------------------------------
+
+A Moore machine commonly represents output INSIDE/ALONGSIDE
+each state.
+
+Example:
+
+                       1
+                +------------+
+                |            v
+          --> [q0/A] ------> [q1/B]
+                ^               |
+                |               |
+                +---------------+
+                       0
+
+Here:
+
+    q0/A means:
+        State = q0
+        Output = A
+
+    q1/B means:
+        State = q1
+        Output = B
+
+    --> means initial state.
+
+The output is associated with the state, not the transition.
+
+--------------------------------------------------------------------
+6. EXAMPLE
+--------------------------------------------------------------------
+
+Consider a Moore machine that remembers whether the most recently
+read bit is 0 or 1.
+
+States:
+
+    q0 = last input was 0
+    q1 = last input was 1
+
+Outputs:
+
+    q0 -> 0
+    q1 -> 1
+
+Transition table:
+
+    +-------+---------+---------+
+    | State | Input 0 | Input 1 |
+    +-------+---------+---------+
+    | q0    | q0      | q1      |
+    | q1    | q0      | q1      |
+    +-------+---------+---------+
+
+Output table:
+
+    +-------+--------+
+    | State | Output |
+    +-------+--------+
+    | q0    | 0      |
+    | q1    | 1      |
+    +-------+--------+
+
+Diagram:
+
+                    1
+              +-----------+
+              |           v
+           [q0/0] -----> [q1/1]
+              ^             |
+              |             |
+              +-------------+
+                     0
+
+--------------------------------------------------------------------
+7. IMPORTANT OBSERVATION
+--------------------------------------------------------------------
+
+In a Moore machine:
+
+    STATE determines OUTPUT.
+
+Therefore, if two states have different outputs, they cannot simply
+be considered identical during state minimization.
+
+--------------------------------------------------------------------
+8. ADVANTAGES
+--------------------------------------------------------------------
+
+Moore machines:
+
+    - have outputs associated with states
+    - are conceptually simple
+    - produce stable outputs while remaining in a state
+    - are useful in sequential circuit design
+
+--------------------------------------------------------------------
+9. DISADVANTAGES
+--------------------------------------------------------------------
+
+A Moore machine may require more states than an equivalent Mealy
+machine because output information must be represented using states.
+
+====================================================================
+29.2 MEALY MACHINES
+====================================================================
+
+1. INTRODUCTION
+----------------
+
+A Mealy machine is a finite-state machine in which the output depends
+on:
+
+    CURRENT STATE
+           +
+    CURRENT INPUT
+
+Therefore:
+
+    Output = f(Current State, Current Input)
+
+--------------------------------------------------------------------
+2. FORMAL DEFINITION
+--------------------------------------------------------------------
+
+A Mealy machine can be represented by:
+
+    M = (Q, Σ, Δ, δ, λ, q0)
+
+where:
+
+    Q  = set of states
+
+    Σ  = input alphabet
+
+    Δ  = output alphabet
+
+    δ  = transition function
+
+    λ  = output function
+
+    q0 = initial state
+
+The functions are:
+
+    δ : Q × Σ → Q
+
+    λ : Q × Σ → Δ
+
+Compare:
+
+    Moore:
+        λ : Q ×? NO
+
+        λ : Q → Δ
+
+    Mealy:
+        λ : Q × Σ → Δ
+
+--------------------------------------------------------------------
+3. ASCII DIAGRAM
+--------------------------------------------------------------------
+
+In a Mealy machine, output is written on the TRANSITION.
+
+Example:
+
+             0/0
+        +------------+
+        |            v
+      --> q0 -------> q1
+          ^            |
+          |            |
+          +------------+
+               1/1
+
+The notation:
+
+    input/output
+
+means:
+
+    input = what machine receives
+    output = what machine produces
+
+For example:
+
+    1/0
+
+means:
+
+    input  = 1
+    output = 0
+
+--------------------------------------------------------------------
+4. EXAMPLE
+--------------------------------------------------------------------
+
+Suppose a machine receives bits and produces the same bit as output.
+
+Transitions:
+
+    q0 --0/0--> q0
+    q0 --1/1--> q1
+
+The output is generated at the transition itself.
+
+Transition table:
+
+    +-------+---------+---------+
+    | State | Input 0 | Input 1 |
+    +-------+---------+---------+
+    | q0    | q0/0    | q1/1    |
+    +-------+---------+---------+
+
+Here:
+
+    q1/1 means:
+        next state = q1
+        output = 1
+
+--------------------------------------------------------------------
+5. KEY IDEA
+--------------------------------------------------------------------
+
+Moore:
+
+             STATE
+               |
+               v
+             OUTPUT
+
+Mealy:
+
+       STATE + INPUT
+               |
+               v
+             OUTPUT
+
+====================================================================
+29.3 MOORE MACHINE VS MEALY MACHINE
+====================================================================
+
+This is one of the MOST IMPORTANT exam topics.
+
+--------------------------------------------------------------------
+COMPARISON TABLE
+--------------------------------------------------------------------
+
+    +----------------------+----------------------+----------------------+
+    | Property             | Moore Machine        | Mealy Machine        |
+    +----------------------+----------------------+----------------------+
+    | Output depends on    | State only           | State + Input        |
+    | Output associated    | With state           | With transition      |
+    | Output notation      | q/output             | input/output         |
+    | Usually states       | More                 | Fewer                |
+    | Output change        | After state change   | Can change with      |
+    |                      |                      | input                |
+    | Initial output       | Defined by initial   | Usually associated   |
+    |                      | state                | with transitions     |
+    +----------------------+----------------------+----------------------+
+
+--------------------------------------------------------------------
+ASCII COMPARISON
+--------------------------------------------------------------------
+
+MOORE:
+
+          input
+            |
+            v
+        +-------+
+        | state |
+        +-------+
+            |
+            v
+         output
+
+
+MEALY:
+
+          input
+            |
+            v
+        +-------+
+        | state |
+        +-------+
+            |
+            +------ input ------+
+            |                   |
+            v                   v
+          next state         output
+
+--------------------------------------------------------------------
+EXAM RULE
+--------------------------------------------------------------------
+
+Remember:
+
+    MOORE -> OUTPUT ON STATE
+
+    MEALY -> OUTPUT ON EDGE
+
+A useful memory trick:
+
+    "Moore = More on state"
+
+Not a formal rule, but useful for remembering.
+
+====================================================================
+29.4 FINITE TRANSDUCERS
+====================================================================
+
+1. WHAT IS A TRANSDUCER?
+------------------------
+
+A transducer is a machine that converts an input sequence into
+an output sequence.
+
+General idea:
+
+        INPUT
+          |
+          v
+    +-------------+
+    |  TRANSDUCER  |
+    +-------------+
+          |
+          v
+        OUTPUT
+
+Example:
+
+    Input:
+        10110
+
+    Machine processes it
+
+    Output:
+        01001
+
+A transducer therefore performs a transformation.
+
+--------------------------------------------------------------------
+2. AUTOMATA VS TRANSDUCERS
+--------------------------------------------------------------------
+
+An ordinary DFA answers:
+
+    ACCEPT or REJECT?
+
+A transducer answers:
+
+    What OUTPUT should be produced?
+
+Therefore:
+
+    DFA:
+        input -> decision
+
+    Transducer:
+        input -> output
+
+--------------------------------------------------------------------
+3. TYPES
+--------------------------------------------------------------------
+
+Important finite-state transducers include:
+
+    1. Moore machines
+    2. Mealy machines
+
+Both have finite memory.
+
+--------------------------------------------------------------------
+4. APPLICATIONS
+--------------------------------------------------------------------
+
+Finite-state transducers can be used in:
+
+    - digital circuits
+    - communication systems
+    - protocol processing
+    - lexical processing
+    - text transformation
+    - pattern conversion
+    - signal processing
+    - control systems
+
+--------------------------------------------------------------------
+5. SIMPLE EXAMPLE
+--------------------------------------------------------------------
+
+Suppose:
+
+    Input:
+        a b a b
+
+Machine transforms:
+
+    a -> 0
+    b -> 1
+
+Output:
+
+    0 1 0 1
+
+Thus:
+
+    "abab" -> "0101"
+
+This is a finite-state transformation.
+
+====================================================================
+29.5 SEQUENTIAL MACHINES
+====================================================================
+
+1. DEFINITION
+--------------
+
+A sequential machine is a machine whose output depends on:
+
+    current input
+    +
+    previous machine state
+
+This means the machine has MEMORY.
+
+--------------------------------------------------------------------
+2. WHY MEMORY?
+--------------------------------------------------------------------
+
+Consider a machine controlling a traffic light.
+
+Its behavior depends not only on the current sensor input but also
+on its current mode:
+
+    RED
+    GREEN
+    YELLOW
+
+Therefore:
+
+    Current state = stored information about previous processing.
+
+--------------------------------------------------------------------
+3. GENERAL MODEL
+--------------------------------------------------------------------
+
+             INPUT
+               |
+               v
+        +---------------+
+        | Sequential    |
+        | Machine       |
+        +---------------+
+           |         |
+           |         |
+           v         v
+        STATE      OUTPUT
+           |
+           |
+       next state
+
+The machine repeatedly:
+
+    1. Reads input
+    2. Determines output
+    3. Determines next state
+    4. Moves to next state
+
+--------------------------------------------------------------------
+4. RELATION TO MOORE AND MEALY
+--------------------------------------------------------------------
+
+Moore and Mealy machines are important models of sequential machines.
+
+Therefore:
+
+    Sequential machine
+        |
+        +---- Moore
+        |
+        +---- Mealy
+
+====================================================================
+29.6 TWO-WAY FINITE AUTOMATA
+====================================================================
+
+1. INTRODUCTION
+----------------
+
+A standard DFA generally reads its input from:
+
+    LEFT -> RIGHT
+
+and does not move backward.
+
+A Two-Way Finite Automaton (2DFA) allows the input head to move:
+
+    LEFT
+    RIGHT
+
+across the input.
+
+--------------------------------------------------------------------
+2. BASIC IDEA
+--------------------------------------------------------------------
+
+Normal DFA:
+
+    ---> ---> ---> --->
+
+Two-way FA:
+
+    <--- ---> <--- --->
+
+The machine may revisit previously read input symbols.
+
+--------------------------------------------------------------------
+3. ASCII DIAGRAM
+--------------------------------------------------------------------
+
+Input tape:
+
+       +---+---+---+---+---+
+       | a | b | a | b | a |
+       +---+---+---+---+---+
+               ^
+               |
+              HEAD
+
+The head can move:
+
+          <--- or --->
+
+Example:
+
+       +---+---+---+---+---+
+       | a | b | a | b | a |
+       +---+---+---+---+---+
+               ^
+               |
+             HEAD
+
+After RIGHT:
+
+                   ^
+                   |
+       +---+---+---+---+---+
+       | a | b | a | b | a |
+       +---+---+---+---+---+
+
+After LEFT:
+
+           ^
+           |
+       +---+---+---+---+---+
+       | a | b | a | b | a |
+       +---+---+---+---+---+
+
+--------------------------------------------------------------------
+4. FORMAL IDEA
+--------------------------------------------------------------------
+
+A two-way finite automaton has:
+
+    - finite set of states
+    - input alphabet
+    - transition function
+    - initial state
+    - accepting states
+    - input head that may move left or right
+
+A simplified transition can be written:
+
+    δ(q, a) = (p, R)
+
+meaning:
+
+    If in state q reading a:
+
+        move to state p
+        move head Right
+
+Similarly:
+
+    δ(q, a) = (p, L)
+
+means:
+
+        move to state p
+        move head Left
+
+--------------------------------------------------------------------
+5. IMPORTANT RESULT
+--------------------------------------------------------------------
+
+A two-way finite automaton is NOT more powerful than an ordinary
+one-way DFA in terms of which languages it can recognize.
+
+That is:
+
+    2DFA and DFA recognize the same class:
+
+                 REGULAR LANGUAGES
+
+However, the two-way model can sometimes provide a more convenient
+or compact way to describe a computation.
+
+--------------------------------------------------------------------
+6. EXAM POINT
+--------------------------------------------------------------------
+
+Very important:
+
+    Two-way movement
+        DOES NOT
+    automatically mean greater language-recognition power.
+
+The language class remains:
+
+    REGULAR.
+
+====================================================================
+29.7 COUNTER AUTOMATA
+====================================================================
+
+1. INTRODUCTION
+----------------
+
+A counter automaton is an automaton equipped with one or more
+counters.
+
+A counter stores an integer value.
+
+Typical operations:
+
+    increment
+    decrement
+    test for zero
+
+--------------------------------------------------------------------
+2. WHY COUNTERS?
+----------------
+
+A finite automaton has only a FINITE number of states.
+
+It cannot directly remember an arbitrary number such as:
+
+    1
+    2
+    3
+    ...
+    1,000,000
+
+A counter provides additional memory.
+
+--------------------------------------------------------------------
+3. SIMPLE ANALOGY
+-----------------
+
+Imagine a person counting apples:
+
+    Apple -> counter = 1
+
+    Apple -> counter = 2
+
+    Apple -> counter = 3
+
+The counter can represent arbitrarily large values, subject to
+the model's restrictions.
+
+--------------------------------------------------------------------
+4. ASCII MODEL
+--------------------------------------------------------------------
+
+               INPUT
+                 |
+                 v
+          +-------------+
+          |   FINITE    |
+          |   STATES    |
+          +-------------+
+                 |
+                 v
+             +-------+
+             |COUNT  |
+             |  5    |
+             +-------+
+                 |
+                 v
+              OUTPUT
+
+--------------------------------------------------------------------
+5. EXAMPLE
+--------------------------------------------------------------------
+
+Consider a language:
+
+    L = { a^n b^n | n >= 0 }
+
+A counter can count the number of a's.
+
+For every:
+
+    a
+
+increment counter.
+
+For every:
+
+    b
+
+decrement counter.
+
+At the end:
+
+    counter = 0
+
+means that the number of a's and b's matched.
+
+Example:
+
+    Input = aaabbb
+
+Processing:
+
+    a -> counter 1
+    a -> counter 2
+    a -> counter 3
+
+    b -> counter 2
+    b -> counter 1
+    b -> counter 0
+
+Accepted if all conditions are satisfied.
+
+--------------------------------------------------------------------
+6. IMPORTANT IDEA
+--------------------------------------------------------------------
+
+A finite automaton alone cannot store arbitrary counts.
+
+A counter automaton provides limited additional memory.
+
+Therefore it lies conceptually between finite automata and more
+powerful memory-based models.
+
+--------------------------------------------------------------------
+7. CAUTION
+--------------------------------------------------------------------
+
+Do not automatically assume:
+
+    Counter automaton = PDA
+
+They are different computational models.
+
+A PDA has a STACK.
+
+A counter stores numerical information.
+
+A stack supports operations such as:
+
+    push
+    pop
+    inspect top
+
+A counter generally supports:
+
+    increment
+    decrement
+    zero test
+
+====================================================================
+29.8 CELLULAR AUTOMATA
+====================================================================
+
+1. INTRODUCTION
+----------------
+
+A Cellular Automaton (CA) is a computational model consisting of
+many cells arranged in a regular structure.
+
+Each cell has:
+
+    - a state
+    - neighboring cells
+    - a rule determining its next state
+
+The cells update according to local rules.
+
+--------------------------------------------------------------------
+2. SIMPLE ANALOGY
+-----------------
+
+Imagine a row of boxes:
+
+    +---+---+---+---+---+
+    | 0 | 1 | 0 | 1 | 0 |
+    +---+---+---+---+---+
+
+Each box looks at nearby boxes and decides its next value.
+
+After one step:
+
+    +---+---+---+---+---+
+    | 1 | 1 | 0 | 0 | 1 |
+    +---+---+---+---+---+
+
+The exact result depends on the rule.
+
+--------------------------------------------------------------------
+3. BASIC COMPONENTS
+--------------------
+
+A cellular automaton generally contains:
+
+    1. Cells
+    2. Cell states
+    3. Neighborhood
+    4. Local transition rule
+    5. Global configuration
+    6. Time steps
+
+--------------------------------------------------------------------
+4. ASCII DIAGRAM
+--------------------------------------------------------------------
+
+One-dimensional cellular automaton:
+
+Time 0:
+
+    0  0  1  0  0  0  1  0
+             ^
+          cell
+
+Time 1:
+
+    0  1  1  1  0  1  1  1
+
+Time 2:
+
+    1  0  1  0  1  0  1  0
+
+The exact evolution depends on the transition rule.
+
+--------------------------------------------------------------------
+5. NEIGHBORHOOD
+----------------
+
+Suppose we use three neighboring cells:
+
+             LEFT   CENTER   RIGHT
+               |       |       |
+               v       v       v
+              +---+   +---+   +---+
+              | 0 |   | 1 |   | 0 |
+              +---+   +---+   +---+
+
+The next state of the center cell may depend on:
+
+    left state
+    center state
+    right state
+
+For example:
+
+    010 -> 1
+
+could be one rule.
+
+--------------------------------------------------------------------
+6. GLOBAL CONFIGURATION
+-----------------------
+
+The complete collection of cell states at one time is called a
+configuration.
+
+Example:
+
+    00101100
+
+is one configuration.
+
+The next configuration is obtained by applying the local rule
+to every cell.
+
+--------------------------------------------------------------------
+7. IMPORTANT PROPERTY
+---------------------
+
+Cellular automata are based on:
+
+    SIMPLE LOCAL RULES
+
+but can produce:
+
+    COMPLEX GLOBAL BEHAVIOR
+
+This is one of the most interesting ideas in computational theory.
+
+--------------------------------------------------------------------
+8. APPLICATIONS
+----------------
+
+Cellular automata have been studied for:
+
+    - modeling physical systems
+    - traffic simulation
+    - biological systems
+    - pattern generation
+    - distributed computation
+    - cryptography research
+    - artificial-life models
+
+--------------------------------------------------------------------
+9. IMPORTANT EXAMPLE — GAME OF LIFE
+------------------------------------
+
+Conway's Game of Life is a famous cellular automaton.
+
+Each cell is:
+
+    ALIVE
+    or
+    DEAD
+
+Its next state depends on neighboring cells.
+
+A simple conceptual grid:
+
+    +---+---+---+---+
+    |   |   |   |   |
+    +---+---+---+---+
+    |   | X | X |   |
+    +---+---+---+---+
+    |   | X |   |   |
+    +---+---+---+---+
+    |   |   |   |   |
+    +---+---+---+---+
+
+Here X represents an alive cell.
+
+The system repeatedly applies local rules.
+
+Complex patterns can emerge from these simple rules.
+
+====================================================================
+29.9 OMEGA AUTOMATA — INTRODUCTION
+====================================================================
+
+1. WHY OMEGA AUTOMATA?
+----------------------
+
+Ordinary finite automata usually process FINITE strings.
+
+But some computational problems involve INFINITE strings.
+
+An infinite string may look like:
+
+    010101010101010101010101...
+    ^                         ^
+    |                         |
+    beginning                 continues forever
+
+Such an infinite string is sometimes called an omega-word.
+
+--------------------------------------------------------------------
+2. OMEGA
+--------
+
+The symbol:
+
+    ω
+
+represents a concept of infinity in this context.
+
+An omega-word is an infinite sequence:
+
+    a1 a2 a3 a4 a5 ...
+
+that never ends.
+
+Example:
+
+    010101010101...
+
+--------------------------------------------------------------------
+3. OMEGA AUTOMATON
+------------------
+
+An omega automaton is an automaton designed to process infinite
+input sequences and determine whether the infinite computation
+satisfies a particular acceptance condition.
+
+Unlike ordinary DFA acceptance:
+
+    finite input
+        |
+        v
+    eventually stop
+        |
+        v
+    accept/reject
+
+an omega automaton may run forever.
+
+Therefore, we need a special acceptance condition.
+
+--------------------------------------------------------------------
+4. BASIC IDEA
+-------------
+
+Input:
+
+    0101010101010101...
+
+Machine:
+
+       q0 --> q1 --> q0 --> q1 --> q0 --> ...
+        ^                               |
+        +-------------------------------+
+
+The machine never reaches a normal stopping point.
+
+So instead of asking:
+
+    "Did the machine stop in an accepting state?"
+
+we can ask something like:
+
+    "Does the machine visit an accepting state infinitely often?"
+
+--------------------------------------------------------------------
+5. BÜCHI AUTOMATA
+-----------------
+
+A Büchi automaton is one important type of omega automaton.
+
+It accepts an infinite input if the computation visits accepting
+states INFINITELY MANY TIMES.
+
+Suppose:
+
+    q0 = non-final
+    q1 = final
+
+and the computation is:
+
+    q0 -> q1 -> q0 -> q1 -> q0 -> q1 -> ...
+
+Then q1 is visited infinitely often.
+
+Therefore, the infinite input can be accepted under the Büchi
+acceptance condition.
+
+--------------------------------------------------------------------
+6. ASCII DIAGRAM
+----------------
+
+                 1
+             +-------+
+             |       v
+          -->q0 ----> q1*
+             ^         |
+             |         |
+             +---------+
+                  0
+
+Here:
+
+    q1* = accepting state.
+
+For an infinite computation:
+
+    q0 -> q1 -> q0 -> q1 -> q0 -> q1 -> ...
+
+q1 is encountered infinitely many times.
+
+--------------------------------------------------------------------
+7. FINITE AUTOMATA VS OMEGA AUTOMATA
+-------------------------------------
+
+    +----------------------+-------------------------+
+    | Finite Automata      | Omega Automata          |
+    +----------------------+-------------------------+
+    | Finite strings       | Infinite strings        |
+    | Usually halts        | May run forever         |
+    | Final-state          | Infinite-run acceptance |
+    | acceptance           | condition              |
+    +----------------------+-------------------------+
+
+--------------------------------------------------------------------
+8. APPLICATIONS
+----------------
+
+Omega automata are important in:
+
+    - verification
+    - model checking
+    - reactive systems
+    - concurrent systems
+    - infinite behaviors
+    - temporal logic
+
+For example, a system that continuously operates forever may need
+to satisfy:
+
+    "Whenever a request occurs, eventually a response occurs."
+
+Such properties concern infinite behavior.
+
+====================================================================
+IMPORTANT RELATIONSHIPS IN CHAPTER 29
+====================================================================
+
+1. MOORE MACHINE
+
+    State
+      |
+      v
+    Output
+
+    Output depends only on state.
+
+---------------------------------------------------------------
+
+2. MEALY MACHINE
+
+    State + Input
+          |
+          v
+        Output
+
+    Output depends on state and input.
+
+---------------------------------------------------------------
+
+3. FINITE TRANSDUCER
+
+    Input sequence
+          |
+          v
+      Transformation
+          |
+          v
+    Output sequence
+
+    Moore and Mealy machines are important examples.
+
+---------------------------------------------------------------
+
+4. SEQUENTIAL MACHINE
+
+    Current input
+         +
+    Stored state
+         |
+         v
+    Next state + output
+
+---------------------------------------------------------------
+
+5. TWO-WAY FINITE AUTOMATON
+
+    Input head:
+
+        <---->
+
+    It can move both left and right.
+
+    IMPORTANT:
+        It still recognizes only REGULAR LANGUAGES.
+
+---------------------------------------------------------------
+
+6. COUNTER AUTOMATON
+
+    Finite states
+         +
+      Counter
+         |
+         v
+    Additional memory
+
+---------------------------------------------------------------
+
+7. CELLULAR AUTOMATON
+
+    Many cells
+         +
+    Local rules
+         |
+         v
+    Global behavior
+
+---------------------------------------------------------------
+
+8. OMEGA AUTOMATON
+
+    Infinite input
+         |
+         v
+    Infinite computation
+         |
+         v
+    Special acceptance condition
+
+====================================================================
+MOST IMPORTANT DIFFERENCES
+====================================================================
+
+MOORE vs MEALY
+--------------
+
+    Moore:
+        output = f(state)
+
+    Mealy:
+        output = f(state, input)
+
+
+DFA vs TWO-WAY DFA
+------------------
+
+    DFA:
+        head moves essentially left -> right
+
+    2DFA:
+        head may move left and right
+
+    Language power:
+        Both recognize REGULAR LANGUAGES.
+
+
+PDA vs COUNTER AUTOMATON
+------------------------
+
+    PDA:
+        stack memory
+
+    Counter automaton:
+        counter-based memory
+
+
+FINITE AUTOMATON vs CELLULAR AUTOMATON
+--------------------------------------
+
+    Finite automaton:
+        one finite control mechanism
+
+    Cellular automaton:
+        many cells evolving according to local rules
+
+
+FINITE AUTOMATA vs OMEGA AUTOMATA
+---------------------------------
+
+    Finite automata:
+        finite input
+
+    Omega automata:
+        infinite input
+
+====================================================================
+B.TECH EXAM IMPORTANT POINTS
+====================================================================
+
+Remember these definitions:
+
+1. Moore machine
+
+    A finite-state machine whose output depends only on its current
+    state.
+
+2. Mealy machine
+
+    A finite-state machine whose output depends on the current state
+    and current input.
+
+3. Finite transducer
+
+    A finite-state machine that maps input sequences to output
+    sequences.
+
+4. Two-way finite automaton
+
+    A finite automaton whose input head can move in both directions.
+
+5. Counter automaton
+
+    An automaton augmented with one or more counters.
+
+6. Cellular automaton
+
+    A system of cells whose states evolve according to local
+    transition rules.
+
+7. Omega automaton
+
+    An automaton designed to process infinite input sequences using
+    an appropriate infinite-run acceptance condition.
+
+====================================================================
+IMPORTANT FORMULAS / NOTATION
+====================================================================
+
+MOORE:
+
+    M = (Q, Σ, Δ, δ, q0, λ)
+
+    δ : Q × Σ → Q
+
+    λ : Q → Δ
+
+
+MEALY:
+
+    M = (Q, Σ, Δ, δ, λ, q0)
+
+    δ : Q × Σ → Q
+
+    λ : Q × Σ → Δ
+
+
+TWO-WAY AUTOMATON:
+
+    δ(q,a) = (p,R)
+
+means:
+
+    current state = q
+    current symbol = a
+    next state = p
+    move head right.
+
+
+    δ(q,a) = (p,L)
+
+means:
+
+    next state = p
+    move head left.
+
+====================================================================
+COMMON MISTAKES
+====================================================================
+
+MISTAKE 1:
+    Thinking Moore output is written on transitions.
+
+CORRECT:
+    Moore output is associated with states.
+
+
+MISTAKE 2:
+    Thinking Mealy output depends only on state.
+
+CORRECT:
+    Mealy output depends on state AND input.
+
+
+MISTAKE 3:
+    Thinking 2DFA is more powerful than DFA.
+
+CORRECT:
+    2DFA and DFA recognize the same class of languages:
+    REGULAR LANGUAGES.
+
+
+MISTAKE 4:
+    Thinking a counter is the same as a stack.
+
+CORRECT:
+    Counter and stack are different memory mechanisms.
+
+
+MISTAKE 5:
+    Thinking cellular automata have only one state.
+
+CORRECT:
+    Each cell has a state, and the entire grid has a configuration.
+
+
+MISTAKE 6:
+    Applying ordinary DFA final-state acceptance directly to an
+    infinite input.
+
+CORRECT:
+    Infinite inputs require an appropriate omega acceptance
+    condition.
+
+====================================================================
+PRACTICE QUESTIONS — LEVEL 1
+====================================================================
+
+Q1. What is a Moore machine?
+
+Q2. What is a Mealy machine?
+
+Q3. On what does the output of a Moore machine depend?
+
+Q4. On what does the output of a Mealy machine depend?
+
+Q5. Where is output written in a Moore machine diagram?
+
+Q6. Where is output written in a Mealy machine diagram?
+
+Q7. What is a finite-state transducer?
+
+Q8. What is a sequential machine?
+
+Q9. What is a two-way finite automaton?
+
+Q10. Can a 2DFA move its input head in both directions?
+
+Q11. What is a counter automaton?
+
+Q12. What is a cellular automaton?
+
+Q13. What is an omega-word?
+
+Q14. Why are omega automata required?
+
+Q15. What is a Büchi automaton?
+
+====================================================================
+PRACTICE QUESTIONS — LEVEL 2
+====================================================================
+
+Q16. Write the formal tuple of a Moore machine.
+
+Q17. Write the transition and output functions of a Moore machine.
+
+Q18. Write the formal functions of a Mealy machine.
+
+Q19. Compare Moore and Mealy machines.
+
+Q20. Draw a Moore machine with two states and outputs 0 and 1.
+
+Q21. Draw a Mealy machine with two states and transition labels
+     input/output.
+
+Q22. Explain why a Moore machine may require more states than an
+     equivalent Mealy machine.
+
+Q23. Explain the difference between a DFA and a 2DFA.
+
+Q24. Explain why two-way movement does not necessarily increase
+     language-recognition power.
+
+Q25. Explain how a counter can be used to recognize a^n b^n.
+
+====================================================================
+PRACTICE QUESTIONS — LEVEL 3 / B.TECH
+====================================================================
+
+Q26. Construct a Moore machine that produces output 1 whenever the
+     machine is in a state representing an odd number of 1s read.
+
+Q27. Construct a corresponding Mealy machine.
+
+Q28. Convert a given Moore machine into an equivalent Mealy machine.
+
+Q29. Convert a given Mealy machine into an equivalent Moore machine.
+
+Q30. Explain finite transducers with a suitable example.
+
+Q31. Explain sequential machines and their relationship with Moore
+     and Mealy machines.
+
+Q32. Explain the working principle of a two-way finite automaton.
+
+Q33. Explain counter automata and compare them with PDA.
+
+Q34. Explain cellular automata with a suitable configuration diagram.
+
+Q35. Explain omega automata and why ordinary finite-string acceptance
+     is insufficient for infinite inputs.
+
+====================================================================
+GATE / COMPETITIVE CONCEPT CHECK
+====================================================================
+
+Q36. Which statement is correct?
+
+    A. Moore output depends only on input.
+    B. Moore output depends only on state.
+    C. Mealy output depends only on state.
+    D. Mealy output is independent of input.
+
+Answer should be determined from the definitions.
+
+--------------------------------------------------------------------
+
+Q37. Which statement about a 2DFA is correct?
+
+    A. It recognizes a strictly larger class than DFA.
+    B. It recognizes exactly the regular languages.
+    C. It recognizes all CFLs.
+    D. It is equivalent to a PDA in power.
+
+--------------------------------------------------------------------
+
+Q38. In a Mealy machine, an edge labeled:
+
+        1/0
+
+means:
+
+    A. state 1, output 0
+    B. input 1, output 0
+    C. input 0, output 1
+    D. state 0, output 1
+
+--------------------------------------------------------------------
+
+Q39. Which machine naturally processes infinite input sequences?
+
+    A. Ordinary DFA only
+    B. Moore machine only
+    C. Omega automaton
+    D. Finite transducer only
+
+--------------------------------------------------------------------
+
+Q40. Which memory mechanism is characteristic of a PDA?
+
+    A. Counter
+    B. Stack
+    C. Infinite grid
+    D. Output function
+
+====================================================================
+ACTIVE RECALL — DO NOT LOOK AT NOTES
+====================================================================
+
+Try answering these from memory:
+
+1. What is the central difference between Moore and Mealy machines?
+
+2. Where is the output stored in a Moore machine?
+
+3. Where is the output represented in a Mealy machine?
+
+4. What is a finite transducer?
+
+5. What does "two-way" mean in 2DFA?
+
+6. Does a 2DFA recognize non-regular languages?
+
+7. What additional memory does a counter automaton have?
+
+8. What is the basic idea of a cellular automaton?
+
+9. What is an omega-word?
+
+10. Why does an omega automaton need a special acceptance condition?
+
+====================================================================
+CHAPTER 29 QUICK REVISION
+====================================================================
+
+                 ADVANCED AUTOMATA THEORY
+                           |
+       +-------------------+-------------------+
+       |                   |                   |
+     OUTPUT              MEMORY             INFINITE
+    MACHINES             MODELS              INPUT
+       |                   |                   |
+   +---+---+          +----+----+             |
+   |       |          |         |             |
+ Moore   Mealy     2DFA     Counter           |
+   |       |                              Omega automata
+   +---+---+                                  |
+       |                                    Büchi
+  Transducers                              automata
+       |
+ Sequential
+  machines
+
+CELLULAR AUTOMATA
+        |
+        v
+ Many cells + local rules
+        |
+        v
+ Complex global behavior
+
+====================================================================
+ONE-MINUTE MEMORY SHEET
+====================================================================
+
+MOORE
+    Output = State
+
+MEALY
+    Output = State + Input
+
+TRANSDUCER
+    Input -> Output
+
+SEQUENTIAL MACHINE
+    State/Memory + Input -> Next State + Output
+
+2DFA
+    Finite automaton + left/right head movement
+    Power = Regular languages
+
+COUNTER AUTOMATON
+    Finite control + counter
+
+CELLULAR AUTOMATON
+    Cells + neighborhoods + local rules
+
+OMEGA AUTOMATON
+    Infinite input + infinite-run acceptance
+
+BÜCHI AUTOMATON
+    Accept if an accepting state is visited infinitely often.
+
+====================================================================
+CHAPTER 29 EXAM SUMMARY
+====================================================================
+
+The most important ideas are:
+
+    1. Moore machines associate outputs with STATES.
+
+    2. Mealy machines associate outputs with TRANSITIONS.
+
+    3. Moore:
+           λ : Q → Δ
+
+       Mealy:
+           λ : Q × Σ → Δ
+
+    4. Moore and Mealy machines are finite-state transducers.
+
+    5. Two-way finite automata can move their input head both left
+       and right.
+
+    6. Two-way finite automata do NOT recognize more languages than
+       ordinary finite automata.
+
+    7. Counter automata add counter-based memory.
+
+    8. Cellular automata consist of many cells evolving according
+       to local rules.
+
+    9. Omega automata process infinite strings.
+
+   10. Büchi automata are a major example of omega automata.
+
+====================================================================
+CHAPTER 29 STATUS
+====================================================================
+
+CHAPTER 29 — ADVANCED AUTOMATA THEORY
+
+Topics covered:
+    [✓] Moore machines
+    [✓] Mealy machines
+    [✓] Moore vs Mealy
+    [✓] Finite transducers
+    [✓] Sequential machines
+    [✓] Two-way finite automata
+    [✓] Counter automata
+    [✓] Cellular automata
+    [✓] Omega automata — introduction
+
+====================================================================
+UPCOMING NEXT TOPIC
+====================================================================
+
+NEXT CHAPTER:
+
+    CHAPTER 30 — ADVANCED LANGUAGE THEORY
+
+FIRST TOPIC:
+
+    30.1 REGULAR LANGUAGE ALGEBRA
+
+After that, we will continue one topic/chapter at a time according
+to your syllabus.
+
+====================================================================
+END OF CHAPTER 29
+====================================================================

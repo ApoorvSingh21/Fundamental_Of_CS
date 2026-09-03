@@ -1,0 +1,2476 @@
+============================================================
+CHAPTER 3 — INTRODUCTION TO FORMAL LANGUAGES
+============================================================
+
+PREREQUISITE:
+Chapter 1 — Introduction to Theory of Computation
+Chapter 2 — Mathematical Foundations
+
+CHAPTER GOAL:
+By the end of this chapter, you should clearly understand:
+
+    Symbol
+       ↓
+    Alphabet
+       ↓
+    String
+       ↓
+    String Operations
+       ↓
+    Language
+       ↓
+    Language Operations
+       ↓
+    Regular / Non-Regular Languages
+
+These concepts are the FOUNDATION for:
+DFA → NFA → ε-NFA → Regular Expressions → CFG → PDA → TM
+
+============================================================
+1. WHAT IS A FORMAL LANGUAGE?
+============================================================
+
+Before understanding "formal language", remember the ordinary
+meaning of language.
+
+Human language:
+    English, Hindi, Bengali, Japanese, etc.
+
+A human language allows us to communicate ideas.
+
+In Theory of Computation, however, we are interested in
+languages that can be described precisely using mathematical
+rules.
+
+A FORMAL LANGUAGE is a mathematically defined collection of
+strings formed using symbols from a specified alphabet.
+
+Simple idea:
+
+    Alphabet
+       ↓
+    Symbols
+       ↓
+    Strings
+       ↓
+    Collection of strings
+       ↓
+    Language
+
+
+FORMAL DEFINITION:
+
+If Σ is an alphabet, then a language L over Σ is any subset
+of Σ*.
+
+                L ⊆ Σ*
+
+Here:
+
+    L  = language
+    Σ  = alphabet
+    Σ* = set of all finite strings that can be formed from Σ
+
+Do not worry if Σ* looks unfamiliar.
+We will build it step by step.
+
+============================================================
+2. SYMBOL
+============================================================
+
+A SYMBOL is a single basic element used to construct strings.
+
+Examples:
+
+    0
+    1
+    a
+    b
+    x
+    y
+
+In a computer:
+
+    0 and 1
+
+can be treated as symbols.
+
+Example:
+
+    "101"
+
+contains three symbols:
+
+    1    0    1
+
+
+IMPORTANT:
+
+A symbol is NOT necessarily a number.
+
+For example:
+
+    a
+
+may simply be a symbol.
+
+It does not necessarily represent the mathematical number a.
+
+============================================================
+3. ALPHABET
+============================================================
+
+An ALPHABET is a finite, non-empty set of symbols.
+
+FORMAL DEFINITION:
+
+An alphabet is usually represented by the Greek letter:
+
+    Σ (sigma)
+
+Example:
+
+    Σ = {0,1}
+
+This is called the binary alphabet.
+
+Another example:
+
+    Σ = {a,b}
+
+Another:
+
+    Σ = {a,b,c}
+
+Another:
+
+    Σ = {0,1,2,3,4,5,6,7,8,9}
+
+This can represent decimal digits.
+
+------------------------------------------------------------
+ASCII VIEW
+------------------------------------------------------------
+
+For:
+
+    Σ = {a,b}
+
+we have:
+
+        +----------------+
+        |    ALPHABET    |
+        |                |
+        |      {a,b}     |
+        +----------------+
+           ↓       ↓
+        symbol   symbol
+           a       b
+
+------------------------------------------------------------
+
+IMPORTANT PROPERTIES OF AN ALPHABET:
+
+1. It must contain symbols.
+2. It must be finite.
+3. It must not be empty.
+
+Example:
+
+    {0,1}          → valid alphabet
+    {a,b,c}        → valid alphabet
+    {0,1,2,...,9}  → valid alphabet
+
+============================================================
+4. FINITE ALPHABET
+============================================================
+
+A finite alphabet contains a finite number of symbols.
+
+Example:
+
+    Σ = {0,1}
+
+has 2 symbols.
+
+    Σ = {a,b,c}
+
+has 3 symbols.
+
+In TOC, alphabets are normally finite.
+
+------------------------------------------------------------
+WHY?
+------------------------------------------------------------
+
+Computational models such as DFA need a clearly defined set
+of possible input symbols.
+
+For example:
+
+    Input alphabet = {0,1}
+
+means the machine expects binary input.
+
+============================================================
+5. BINARY ALPHABET
+============================================================
+
+The most commonly used alphabet in TOC is:
+
+    Σ = {0,1}
+
+This is called the binary alphabet.
+
+Examples of strings over this alphabet:
+
+    0
+    1
+    00
+    01
+    10
+    11
+    101
+    11001
+    000111
+
+But:
+
+    012
+
+is NOT a string over {0,1}
+
+because 2 is not in the alphabet.
+
+============================================================
+6. STRING
+============================================================
+
+A STRING is a finite sequence of symbols from an alphabet.
+
+Suppose:
+
+    Σ = {a,b}
+
+Then:
+
+    ab
+    aab
+    ba
+    bbaa
+    abab
+
+are strings over Σ.
+
+Example:
+
+    w = abba
+
+The string contains:
+
+    a → symbol
+    b → symbol
+    b → symbol
+    a → symbol
+
+Therefore:
+
+    length(w) = 4
+
+------------------------------------------------------------
+FORMAL DEFINITION
+------------------------------------------------------------
+
+If:
+
+    Σ = an alphabet
+
+then a string over Σ is a finite sequence of symbols belonging
+to Σ.
+
+Example:
+
+    Σ = {0,1}
+
+    w = 10110
+
+is a string over Σ.
+
+============================================================
+7. STRING LENGTH
+============================================================
+
+The length of a string is the number of symbols in it.
+
+The length is written as:
+
+    |w|
+
+Example:
+
+    w = 101
+
+Therefore:
+
+    |w| = 3
+
+Example:
+
+    w = abcde
+
+    |w| = 5
+
+Example:
+
+    w = 111111
+
+    |w| = 6
+
+------------------------------------------------------------
+IMPORTANT:
+
+Length counts symbols, NOT the numerical value.
+
+For:
+
+    w = 00101
+
+we have:
+
+    |w| = 5
+
+not 5 because of its numerical interpretation,
+but because it contains five symbols.
+
+============================================================
+8. EMPTY STRING
+============================================================
+
+The EMPTY STRING is a string containing ZERO symbols.
+
+It is represented by:
+
+    ε
+
+Sometimes other textbooks use:
+
+    λ
+
+but ε is extremely common.
+
+Therefore:
+
+    |ε| = 0
+
+IMPORTANT:
+
+    ε is a STRING.
+
+It is NOT a symbol.
+
+It is the string with zero symbols.
+
+------------------------------------------------------------
+ASCII IDEA
+------------------------------------------------------------
+
+Normal string:
+
+    1 0 1 1
+
+    length = 4
+
+Empty string:
+
+    [ nothing ]
+
+    length = 0
+
+Represented as:
+
+    ε
+
+============================================================
+9. EMPTY STRING vs EMPTY LANGUAGE
+============================================================
+
+This is one of the MOST IMPORTANT distinctions in TOC.
+
+EMPTY STRING:
+
+    ε
+
+It is one string.
+
+Its length is:
+
+    |ε| = 0
+
+EMPTY LANGUAGE:
+
+    ∅
+
+It contains NO strings.
+
+Therefore:
+
+    ε ≠ ∅
+
+Think:
+
+    ε = "a box containing one special string of length 0"
+
+    ∅ = "a box containing nothing"
+
+------------------------------------------------------------
+EXAMPLE
+------------------------------------------------------------
+
+Language:
+
+    L1 = {ε}
+
+contains one string.
+
+Therefore:
+
+    |L1| = 1
+
+Language:
+
+    L2 = ∅
+
+contains zero strings.
+
+Therefore:
+
+    |L2| = 0
+
+============================================================
+10. STRING NOTATION
+============================================================
+
+A string may be represented by:
+
+    w
+    x
+    y
+    z
+
+Example:
+
+    w = 10101
+
+We can say:
+
+    w is a string over Σ = {0,1}
+
+If:
+
+    w = abc
+
+then:
+
+    |w| = 3
+
+============================================================
+11. Σ* — KLEENE STAR OF AN ALPHABET
+============================================================
+
+This is an extremely important concept.
+
+Suppose:
+
+    Σ = {0,1}
+
+Then:
+
+    Σ*
+
+means:
+
+    "ALL FINITE STRINGS that can be formed using symbols
+     from Σ, including the empty string."
+
+Therefore:
+
+    Σ* =
+    {ε,
+     0,
+     1,
+     00,
+     01,
+     10,
+     11,
+     000,
+     001,
+     010,
+     011,
+     ...}
+
+There are infinitely many strings.
+
+------------------------------------------------------------
+FORMAL DEFINITION
+------------------------------------------------------------
+
+    Σ* = Σ⁰ ∪ Σ¹ ∪ Σ² ∪ Σ³ ∪ ...
+
+where:
+
+    Σ⁰ = {ε}
+
+    Σ¹ = all strings of length 1
+
+    Σ² = all strings of length 2
+
+    Σ³ = all strings of length 3
+
+and so on.
+
+For:
+
+    Σ = {0,1}
+
+we get:
+
+    Σ⁰ = {ε}
+
+    Σ¹ = {0,1}
+
+    Σ² = {00,01,10,11}
+
+    Σ³ = {000,001,010,011,100,101,110,111}
+
+Therefore:
+
+    Σ* = Σ⁰ ∪ Σ¹ ∪ Σ² ∪ ...
+
+============================================================
+12. Σ+ — KLEENE PLUS
+============================================================
+
+Kleene Plus is represented as:
+
+    Σ+
+
+It means:
+
+    ALL NON-EMPTY FINITE STRINGS over Σ.
+
+Therefore:
+
+    Σ+ = Σ¹ ∪ Σ² ∪ Σ³ ∪ ...
+
+Relationship:
+
+    Σ+ = Σ* - {ε}
+
+or:
+
+    Σ+ = ΣΣ*
+
+------------------------------------------------------------
+EXAMPLE
+
+If:
+
+    Σ = {a,b}
+
+then:
+
+    Σ* contains:
+
+    ε, a, b, aa, ab, ba, bb, ...
+
+while:
+
+    Σ+ contains:
+
+    a, b, aa, ab, ba, bb, ...
+
+but NOT ε.
+
+------------------------------------------------------------
+IMPORTANT:
+
+    ε ∈ Σ*
+
+but:
+
+    ε ∉ Σ+
+
+============================================================
+13. STRING CONCATENATION
+============================================================
+
+Concatenation means joining two strings together.
+
+Suppose:
+
+    x = abc
+    y = 101
+
+Then:
+
+    xy = abc101
+
+We simply place y after x.
+
+------------------------------------------------------------
+EXAMPLE
+
+    x = 01
+    y = 10
+
+Then:
+
+    xy = 0110
+
+But:
+
+    yx = 1001
+
+Therefore, generally:
+
+    xy ≠ yx
+
+This means string concatenation is generally
+NON-COMMUTATIVE.
+
+------------------------------------------------------------
+ASCII:
+
+    x = ABC
+
+    y = XYZ
+
+    x + y
+
+        ABC | XYZ
+        ↓
+       ABCXYZ
+
+============================================================
+14. PROPERTIES OF CONCATENATION
+============================================================
+
+PROPERTY 1 — ASSOCIATIVE
+
+    (xy)z = x(yz)
+
+Example:
+
+    x = a
+    y = b
+    z = c
+
+Then:
+
+    (ab)c = abc
+
+and:
+
+    a(bc) = abc
+
+Therefore:
+
+    (xy)z = x(yz)
+
+------------------------------------------------------------
+PROPERTY 2 — NOT GENERALLY COMMUTATIVE
+
+Generally:
+
+    xy ≠ yx
+
+Example:
+
+    x = ab
+    y = cd
+
+    xy = abcd
+
+    yx = cdab
+
+Therefore:
+
+    xy ≠ yx
+
+------------------------------------------------------------
+PROPERTY 3 — ε IS IDENTITY
+
+For every string x:
+
+    εx = x
+
+and:
+
+    xε = x
+
+Example:
+
+    x = abc
+
+    εabc = abc
+
+    abcε = abc
+
+============================================================
+15. POWER OF A STRING
+============================================================
+
+String powers mean repeated concatenation.
+
+For a string w:
+
+    w⁰ = ε
+
+    w¹ = w
+
+    w² = ww
+
+    w³ = www
+
+and so on.
+
+------------------------------------------------------------
+EXAMPLE
+
+Let:
+
+    w = ab
+
+Then:
+
+    w⁰ = ε
+
+    w¹ = ab
+
+    w² = abab
+
+    w³ = ababab
+
+    w⁴ = abababab
+
+------------------------------------------------------------
+IMPORTANT:
+
+Do NOT confuse:
+
+    w²
+
+with numerical squaring.
+
+It means:
+
+    concatenate w with itself.
+
+============================================================
+16. REVERSAL OF A STRING
+============================================================
+
+Reversal means writing the string backwards.
+
+The reverse of w is written as:
+
+    wᴿ
+
+or sometimes:
+
+    w^R
+
+Example:
+
+    w = abc
+
+Then:
+
+    wᴿ = cba
+
+Example:
+
+    w = 10110
+
+Then:
+
+    wᴿ = 01101
+
+------------------------------------------------------------
+PALINDROME
+
+A string is a palindrome if it reads the same
+forward and backward.
+
+Example:
+
+    aba
+
+Reverse:
+
+    aba
+
+Therefore:
+
+    aba is a palindrome.
+
+Example:
+
+    10101
+
+Reverse:
+
+    10101
+
+Therefore it is a palindrome.
+
+Example:
+
+    abc
+
+Reverse:
+
+    cba
+
+Therefore it is NOT a palindrome.
+
+------------------------------------------------------------
+IMPORTANT PROPERTY:
+
+    (xy)ᴿ = yᴿxᴿ
+
+The order reverses.
+
+============================================================
+17. PREFIX
+============================================================
+
+A PREFIX is a beginning portion of a string.
+
+Let:
+
+    w = abcde
+
+Prefixes include:
+
+    ε
+    a
+    ab
+    abc
+    abcd
+    abcde
+
+Therefore:
+
+    ε, a, ab, abc, abcd, abcde
+
+are prefixes of abcde.
+
+------------------------------------------------------------
+PROPER PREFIX
+
+A proper prefix is a prefix that is NOT the complete string.
+
+For:
+
+    w = abcde
+
+proper prefixes:
+
+    ε
+    a
+    ab
+    abc
+    abcd
+
+But:
+
+    abcde
+
+is not a proper prefix.
+
+============================================================
+18. SUFFIX
+============================================================
+
+A SUFFIX is an ending portion of a string.
+
+For:
+
+    w = abcde
+
+suffixes include:
+
+    ε
+    e
+    de
+    cde
+    bcde
+    abcde
+
+------------------------------------------------------------
+PROPER SUFFIX
+
+All suffixes except the complete string.
+
+Therefore:
+
+    ε
+    e
+    de
+    cde
+    bcde
+
+are proper suffixes.
+
+============================================================
+19. PREFIX vs SUFFIX
+============================================================
+
+Take:
+
+    w = COMPUTER
+
+PREFIX:
+
+    C
+    CO
+    COM
+    COMP
+    ...
+
+SUFFIX:
+
+    R
+    ER
+    TER
+    UTER
+    ...
+
+Simple memory trick:
+
+    PREFIX → starts from FRONT
+
+    SUFFIX → starts from END
+
+============================================================
+20. SUBSTRING
+============================================================
+
+A SUBSTRING is a contiguous portion of a string.
+
+"Contiguous" means the symbols must appear next to each other.
+
+Example:
+
+    w = abcde
+
+Substrings include:
+
+    a
+    b
+    c
+    d
+    e
+    ab
+    bc
+    cd
+    de
+    abc
+    bcd
+    cde
+    abcd
+    bcde
+    abcde
+    ε
+
+But:
+
+    ace
+
+is NOT a substring.
+
+Why?
+
+Because a, c, e are not contiguous.
+
+============================================================
+21. SUBSEQUENCE
+============================================================
+
+A SUBSEQUENCE does NOT require symbols to be contiguous.
+
+Symbols must only appear in the same relative order.
+
+Example:
+
+    w = abcde
+
+Then:
+
+    ace
+
+is a subsequence.
+
+Why?
+
+    a → appears first
+    c → appears after a
+    e → appears after c
+
+But:
+
+    ace
+
+is NOT a substring.
+
+------------------------------------------------------------
+IMPORTANT DIFFERENCE:
+
+    SUBSTRING → contiguous
+
+    SUBSEQUENCE → not necessarily contiguous
+
+Example:
+
+    w = abcde
+
+    "ace"
+
+    substring?    NO
+    subsequence?  YES
+
+============================================================
+22. STRING CONCEPT SUMMARY
+============================================================
+
+For:
+
+    w = abcde
+
+we have:
+
+    PREFIX:
+        ε, a, ab, abc, abcd, abcde
+
+    SUFFIX:
+        ε, e, de, cde, bcde, abcde
+
+    SUBSTRING:
+        ε, a, b, c, d, e, ab, bc, cd, de, ...
+
+    SUBSEQUENCE:
+        ε, a, b, ..., ace, abd, ...
+
+Remember:
+
+    Prefix  → beginning
+    Suffix  → ending
+    Substring → contiguous
+    Subsequence → ordered but not necessarily contiguous
+
+============================================================
+23. LANGUAGE
+============================================================
+
+Now we reach the most important concept.
+
+A LANGUAGE is a SET OF STRINGS.
+
+Suppose:
+
+    Σ = {0,1}
+
+Then:
+
+    L = {0, 1, 01, 10}
+
+is a language over Σ.
+
+Another language:
+
+    L = {ε, 0, 00, 000, 0000, ...}
+
+Another:
+
+    L = {w | w contains at least one 1}
+
+These are all languages.
+
+------------------------------------------------------------
+FORMAL DEFINITION:
+
+A language L over alphabet Σ is:
+
+    L ⊆ Σ*
+
+In words:
+
+    A language is any collection of finite strings
+    formed from an alphabet.
+
+------------------------------------------------------------
+ASCII:
+
+       ALPHABET
+          |
+          v
+      Σ = {0,1}
+          |
+          v
+       Σ*
+   all possible
+     strings
+          |
+          v
+    +-------------+
+    |   LANGUAGE  |
+    |             |
+    |  0          |
+    |  01         |
+    |  101        |
+    |  111        |
+    +-------------+
+
+============================================================
+24. EMPTY LANGUAGE
+============================================================
+
+The EMPTY LANGUAGE contains no strings.
+
+It is represented by:
+
+    ∅
+
+Therefore:
+
+    ∅ = { }
+
+Important:
+
+    ∅ ≠ {ε}
+
+Because:
+
+    ∅       → zero strings
+
+    {ε}     → one string, namely ε
+
+This distinction is VERY important in examinations.
+
+============================================================
+25. SINGLETON LANGUAGE
+============================================================
+
+A language containing exactly one string is called a
+SINGLETON LANGUAGE.
+
+Example:
+
+    L = {abc}
+
+contains exactly one string.
+
+Therefore:
+
+    L is a singleton language.
+
+Another:
+
+    L = {ε}
+
+is also a singleton language.
+
+============================================================
+26. FINITE LANGUAGE
+============================================================
+
+A finite language contains a finite number of strings.
+
+Example:
+
+    L = {a, b, ab, ba}
+
+contains four strings.
+
+Therefore it is finite.
+
+============================================================
+27. INFINITE LANGUAGE
+============================================================
+
+An infinite language contains infinitely many strings.
+
+Example:
+
+    L = {ε, 0, 00, 000, 0000, ...}
+
+This language contains infinitely many strings.
+
+We can describe it more formally as:
+
+    L = {0ⁿ | n ≥ 0}
+
+For:
+
+    n = 0 → ε
+    n = 1 → 0
+    n = 2 → 00
+    n = 3 → 000
+    ...
+
+Therefore it is infinite.
+
+============================================================
+28. LANGUAGE OVER AN ALPHABET
+============================================================
+
+A language over Σ must contain only strings made from symbols
+of Σ.
+
+Example:
+
+    Σ = {a,b}
+
+Valid language:
+
+    L = {a, ab, bba}
+
+because all strings use only a and b.
+
+Invalid:
+
+    L = {a, abc}
+
+because c ∉ Σ.
+
+Therefore:
+
+    L is not a language over {a,b}.
+
+============================================================
+29. UNION OF LANGUAGES
+============================================================
+
+Suppose:
+
+    L1 = {a, b}
+
+    L2 = {b, c}
+
+Then:
+
+    L1 ∪ L2 = {a,b,c}
+
+Union means:
+
+    strings belonging to L1 OR L2.
+
+------------------------------------------------------------
+FORMAL:
+
+    L1 ∪ L2 = {w | w ∈ L1 OR w ∈ L2}
+
+============================================================
+30. INTERSECTION OF LANGUAGES
+============================================================
+
+Intersection contains strings common to both languages.
+
+Suppose:
+
+    L1 = {a,b,c}
+
+    L2 = {b,c,d}
+
+Then:
+
+    L1 ∩ L2 = {b,c}
+
+============================================================
+31. DIFFERENCE OF LANGUAGES
+============================================================
+
+Difference:
+
+    L1 - L2
+
+means:
+
+    strings in L1 but NOT in L2.
+
+Example:
+
+    L1 = {a,b,c}
+
+    L2 = {b,c,d}
+
+Then:
+
+    L1 - L2 = {a}
+
+But:
+
+    L2 - L1 = {d}
+
+Therefore language difference is directional.
+
+============================================================
+32. COMPLEMENT OF A LANGUAGE
+============================================================
+
+Complement depends on the alphabet.
+
+Suppose:
+
+    Σ = {0,1}
+
+and:
+
+    L = {0, 00, 01}
+
+Then:
+
+    L̅
+
+contains every string in:
+
+    Σ*
+
+that is NOT in L.
+
+Therefore:
+
+    L̅ = Σ* - L
+
+------------------------------------------------------------
+VERY IMPORTANT:
+
+Complement is always relative to a universe.
+
+In TOC, the universe is usually:
+
+    Σ*
+
+============================================================
+33. CONCATENATION OF LANGUAGES
+============================================================
+
+Language concatenation is different from string
+concatenation, but it is based on the same idea.
+
+Suppose:
+
+    L1 = {a,b}
+
+    L2 = {0,1}
+
+Then:
+
+    L1L2
+
+contains every possible string obtained by taking
+one string from L1 followed by one string from L2.
+
+Therefore:
+
+    L1L2 =
+    {a0, a1, b0, b1}
+
+------------------------------------------------------------
+FORMAL DEFINITION:
+
+    L1L2 = {xy | x ∈ L1 and y ∈ L2}
+
+============================================================
+34. LANGUAGE POWER
+============================================================
+
+Just like strings have powers, languages also have powers.
+
+For a language L:
+
+    L⁰ = {ε}
+
+    L¹ = L
+
+    L² = LL
+
+    L³ = LLL
+
+and so on.
+
+Example:
+
+    L = {a,b}
+
+Then:
+
+    L² = {aa, ab, ba, bb}
+
+because we concatenate every element with every element.
+
+============================================================
+35. KLEENE STAR OF A LANGUAGE
+============================================================
+
+The Kleene star of a language L is:
+
+    L*
+
+It means zero or more concatenations of strings from L.
+
+FORMALLY:
+
+    L* = L⁰ ∪ L¹ ∪ L² ∪ L³ ∪ ...
+
+Since:
+
+    L⁰ = {ε}
+
+we always have:
+
+    ε ∈ L*
+
+------------------------------------------------------------
+EXAMPLE:
+
+Let:
+
+    L = {a}
+
+Then:
+
+    L⁰ = {ε}
+    L¹ = {a}
+    L² = {aa}
+    L³ = {aaa}
+    ...
+
+Therefore:
+
+    L* = {ε, a, aa, aaa, aaaa, ...}
+
+============================================================
+36. KLEENE PLUS OF A LANGUAGE
+============================================================
+
+Kleene Plus is:
+
+    L+
+
+It means one or more repetitions.
+
+Therefore:
+
+    L+ = L¹ ∪ L² ∪ L³ ∪ ...
+
+Relationship:
+
+    L+ = LL*
+
+and:
+
+    L* = L+ ∪ {ε}
+
+------------------------------------------------------------
+EXAMPLE:
+
+    L = {a}
+
+Then:
+
+    L+ = {a, aa, aaa, aaaa, ...}
+
+while:
+
+    L* = {ε, a, aa, aaa, ...}
+
+Thus:
+
+    ε ∈ L*
+
+but:
+
+    ε ∉ L+
+
+============================================================
+37. REVERSAL OF A LANGUAGE
+============================================================
+
+The reversal of a language is the set containing reversals
+of every string in the language.
+
+If:
+
+    L = {ab, abc, 10}
+
+then:
+
+    Lᴿ = {ba, cba, 01}
+
+Formally:
+
+    Lᴿ = {wᴿ | w ∈ L}
+
+============================================================
+38. QUOTIENT OF LANGUAGES
+============================================================
+
+This is a more advanced operation.
+
+For languages L1 and L2, the LEFT QUOTIENT is commonly written:
+
+    L1⁻¹L2
+
+and is defined as the set of strings x such that there exists
+some y in L1 for which:
+
+    xy ∈ L2
+
+This operation becomes important in advanced regular-language
+theory and automata theory.
+
+For first-year study, understand the basic idea:
+
+    "Remove a prefix belonging to one language and examine
+     what remains."
+
+We will revisit quotient more deeply in advanced language theory.
+
+============================================================
+39. LANGUAGE EQUIVALENCE
+============================================================
+
+Two languages are equivalent if they contain exactly the
+same strings.
+
+If:
+
+    L1 = {a, ab, b}
+
+and:
+
+    L2 = {b, a, ab}
+
+then:
+
+    L1 = L2
+
+Order does not matter because languages are sets.
+
+Therefore:
+
+    {a,b} = {b,a}
+
+============================================================
+40. CLOSURE PROPERTY
+============================================================
+
+A language family/class is CLOSED under an operation if
+applying that operation to languages in the family always
+produces another language in the same family.
+
+Example:
+
+Regular languages are closed under:
+
+    Union
+    Intersection
+    Complement
+    Concatenation
+    Kleene Star
+    Reversal
+
+This means:
+
+If:
+
+    L1 and L2 are regular,
+
+then:
+
+    L1 ∪ L2
+
+is also regular.
+
+We will study closure properties in detail later.
+
+============================================================
+41. REGULAR LANGUAGE
+============================================================
+
+A REGULAR LANGUAGE is a language that can be recognized by
+a finite automaton.
+
+For example, a language recognized by a DFA is regular.
+
+Equivalent descriptions include:
+
+    Regular Language
+          |
+          +---- DFA
+          |
+          +---- NFA
+          |
+          +---- ε-NFA
+          |
+          +---- Regular Expression
+          |
+          +---- Regular Grammar
+
+These models have the same expressive power.
+
+------------------------------------------------------------
+EXAMPLE:
+
+    L = {w ∈ {0,1}* | w ends in 1}
+
+This language is regular.
+
+A DFA can recognize it.
+
+A regular expression can also represent it:
+
+    (0|1)*1
+
+============================================================
+42. NON-REGULAR LANGUAGE
+============================================================
+
+A non-regular language is a language that cannot be recognized
+by any finite automaton.
+
+A famous example is:
+
+    L = {0ⁿ1ⁿ | n ≥ 0}
+
+This contains:
+
+    ε
+    01
+    0011
+    000111
+    00001111
+    ...
+
+The language requires matching the number of 0s with the
+number of 1s.
+
+A finite automaton does not have enough memory to perform
+this unbounded counting.
+
+Therefore:
+
+    {0ⁿ1ⁿ | n ≥ 0}
+
+is non-regular.
+
+We will formally prove such results later using the
+Pumping Lemma and Myhill-Nerode theorem.
+
+============================================================
+43. REGULAR vs NON-REGULAR
+============================================================
+
++----------------------+-----------------------------+
+| REGULAR              | NON-REGULAR                |
++----------------------+-----------------------------+
+| Recognized by DFA    | Cannot be recognized by    |
+|                      | finite automaton           |
++----------------------+-----------------------------+
+| Can be represented   | Cannot be represented      |
+| by regular expression| by regular expression      |
++----------------------+-----------------------------+
+| Limited memory       | Requires more memory       |
+| behavior             | than finite automata       |
++----------------------+-----------------------------+
+| Example:             | Example:                   |
+| strings ending in 1  | {0ⁿ1ⁿ | n ≥ 0}             |
++----------------------+-----------------------------+
+
+============================================================
+44. IMPORTANT ASCII CONCEPT MAP
+============================================================
+
+                 FORMAL LANGUAGE
+                       |
+             +---------+---------+
+             |                   |
+          Alphabet              Language
+             |                   |
+             v                   v
+          Symbols              Strings
+                                 |
+                  +--------------+--------------+
+                  |              |              |
+               Prefix          Suffix        Substring
+                                 |
+                              Operations
+                                 |
+            +--------------------+--------------------+
+            |         |          |        |           |
+           Union   Intersection  -    Concatenation   *
+                                                |
+                                                +
+                                         Kleene Operations
+
+============================================================
+45. COMPLETE EXAMPLE
+============================================================
+
+Let:
+
+    Σ = {0,1}
+
+Define:
+
+    L = {w ∈ Σ* | w ends in 1}
+
+Let's understand this carefully.
+
+STEP 1:
+Alphabet:
+
+    Σ = {0,1}
+
+STEP 2:
+Possible strings belong to:
+
+    Σ*
+
+Examples:
+
+    ε
+    0
+    1
+    00
+    01
+    10
+    11
+    000
+    001
+    ...
+
+STEP 3:
+Our language selects only strings ending in 1.
+
+Therefore:
+
+    L = {1, 01, 11, 001, 101, 111, ...}
+
+Strings NOT in L:
+
+    ε
+    0
+    00
+    10
+    100
+
+because they do not end in 1.
+
+------------------------------------------------------------
+ASCII IDEA:
+
+                    Σ*
+             all binary strings
+                    |
+          +---------+---------+
+          |                   |
+       ends in 1          does not end in 1
+          |                   |
+          v                   v
+          L                 outside L
+
+============================================================
+46. ANOTHER IMPORTANT EXAMPLE
+============================================================
+
+Let:
+
+    Σ = {a,b}
+
+Define:
+
+    L = {w | w contains at least one a}
+
+Some strings in L:
+
+    a
+    ab
+    ba
+    aa
+    aba
+    bba
+    aabb
+
+Some strings NOT in L:
+
+    ε
+    b
+    bb
+    bbb
+    bbbb
+
+Notice:
+
+    L = Σ* - {b}*
+
+This is an example of using language operations.
+
+============================================================
+47. MATHEMATICAL NOTATION CHEAT SHEET
+============================================================
+
+SYMBOL             MEANING
+------------------------------------------------------------
+
+    Σ               Alphabet
+
+    Σ*              All finite strings over Σ,
+                    including ε
+
+    Σ+              All non-empty finite strings over Σ
+
+    ε               Empty string
+
+    ∅               Empty language/set
+
+    |w|             Length of string w
+
+    wᴿ              Reverse of w
+
+    L               Language
+
+    L1 ∪ L2         Union
+
+    L1 ∩ L2         Intersection
+
+    L1 - L2         Difference
+
+    L̅               Complement
+
+    L1L2            Language concatenation
+
+    L*              Kleene star
+
+    L+              Kleene plus
+
+    L ⊆ Σ*          L is a language over Σ
+
+============================================================
+48. MOST IMPORTANT DISTINCTIONS
+============================================================
+
+1. SYMBOL vs STRING
+
+Symbol:
+    one element
+
+String:
+    sequence of symbols
+
+Example:
+
+    Alphabet = {0,1}
+
+    0 → symbol
+    101 → string
+
+
+2. EMPTY STRING vs EMPTY LANGUAGE
+
+    ε → one string of length zero
+
+    ∅ → zero strings
+
+
+3. Σ* vs Σ+
+
+    Σ* → zero or more symbols
+
+    Σ+ → one or more symbols
+
+
+4. PREFIX vs SUFFIX
+
+    Prefix → beginning
+
+    Suffix → ending
+
+
+5. SUBSTRING vs SUBSEQUENCE
+
+    Substring → contiguous
+
+    Subsequence → not necessarily contiguous
+
+
+6. STRING vs LANGUAGE
+
+    String → sequence of symbols
+
+    Language → set of strings
+
+
+7. LANGUAGE vs ALPHABET
+
+    Alphabet → set of symbols
+
+    Language → set of strings
+
+
+============================================================
+49. B.TECH EXAM PERSPECTIVE
+============================================================
+
+VERY IMPORTANT DEFINITIONS TO MEMORIZE AFTER UNDERSTANDING:
+
+1. Define alphabet.
+2. Define string.
+3. Define empty string.
+4. Define language.
+5. Define Σ*.
+6. Define Σ+.
+7. Define concatenation.
+8. Define string reversal.
+9. Define prefix.
+10. Define suffix.
+11. Define substring.
+12. Define subsequence.
+13. Define empty language.
+14. Define regular language.
+15. Define Kleene star.
+16. Define Kleene plus.
+
+------------------------------------------------------------
+COMMON UNIVERSITY QUESTIONS:
+
+Q1. Define alphabet and string with examples.
+
+Q2. Explain the difference between ε and ∅.
+
+Q3. Explain Σ* and Σ+ with examples.
+
+Q4. Find all prefixes and suffixes of a given string.
+
+Q5. Find all substrings of a given string.
+
+Q6. Explain string concatenation with examples.
+
+Q7. Explain language operations.
+
+Q8. Define regular language.
+
+Q9. Differentiate substring and subsequence.
+
+Q10. Explain the difference between regular and non-regular
+    languages.
+
+============================================================
+50. GATE / COMPETITIVE EXAM PERSPECTIVE
+============================================================
+
+GATE frequently tests small details rather than just
+definitions.
+
+Pay special attention to:
+
+    ε ∈ Σ*
+
+    ε ∉ Σ+
+
+    ε ≠ ∅
+
+    {ε} ≠ ∅
+
+    |ε| = 0
+
+    L* always contains ε.
+
+    L+ does not necessarily contain ε.
+
+    String concatenation is generally NOT commutative.
+
+    Language operations are set operations.
+
+    Complement depends on Σ*.
+
+------------------------------------------------------------
+GATE-STYLE EXAMPLE:
+
+If:
+
+    Σ = {0,1}
+
+then which of the following belongs to Σ*?
+
+    A. 010101
+    B. 012
+    C. abc
+    D. 102
+
+Answer:
+
+    A only
+
+because every symbol must belong to Σ.
+
+============================================================
+51. PRACTICE QUESTIONS — LEVEL 1
+============================================================
+
+Try these WITHOUT looking for the answer immediately.
+
+Q1. What is an alphabet?
+
+Q2. Is {0,1} an alphabet?
+
+Q3. Is {0,1,2} an alphabet?
+
+Q4. Is ε a string?
+
+Q5. What is |ε|?
+
+Q6. What is the difference between ε and ∅?
+
+Q7. If w = 10101, find |w|.
+
+Q8. If w = abc, find wᴿ.
+
+Q9. Is "ace" a substring of "abcde"?
+
+Q10. Is "ace" a subsequence of "abcde"?
+
+============================================================
+52. PRACTICE QUESTIONS — LEVEL 2
+============================================================
+
+Q11. Let:
+
+    Σ = {a,b}
+
+List all strings of length 2.
+
+Q12. Let:
+
+    Σ = {0,1}
+
+List Σ².
+
+Q13. Let:
+
+    w = abba
+
+Find:
+
+    a) Prefixes
+    b) Proper prefixes
+    c) Suffixes
+    d) Proper suffixes
+
+Q14. If:
+
+    x = ab
+    y = ba
+
+find:
+
+    xy
+    yx
+
+Q15. Let:
+
+    L = {a,b}
+
+Find:
+
+    L²
+
+Q16. Let:
+
+    L = {a}
+
+Find:
+
+    L*
+
+Q17. Let:
+
+    L = {a}
+
+Find:
+
+    L+
+
+============================================================
+53. PRACTICE QUESTIONS — LEVEL 3
+============================================================
+
+Q18. Let:
+
+    Σ = {0,1}
+
+Define:
+
+    L = {w ∈ Σ* | w ends in 0}
+
+Write the first ten strings of L in increasing length order.
+
+Q19. Let:
+
+    L = {w ∈ {0,1}* | w contains at least one 1}
+
+Give five strings belonging to L and five strings not
+belonging to L.
+
+Q20. Prove or disprove:
+
+    L1L2 = L2L1
+
+for arbitrary languages L1 and L2.
+
+Q21. Explain why:
+
+    ε ∈ L*
+
+for every language L.
+
+Q22. Explain why:
+
+    ε ∉ L+
+
+is not always true.
+
+============================================================
+54. PRACTICE QUESTIONS — LEVEL 4 / GATE
+============================================================
+
+Q23. Let:
+
+    L = {0,1}
+
+Find:
+
+    L²
+    L³
+
+Q24. If:
+
+    L = {ε}
+
+what is:
+
+    L* ?
+
+Q25. If:
+
+    L = ∅
+
+what is:
+
+    L* ?
+
+Q26. Determine whether:
+
+    {ε}
+
+and:
+
+    ∅
+
+are equal.
+
+Q27. Let:
+
+    Σ = {a,b}
+
+Is:
+
+    {ab, aba, bba}
+
+a language over Σ?
+
+Q28. Is:
+
+    {ab, abc}
+
+a language over:
+
+    Σ = {a,b} ?
+
+Explain.
+
+Q29. For:
+
+    w = 01010
+
+determine whether:
+
+    101
+
+is a substring.
+
+Q30. For the same string, determine whether:
+
+    100
+
+is a subsequence.
+
+============================================================
+55. ACTIVE RECALL
+============================================================
+
+Do not look at the previous explanation.
+
+Try answering mentally:
+
+1. What is a symbol?
+
+2. What is an alphabet?
+
+3. What is a string?
+
+4. What is ε?
+
+5. What is ∅?
+
+6. What is Σ*?
+
+7. What is Σ+?
+
+8. What is concatenation?
+
+9. What is a prefix?
+
+10. What is a suffix?
+
+11. What is a substring?
+
+12. What is a subsequence?
+
+13. What is a language?
+
+14. What is a regular language?
+
+15. What is a non-regular language?
+
+16. What is the difference between ε and ∅?
+
+17. What is the difference between Σ* and Σ+?
+
+18. What is the difference between substring and subsequence?
+
+============================================================
+56. CHAPTER SUMMARY
+============================================================
+
+The complete hierarchy is:
+
+    SYMBOL
+       ↓
+    ALPHABET
+       ↓
+    STRING
+       ↓
+    SET OF STRINGS
+       ↓
+    LANGUAGE
+
+
+A formal language is:
+
+    L ⊆ Σ*
+
+Important concepts:
+
+    Symbol
+    Alphabet
+    String
+    Empty string
+    String length
+    Concatenation
+    String power
+    Reversal
+    Prefix
+    Suffix
+    Substring
+    Subsequence
+    Language
+    Empty language
+    Singleton language
+    Finite language
+    Infinite language
+    Union
+    Intersection
+    Difference
+    Complement
+    Language concatenation
+    Kleene star
+    Kleene plus
+    Language reversal
+    Regular language
+    Non-regular language
+
+
+MOST IMPORTANT MEMORY MAP:
+
+    ε
+    ↓
+    Empty STRING
+    ↓
+    |ε| = 0
+
+
+    ∅
+    ↓
+    Empty LANGUAGE
+    ↓
+    Contains zero strings
+
+
+    Σ*
+    ↓
+    All finite strings over Σ
+    ↓
+    Includes ε
+
+
+    Σ+
+    ↓
+    All non-empty strings over Σ
+    ↓
+    Does NOT include ε
+
+
+    STRING
+    ↓
+    Sequence of symbols
+
+
+    LANGUAGE
+    ↓
+    Set of strings
+
+
+    REGULAR LANGUAGE
+    ↓
+    Recognizable by finite automaton
+
+
+============================================================
+57. WHAT YOU SHOULD NOW BE ABLE TO DO
+============================================================
+
+After this chapter, you should be able to:
+
+✓ Define a symbol.
+
+✓ Define an alphabet.
+
+✓ Give examples of alphabets.
+
+✓ Determine whether a string belongs to an alphabet.
+
+✓ Calculate string length.
+
+✓ Understand ε.
+
+✓ Distinguish ε from ∅.
+
+✓ Generate Σ*.
+
+✓ Generate Σ+.
+
+✓ Perform string concatenation.
+
+✓ Calculate string powers.
+
+✓ Reverse a string.
+
+✓ Find prefixes.
+
+✓ Find suffixes.
+
+✓ Find substrings.
+
+✓ Distinguish substring from subsequence.
+
+✓ Define a formal language.
+
+✓ Identify finite and infinite languages.
+
+✓ Perform language operations.
+
+✓ Understand Kleene star and plus.
+
+✓ Understand regular vs non-regular languages.
+
+✓ Read basic TOC notation.
+
+============================================================
+58. CONNECTION TO THE NEXT CHAPTER
+============================================================
+
+You now have:
+
+    SYMBOL
+       ↓
+    ALPHABET
+       ↓
+    STRING
+       ↓
+    LANGUAGE
+
+The next major question is:
+
+    "How can we make a machine recognize these languages?"
+
+That leads directly to:
+
+    AUTOMATA
+       ↓
+    FINITE AUTOMATA
+       ↓
+    DFA
+       ↓
+    NFA
+       ↓
+    Regular Languages
+
+============================================================
+NEXT TOPIC
+============================================================
+
+CHAPTER 4 — FINITE AUTOMATA FUNDAMENTALS
+
+FIRST TOPIC:
+
+    "What is an Automaton?"
+
+We will begin from absolute zero:
+
+    What is a machine?
+        ↓
+    What is a state?
+        ↓
+    What is input?
+        ↓
+    What is a transition?
+        ↓
+    What is a start state?
+        ↓
+    What is an accepting/final state?
+        ↓
+    What is a finite-state machine?
+        ↓
+    Then DFA
+
+DO NOT JUMP TO DFA YET.
+
+Type:
+
+    NEXT
+
+to begin Chapter 4, Topic 4.1 — What is an Automaton?
+============================================================

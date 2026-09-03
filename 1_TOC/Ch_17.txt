@@ -1,0 +1,1452 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                 THEORY OF COMPUTATION — CHAPTER 17                  ║
+║              ADVANCED TURING MACHINE MODELS                         ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 13 — VARIANTS OF TURING MACHINES
+
+CHAPTER 17 TOPICS
+
+17.1 VARIANTS
+     • Multitape Turing Machine
+     • Multitrack Turing Machine
+     • Multidimensional Turing Machine
+     • Nondeterministic Turing Machine
+     • Linear Bounded Automaton
+
+17.2 EQUIVALENCE
+     • Single-tape vs multitape
+     • Deterministic vs nondeterministic
+     • Simulation
+     • Computational equivalence
+
+17.3 UNIVERSAL TURING MACHINE
+     • Concept
+     • Encoding machines
+     • Machine descriptions
+     • Simulation
+     • Importance
+
+
+══════════════════════════════════════════════════════════════════════
+17.0 INTRODUCTION — WHAT IS A VARIANT OF A TURING MACHINE?
+══════════════════════════════════════════════════════════════════════
+
+In Chapter 15, we learned the basic Turing Machine.
+
+In Chapter 16, we learned how to DESIGN Turing Machines.
+
+Now we ask:
+
+    "Can we modify the basic Turing Machine
+     to make its operation easier?"
+
+YES.
+
+We can create different versions of Turing Machines.
+
+These are called:
+
+    VARIANTS OF TURING MACHINES
+
+
+Important idea:
+
+    A variant may LOOK different from the standard TM,
+    but it may still have the SAME COMPUTATIONAL POWER.
+
+
+For example:
+
+    Standard TM
+         ↓
+    One tape + one head
+
+    Multitape TM
+         ↓
+    Multiple tapes + multiple heads
+
+    Multidimensional TM
+         ↓
+    Tape arranged like a grid
+
+    Nondeterministic TM
+         ↓
+    Multiple possible transitions
+
+
+The key question is:
+
+    "Does the new model compute more languages,
+     or does it merely make computation easier/faster?"
+
+This distinction is extremely important in TOC.
+
+
+══════════════════════════════════════════════════════════════════════
+17.1 MULTITAPE TURING MACHINE
+══════════════════════════════════════════════════════════════════════
+
+──────────────────────────────────────────────────────────────────────
+17.1.1 WHAT IS A MULTITAPE TURING MACHINE?
+──────────────────────────────────────────────────────────────────────
+
+A Multitape Turing Machine is a Turing Machine that has
+more than one tape.
+
+Each tape has:
+
+    • its own tape
+    • its own read/write head
+    • tape symbols
+    • movement capability
+
+For example, a 3-tape TM has:
+
+    Tape 1
+    Tape 2
+    Tape 3
+
+and each tape has its own head.
+
+
+STANDARD SINGLE-TAPE TM:
+
+        Tape
+    ─────────────────────────────
+      a   b   a   b   □   □
+              ↑
+             Head
+
+
+MULTITAPE TM:
+
+    Tape 1:
+    ─────────────────────────
+      a   b   a   b   □
+          ↑
+        Head 1
+
+
+    Tape 2:
+    ─────────────────────────
+      X   Y   □   □   □
+          ↑
+        Head 2
+
+
+    Tape 3:
+    ─────────────────────────
+      1   0   1   □   □
+          ↑
+        Head 3
+
+
+Each head can operate independently.
+
+
+──────────────────────────────────────────────────────────────────────
+17.1.2 SIMPLE DEFINITION
+──────────────────────────────────────────────────────────────────────
+
+Simple definition:
+
+    A multitape Turing Machine is a TM having
+    multiple tapes, with a separate read/write head
+    associated with each tape.
+
+
+Formal idea:
+
+A k-tape TM can be represented as:
+
+    M = (Q, Σ, Γ, δ, q₀, q_accept, q_reject)
+
+The main difference is the transition function.
+
+For a single-tape TM:
+
+    δ(q, a) = (p, b, R)
+
+For a k-tape TM, the machine can:
+
+    • read one symbol from EACH tape
+    • write one symbol on EACH tape
+    • move each head independently
+
+
+Conceptually:
+
+    δ(q, a₁, a₂, ..., aₖ)
+      =
+    (p, b₁, b₂, ..., bₖ,
+     D₁, D₂, ..., Dₖ)
+
+
+where:
+
+    q       = current state
+    aᵢ      = symbol read from tape i
+    p       = next state
+    bᵢ      = symbol written on tape i
+    Dᵢ      = movement of head i
+
+and:
+
+    Dᵢ ∈ {L, R, S}
+
+where:
+
+    L = Left
+    R = Right
+    S = Stay
+
+
+IMPORTANT:
+
+The exact formal tuple notation can vary slightly between textbooks,
+but the underlying idea is the same.
+
+
+══════════════════════════════════════════════════════════════════════
+17.1.3 WHY DO WE NEED MULTIPLE TAPES?
+══════════════════════════════════════════════════════════════════════
+
+Imagine trying to perform a complex computation using only one tape.
+
+You may need to repeatedly:
+
+    • scan left
+    • scan right
+    • find a separator
+    • return to an earlier location
+    • copy information
+    • compare information
+
+This can become complicated.
+
+Multiple tapes provide convenient working space.
+
+For example:
+
+    Tape 1 → Input
+    Tape 2 → Working memory
+    Tape 3 → Output
+
+
+ASCII:
+
+                 MULTITAPE TM
+
+    ┌───────────────────────────────┐
+    │           Tape 1              │
+    │      INPUT / ORIGINAL DATA    │
+    └───────────────────────────────┘
+                   ↑
+                 Head 1
+
+    ┌───────────────────────────────┐
+    │           Tape 2              │
+    │          WORK SPACE           │
+    └───────────────────────────────┘
+                   ↑
+                 Head 2
+
+    ┌───────────────────────────────┐
+    │           Tape 3              │
+    │            OUTPUT             │
+    └───────────────────────────────┘
+                   ↑
+                 Head 3
+
+
+This makes algorithm design much easier.
+
+
+══════════════════════════════════════════════════════════════════════
+17.1.4 HOW DOES A MULTITAPE TM WORK?
+══════════════════════════════════════════════════════════════════════
+
+Suppose we have a 2-tape TM.
+
+Tape 1:
+
+    1 0 1 1
+      ↑
+    Head 1
+
+Tape 2:
+
+    □ □ □ □
+      ↑
+    Head 2
+
+
+Suppose the machine wants to copy the input from Tape 1
+to Tape 2.
+
+It can do:
+
+    Read Tape 1
+        ↓
+    Write same symbol on Tape 2
+        ↓
+    Move both heads
+        ↓
+    Repeat
+
+
+Example:
+
+Initial:
+
+    Tape 1:
+        1 0 1 1
+        ↑
+
+    Tape 2:
+        □ □ □ □
+        ↑
+
+
+After copying 1:
+
+    Tape 1:
+        1 0 1 1
+          ↑
+
+    Tape 2:
+        1 □ □ □
+          ↑
+
+
+After copying 0:
+
+    Tape 1:
+        1 0 1 1
+            ↑
+
+    Tape 2:
+        1 0 □ □
+            ↑
+
+
+After copying 1:
+
+    Tape 1:
+        1 0 1 1
+              ↑
+
+    Tape 2:
+        1 0 1 □
+              ↑
+
+
+After copying final 1:
+
+    Tape 1:
+        1 0 1 1
+                ↑
+
+    Tape 2:
+        1 0 1 1
+                ↑
+
+
+The operation is conceptually much simpler than doing
+everything on one tape.
+
+
+══════════════════════════════════════════════════════════════════════
+17.1.5 EXAMPLE — MULTITAPE TM FOR COPYING
+══════════════════════════════════════════════════════════════════════
+
+Input:
+
+    1011
+
+Goal:
+
+    Copy it to another tape.
+
+
+Initial:
+
+    Tape 1:
+        1 0 1 1 □
+        ↑
+
+    Tape 2:
+        □ □ □ □ □
+        ↑
+
+
+Step 1:
+
+    Read 1 from Tape 1.
+    Write 1 to Tape 2.
+
+    Tape 1:
+        1 0 1 1 □
+          ↑
+
+    Tape 2:
+        1 □ □ □ □
+          ↑
+
+
+Step 2:
+
+    Read 0.
+    Write 0.
+
+    Tape 1:
+        1 0 1 1 □
+            ↑
+
+    Tape 2:
+        1 0 □ □ □
+            ↑
+
+
+Step 3:
+
+    Read 1.
+    Write 1.
+
+    Tape 1:
+        1 0 1 1 □
+              ↑
+
+    Tape 2:
+        1 0 1 □ □
+              ↑
+
+
+Step 4:
+
+    Read 1.
+    Write 1.
+
+    Tape 1:
+        1 0 1 1 □
+                ↑
+
+    Tape 2:
+        1 0 1 1 □
+                ↑
+
+
+COPY COMPLETE.
+
+
+══════════════════════════════════════════════════════════════════════
+17.1.6 MULTITAPE TM FOR STRING COMPARISON
+══════════════════════════════════════════════════════════════════════
+
+Suppose we want to compare:
+
+    1011
+
+with:
+
+    1011
+
+
+A multitape TM can place:
+
+    String 1 → Tape 1
+    String 2 → Tape 2
+
+
+ASCII:
+
+    Tape 1:
+    ───────────────────
+      1   0   1   1
+      ↑
+
+    Tape 2:
+    ───────────────────
+      1   0   1   1
+      ↑
+
+
+Then compare symbols simultaneously:
+
+    1 = 1  ✓
+    0 = 0  ✓
+    1 = 1  ✓
+    1 = 1  ✓
+
+Therefore:
+
+    ACCEPT
+
+
+For:
+
+    1011
+
+and:
+
+    1001
+
+
+Comparison:
+
+    1 = 1  ✓
+    0 = 0  ✓
+    1 ≠ 0  ✗
+
+Therefore:
+
+    REJECT.
+
+
+This is one major advantage of multiple tapes:
+parallel access to different pieces of information.
+
+
+══════════════════════════════════════════════════════════════════════
+17.1.7 SINGLE-TAPE TM VS MULTITAPE TM
+══════════════════════════════════════════════════════════════════════
+
+              SINGLE-TAPE TM       MULTITAPE TM
+
+Tapes         One                 Multiple
+
+Heads         One                 One per tape
+
+Memory        One tape            Multiple tapes
+
+Design        Often complicated   Often easier
+
+Computation   Sequential access   Multiple heads
+
+Power         Very powerful       Very powerful
+
+Language
+recognition   Same class          Same class
+
+
+VERY IMPORTANT:
+
+    Multitape TMs do NOT provide fundamentally greater
+    computational power than ordinary TMs.
+
+A standard single-tape TM can simulate a multitape TM.
+
+
+However:
+
+    Multitape TMs can make algorithms easier to describe
+    and can improve efficiency.
+
+
+══════════════════════════════════════════════════════════════════════
+17.1.8 CAN A SINGLE-TAPE TM SIMULATE A MULTITAPE TM?
+══════════════════════════════════════════════════════════════════════
+
+YES.
+
+This is one of the most important results.
+
+Suppose:
+
+    Multitape TM:
+
+    Tape 1:  1 0 1
+    Tape 2:  a b c
+    Tape 3:  X Y Z
+
+
+A single tape can represent all of this information using
+a special encoding.
+
+For example:
+
+    # 1 0 1 # a b c # X Y Z #
+
+The single tape also needs to remember where each simulated
+head is located.
+
+We can mark the simulated head positions.
+
+Conceptually:
+
+    # 1 [0] 1 # a [b] c # [X] Y Z #
+
+Here:
+
+    [0] = head position of simulated Tape 1
+    [b] = head position of simulated Tape 2
+    [X] = head position of simulated Tape 3
+
+
+The single-tape machine repeatedly scans this encoded tape
+to simulate one step of the multitape machine.
+
+
+Therefore:
+
+    Multitape TM
+          ↓
+    Encode tapes on one tape
+          ↓
+    Single-tape TM
+          ↓
+    Simulates computation
+
+
+This proves computational equivalence.
+
+
+══════════════════════════════════════════════════════════════════════
+17.1.9 COMPUTATIONAL EQUIVALENCE
+══════════════════════════════════════════════════════════════════════
+
+Two machine models are computationally equivalent if they
+can recognize/decide the same class of languages.
+
+For example:
+
+    Single-tape TM
+           ⇅
+    Multitape TM
+
+
+They have the same fundamental computational power.
+
+This means:
+
+    If a language can be recognized by a multitape TM,
+    then some single-tape TM can also recognize it.
+
+And:
+
+    If a language can be decided by a multitape TM,
+    then some single-tape TM can also decide it.
+
+
+But:
+
+    SAME POWER ≠ SAME EFFICIENCY
+
+
+This distinction is extremely important.
+
+
+══════════════════════════════════════════════════════════════════════
+17.1.10 POWER VS EFFICIENCY
+══════════════════════════════════════════════════════════════════════
+
+Suppose two algorithms solve the same problem.
+
+Algorithm A:
+
+    1 second
+
+Algorithm B:
+
+    1000 seconds
+
+
+They have the same result.
+
+But they are NOT equally efficient.
+
+Similarly:
+
+    Single-tape TM
+    Multitape TM
+
+may have the same computational power while having
+different running times.
+
+Therefore:
+
+    Computational power
+        =
+    WHAT can be computed?
+
+    Efficiency
+        =
+    HOW quickly can it be computed?
+
+
+This distinction becomes extremely important later
+when we study:
+
+    COMPLEXITY THEORY.
+
+
+══════════════════════════════════════════════════════════════════════
+17.2 MULTITRACK TURING MACHINE
+══════════════════════════════════════════════════════════════════════
+
+A multitrack TM has one tape divided into multiple tracks.
+
+Think of it as:
+
+    ONE tape
+    but each cell stores a tuple of symbols.
+
+
+Example: 2-track tape
+
+    Track 1:
+       a   b   c   d
+
+    Track 2:
+       X   Y   Z   W
+
+
+Combined:
+
+    ┌───────┬───────┬───────┬───────┐
+    │ a, X  │ b, Y  │ c, Z  │ d, W  │
+    └───────┴───────┴───────┴───────┘
+        ↑
+       head
+
+
+A multitrack TM still has:
+
+    ONE tape
+    ONE head
+
+but each tape cell contains multiple components.
+
+
+Difference:
+
+    Multitape:
+        Multiple tapes
+        Multiple heads
+
+    Multitrack:
+        One tape
+        One head
+        Multiple tracks
+
+
+This is often useful for storing related information
+at the same tape position.
+
+
+══════════════════════════════════════════════════════════════════════
+17.3 MULTIDIMENSIONAL TURING MACHINE
+══════════════════════════════════════════════════════════════════════
+
+A standard TM has a one-dimensional tape:
+
+    ←────────────────────────────→
+       □ a b a b □ □ □
+
+
+A multidimensional TM uses a tape arranged in multiple dimensions.
+
+For example, a 2D TM can move:
+
+    LEFT
+    RIGHT
+    UP
+    DOWN
+
+
+ASCII:
+
+             UP
+              ↑
+              |
+         +----+----+
+         |    |    |
+    LEFT |    |    | RIGHT
+    <----+----+----+---->
+         |    |    |
+         +----+----+
+              |
+              ↓
+            DOWN
+
+
+Imagine a grid:
+
+    +---+---+---+---+
+    |   |   |   |   |
+    +---+---+---+---+
+    |   | H |   |   |
+    +---+---+---+---+
+    |   |   |   |   |
+    +---+---+---+---+
+
+
+H = current head position.
+
+
+Important:
+
+A multidimensional TM may look much more powerful,
+but it can still be simulated by an ordinary single-tape TM.
+
+Therefore:
+
+    More convenient representation
+          ≠
+    More fundamental computational power
+
+
+══════════════════════════════════════════════════════════════════════
+17.4 NONDETERMINISTIC TURING MACHINE
+══════════════════════════════════════════════════════════════════════
+
+Now we introduce a very important variant.
+
+A standard deterministic TM has:
+
+    one current configuration
+    ↓
+    one next transition
+
+
+A Nondeterministic Turing Machine (NTM) may have
+multiple possible transitions.
+
+For example:
+
+          ┌──→ q1
+          │
+    q0 ───┤
+          │
+          └──→ q2
+
+
+From q0, the machine may choose:
+
+    q1
+
+or:
+
+    q2
+
+
+This creates multiple possible computation paths.
+
+
+══════════════════════════════════════════════════════════════════════
+17.4.1 SIMPLE DEFINITION
+══════════════════════════════════════════════════════════════════════
+
+A nondeterministic Turing Machine is a TM in which a configuration
+may have more than one possible next configuration.
+
+
+Deterministic:
+
+    Current configuration
+             |
+             v
+       ONE next step
+
+
+Nondeterministic:
+
+    Current configuration
+             |
+       +-----+-----+
+       |           |
+       v           v
+    Choice 1     Choice 2
+       |           |
+       v           v
+    Path 1       Path 2
+
+
+The computation can therefore be viewed as a tree.
+
+
+══════════════════════════════════════════════════════════════════════
+17.4.2 COMPUTATION TREE
+══════════════════════════════════════════════════════════════════════
+
+Example:
+
+                 q0
+               /    \
+              /      \
+            q1        q2
+           /  \        |
+          q3  q4       q5
+          |            |
+       ACCEPT        REJECT
+
+
+If at least one path reaches ACCEPT,
+the NTM accepts.
+
+So:
+
+    NTM accepts
+    if there exists an accepting computation path.
+
+
+This is an important difference from deterministic execution.
+
+
+══════════════════════════════════════════════════════════════════════
+17.4.3 DOES NTM HAVE MORE COMPUTATIONAL POWER?
+══════════════════════════════════════════════════════════════════════
+
+For language recognition:
+
+    NO.
+
+A deterministic TM can simulate a nondeterministic TM.
+
+Therefore:
+
+    DTM and NTM
+          ↓
+    Same computability power
+
+
+However, the simulation may require more time.
+
+This becomes extremely important in:
+
+    Complexity Theory
+         ↓
+    P vs NP
+
+
+We will study this much more carefully in later chapters.
+
+
+══════════════════════════════════════════════════════════════════════
+17.5 LINEAR BOUNDED AUTOMATON — INTRODUCTION
+══════════════════════════════════════════════════════════════════════
+
+A Linear Bounded Automaton (LBA) is a restricted form
+of Turing Machine.
+
+The key restriction:
+
+    The tape space used by the machine is bounded
+    by a linear function of the input size.
+
+
+If input length is:
+
+    n
+
+then the machine can use approximately:
+
+    O(n)
+
+space.
+
+
+Compare:
+
+    Standard TM:
+        potentially unbounded tape
+
+    LBA:
+        tape usage bounded linearly by input size
+
+
+Conceptually:
+
+    Input:
+    ┌───────────────────────┐
+    │ a b a b a b a b       │
+    └───────────────────────┘
+      <------ O(n) ------>
+
+
+An LBA is associated with:
+
+    Context-Sensitive Languages
+
+
+We will study this properly in:
+
+    Chapter 24 — Context-Sensitive Grammar
+
+For now, remember:
+
+    LBA = restricted TM
+    LBA ↔ Context-Sensitive Languages
+
+
+══════════════════════════════════════════════════════════════════════
+17.6 VARIANTS — BIG PICTURE
+══════════════════════════════════════════════════════════════════════
+
+                         TURING MACHINE
+                              |
+              +---------------+---------------+
+              |               |               |
+          Multitape      Multitrack      Multidimensional
+              |
+              |
+      Nondeterministic
+              |
+              |
+             LBA
+
+
+Different variants modify:
+
+    • tape structure
+    • number of tapes
+    • number of tracks
+    • movement possibilities
+    • transition choices
+    • amount of usable space
+
+
+But many variants remain computationally equivalent
+to the standard TM.
+
+
+══════════════════════════════════════════════════════════════════════
+IMPORTANT COMPARISON TABLE
+══════════════════════════════════════════════════════════════════════
+
+MODEL                  MAIN FEATURE
+
+Standard TM             One tape, one head
+
+Multitape TM            Multiple tapes, one head per tape
+
+Multitrack TM           One tape divided into tracks
+
+Multidimensional TM    Tape arranged in multiple dimensions
+
+NTM                     Multiple possible transitions
+
+LBA                     TM with linearly bounded tape space
+
+
+══════════════════════════════════════════════════════════════════════
+17.7 SIMULATION
+══════════════════════════════════════════════════════════════════════
+
+Simulation means:
+
+    One computational model imitates the operation
+    of another computational model.
+
+
+Example:
+
+    Multitape TM
+         ↓
+    encode tapes
+         ↓
+    Single-tape TM
+         ↓
+    simulate each step
+
+
+Why is simulation important?
+
+Because it allows us to prove:
+
+    "This new machine model does not compute
+     fundamentally more things than the old model."
+
+
+The general structure is:
+
+    Model A
+       ↓
+    Representation / encoding
+       ↓
+    Model B
+       ↓
+    Simulate every step
+       ↓
+    Same computational result
+
+
+══════════════════════════════════════════════════════════════════════
+17.8 SINGLE-TAPE VS MULTITAPE — EXAM SUMMARY
+══════════════════════════════════════════════════════════════════════
+
+Single-tape TM:
+
+    • One tape
+    • One head
+    • More cumbersome for some algorithms
+
+
+Multitape TM:
+
+    • Multiple tapes
+    • Multiple heads
+    • Easier algorithm design
+    • Convenient working memory
+    • Same computational power as standard TM
+
+
+MOST IMPORTANT STATEMENT:
+
+    A multitape Turing Machine and a standard
+    single-tape Turing Machine are equivalent
+    in computational power.
+
+
+══════════════════════════════════════════════════════════════════════
+17.9 B.TECH EXAM PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+Important definitions:
+
+    ✓ Multitape TM
+    ✓ Multitrack TM
+    ✓ Multidimensional TM
+    ✓ Nondeterministic TM
+    ✓ LBA
+    ✓ Simulation
+    ✓ Computational equivalence
+
+
+Important questions:
+
+    1. What is a multitape Turing Machine?
+
+    2. Explain multitape TM with a diagram.
+
+    3. Compare single-tape and multitape TMs.
+
+    4. Explain how a single-tape TM can simulate
+       a multitape TM.
+
+    5. What is a multitrack TM?
+
+    6. What is a multidimensional TM?
+
+    7. What is a nondeterministic TM?
+
+    8. Explain computation tree of an NTM.
+
+    9. Are deterministic and nondeterministic TMs
+       computationally equivalent?
+
+   10. What is an LBA?
+
+
+══════════════════════════════════════════════════════════════════════
+17.10 GATE / COMPETITIVE EXAM PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+Remember these high-value facts:
+
+    1. Multitape TM has multiple tapes.
+
+    2. Each tape has its own head.
+
+    3. Multitrack TM has one tape and one head.
+
+    4. Multidimensional TM can move in multiple dimensions.
+
+    5. NTM can have multiple possible transitions.
+
+    6. DTM and NTM have the same computability power.
+
+    7. Multitape TM and single-tape TM have the same
+       computability power.
+
+    8. Same computational power does NOT imply same efficiency.
+
+    9. LBA has linearly bounded tape space.
+
+   10. LBA is related to context-sensitive languages.
+
+
+══════════════════════════════════════════════════════════════════════
+17.11 COMMON MISTAKES
+══════════════════════════════════════════════════════════════════════
+
+MISTAKE 1:
+
+    "Multitape TM is more powerful than a normal TM."
+
+CORRECTION:
+
+    It is generally more convenient and can be more efficient,
+    but it has the same fundamental computational power.
+
+
+MISTAKE 2:
+
+    "Multitrack means multiple tapes."
+
+CORRECTION:
+
+    No.
+
+    Multitrack:
+        ONE tape + multiple tracks.
+
+
+MISTAKE 3:
+
+    "Nondeterministic TM can recognize languages that
+     deterministic TM cannot."
+
+CORRECTION:
+
+    Not in terms of computability power.
+
+
+MISTAKE 4:
+
+    "Same computational power means same running time."
+
+CORRECTION:
+
+    No.
+
+    Efficiency can differ greatly.
+
+
+MISTAKE 5:
+
+    "LBA is just another unrestricted TM."
+
+CORRECTION:
+
+    LBA is a restricted TM with a linear space bound.
+
+
+══════════════════════════════════════════════════════════════════════
+17.12 INTERVIEW QUESTIONS
+══════════════════════════════════════════════════════════════════════
+
+Q1. Why do we study multitape TMs?
+
+Q2. Is a multitape TM more powerful than a single-tape TM?
+
+Q3. How can one tape simulate multiple tapes?
+
+Q4. What is the difference between multitape and multitrack TM?
+
+Q5. What is nondeterminism in a TM?
+
+Q6. Does nondeterminism increase computability power?
+
+Q7. What is an LBA?
+
+Q8. What is the difference between computational power
+    and computational efficiency?
+
+A strong interview answer to the last question:
+
+    Computational power asks WHAT problems a machine can compute.
+
+    Computational efficiency asks HOW MUCH time or space
+    is required to compute them.
+
+
+══════════════════════════════════════════════════════════════════════
+17.13 PRACTICE QUESTIONS
+══════════════════════════════════════════════════════════════════════
+
+LEVEL 1 — BEGINNER
+
+Q1. What is a multitape Turing Machine?
+
+Q2. How many heads does a k-tape TM have?
+
+Q3. What is a multitrack TM?
+
+Q4. What is nondeterminism?
+
+Q5. What is an LBA?
+
+
+LEVEL 2 — B.TECH BASIC
+
+Q6. Draw an ASCII diagram of a 3-tape TM.
+
+Q7. Explain how a multitape TM copies a string.
+
+Q8. Compare multitape and multitrack TMs.
+
+Q9. Explain a computation tree of an NTM.
+
+
+LEVEL 3 — B.TECH UNIVERSITY
+
+Q10. Explain how a single-tape TM simulates a multitape TM.
+
+Q11. Prove/justify the computational equivalence of
+    single-tape and multitape TMs.
+
+Q12. Explain the difference between deterministic
+     and nondeterministic TMs.
+
+Q13. Explain LBA and its relationship with
+     context-sensitive languages.
+
+
+LEVEL 4 — GATE STYLE
+
+Q14. Which of the following has the same computational power
+     as a standard TM?
+
+     A. Multitape TM
+     B. Multitrack TM
+     C. Nondeterministic TM
+     D. All of the above
+
+Q15. A multitape TM differs from a standard TM primarily in:
+
+     A. Computational power
+     B. Number of tapes and heads
+     C. Ability to recognize languages
+     D. Ability to halt
+
+
+LEVEL 5 — CONCEPTUAL
+
+Q16. Explain why "same computational power" does not mean
+     "same computational complexity."
+
+Q17. Why is simulation important in proving equivalence
+     between computational models?
+
+Q18. Explain how the head positions of multiple simulated
+     tapes can be represented on one tape.
+
+
+══════════════════════════════════════════════════════════════════════
+ACTIVE RECALL
+══════════════════════════════════════════════════════════════════════
+
+Do NOT look at the previous explanations.
+
+Q1. What is a multitape TM?
+
+Q2. How many heads does a 3-tape TM have?
+
+Q3. What is the main advantage of multiple tapes?
+
+Q4. Can a single-tape TM simulate a multitape TM?
+
+Q5. Does a multitape TM have greater computational power?
+
+Q6. What is a multitrack TM?
+
+Q7. What is the main idea behind a nondeterministic TM?
+
+Q8. When does an NTM accept an input?
+
+Q9. What is an LBA?
+
+Q10. What is the difference between computational power
+     and computational efficiency?
+
+
+══════════════════════════════════════════════════════════════════════
+CHAPTER 17 — QUICK REVISION
+══════════════════════════════════════════════════════════════════════
+
+Standard TM:
+    One tape + one head
+
+Multitape TM:
+    Multiple tapes + one head per tape
+
+Multitrack TM:
+    One tape + multiple tracks + one head
+
+Multidimensional TM:
+    Tape arranged in multiple dimensions
+
+NTM:
+    Multiple possible transitions
+
+LBA:
+    TM with linearly bounded space
+
+
+Most important relationship:
+
+    SINGLE-TAPE TM
+          ↕
+    MULTITAPE TM
+          ↕
+    SAME COMPUTATIONAL POWER
+
+
+Most important distinction:
+
+    COMPUTATIONAL POWER
+        =
+    What can be computed?
+
+    COMPUTATIONAL EFFICIENCY
+        =
+    How efficiently can it be computed?
+
+
+Most important exam fact:
+
+    A multitape TM can be simulated by
+    a single-tape TM.
+
+
+══════════════════════════════════════════════════════════════════════
+CHAPTER 17 STATUS
+══════════════════════════════════════════════════════════════════════
+
+✓ 17.1 Multitape Turing Machine
+✓ 17.2 Multitrack Turing Machine
+✓ 17.3 Multidimensional Turing Machine
+✓ 17.4 Nondeterministic Turing Machine
+✓ 17.5 Linear Bounded Automaton — introduction
+✓ 17.6 Variants overview
+✓ 17.7 Simulation
+✓ 17.8 Single-tape vs multitape
+✓ Exam perspective
+✓ GATE perspective
+✓ Practice
+✓ Active recall
+
+
+══════════════════════════════════════════════════════════════════════
+UPCOMING NEXT TOPIC — ONLY ONE
+══════════════════════════════════════════════════════════════════════
+
+CHAPTER 17 — ADVANCED TURING MACHINE MODELS
+
+NEXT TOPIC:
+
+    17.2 EQUIVALENCE OF TURING MACHINE MODELS
+
+FIRST SUBTOPIC:
+
+    Single-Tape TM vs Multitape TM —
+    Detailed Simulation
+
+We will learn:
+    • Why multitape does not increase computability
+    • How encoding works
+    • How one tape represents several tapes
+    • How multiple heads are simulated
+    • Step-by-step simulation
+    • Computational equivalence
+    • Efficiency/time overhead
+    • B.Tech and GATE-level problems
+
+
+Type:
+
+    NEXT
+
+to continue

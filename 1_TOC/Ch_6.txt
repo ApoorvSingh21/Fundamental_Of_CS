@@ -1,0 +1,2070 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                    THEORY OF COMPUTATION — CHAPTER 6                ║
+║                     REGULAR EXPRESSIONS (RE)                        ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 4 — REGULAR LANGUAGES
+CHAPTER 6 — REGULAR EXPRESSIONS
+
+Prerequisites already covered:
+    ✓ Chapter 1 — Introduction to Theory of Computation
+    ✓ Chapter 2 — Mathematical Foundations
+    ✓ Chapter 3 — Formal Languages
+    ✓ Chapter 4 — Finite Automata / DFA
+    ✓ Chapter 5 — NFA and ε-NFA
+
+Current Chapter:
+    CHAPTER 6 — REGULAR EXPRESSIONS
+
+Main idea:
+    A Regular Expression (RE) is a compact mathematical notation
+    used to describe patterns of strings.
+
+──────────────────────────────────────────────────────────────────────
+1. WHAT IS A REGULAR EXPRESSION?
+──────────────────────────────────────────────────────────────────────
+
+A regular expression is a formal way of describing a set of strings
+(a language) using symbols and operations such as:
+
+    UNION
+    CONCATENATION
+    KLEENE STAR (*)
+    KLEENE PLUS (+)
+
+In simple words:
+
+    Regular Expression
+          ↓
+    Describes a pattern
+          ↓
+    Pattern represents a language
+          ↓
+    A finite automaton can recognize that language
+
+For example:
+
+    0*
+
+means:
+
+    zero or more 0s
+
+Therefore:
+
+    L(0*) = { ε, 0, 00, 000, 0000, ... }
+
+Here:
+
+    ε = empty string
+
+
+WHY DO WE STUDY REGULAR EXPRESSIONS?
+
+Instead of drawing a large DFA for every pattern, we can often
+describe the same language using a short expression.
+
+Example:
+
+    Language = all strings containing only 0s
+
+DFA may require states and transitions.
+
+Regular expression:
+
+    0*
+
+Much shorter.
+
+
+──────────────────────────────────────────────────────────────────────
+2. SIMPLE DEFINITION
+──────────────────────────────────────────────────────────────────────
+
+Simple definition:
+
+    A regular expression is a notation for representing a regular
+    language using symbols and regular-expression operators.
+
+Formal idea:
+
+    If R is a regular expression over alphabet Σ, then L(R)
+    represents the language described by R.
+
+Example:
+
+    R = 01
+
+Then:
+
+    L(R) = {01}
+
+Example:
+
+    R = 0*
+
+Then:
+
+    L(R) = {ε, 0, 00, 000, ...}
+
+
+IMPORTANT:
+
+    Regular Expression ≠ Regular Language
+
+A regular expression is a DESCRIPTION.
+
+A regular language is the SET OF STRINGS described by that
+expression.
+
+Example:
+
+    RE:
+        0(0+1)*
+
+    Language:
+        all binary strings beginning with 0
+
+
+──────────────────────────────────────────────────────────────────────
+3. BASIC INGREDIENTS OF REGULAR EXPRESSIONS
+──────────────────────────────────────────────────────────────────────
+
+Suppose:
+
+    Σ = {0,1}
+
+The basic regular-expression components are:
+
+    0
+    1
+    ε
+    ∅
+
+along with operations such as:
+
+    +
+    concatenation
+    *
+
+
+──────────────────────────────────────────────────────────────────────
+4. SYMBOLS
+──────────────────────────────────────────────────────────────────────
+
+If:
+
+    a ∈ Σ
+
+then 'a' itself can be a regular expression.
+
+For example:
+
+    R = 0
+
+represents:
+
+    L(R) = {0}
+
+Similarly:
+
+    R = 1
+
+represents:
+
+    L(R) = {1}
+
+
+ASCII:
+
+    Regular Expression
+            |
+            v
+           "0"
+            |
+            v
+       Language {0}
+
+
+──────────────────────────────────────────────────────────────────────
+5. EMPTY STRING — ε
+──────────────────────────────────────────────────────────────────────
+
+ε represents the empty string.
+
+It contains:
+
+    ZERO symbols
+
+Therefore:
+
+    |ε| = 0
+
+Important:
+
+    ε is a STRING.
+
+It is NOT the same as:
+
+    ∅
+
+Example:
+
+    L(ε) = {ε}
+
+This language contains exactly one string.
+
+That string has length zero.
+
+
+VERY IMPORTANT DIFFERENCE:
+
+    ε  → empty string
+    ∅  → empty language
+
+Therefore:
+
+    {ε} ≠ ∅
+
+
+Example:
+
+    ε concatenated with 0:
+
+        ε0 = 0
+
+    0 concatenated with ε:
+
+        0ε = 0
+
+
+──────────────────────────────────────────────────────────────────────
+6. EMPTY LANGUAGE — ∅
+──────────────────────────────────────────────────────────────────────
+
+∅ represents a language containing NO strings.
+
+Therefore:
+
+    L(∅) = ∅
+
+There is no string accepted.
+
+Compare:
+
+    ε:
+        one string exists, and that string has length 0.
+
+    ∅:
+        no string exists.
+
+
+TABLE:
+
+    ┌─────────┬───────────────────────────────┐
+    │ Symbol  │ Meaning                       │
+    ├─────────┼───────────────────────────────┤
+    │ ε       │ Empty string                  │
+    │ ∅       │ Empty language                │
+    │ {ε}     │ Language containing ε         │
+    └─────────┴───────────────────────────────┘
+
+
+──────────────────────────────────────────────────────────────────────
+7. UNION
+──────────────────────────────────────────────────────────────────────
+
+Union is represented by:
+
+    +
+
+In some books/software, the symbol:
+
+    |
+
+may also be used.
+
+Example:
+
+    R = 0 + 1
+
+means:
+
+    choose 0 OR 1
+
+Therefore:
+
+    L(0+1) = {0,1}
+
+
+ASCII:
+
+             0
+             \
+              >─── UNION ───> {0,1}
+             /
+            1
+
+
+Another example:
+
+    R = a + b
+
+    L(R) = {a,b}
+
+
+Example:
+
+    R = 0 + 01
+
+    L(R) = {0,01}
+
+
+IMPORTANT:
+
+    In TOC,
+
+        +
+
+    normally means UNION when written between expressions.
+
+It does NOT automatically mean arithmetic addition.
+
+
+──────────────────────────────────────────────────────────────────────
+8. CONCATENATION
+──────────────────────────────────────────────────────────────────────
+
+Concatenation means joining strings together.
+
+Usually, no special operator is written.
+
+Example:
+
+    R = 01
+
+means:
+
+    first 0
+    then 1
+
+Therefore:
+
+    L(01) = {01}
+
+
+Another example:
+
+    R = abc
+
+means:
+
+    a followed by b followed by c.
+
+Therefore:
+
+    L(abc) = {abc}
+
+
+ASCII:
+
+    0 ───followed by───> 1
+
+             ↓
+
+            01
+
+
+IMPORTANT:
+
+    Order matters.
+
+    01 ≠ 10
+
+
+Example:
+
+    R = a(b+c)
+
+First:
+
+    b+c = {b,c}
+
+Then concatenate a:
+
+    ab
+    ac
+
+Therefore:
+
+    L(a(b+c)) = {ab, ac}
+
+
+──────────────────────────────────────────────────────────────────────
+9. CONCATENATION WITH ε
+──────────────────────────────────────────────────────────────────────
+
+ε behaves like an identity element for concatenation.
+
+Therefore:
+
+    Rε = R
+
+and:
+
+    εR = R
+
+Example:
+
+    0ε = 0
+
+    ε0 = 0
+
+
+For languages:
+
+    L · {ε} = L
+
+and:
+
+    {ε} · L = L
+
+
+──────────────────────────────────────────────────────────────────────
+10. KLEENE STAR (*)
+──────────────────────────────────────────────────────────────────────
+
+Kleene Star is one of the MOST IMPORTANT operators in TOC.
+
+For a regular expression R:
+
+    R*
+
+means:
+
+    zero or more repetitions of R.
+
+Formally:
+
+    R* = ε + R + RR + RRR + RRRR + ...
+
+Example:
+
+    R = 0
+
+Then:
+
+    0* = ε + 0 + 00 + 000 + 0000 + ...
+
+Therefore:
+
+    L(0*) =
+    {ε, 0, 00, 000, 0000, ...}
+
+
+ASCII:
+
+              ┌──────────────┐
+              │              │
+              │      0       │
+              └──────┬───────┘
+                     ↺
+                     
+    You can repeat 0 any number of times,
+    including ZERO times.
+
+
+WHY DOES ε APPEAR?
+
+Because Kleene Star allows:
+
+    zero repetitions.
+
+If we repeat 0 zero times:
+
+    result = ε
+
+
+──────────────────────────────────────────────────────────────────────
+11. KLEENE PLUS (+)
+──────────────────────────────────────────────────────────────────────
+
+Kleene Plus means:
+
+    one or more repetitions.
+
+For R:
+
+    R+
+
+means:
+
+    R + RR + RRR + RRRR + ...
+
+Example:
+
+    0+
+
+gives:
+
+    {0,00,000,0000,...}
+
+Notice:
+
+    ε is NOT included.
+
+
+RELATIONSHIP:
+
+    R+ = RR*
+
+or equivalently:
+
+    R+ = R*R
+
+
+COMPARE:
+
+    R* → zero or more
+    R+ → one or more
+
+
+Example:
+
+    0*
+
+    {ε,0,00,000,...}
+
+    0+
+
+    {0,00,000,...}
+
+
+VERY IMPORTANT EXAM POINT:
+
+    ε ∈ L(R*)
+
+but generally:
+
+    ε ∉ L(R+)
+
+
+──────────────────────────────────────────────────────────────────────
+12. BASIC REGULAR EXPRESSION OPERATORS
+──────────────────────────────────────────────────────────────────────
+
+Suppose:
+
+    R = 0
+    S = 1
+
+Then:
+
+    R + S       → union
+    RS          → concatenation
+    R*          → zero or more repetitions
+
+Therefore:
+
+    0 + 1
+    01
+    0*
+
+
+Their languages:
+
+    L(0+1) = {0,1}
+
+    L(01) = {01}
+
+    L(0*) = {ε,0,00,000,...}
+
+
+──────────────────────────────────────────────────────────────────────
+13. FORMAL RECURSIVE DEFINITION OF REGULAR EXPRESSIONS
+──────────────────────────────────────────────────────────────────────
+
+For alphabet Σ:
+
+BASE CASES:
+
+1. ∅ is a regular expression.
+
+2. ε is a regular expression.
+
+3. Every symbol a ∈ Σ is a regular expression.
+
+RECURSIVE CASES:
+
+If R and S are regular expressions, then:
+
+    (R + S)
+    (RS)
+    (R*)
+
+are also regular expressions.
+
+This allows us to construct increasingly complex expressions.
+
+Example:
+
+    0
+    1
+
+are REs.
+
+Therefore:
+
+    (0+1)
+
+is an RE.
+
+Therefore:
+
+    (0+1)*
+
+is an RE.
+
+Therefore:
+
+    0(0+1)*
+
+is an RE.
+
+
+──────────────────────────────────────────────────────────────────────
+14. LANGUAGE OF (0+1)*
+──────────────────────────────────────────────────────────────────────
+
+Consider:
+
+    (0+1)*
+
+Inside:
+
+    0+1
+
+means:
+
+    choose 0 or 1.
+
+Then:
+
+    *
+
+means:
+
+    repeat zero or more times.
+
+Therefore:
+
+    L((0+1)*) = all finite binary strings.
+
+Examples:
+
+    ε
+    0
+    1
+    00
+    01
+    10
+    11
+    000
+    001
+    010
+    101
+    111
+    ...
+
+
+Therefore:
+
+    L((0+1)*) = {0,1}*
+
+This is the set of ALL strings over {0,1}.
+
+
+──────────────────────────────────────────────────────────────────────
+15. OPERATOR PRECEDENCE
+──────────────────────────────────────────────────────────────────────
+
+This is extremely important.
+
+Usually the precedence is:
+
+    Highest
+       ↓
+    1. Kleene Star *
+       ↓
+    2. Concatenation
+       ↓
+    3. Union +
+       ↓
+    Lowest
+
+Therefore:
+
+    01*
+
+means:
+
+    0(1*)
+
+NOT:
+
+    (01)*
+
+
+Example:
+
+    0+1*
+
+means:
+
+    0 + (1*)
+
+NOT:
+
+    (0+1)*
+
+
+To avoid confusion, use parentheses.
+
+
+──────────────────────────────────────────────────────────────────────
+16. EXAMPLE — 01*
+──────────────────────────────────────────────────────────────────────
+
+Expression:
+
+    01*
+
+First apply *:
+
+    1*
+
+means:
+
+    ε, 1, 11, 111, ...
+
+Then concatenate 0:
+
+    0
+    01
+    011
+    0111
+    ...
+
+Therefore:
+
+    L(01*) =
+    {0,01,011,0111,...}
+
+
+It means:
+
+    one 0 followed by zero or more 1s.
+
+
+──────────────────────────────────────────────────────────────────────
+17. EXAMPLE — (01)*
+──────────────────────────────────────────────────────────────────────
+
+Now:
+
+    (01)*
+
+means:
+
+    repeat the complete block "01".
+
+Therefore:
+
+    ε
+    01
+    0101
+    010101
+    01010101
+    ...
+
+So:
+
+    L((01)*) =
+    {ε,01,0101,010101,...}
+
+
+Compare:
+
+    01*
+
+    {0,01,011,0111,...}
+
+versus:
+
+    (01)*
+
+    {ε,01,0101,010101,...}
+
+These are DIFFERENT languages.
+
+
+──────────────────────────────────────────────────────────────────────
+18. EXAMPLE — (0+1)*
+──────────────────────────────────────────────────────────────────────
+
+Expression:
+
+    (0+1)*
+
+means:
+
+    any number of 0s and 1s in any order.
+
+Examples:
+
+    ε
+    0
+    1
+    00
+    01
+    10
+    11
+    001
+    101
+    110
+    010101
+    ...
+
+
+Therefore:
+
+    L((0+1)*) = {0,1}*
+
+
+──────────────────────────────────────────────────────────────────────
+19. CONSTRUCTING SIMPLE REGULAR EXPRESSIONS
+──────────────────────────────────────────────────────────────────────
+
+Now we learn how to translate an English language description
+into a regular expression.
+
+
+EXAMPLE 1:
+"All strings consisting only of 0s."
+
+Required:
+
+    zero or more 0s.
+
+Answer:
+
+    0*
+
+
+Examples:
+
+    ε
+    0
+    00
+    000
+    0000
+
+
+──────────────────────────────────────────────────────────────────────
+
+EXAMPLE 2:
+"All strings consisting only of 1s."
+
+Answer:
+
+    1*
+
+
+──────────────────────────────────────────────────────────────────────
+
+EXAMPLE 3:
+"All strings consisting of 0s and 1s."
+
+We can choose:
+
+    0 OR 1
+
+and repeat any number of times.
+
+Answer:
+
+    (0+1)*
+
+
+──────────────────────────────────────────────────────────────────────
+
+EXAMPLE 4:
+"All strings beginning with 0."
+
+We need:
+
+    first symbol = 0
+
+After that:
+
+    anything
+
+Anything over {0,1} is:
+
+    (0+1)*
+
+Therefore:
+
+    0(0+1)*
+
+
+Examples accepted:
+
+    0
+    00
+    01
+    001
+    010
+    01101
+
+
+Examples rejected:
+
+    ε
+    1
+    10
+    110
+
+
+──────────────────────────────────────────────────────────────────────
+
+EXAMPLE 5:
+"All strings ending with 1."
+
+Anything first:
+
+    (0+1)*
+
+Then final 1:
+
+    (0+1)*1
+
+
+Examples:
+
+    1
+    01
+    11
+    001
+    101
+    111
+
+
+Rejected:
+
+    ε
+    0
+    10
+    110
+
+
+──────────────────────────────────────────────────────────────────────
+
+EXAMPLE 6:
+"All strings containing at least one 1."
+
+Before 1:
+
+    (0+1)*
+
+Then:
+
+    1
+
+After 1:
+
+    (0+1)*
+
+Therefore:
+
+    (0+1)*1(0+1)*
+
+
+Examples:
+
+    1
+    01
+    10
+    101
+    00100
+    111
+
+
+Rejected:
+
+    ε
+    0
+    00
+    000
+
+
+──────────────────────────────────────────────────────────────────────
+20. STRINGS CONTAINING A PARTICULAR SUBSTRING
+──────────────────────────────────────────────────────────────────────
+
+Suppose:
+
+    Language = strings containing "101" somewhere.
+
+We need:
+
+    anything
+    followed by 101
+    followed by anything
+
+Therefore:
+
+    (0+1)*101(0+1)*
+
+
+ASCII interpretation:
+
+    anything ──> 101 ──> anything
+
+       X            101            Y
+    ─────────    ───────    ─────────────
+        (0+1)*      101          (0+1)*
+
+
+Examples accepted:
+
+    101
+    0101
+    1010
+    11010
+    10101
+    0010100
+
+
+──────────────────────────────────────────────────────────────────────
+21. STRINGS WITH EXACTLY ONE 1
+──────────────────────────────────────────────────────────────────────
+
+We want:
+
+    zero or more 0s
+    exactly one 1
+    zero or more 0s
+
+Therefore:
+
+    0*10*
+
+
+Examples:
+
+    1
+    01
+    10
+    010
+    00100
+    0001000
+
+
+Rejected:
+
+    ε
+    0
+    11
+    101
+    110
+
+
+──────────────────────────────────────────────────────────────────────
+22. STRINGS WITH AT LEAST ONE 1
+──────────────────────────────────────────────────────────────────────
+
+Answer:
+
+    0*10* (0+1)*
+
+is technically possible, but unnecessarily complicated.
+
+A simpler expression is:
+
+    (0+1)*1(0+1)*
+
+
+or:
+
+    0*10*(0+1)*
+
+Both can describe suitable languages depending on structure.
+
+The key idea is:
+
+    "at least one"
+        ↓
+    force the required symbol/pattern to occur.
+
+
+──────────────────────────────────────────────────────────────────────
+23. EVEN NUMBER OF 0s
+──────────────────────────────────────────────────────────────────────
+
+Suppose alphabet:
+
+    Σ = {0,1}
+
+We want an even number of 0s.
+
+Zeros must occur in pairs.
+
+A pair of 0s is:
+
+    00
+
+Between them and between pairs, any number of 1s can occur.
+
+A standard expression is:
+
+    1*(01*01*)*
+
+
+Let's understand it:
+
+    1*
+        any number of 1s
+
+    0
+        first zero
+
+    1*
+        any number of 1s
+
+    0
+        second zero
+
+    1*
+        any number of 1s
+
+The complete pair:
+
+    01*01*
+
+Repeat that pair:
+
+    (01*01*)*
+
+and allow initial 1s:
+
+    1*(01*01*)*
+
+
+Examples:
+
+    ε
+    1
+    11
+    00
+    010
+    101
+    0011
+    1001
+    01010
+
+
+All contain an even number of 0s.
+
+
+──────────────────────────────────────────────────────────────────────
+24. ODD NUMBER OF 0s
+──────────────────────────────────────────────────────────────────────
+
+For odd number of 0s:
+
+    one 0
+    + pairs of 0s
+
+A standard expression:
+
+    1*01*(01*01*)*
+
+
+Interpretation:
+
+    initial 1s
+       ↓
+    one zero
+       ↓
+    1s
+       ↓
+    zero or more pairs of zeros
+
+
+──────────────────────────────────────────────────────────────────────
+25. STRINGS OF EVEN LENGTH
+──────────────────────────────────────────────────────────────────────
+
+Every character must occur in pairs.
+
+One arbitrary symbol:
+
+    (0+1)
+
+Two symbols:
+
+    (0+1)(0+1)
+
+Repeat pairs:
+
+    ((0+1)(0+1))*
+
+Therefore:
+
+    ((0+1)(0+1))*
+
+or more compactly:
+
+    ((0+1)(0+1))*
+
+
+Examples:
+
+    ε
+    00
+    01
+    10
+    11
+    0000
+    0101
+    1010
+
+
+Rejected:
+
+    0
+    1
+    001
+    101
+
+
+──────────────────────────────────────────────────────────────────────
+26. STRINGS OF ODD LENGTH
+──────────────────────────────────────────────────────────────────────
+
+One symbol followed by zero or more pairs:
+
+    (0+1)((0+1)(0+1))*
+
+
+Examples:
+
+    0
+    1
+    000
+    001
+    010
+    111
+    01010
+
+
+All have odd length.
+
+
+──────────────────────────────────────────────────────────────────────
+27. REGULAR EXPRESSION FOR A FINITE LANGUAGE
+──────────────────────────────────────────────────────────────────────
+
+Suppose:
+
+    L = {0, 01, 101}
+
+Then we can use union:
+
+    0 + 01 + 101
+
+
+Therefore:
+
+    R = 0 + 01 + 101
+
+
+This language contains exactly:
+
+    0
+    01
+    101
+
+
+No other strings.
+
+
+──────────────────────────────────────────────────────────────────────
+28. REPRESENTING OPTIONAL PARTS
+──────────────────────────────────────────────────────────────────────
+
+Regular expressions do not always have a special "optional" operator
+in basic TOC notation.
+
+We can represent optional X using:
+
+    (ε + X)
+
+Example:
+
+    "a optionally followed by b"
+
+can be written:
+
+    a(ε+b)
+
+which gives:
+
+    a
+    ab
+
+
+──────────────────────────────────────────────────────────────────────
+29. REGULAR EXPRESSION → LANGUAGE
+──────────────────────────────────────────────────────────────────────
+
+Given an RE, your job may be to determine what language it represents.
+
+Example:
+
+    R = (0+1)*00
+
+
+Interpretation:
+
+    any binary string
+    followed by 00.
+
+Therefore:
+
+    strings ending in 00.
+
+
+Examples:
+
+    00
+    100
+    000
+    1100
+    0100
+    10100
+
+
+Rejected:
+
+    ε
+    0
+    01
+    10
+    101
+
+
+──────────────────────────────────────────────────────────────────────
+30. ANOTHER IMPORTANT EXAMPLE
+──────────────────────────────────────────────────────────────────────
+
+R = 1(0+1)*0
+
+Break it:
+
+    1
+    ↓
+    any binary string
+    ↓
+    0
+
+Therefore:
+
+    strings beginning with 1
+    and ending with 0.
+
+
+Examples:
+
+    10
+    100
+    110
+    1010
+    1110
+
+
+Rejected:
+
+    0
+    1
+    01
+    1101
+
+
+──────────────────────────────────────────────────────────────────────
+31. REGULAR EXPRESSION AND DFA
+──────────────────────────────────────────────────────────────────────
+
+An important fact:
+
+    Every regular expression represents a regular language.
+
+And:
+
+    Every regular language can be represented by a finite automaton.
+
+Therefore:
+
+    Regular Expression
+           ↕
+    Regular Language
+           ↕
+    Finite Automaton
+
+
+More specifically:
+
+    RE ───────> ε-NFA
+     │            │
+     │            ↓
+     │           DFA
+     │            │
+     └────────────┘
+
+This relationship is one of the central ideas of TOC.
+
+
+──────────────────────────────────────────────────────────────────────
+32. EXAMPLE: RE AND AUTOMATON
+──────────────────────────────────────────────────────────────────────
+
+Consider:
+
+    R = 0*1
+
+Meaning:
+
+    zero or more 0s followed by exactly one final 1.
+
+Examples:
+
+    1
+    01
+    001
+    0001
+
+
+Conceptual DFA:
+
+                  0
+               ┌───────┐
+               │       │
+               v       │
+            -->q0 ─────┘
+               |
+               | 1
+               v
+              q1*
+              
+    q0 = start state
+    q1 = accepting state
+
+
+Transition table:
+
+    ┌───────┬─────┬─────┐
+    │ State │  0  │  1  │
+    ├───────┼─────┼─────┤
+    │ q0    │ q0  │ q1  │
+    │ q1    │ dead│ dead│
+    └───────┴─────┴─────┘
+
+The RE and automaton describe the same language.
+
+
+──────────────────────────────────────────────────────────────────────
+33. IMPORTANT DISTINCTION
+──────────────────────────────────────────────────────────────────────
+
+Do not confuse:
+
+    Regular Expression
+    Regular Language
+    Regular Grammar
+    Finite Automaton
+
+They are different representations/concepts.
+
+                 SAME CLASS OF LANGUAGES
+
+        ┌───────────────────────────────┐
+        │       REGULAR LANGUAGES       │
+        └───────────────────────────────┘
+              /       |       \
+             /        |        \
+            v         v         v
+           DFA       NFA        RE
+            \
+             \
+              Regular Grammar
+
+
+They differ in representation and construction method,
+but have equivalent expressive power.
+
+
+──────────────────────────────────────────────────────────────────────
+34. COMMON MISTAKES
+──────────────────────────────────────────────────────────────────────
+
+MISTAKE 1:
+
+    Confusing ε with ∅
+
+Remember:
+
+    ε = one empty string
+    ∅ = no strings
+
+
+MISTAKE 2:
+
+    Thinking 0* means "at least one 0"
+
+Wrong.
+
+    0* includes ε.
+
+Correct:
+
+    0+ means one or more 0s.
+
+
+MISTAKE 3:
+
+    Confusing 01* with (01)*
+
+They are completely different.
+
+    01*:
+        0, 01, 011, 0111,...
+
+    (01)*:
+        ε, 01, 0101, 010101,...
+
+
+MISTAKE 4:
+
+    Forgetting operator precedence.
+
+    01*
+
+means:
+
+    0(1*)
+
+not:
+
+    (01)*
+
+
+MISTAKE 5:
+
+    Assuming + always means arithmetic addition.
+
+In basic regular-expression notation:
+
+    R + S
+
+means:
+
+    union.
+
+
+MISTAKE 6:
+
+    Thinking (0+1)* means strings containing both 0 and 1.
+
+Wrong.
+
+It means:
+
+    ALL binary strings, including strings containing only 0s,
+    only 1s, and ε.
+
+
+MISTAKE 7:
+
+    Thinking ε is the same as ∅.
+
+It is not.
+
+
+──────────────────────────────────────────────────────────────────────
+35. IMPORTANT IDENTITIES
+──────────────────────────────────────────────────────────────────────
+
+Some useful regular-expression identities:
+
+    R + ∅ = R
+
+    Rε = R
+
+    εR = R
+
+    R + R = R
+
+    R* = ε + RR*
+
+    R+ = RR*
+
+    R+ = R*R
+
+    (R*)* = R*
+
+    ∅* = ε
+
+
+Be careful:
+
+    R + S
+
+is NOT generally equal to:
+
+    RS
+
+
+Also:
+
+    (R+S)*
+
+is NOT generally equal to:
+
+    R* + S*
+
+
+──────────────────────────────────────────────────────────────────────
+36. B.TECH EXAM PERSPECTIVE
+──────────────────────────────────────────────────────────────────────
+
+You should be able to:
+
+    ✓ Define regular expression.
+    ✓ Explain ε and ∅.
+    ✓ Explain union.
+    ✓ Explain concatenation.
+    ✓ Explain Kleene star.
+    ✓ Explain Kleene plus.
+    ✓ Determine the language of an RE.
+    ✓ Construct an RE from a simple language description.
+    ✓ Understand operator precedence.
+    ✓ Distinguish R* and R+.
+    ✓ Distinguish 01* and (01)*.
+    ✓ Write REs for common patterns.
+    ✓ Understand RE ↔ finite automata relationship.
+
+
+VERY IMPORTANT UNIVERSITY QUESTIONS:
+
+    1. Define regular expression with examples.
+
+    2. Explain the basic operators of regular expressions.
+
+    3. Find the language represented by:
+           (0+1)*01
+
+    4. Construct an RE for strings ending in 1.
+
+    5. Construct an RE for strings beginning with 0.
+
+    6. Construct an RE for strings containing 101.
+
+    7. Construct an RE for strings containing exactly one 1.
+
+    8. Differentiate Kleene star and Kleene plus.
+
+    9. Differentiate ε and ∅.
+
+    10. Explain the relationship between regular expressions
+        and finite automata.
+
+
+──────────────────────────────────────────────────────────────────────
+37. GATE / COMPETITIVE EXAM PERSPECTIVE
+──────────────────────────────────────────────────────────────────────
+
+GATE commonly tests:
+
+    • Language represented by an RE
+    • Equivalence of REs
+    • Operator precedence
+    • ε membership
+    • Empty language
+    • Pattern identification
+    • RE ↔ DFA/NFA
+    • Closure properties
+    • Counting patterns
+    • Complement-related reasoning
+    • Minimal automata relationships
+
+
+TRICKY EXAMPLE:
+
+    Which strings belong to:
+
+        (0+1)*1(0+1)*
+
+Answer:
+
+    Exactly the binary strings containing at least one 1.
+
+
+TRICKY EXAMPLE:
+
+    Which language is represented by:
+
+        0(0+1)*0
+
+Answer:
+
+    Binary strings that begin with 0 and end with 0.
+
+
+──────────────────────────────────────────────────────────────────────
+38. INTERVIEW PERSPECTIVE
+──────────────────────────────────────────────────────────────────────
+
+Question:
+
+    What is a regular expression?
+
+Good answer:
+
+    A regular expression is a formal notation used to describe
+    regular languages using basic symbols and operations such as
+    union, concatenation, and Kleene star.
+
+Question:
+
+    What does * mean?
+
+Answer:
+
+    Zero or more repetitions.
+
+Question:
+
+    What is the difference between * and +?
+
+Answer:
+
+    * allows zero or more repetitions,
+    while + allows one or more repetitions.
+
+Question:
+
+    Is every language representable by a regular expression?
+
+Answer:
+
+    No.
+
+    Only regular languages can be represented by classical
+    regular expressions.
+
+
+──────────────────────────────────────────────────────────────────────
+39. QUICK PATTERN CHEAT SHEET
+──────────────────────────────────────────────────────────────────────
+
+Language description                         Regular Expression
+
+Only 0s                                     0*
+
+Only 1s                                     1*
+
+Any binary string                           (0+1)*
+
+Exactly 0                                   0
+
+Either 0 or 1                               0+1
+
+Starts with 0                               0(0+1)*
+
+Ends with 1                                 (0+1)*1
+
+Contains 1                                  (0+1)*1(0+1)*
+
+Contains 101                                (0+1)*101(0+1)*
+
+Exactly one 1                               0*10*
+
+Exactly one 0                               1*01*
+
+Even length                                 ((0+1)(0+1))*
+
+Odd length                                  (0+1)((0+1)(0+1))*
+
+Zero or more 01 blocks                     (01)*
+
+One or more 01 blocks                      (01)+
+
+Starts with 1 and ends with 0              1(0+1)*0
+
+
+──────────────────────────────────────────────────────────────────────
+40. PRACTICE QUESTIONS
+──────────────────────────────────────────────────────────────────────
+
+LEVEL 1 — BEGINNER
+
+Q1. What does 0* represent?
+
+Q2. What is the difference between ε and ∅?
+
+Q3. What language is represented by:
+
+        0+1
+
+Q4. What language is represented by:
+
+        01
+
+Q5. What does (0+1)* represent?
+
+Q6. What is the difference between:
+
+        0*
+
+    and
+
+        0+?
+
+
+LEVEL 2 — B.TECH BASIC
+
+Q7. Write a regular expression for strings beginning with 1.
+
+Q8. Write a regular expression for strings ending with 0.
+
+Q9. Write an RE for strings containing 11.
+
+Q10. Write an RE for strings containing at least one 0.
+
+Q11. Write an RE for strings containing exactly one 1.
+
+Q12. Find the language represented by:
+
+        1(0+1)*
+
+
+LEVEL 3 — UNIVERSITY EXAM
+
+Q13. Construct an RE for all binary strings beginning with 0
+     and ending with 1.
+
+Q14. Construct an RE for all binary strings containing 101.
+
+Q15. Construct an RE for strings having exactly two 1s.
+
+Q16. Construct an RE for binary strings having an even number
+     of 0s.
+
+Q17. Explain the difference between:
+
+        01*
+
+    and
+
+        (01)*
+
+Q18. Explain the difference between:
+
+        R*
+
+    and
+
+        R+.
+
+
+LEVEL 4 — GATE STYLE
+
+Q19. Determine the language represented by:
+
+        (0+1)*00(0+1)*
+
+Q20. Determine whether ε belongs to:
+
+        1(0+1)*
+
+Q21. Determine whether ε belongs to:
+
+        (0+1)*
+
+Q22. Find an RE for strings over {0,1} containing at least
+     one 0 and at least one 1.
+
+Q23. Find an RE for strings beginning and ending with the same
+     symbol.
+
+Q24. Find an RE for strings with exactly two occurrences of 1.
+
+
+──────────────────────────────────────────────────────────────────────
+41. ACTIVE RECALL — DO NOT LOOK AT THE ANSWERS
+──────────────────────────────────────────────────────────────────────
+
+Try answering these yourself:
+
+    Q1. What is a regular expression?
+
+    Q2. What does ε mean?
+
+    Q3. What does ∅ mean?
+
+    Q4. What does R+S mean?
+
+    Q5. What does RS mean?
+
+    Q6. What does R* mean?
+
+    Q7. What does R+ mean?
+
+    Q8. What is the difference between R* and R+?
+
+    Q9. What does (0+1)* represent?
+
+    Q10. What is represented by 0(0+1)*?
+
+    Q11. What is represented by (0+1)*1?
+
+    Q12. What is represented by 0*10*?
+
+    Q13. What is the difference between 01* and (01)*?
+
+    Q14. Can every language be represented by a regular expression?
+
+    Q15. What is the relationship between RE, DFA and NFA?
+
+
+──────────────────────────────────────────────────────────────────────
+42. CHAPTER 6 — FINAL SUMMARY
+──────────────────────────────────────────────────────────────────────
+
+A REGULAR EXPRESSION:
+
+    = a formal pattern notation
+    = describes a regular language
+
+BASIC ELEMENTS:
+
+    ∅       empty language
+    ε       empty string
+    a       alphabet symbol
+
+OPERATIONS:
+
+    R + S   union
+    RS      concatenation
+    R*      zero or more repetitions
+    R+      one or more repetitions
+
+PRECEDENCE:
+
+    *  >  concatenation  >  +
+
+KEY EXAMPLES:
+
+    0*
+        all strings containing only 0s
+
+    (0+1)*
+        all binary strings
+
+    0(0+1)*
+        strings beginning with 0
+
+    (0+1)*1
+        strings ending with 1
+
+    (0+1)*101(0+1)*
+        strings containing 101
+
+    0*10*
+        strings containing exactly one 1
+
+IMPORTANT DIFFERENCES:
+
+    ε ≠ ∅
+
+    R* ≠ R+
+
+    01* ≠ (01)*
+
+    Regular Expression ≠ Regular Language
+
+
+CENTRAL RELATIONSHIP:
+
+              REGULAR LANGUAGE
+              /      |       \
+             /       |        \
+            DFA      NFA       RE
+
+All three are different ways of representing/recognizing the
+same class of languages: REGULAR LANGUAGES.
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                    CHAPTER 6 STATUS                               ║
+║                                                                      ║
+║  Regular Expressions — TAUGHT                                      ║
+║                                                                      ║
+║  Covered:                                                            ║
+║  ✓ RE basics                                                        ║
+║  ✓ ε and ∅                                                          ║
+║  ✓ Union                                                            ║
+║  ✓ Concatenation                                                    ║
+║  ✓ Kleene Star                                                      ║
+║  ✓ Kleene Plus                                                      ║
+║  ✓ Operator precedence                                              ║
+║  ✓ RE construction                                                   ║
+║  ✓ Pattern-based REs                                                ║
+║  ✓ RE → language interpretation                                     ║
+║  ✓ RE and finite automata relationship                              ║
+║  ✓ Exam/GATE concepts                                               ║
+║  ✓ Practice and active recall                                       ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+UPCOMING NEXT TOPIC
+──────────────────────────────────────────────────────────────────────
+
+CHAPTER 6 → NEXT TOPIC:
+
+    6.2 REGULAR EXPRESSION CONSTRUCTION — DEEP PRACTICE
+
+    We will learn systematically how to construct regular
+    expressions from language descriptions, including:
+
+        • Pattern representation
+        • Simple RE construction
+        • Complex RE construction
+        • "Starts with" patterns
+        • "Ends with" patterns
+        • "Contains" patterns
+        • "Does not contain" patterns
+        • Exact number of occurrences
+        • Even/odd occurrences
+        • Length restrictions
+        • Exam-level construction problems
+        • GATE-style construction questions
+
+    Type:
+
+        NEXT
+
+    to continue to the next pending topic.
+
+    I will NOT automatically move to Chapter 7.

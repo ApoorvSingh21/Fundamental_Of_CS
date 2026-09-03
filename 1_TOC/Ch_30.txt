@@ -1,0 +1,2145 @@
+====================================================================
+                 THEORY OF COMPUTATION — CHAPTER 30
+                 ADVANCED LANGUAGE THEORY
+====================================================================
+
+CHAPTER 30 covers advanced properties and tools used to analyze
+regular languages, regular expressions, grammars, and automata.
+
+This chapter is especially useful for:
+• B.Tech examinations
+• GATE
+• Competitive examinations
+• Automata theory
+• Regular-language proofs
+• Advanced DFA/RE problems
+
+--------------------------------------------------------------------
+CHAPTER 30 — TOPICS
+--------------------------------------------------------------------
+
+30.1 Regular Language Algebra
+30.2 Myhill-Nerode Theorem
+30.3 Brzozowski Derivatives
+30.4 Arden's Theorem
+30.5 Regular Grammar
+30.6 Left-Linear Grammar
+30.7 Right-Linear Grammar
+30.8 Language Equivalence
+30.9 Decision Properties
+30.10 Homomorphism
+30.11 Inverse Homomorphism
+30.12 Quotient Operations
+
+====================================================================
+30.1 REGULAR LANGUAGE ALGEBRA
+====================================================================
+
+1. INTRODUCTION
+----------------
+
+A regular language is a language that can be represented by any
+equivalent form such as:
+
+    DFA
+    NFA
+    ε-NFA
+    Regular Expression
+    Regular Grammar
+
+Regular-language algebra studies how regular languages behave when
+we perform operations on them.
+
+The important operations are:
+
+    Union
+    Intersection
+    Complement
+    Difference
+    Concatenation
+    Kleene Star
+    Kleene Plus
+    Reversal
+    Homomorphism
+    Inverse Homomorphism
+    Quotient
+
+The major idea is:
+
+    If we start with regular languages and apply certain operations,
+    do we still get a regular language?
+
+For the standard regular-language operations, the answer is YES.
+
+--------------------------------------------------------------------
+2. BASIC OPERATIONS
+--------------------------------------------------------------------
+
+Suppose:
+
+    L1 = {a, ab}
+    L2 = {b, bb}
+
+Then:
+
+UNION:
+
+    L1 ∪ L2 = {a, ab, b, bb}
+
+INTERSECTION:
+
+    L1 ∩ L2 = ∅
+
+CONCATENATION:
+
+    L1L2 = {ab, abb, abb, abbb}
+
+After removing duplicate strings:
+
+    L1L2 = {ab, abb, abbb}
+
+--------------------------------------------------------------------
+3. IMPORTANT CLOSURE PROPERTY
+--------------------------------------------------------------------
+
+A language family is said to be CLOSED under an operation if applying
+that operation to languages in the family produces another language
+in the same family.
+
+For regular languages:
+
+    Regular ∪ Regular = Regular
+
+    Regular ∩ Regular = Regular
+
+    Regular complement = Regular
+
+    Regular difference = Regular
+
+    Regular concatenation = Regular
+
+    Regular star = Regular
+
+    Regular reversal = Regular
+
+    Regular homomorphism = Regular
+
+    Regular inverse homomorphism = Regular
+
+Therefore:
+
+        REGULAR LANGUAGES
+               |
+       +-------+-------+
+       |       |       |
+      ∪       ∩    Complement
+       |       |       |
+       +-------+-------+
+               |
+          STILL REGULAR
+
+--------------------------------------------------------------------
+4. PRODUCT CONSTRUCTION
+--------------------------------------------------------------------
+
+Intersection of two DFAs can be constructed using a product DFA.
+
+Suppose:
+
+    DFA1 = (Q1, Σ, δ1, q1, F1)
+
+    DFA2 = (Q2, Σ, δ2, q2, F2)
+
+Then construct:
+
+    Q = Q1 × Q2
+
+Each new state is a pair:
+
+    (p,q)
+
+Transition:
+
+    δ((p,q),a)
+      =
+    (δ1(p,a), δ2(q,a))
+
+For intersection:
+
+    F = F1 × F2
+
+ASCII idea:
+
+        DFA 1                    DFA 2
+      +-------+                +-------+
+      |       |                |       |
+      |  p    | --a-->        |  q    | --a-->
+      +-------+                +-------+
+
+                 PRODUCT DFA
+
+                    (p,q)
+                      |
+                      | a
+                      v
+              (δ1(p,a), δ2(q,a))
+
+This is extremely important for GATE.
+
+====================================================================
+30.2 MYHILL-NERODE THEOREM
+====================================================================
+
+1. WHY DO WE NEED IT?
+---------------------
+
+We learned DFA minimization.
+
+Now we want a deeper question:
+
+    "What exactly determines the minimum number of states
+     required by a DFA?"
+
+The answer is given by the Myhill-Nerode theorem.
+
+It provides a mathematical characterization of regular languages
+and minimal DFA states.
+
+--------------------------------------------------------------------
+2. INTUITION
+--------------------------------------------------------------------
+
+Suppose a machine has read some input.
+
+Two strings x and y are equivalent if, from that point onward,
+there is no possible future string z that can make one accepted and
+the other rejected.
+
+In simple words:
+
+    x and y behave identically for every possible continuation.
+
+If:
+
+    xz is accepted exactly when yz is accepted
+
+for every string z,
+
+then x and y are indistinguishable with respect to the language.
+
+--------------------------------------------------------------------
+3. FORMAL DEFINITION
+--------------------------------------------------------------------
+
+Let L be a language over alphabet Σ.
+
+Define the relation ≡L:
+
+    x ≡L y
+
+if and only if:
+
+    for every z ∈ Σ*,
+
+    xz ∈ L  ⇔  yz ∈ L
+
+Here:
+
+    x, y = strings
+    z    = any possible continuation
+    L    = language
+
+Meaning:
+
+    x and y cannot be distinguished by any suffix z.
+
+--------------------------------------------------------------------
+4. DISTINGUISHING STRINGS
+--------------------------------------------------------------------
+
+If there exists some string z such that:
+
+    xz ∈ L
+
+but
+
+    yz ∉ L
+
+then z distinguishes x and y.
+
+Therefore:
+
+    x ≠L y
+
+Example:
+
+Let:
+
+    L = strings ending in 1
+
+Take:
+
+    x = 0
+    y = 1
+
+Choose:
+
+    z = ε
+
+Then:
+
+    xz = 0      → not in L
+    yz = 1      → in L
+
+Therefore 0 and 1 are distinguishable.
+
+--------------------------------------------------------------------
+5. MYHILL-NERODE THEOREM
+--------------------------------------------------------------------
+
+A language L is regular if and only if the equivalence relation
+≡L has a finite number of equivalence classes.
+
+In simple language:
+
+    FINITE NUMBER OF DISTINCT BEHAVIOR CLASSES
+                       ↓
+                 REGULAR LANGUAGE
+
+And:
+
+    NUMBER OF EQUIVALENCE CLASSES
+                       =
+    NUMBER OF STATES IN THE MINIMAL DFA
+
+This is the key result.
+
+--------------------------------------------------------------------
+6. ASCII CONCEPT
+--------------------------------------------------------------------
+
+Many strings
+    |
+    +---- 0
+    +---- 00
+    +---- 1
+    +---- 01
+    +---- 10
+    +---- 11
+    +---- ...
+
+          ↓ group according to identical future behavior
+
+       +---------+---------+---------+
+       | Class 1 | Class 2 | Class 3 |
+       +---------+---------+---------+
+            |         |         |
+            v         v         v
+
+        DFA state DFA state DFA state
+
+Thus:
+
+    Equivalence classes ↔ Minimal DFA states
+
+--------------------------------------------------------------------
+7. USES
+--------------------------------------------------------------------
+
+Myhill-Nerode theorem is useful for:
+
+• Proving that a language is regular
+• Proving that a language is NOT regular
+• Finding the minimum number of DFA states
+• Understanding DFA minimization
+• Proving lower bounds on DFA size
+
+--------------------------------------------------------------------
+8. EXAM EXAMPLE
+--------------------------------------------------------------------
+
+Consider:
+
+    L = { strings over {0,1} ending in 1 }
+
+Possible relevant behavior:
+
+    Strings ending in 0
+    Strings ending in 1
+    No input yet
+
+The machine only needs to remember:
+
+    "Does the current string end in 1?"
+
+Therefore a small finite number of behavior classes exists.
+
+Hence L is regular.
+
+--------------------------------------------------------------------
+9. IMPORTANT GATE POINT
+--------------------------------------------------------------------
+
+If you can find infinitely many pairwise distinguishable strings,
+then the language is NOT regular.
+
+For example:
+
+    L = {0^n1^n | n ≥ 0}
+
+Consider:
+
+    ε, 0, 00, 000, ...
+
+These can be shown to be pairwise distinguishable.
+
+Therefore there are infinitely many equivalence classes.
+
+Hence:
+
+    L is NOT regular.
+
+====================================================================
+30.3 BRZOZOWSKI DERIVATIVES
+====================================================================
+
+1. INTRODUCTION
+----------------
+
+Brzozowski derivative provides a method for determining the part of
+a regular language that remains after reading a symbol.
+
+It can also be used to construct automata from regular expressions.
+
+--------------------------------------------------------------------
+2. INTUITION
+--------------------------------------------------------------------
+
+Suppose:
+
+    L = language represented by R
+
+and we read symbol a.
+
+The derivative of L with respect to a is:
+
+    D_a(L)
+
+It contains strings x such that:
+
+    ax ∈ L
+
+In words:
+
+    "After consuming a, what strings are still required?"
+
+--------------------------------------------------------------------
+3. FORMAL DEFINITION
+--------------------------------------------------------------------
+
+For a language L:
+
+    D_a(L) = {x | ax ∈ L}
+
+For a string w:
+
+    D_w(L) = {x | wx ∈ L}
+
+--------------------------------------------------------------------
+4. SIMPLE EXAMPLE
+--------------------------------------------------------------------
+
+Let:
+
+    L = strings beginning with a
+
+Then:
+
+    L = aΣ*
+
+After reading a, nothing special is required.
+
+Therefore:
+
+    D_a(L) = Σ*
+
+But after reading b:
+
+    D_b(L) = ∅
+
+because strings beginning with a cannot begin with b.
+
+--------------------------------------------------------------------
+5. REGULAR EXPRESSION DERIVATIVES
+--------------------------------------------------------------------
+
+Important rules:
+
+For symbol a:
+
+    D_a(∅) = ∅
+
+    D_a(ε) = ∅
+
+For a symbol b:
+
+    D_a(b) =
+        ε   if a = b
+        ∅   if a ≠ b
+
+Union:
+
+    D_a(R + S)
+      =
+    D_a(R) + D_a(S)
+
+Concatenation:
+
+    D_a(RS)
+      =
+    D_a(R)S + nullable(R)D_a(S)
+
+Here nullable(R) means:
+
+    Does R generate ε?
+
+If yes:
+
+    nullable(R) = true
+
+If no:
+
+    nullable(R) = false
+
+Star:
+
+    D_a(R*)
+      =
+    D_a(R)R*
+
+--------------------------------------------------------------------
+6. CONNECTION WITH DFA
+--------------------------------------------------------------------
+
+A DFA can be viewed as repeatedly taking derivatives.
+
+Conceptually:
+
+              Regular Expression
+                      |
+                      | read a
+                      v
+                  Derivative
+                      |
+                      | read b
+                      v
+                  Derivative
+                      |
+                     ...
+
+Each distinct derivative corresponds to a state.
+
+This gives a deep connection:
+
+    Regular Expression
+            ↓
+    Brzozowski derivatives
+            ↓
+          DFA
+
+--------------------------------------------------------------------
+7. IMPORTANT POINT
+--------------------------------------------------------------------
+
+Brzozowski derivatives are mainly an advanced theoretical tool.
+
+For introductory B.Tech problems, focus on understanding:
+
+    derivative = remaining language after consuming input
+
+====================================================================
+30.4 ARDEN'S THEOREM
+====================================================================
+
+1. INTRODUCTION
+----------------
+
+Arden's theorem is used mainly to solve regular-expression equations.
+
+It is especially useful when converting:
+
+    Finite Automaton → Regular Expression
+
+--------------------------------------------------------------------
+2. BASIC EQUATION
+--------------------------------------------------------------------
+
+Suppose:
+
+    X = AX + B
+
+where A and B are regular expressions.
+
+Under the condition:
+
+    ε ∉ L(A)
+
+the unique solution is:
+
+    X = A*B
+
+This is Arden's theorem.
+
+--------------------------------------------------------------------
+3. WHY?
+--------
+
+Suppose:
+
+    X = aX + b
+
+Then:
+
+    X = a(aX + b) + b
+
+    = aaX + ab + b
+
+Continue:
+
+    = aaaX + aab + ab + b
+
+Eventually:
+
+    X = a*b
+
+Therefore:
+
+    X = a*b
+
+--------------------------------------------------------------------
+4. ASCII INTERPRETATION
+------------------------
+
+Equation:
+
+    X = aX + b
+
+can be visualized as:
+
+             a
+        +----------+
+        |          |
+        v          |
+       (X) --------+
+        |
+        | b
+        v
+       FINAL
+
+Possible strings:
+
+    b
+    ab
+    aab
+    aaab
+    ...
+
+Therefore:
+
+    X = a*b
+
+--------------------------------------------------------------------
+5. IMPORTANT CONDITION
+----------------------
+
+For:
+
+    X = AX + B
+
+Arden's theorem gives:
+
+    X = A*B
+
+when:
+
+    ε ∉ L(A)
+
+This condition is important in examinations.
+
+--------------------------------------------------------------------
+6. SECOND FORM
+--------------
+
+If:
+
+    X = XA + B
+
+then similarly:
+
+    X = BA*
+
+under the corresponding condition.
+
+--------------------------------------------------------------------
+7. APPLICATION
+--------------
+
+Arden's theorem is frequently used for:
+
+    DFA → Regular Expression
+
+General process:
+
+    DFA
+     ↓
+    Write equations
+     ↓
+    Apply Arden's theorem
+     ↓
+    Solve equations
+     ↓
+    Regular Expression
+
+====================================================================
+30.5 REGULAR GRAMMAR
+====================================================================
+
+1. WHAT IS A GRAMMAR?
+---------------------
+
+A grammar is a formal system used to generate strings of a language.
+
+A grammar generally contains:
+
+    Non-terminals
+    Terminals
+    Production rules
+    Start symbol
+
+For example:
+
+    S → aS
+    S → b
+
+This grammar generates:
+
+    b
+    ab
+    aab
+    aaab
+    ...
+
+Therefore:
+
+    L = {a^n b | n ≥ 0}
+
+--------------------------------------------------------------------
+2. FORMAL DEFINITION
+--------------------
+
+A grammar is generally represented as:
+
+    G = (V, T, P, S)
+
+where:
+
+    V = set of variables/non-terminals
+    T = set of terminals
+    P = production rules
+    S = start symbol
+
+--------------------------------------------------------------------
+3. WHAT MAKES A GRAMMAR REGULAR?
+--------------------------------
+
+A regular grammar has restricted production rules.
+
+Two common forms are:
+
+RIGHT-LINEAR:
+
+    A → aB
+    A → a
+    A → ε
+
+LEFT-LINEAR:
+
+    A → Ba
+    A → a
+    A → ε
+
+where:
+
+    A, B = non-terminals
+    a    = terminal
+
+--------------------------------------------------------------------
+4. RIGHT-LINEAR EXAMPLE
+-----------------------
+
+Grammar:
+
+    S → 0S
+    S → 1
+
+Derivations:
+
+    S
+    ⇒ 1
+
+or:
+
+    S
+    ⇒ 0S
+    ⇒ 01
+
+or:
+
+    S
+    ⇒ 0S
+    ⇒ 00S
+    ⇒ 001
+
+Thus:
+
+    L = {0^n1 | n ≥ 0}
+
+--------------------------------------------------------------------
+5. RELATIONSHIP
+---------------
+
+Regular Grammar
+       ↕
+Regular Language
+       ↕
+DFA / NFA
+       ↕
+Regular Expression
+
+These are equivalent representations of regular languages.
+
+====================================================================
+30.6 LEFT-LINEAR GRAMMAR
+====================================================================
+
+A left-linear grammar has productions where the non-terminal appears
+on the left side of the terminal sequence.
+
+Typical form:
+
+    A → Ba
+    A → a
+    A → ε
+
+Example:
+
+    S → Sa
+    S → b
+
+Derivations:
+
+    S ⇒ b
+
+    S ⇒ Sa ⇒ ba
+
+    S ⇒ Sa ⇒ Saa ⇒ baa
+
+Therefore:
+
+    L = {ba^n | n ≥ 0}
+
+--------------------------------------------------------------------
+IMPORTANT
+---------
+
+Left-linear grammar:
+
+    A → Ba
+
+Right-linear grammar:
+
+    A → aB
+
+Both can describe regular languages.
+
+--------------------------------------------------------------------
+CAUTION
+-------
+
+Mixing arbitrary left-linear and right-linear productions can cause
+the grammar to leave the regular-grammar form.
+
+For B.Tech/GATE questions, carefully inspect every production.
+
+====================================================================
+30.7 RIGHT-LINEAR GRAMMAR
+====================================================================
+
+A right-linear grammar has productions such as:
+
+    A → aB
+    A → a
+    A → ε
+
+The non-terminal occurs at the right side.
+
+Example:
+
+    S → 0A
+    A → 1S
+    A → ε
+
+This grammar generates strings such as:
+
+    ε
+    01
+    0101
+    010101
+    ...
+
+Hence:
+
+    L = (01)*
+
+--------------------------------------------------------------------
+GRAMMAR → AUTOMATON
+--------------------
+
+A right-linear grammar can be converted to an NFA.
+
+For:
+
+    S → 0A
+
+create:
+
+    S --0--> A
+
+For:
+
+    A → 1S
+
+create:
+
+    A --1--> S
+
+For:
+
+    A → ε
+
+make A final.
+
+ASCII:
+
+             0
+        +----------+
+        |          v
+       (S) ------> (A)*
+        ^            |
+        |            |
+        +-----1------+
+
+Here:
+
+    S = start state
+    A = accepting state
+
+====================================================================
+30.8 LANGUAGE EQUIVALENCE
+====================================================================
+
+1. DEFINITION
+-------------
+
+Two languages L1 and L2 are equivalent if they contain exactly the
+same strings.
+
+Formally:
+
+    L1 = L2
+
+if and only if:
+
+    ∀w, w ∈ L1 ⇔ w ∈ L2
+
+--------------------------------------------------------------------
+2. EXAMPLE
+-----------
+
+Suppose:
+
+    L1 = {ε, a, aa, aaa, ...}
+
+and:
+
+    L2 = a*
+
+Then:
+
+    L1 = L2
+
+because both represent:
+
+    {a^n | n ≥ 0}
+
+--------------------------------------------------------------------
+3. REGULAR EXPRESSION EQUIVALENCE
+----------------------------------
+
+Consider:
+
+    R1 = (a+b)*
+
+and:
+
+    R2 = (a|b)*
+
+These use different notation but describe the same language:
+
+    all strings over {a,b}
+
+Therefore:
+
+    L(R1) = L(R2)
+
+--------------------------------------------------------------------
+4. DFA EQUIVALENCE
+------------------
+
+Two DFAs are equivalent if they accept exactly the same language.
+
+To test equivalence:
+
+    L(M1) = L(M2)
+
+One common method:
+
+    Construct symmetric difference.
+
+If the symmetric difference is empty:
+
+    DFA1 ≡ DFA2
+
+Otherwise:
+
+    They are not equivalent.
+
+--------------------------------------------------------------------
+5. SYMMETRIC DIFFERENCE
+-----------------------
+
+For languages:
+
+    L1 Δ L2
+
+means:
+
+    (L1 - L2) ∪ (L2 - L1)
+
+It contains strings belonging to exactly one of the languages.
+
+Therefore:
+
+    L1 = L2
+
+iff:
+
+    L1 Δ L2 = ∅
+
+This is an important exam concept.
+
+====================================================================
+30.9 DECISION PROPERTIES OF REGULAR LANGUAGES
+====================================================================
+
+A decision problem asks whether some property can be determined
+algorithmically.
+
+For regular languages, many important properties are decidable.
+
+--------------------------------------------------------------------
+IMPORTANT DECIDABLE PROBLEMS
+--------------------------------------------------------------------
+
+1. Membership
+
+Question:
+
+    Is string w accepted by DFA M?
+
+Answer:
+
+    Yes, decidable.
+
+Method:
+
+    Run w through DFA.
+
+--------------------------------------------------------------------
+2. Emptiness
+
+Question:
+
+    Does DFA accept at least one string?
+
+Method:
+
+    Check whether any final state is reachable from the start state.
+
+If no final state is reachable:
+
+    L(M) = ∅
+
+--------------------------------------------------------------------
+3. Finiteness
+
+Question:
+
+    Is L(M) finite?
+
+Idea:
+
+    Remove unreachable states.
+
+Then check whether there is a reachable cycle that can reach a
+final state.
+
+If such a cycle exists:
+
+    infinitely many accepted strings.
+
+--------------------------------------------------------------------
+4. Equivalence
+
+Question:
+
+    Do two DFAs accept the same language?
+
+Answer:
+
+    Decidable.
+
+Use product/symmetric-difference construction.
+
+--------------------------------------------------------------------
+5. Universality
+
+Question:
+
+    Does DFA accept every string?
+
+That means:
+
+    L(M) = Σ*
+
+One method:
+
+    Complement the DFA.
+
+Then test emptiness.
+
+If:
+
+    L(complement(M)) = ∅
+
+then:
+
+    L(M) = Σ*
+
+--------------------------------------------------------------------
+6. CONTAINMENT
+--------------
+
+Question:
+
+    Is L1 ⊆ L2?
+
+Equivalent to:
+
+    L1 - L2 = ∅
+
+Therefore:
+
+    Difference + emptiness
+
+can be used.
+
+--------------------------------------------------------------------
+SUMMARY TABLE
+-------------
+
+Property                     Decidable?
+
+Membership                   YES
+Emptiness                    YES
+Finiteness                   YES
+Equivalence                  YES
+Universality                 YES
+Subset/Containment           YES
+
+This is a very important GATE table.
+
+====================================================================
+30.10 HOMOMORPHISM
+====================================================================
+
+1. INTUITION
+------------
+
+A homomorphism is a mapping that replaces symbols by strings while
+preserving concatenation.
+
+Suppose:
+
+    h(a) = 01
+    h(b) = 1
+
+Then:
+
+    h(ab) = h(a)h(b)
+
+          = 01 · 1
+
+          = 011
+
+--------------------------------------------------------------------
+2. FORMAL DEFINITION
+--------------------
+
+A homomorphism:
+
+    h : Σ* → Γ*
+
+maps symbols of alphabet Σ to strings over alphabet Γ.
+
+For a string:
+
+    w = a1a2...an
+
+we define:
+
+    h(w) = h(a1)h(a2)...h(an)
+
+Also:
+
+    h(ε) = ε
+
+--------------------------------------------------------------------
+3. EXAMPLE
+-----------
+
+Let:
+
+    Σ = {a,b}
+
+    Γ = {0,1}
+
+Define:
+
+    h(a) = 0
+    h(b) = 11
+
+Then:
+
+    h(ab) = 011
+
+    h(ba) = 110
+
+    h(aab) = 0011
+
+--------------------------------------------------------------------
+4. WHY IMPORTANT?
+-----------------
+
+Homomorphism can transform one language into another.
+
+If L is regular, then:
+
+    h(L)
+
+is also regular.
+
+Therefore regular languages are closed under homomorphism.
+
+--------------------------------------------------------------------
+5. ASCII VIEW
+-------------
+
+Original language:
+
+    strings over {a,b}
+
+          |
+          | h
+          v
+
+    strings over {0,1}
+
+Example:
+
+    a b a
+    | | |
+    0 11 0
+
+Result:
+
+    0110
+
+====================================================================
+30.11 INVERSE HOMOMORPHISM
+====================================================================
+
+1. DEFINITION
+-------------
+
+The inverse homomorphism of language L under h is:
+
+    h⁻¹(L)
+
+defined as:
+
+    h⁻¹(L)
+      =
+    {w | h(w) ∈ L}
+
+Important:
+
+This does NOT mean that h must have an ordinary mathematical
+inverse.
+
+It means:
+
+    Find all input strings whose mapped strings belong to L.
+
+--------------------------------------------------------------------
+2. EXAMPLE
+-----------
+
+Let:
+
+    h(a) = 0
+    h(b) = 1
+
+and:
+
+    L = strings ending in 1
+
+Then:
+
+    h⁻¹(L)
+
+contains all strings over {a,b} that map to strings ending in 1.
+
+Since:
+
+    b → 1
+
+the corresponding input strings must end in b.
+
+Thus:
+
+    h⁻¹(L)
+      =
+    strings ending in b
+
+--------------------------------------------------------------------
+3. CLOSURE PROPERTY
+-------------------
+
+If:
+
+    L is regular
+
+then:
+
+    h⁻¹(L) is also regular.
+
+Therefore regular languages are closed under inverse
+homomorphism.
+
+--------------------------------------------------------------------
+4. IMPORTANT DIFFERENCE
+-----------------------
+
+Homomorphism:
+
+    Input language
+          ↓ h
+    Output language
+
+Inverse homomorphism:
+
+    Given output language
+          ↓ h⁻¹
+    Find possible input strings
+
+Do NOT confuse inverse homomorphism with a normal inverse function.
+
+====================================================================
+30.12 QUOTIENT OPERATIONS
+====================================================================
+
+Quotient operations are advanced operations on languages.
+
+There are two important types:
+
+    Left quotient
+    Right quotient
+
+--------------------------------------------------------------------
+1. RIGHT QUOTIENT
+-----------------
+
+For languages L1 and L2:
+
+    L1 / L2
+
+is defined as:
+
+    {x | there exists y ∈ L2 such that xy ∈ L1}
+
+In words:
+
+    Remove a suffix belonging to L2 from strings in L1.
+
+--------------------------------------------------------------------
+2. EXAMPLE
+-----------
+
+Let:
+
+    L1 = {abc, ab, a}
+    L2 = {c}
+
+We need strings x such that:
+
+    xc ∈ L1
+
+Only:
+
+    abc
+
+can be written as:
+
+    ab · c
+
+Therefore:
+
+    L1 / L2 = {ab}
+
+--------------------------------------------------------------------
+3. LEFT QUOTIENT
+----------------
+
+The left quotient is:
+
+    L2 \ L1
+
+defined as:
+
+    {x | there exists y ∈ L2 such that yx ∈ L1}
+
+In words:
+
+    Remove a prefix belonging to L2.
+
+--------------------------------------------------------------------
+4. EXAMPLE
+-----------
+
+Let:
+
+    L1 = {abc, bbc, ac}
+    L2 = {a}
+
+Find:
+
+    a \ L1
+
+We need x such that:
+
+    ax ∈ L1
+
+Possible:
+
+    abc = a · bc
+    ac  = a · c
+
+Therefore:
+
+    a \ L1 = {bc, c}
+
+--------------------------------------------------------------------
+5. CONNECTION WITH AUTOMATA
+---------------------------
+
+Quotients are closely related to states of minimal DFAs.
+
+For a string x:
+
+    x⁻¹L
+
+can be viewed as the language that remains after reading x.
+
+This connects quotient operations with:
+
+    DFA states
+        ↓
+    Future behavior
+        ↓
+    Myhill-Nerode equivalence
+
+This is a very important advanced connection.
+
+====================================================================
+IMPORTANT CONNECTION BETWEEN CHAPTER 30 TOPICS
+====================================================================
+
+These topics are not isolated.
+
+They form a connected structure:
+
+                 REGULAR LANGUAGE
+                       |
+          +------------+------------+
+          |            |            |
+          v            v            v
+      Automata    Regular Expr.   Grammar
+          |            |            |
+          +------------+------------+
+                       |
+                       v
+              Language Algebra
+                       |
+       +---------------+----------------+
+       |               |                |
+       v               v                v
+   Homomorphism      Quotient       Closure
+       |               |                |
+       +---------------+----------------+
+                       |
+                       v
+              Myhill-Nerode
+                       |
+                       v
+              Minimal DFA
+                       |
+                       v
+             Regular Language
+                Decision Problems
+
+--------------------------------------------------------------------
+IMPORTANT DEEP CONNECTION
+--------------------------------------------------------------------
+
+Brzozowski derivative:
+
+    "What remains after reading x?"
+
+Quotient:
+
+    "What language remains after removing x?"
+
+Myhill-Nerode:
+
+    "Which prefixes have identical future behavior?"
+
+Minimal DFA:
+
+    "Store one state for each distinct future behavior."
+
+These are different viewpoints of the same fundamental idea:
+
+    FUTURE BEHAVIOR OF STRINGS
+
+====================================================================
+VERY IMPORTANT COMPARISONS
+====================================================================
+
+1. LEFT-LINEAR vs RIGHT-LINEAR
+-------------------------------
+
+Left-linear:
+
+    A → Ba
+
+Right-linear:
+
+    A → aB
+
+Both are used to describe regular languages when used in the
+appropriate restricted form.
+
+--------------------------------------------------------------------
+2. HOMOMORPHISM vs INVERSE HOMOMORPHISM
+---------------------------------------
+
+Homomorphism:
+
+    h(L) = {h(w) | w ∈ L}
+
+Inverse:
+
+    h⁻¹(L) = {w | h(w) ∈ L}
+
+--------------------------------------------------------------------
+3. STRING EQUIVALENCE vs LANGUAGE EQUIVALENCE
+---------------------------------------------
+
+String equivalence with respect to L:
+
+    x ≡L y
+
+means:
+
+    same behavior for every suffix.
+
+Language equivalence:
+
+    L1 = L2
+
+means:
+
+    exactly the same set of strings.
+
+--------------------------------------------------------------------
+4. ARDEN'S THEOREM vs MYHILL-NERODE
+------------------------------------
+
+Arden's theorem:
+
+    Mainly solves regular-expression equations.
+
+Myhill-Nerode:
+
+    Characterizes regular languages and minimal DFA states.
+
+--------------------------------------------------------------------
+5. DERIVATIVE vs QUOTIENT
+-------------------------
+
+Derivative:
+
+    Language remaining after consuming a symbol/string.
+
+Quotient:
+
+    Formal language operation describing this remaining language.
+
+They are closely related.
+
+====================================================================
+B.TECH EXAM IMPORTANT DEFINITIONS
+====================================================================
+
+1. Regular language
+-------------------
+
+A language that can be recognized by a finite automaton, represented
+by a regular expression, or generated by a regular grammar.
+
+2. Myhill-Nerode equivalence
+----------------------------
+
+For language L:
+
+    x ≡L y
+
+iff:
+
+    ∀z ∈ Σ*:
+
+    xz ∈ L ⇔ yz ∈ L
+
+3. Myhill-Nerode theorem
+------------------------
+
+L is regular iff ≡L has finitely many equivalence classes.
+
+4. Homomorphism
+---------------
+
+A mapping from strings over one alphabet to strings over another
+alphabet that preserves concatenation.
+
+5. Inverse homomorphism
+-----------------------
+
+    h⁻¹(L) = {w | h(w) ∈ L}
+
+6. Right quotient
+-----------------
+
+    L1/L2
+    =
+    {x | ∃y∈L2, xy∈L1}
+
+7. Left quotient
+----------------
+
+    L2\L1
+    =
+    {x | ∃y∈L2, yx∈L1}
+
+8. Arden's theorem
+------------------
+
+If:
+
+    X = AX + B
+
+and:
+
+    ε ∉ L(A)
+
+then:
+
+    X = A*B
+
+====================================================================
+GATE / COMPETITIVE EXAM POINTS
+====================================================================
+
+Remember these facts:
+
+✓ Every regular language has a finite number of Myhill-Nerode
+  equivalence classes.
+
+✓ The number of Myhill-Nerode classes equals the number of states
+  in the minimal DFA.
+
+✓ Infinitely many distinguishable strings imply non-regularity.
+
+✓ Regular languages are closed under homomorphism.
+
+✓ Regular languages are closed under inverse homomorphism.
+
+✓ Regular languages are closed under quotient operations.
+
+✓ DFA equivalence is decidable.
+
+✓ DFA emptiness is decidable.
+
+✓ DFA universality is decidable.
+
+✓ DFA finiteness is decidable.
+
+✓ Arden's theorem is useful for DFA → Regular Expression.
+
+✓ Brzozowski derivatives can construct DFA states from regular
+  expressions.
+
+✓ A regular grammar generates a regular language.
+
+====================================================================
+PRACTICE QUESTIONS — LEVEL 1
+====================================================================
+
+Q1. What is a regular language?
+
+Q2. What is meant by closure?
+
+Q3. What is a homomorphism?
+
+Q4. What is inverse homomorphism?
+
+Q5. Define Myhill-Nerode equivalence.
+
+Q6. What is Arden's theorem?
+
+Q7. What is a right-linear grammar?
+
+Q8. What is a left-linear grammar?
+
+Q9. Define left quotient.
+
+Q10. Define right quotient.
+
+====================================================================
+PRACTICE QUESTIONS — LEVEL 2
+====================================================================
+
+Q11. Determine whether the following two languages are equal:
+
+    L1 = {ε, a, aa, aaa, ...}
+
+    L2 = a*
+
+Q12. Let:
+
+    h(a)=0
+    h(b)=11
+
+Find:
+
+    h(aba)
+
+Q13. If:
+
+    X = aX + b
+
+find X using Arden's theorem.
+
+Q14. Explain why DFA equivalence is decidable.
+
+Q15. Explain the relationship between Myhill-Nerode classes and
+     minimal DFA states.
+
+====================================================================
+PRACTICE QUESTIONS — LEVEL 3
+====================================================================
+
+Q16. Prove that the language
+
+    L = {0^n1 | n ≥ 0}
+
+is regular using a DFA or regular expression.
+
+Q17. Use Myhill-Nerode reasoning to determine whether:
+
+    L = {0^n1^n | n ≥ 0}
+
+is regular.
+
+Q18. Construct a right-linear grammar for:
+
+    L = (01)*
+
+Q19. Convert the grammar into an automaton:
+
+    S → 0A
+    A → 1S
+    A → ε
+
+Q20. Solve using Arden's theorem:
+
+    X = aX + bY
+    Y = cX + d
+
+====================================================================
+GATE-STYLE CONCEPTUAL QUESTIONS
+====================================================================
+
+Q21. If a language has infinitely many Myhill-Nerode equivalence
+     classes, what can you conclude?
+
+Q22. The number of states in a minimal DFA is equal to what?
+
+Q23. Are regular languages closed under inverse homomorphism?
+
+Q24. Is every language having a finite number of equivalence classes
+     regular?
+
+Q25. Which operation is commonly associated with Arden's theorem?
+
+Q26. What is the difference between:
+
+    h(L)
+
+and:
+
+    h⁻¹(L)?
+
+Q27. If L1 and L2 are regular, is:
+
+    L1/L2
+
+necessarily regular?
+
+Q28. Why is symmetric difference useful for DFA equivalence?
+
+====================================================================
+COMMON MISTAKES
+====================================================================
+
+MISTAKE 1:
+Thinking that Myhill-Nerode is only a DFA minimization algorithm.
+
+CORRECT:
+It is a theorem characterizing regular languages and minimal DFA
+states.
+
+--------------------------------------------------------------------
+MISTAKE 2:
+Thinking:
+
+    h⁻¹
+
+means an ordinary inverse function.
+
+CORRECT:
+It means all strings whose image belongs to the target language.
+
+--------------------------------------------------------------------
+MISTAKE 3:
+Forgetting the condition in Arden's theorem.
+
+Remember:
+
+    X = AX + B
+
+requires the appropriate condition:
+
+    ε ∉ L(A)
+
+for the standard unique-solution form.
+
+--------------------------------------------------------------------
+MISTAKE 4:
+Confusing left quotient and right quotient.
+
+Remember:
+
+Right quotient:
+    remove suffix
+
+Left quotient:
+    remove prefix
+
+--------------------------------------------------------------------
+MISTAKE 5:
+Assuming every grammar is regular.
+
+Wrong.
+
+A grammar must satisfy the required production restrictions to be a
+regular grammar.
+
+--------------------------------------------------------------------
+MISTAKE 6:
+Confusing "strings are equivalent" with "languages are equivalent."
+
+Myhill-Nerode:
+
+    strings are equivalent relative to L.
+
+Language equivalence:
+
+    two languages contain exactly the same strings.
+
+====================================================================
+CHAPTER 30 — QUICK REVISION SHEET
+====================================================================
+
+REGULAR LANGUAGE
+    ↕
+DFA / NFA / RE / Regular Grammar
+
+MYHILL-NERODE:
+
+    x ≡L y
+
+    iff:
+
+    ∀z:
+    xz ∈ L ⇔ yz ∈ L
+
+THEOREM:
+
+    L regular
+    ⇔
+    finitely many Myhill-Nerode classes
+
+MINIMAL DFA:
+
+    Number of states
+    =
+    Number of Myhill-Nerode equivalence classes
+
+ARDEN:
+
+    X = AX + B
+
+    ⇒ X = A*B
+
+BRZOZOWSKI:
+
+    derivative = remaining language after consuming input
+
+HOMOMORPHISM:
+
+    h(ab) = h(a)h(b)
+
+INVERSE HOMOMORPHISM:
+
+    h⁻¹(L) = {w | h(w) ∈ L}
+
+RIGHT QUOTIENT:
+
+    L1/L2
+    =
+    {x | ∃y∈L2, xy∈L1}
+
+LEFT QUOTIENT:
+
+    L2\L1
+    =
+    {x | ∃y∈L2, yx∈L1}
+
+REGULAR LANGUAGES ARE CLOSED UNDER:
+
+    Union
+    Intersection
+    Complement
+    Difference
+    Concatenation
+    Kleene Star
+    Kleene Plus
+    Reversal
+    Homomorphism
+    Inverse Homomorphism
+    Quotient
+
+====================================================================
+CHAPTER 30 — FINAL SUMMARY
+====================================================================
+
+Chapter 30 takes the regular-language concepts learned earlier and
+connects them at a deeper mathematical level.
+
+The most important ideas are:
+
+1. Regular-language algebra tells us how regular languages behave
+   under operations.
+
+2. Myhill-Nerode explains exactly why a language is regular and gives
+   the minimum number of states required by its DFA.
+
+3. Brzozowski derivatives describe the remaining language after
+   consuming input.
+
+4. Arden's theorem solves regular-expression equations and is useful
+   for converting automata into regular expressions.
+
+5. Regular grammars provide a grammar-based representation of
+   regular languages.
+
+6. Left-linear and right-linear grammars are important forms of
+   regular grammar.
+
+7. Language equivalence asks whether two languages contain exactly
+   the same strings.
+
+8. Decision properties tell us which questions about regular
+   languages can be algorithmically answered.
+
+9. Homomorphism transforms symbols/strings while preserving
+   concatenation.
+
+10. Inverse homomorphism identifies inputs whose images belong to a
+    given language.
+
+11. Quotient operations describe languages remaining after removing
+    prefixes or suffixes.
+
+The central conceptual connection is:
+
+             STRING
+               |
+               v
+       What can follow it?
+               |
+               v
+       Future behavior
+               |
+               v
+        Myhill-Nerode
+               |
+               v
+       Equivalence class
+               |
+               v
+          DFA STATE
+               |
+               v
+        MINIMAL DFA
+
+====================================================================
+SYLLABUS STATUS
+====================================================================
+
+PHASE 24 — ADVANCED TOC
+    ✓ Chapter 29 — Advanced Automata Theory
+    ✓ Chapter 30 — Advanced Language Theory
+
+====================================================================
+MASTER COURSE STATUS
+====================================================================
+
+Chapter 1  — Introduction to TOC                 ✓
+Chapter 2  — Mathematical Foundations            ✓
+Chapter 3  — Introduction to Formal Languages    ✓
+Chapter 4  — Finite Automata Fundamentals       ✓
+Chapter 5  — NFA / ε-NFA                        ✓
+Chapter 6  — Regular Expressions                ✓
+Chapter 7  — Automata ↔ Regular Expressions     ✓
+Chapter 8  — Minimization                       ✓
+Chapter 9  — Closure Properties                 ✓
+Chapter 10 — Pumping Lemma                      ✓
+Chapter 11 — CFG                                ✓
+Chapter 12 — CNF / GNF                          ✓
+Chapter 13 — PDA                                ✓
+Chapter 14 — CFL Properties                     ✓
+Chapter 15 — Turing Machines                    ✓
+Chapter 16 — TM Design                          ✓
+Chapter 17 — TM Variants                        ✓
+Chapter 18 — Church-Turing Thesis               ✓
+Chapter 19 — Decidability                       ✓
+Chapter 20 — Halting Problem                    ✓
+Chapter 21 — Reductions                         ✓
+Chapter 22 — Turing-Recognizable Languages      ✓
+Chapter 23 — Chomsky Hierarchy                  ✓
+Chapter 24 — Context-Sensitive Languages        ✓
+Chapter 25 — Advanced Undecidability            ✓
+Chapter 26 — Complexity Theory                  ✓
+Chapter 27 — Complexity Classes                 ✓
+Chapter 28 — NP-Completeness & Reductions       ✓
+Chapter 29 — Advanced Automata Theory            ✓
+Chapter 30 — Advanced Language Theory            ✓
+
+====================================================================
+UPCOMING NEXT TOPIC
+====================================================================
+
+There is no Chapter 31 in the supplied master syllabus.
+
+The complete 30-chapter syllabus has now been covered.
+
+If you want to continue, the recommended next stage is:
+
+    TOC MASTER REVISION
+            ↓
+    Chapter-wise revision
+            ↓
+    Important definitions
+            ↓
+    Important theorems
+            ↓
+    DFA/NFA construction
+            ↓
+    CFG/PDA problems
+            ↓
+    TM problems
+            ↓
+    Decidability & reduction problems
+            ↓
+    P / NP / NP-Hard / NP-Complete
+            ↓
+    GATE-level questions
+            ↓
+    Full TOC Mock Tests
+
+Use:
+
+    REVISION
+    PRACTICE
+    GATE
+    EXAM
+    TEST
+    MOCK TEST
+    PROGRESS
+    WEAK TOPICS
+
+====================================================================
+END OF CHAPTER 30
+====================================================================

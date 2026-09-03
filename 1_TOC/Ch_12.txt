@@ -1,0 +1,2280 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                    THEORY OF COMPUTATION — CHAPTER 12              ║
+║                     NORMAL FORMS OF CFG                             ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 8 — NORMAL FORMS
+CHAPTER 12 — NORMAL FORMS OF CONTEXT-FREE GRAMMARS (CFG)
+
+PREREQUISITE:
+Before this chapter, you should know:
+• Grammar
+• CFG
+• Terminals and non-terminals
+• Production rules
+• Derivation
+• Parse trees
+• ε-productions
+• Unit productions
+• Useless symbols
+
+We will study:
+
+12.1 CHOMSKY NORMAL FORM (CNF)
+    ├── CNF definition
+    ├── CNF structure
+    ├── Conversion to CNF
+    ├── Removing ε-productions
+    ├── Removing unit productions
+    ├── Removing useless symbols
+    └── CNF examples
+
+12.2 GREIBACH NORMAL FORM (GNF)
+    ├── GNF definition
+    ├── GNF structure
+    ├── Conversion process
+    ├── GNF examples
+    └── CNF vs GNF
+
+
+══════════════════════════════════════════════════════════════════════
+1. CHAPTER INTRODUCTION
+══════════════════════════════════════════════════════════════════════
+
+A Context-Free Grammar (CFG) can be written in many different forms.
+
+For example:
+
+S → aSb
+S → ab
+
+is a CFG.
+
+Another CFG may look like:
+
+S → AB
+A → a
+B → b
+
+Both grammars can generate the same language.
+
+The question is:
+
+    Can we convert CFGs into a standard, organized form?
+
+YES.
+
+Two important standard forms are:
+
+    1. Chomsky Normal Form (CNF)
+    2. Greibach Normal Form (GNF)
+
+These forms make CFGs easier to:
+
+• analyze
+• prove properties about
+• construct algorithms for
+• convert into other forms
+• use in parsing
+• solve examination problems
+
+
+══════════════════════════════════════════════════════════════════════
+2. WHAT DOES "NORMAL FORM" MEAN?
+══════════════════════════════════════════════════════════════════════
+
+Simple meaning:
+
+A NORMAL FORM is a standardized way of writing something.
+
+Think about handwriting.
+
+You could write:
+
+    "hello"
+    "HELLO"
+    "Hello"
+    "h e l l o"
+
+The representation is different, but the basic word is the same.
+
+Similarly, a CFG can have many different production-rule structures.
+
+Normal forms impose specific restrictions on those production rules.
+
+Therefore:
+
+    CFG
+     |
+     +--------------------+
+     |                    |
+     v                    v
+    CNF                  GNF
+     |                    |
+     |                    |
+     v                    v
+specific rule          specific rule
+structure              structure
+
+
+IMPORTANT:
+
+Normal form does NOT necessarily mean that the language changes.
+
+We transform the grammar while preserving the language, subject to the
+standard exception concerning ε.
+
+
+══════════════════════════════════════════════════════════════════════
+3. WHY DO WE STUDY NORMAL FORMS?
+══════════════════════════════════════════════════════════════════════
+
+There are several reasons.
+
+1. STANDARDIZATION
+
+Different CFGs can be converted into a common structure.
+
+2. EASIER PROOFS
+
+Some theoretical results become easier to prove.
+
+3. PARSING
+
+Normal forms are useful in parsing algorithms.
+
+For example:
+
+    CYK algorithm
+
+works with grammars in CNF.
+
+4. ALGORITHMIC PROCESSING
+
+A restricted production structure makes algorithms easier to design.
+
+5. EXAMINATION
+
+CNF conversion is a very common B.Tech and GATE-related topic.
+
+6. UNDERSTANDING CFG STRUCTURE
+
+Normal forms help us understand what CFGs are actually doing.
+
+
+══════════════════════════════════════════════════════════════════════
+4. CHOMSKY NORMAL FORM — CNF
+══════════════════════════════════════════════════════════════════════
+
+CNF stands for:
+
+    Chomsky Normal Form
+
+It is named after:
+
+    Noam Chomsky
+
+who made major contributions to formal language theory and linguistics.
+
+
+──────────────────────────────────────────────────────────────────────
+4.1 SIMPLE DEFINITION OF CNF
+──────────────────────────────────────────────────────────────────────
+
+A CFG is in Chomsky Normal Form if its production rules have essentially
+the following forms:
+
+    A → BC
+
+or
+
+    A → a
+
+where:
+
+    A, B, C = non-terminals
+    a       = terminal
+
+Additionally, the start symbol may have:
+
+    S → ε
+
+if ε belongs to the language.
+
+Therefore the standard CNF forms are:
+
+    A → BC
+    A → a
+
+and optionally:
+
+    S → ε
+
+
+══════════════════════════════════════════════════════════════════════
+5. CNF STRUCTURE
+══════════════════════════════════════════════════════════════════════
+
+The main idea is:
+
+A non-terminal must produce either:
+
+    TWO non-terminals
+
+or
+
+    ONE terminal.
+
+
+VISUAL REPRESENTATION:
+
+                 A
+                / \
+               B   C
+
+        OR
+
+                 A
+                 |
+                 a
+
+
+So:
+
+    A → BC
+
+or:
+
+    A → a
+
+
+NOT allowed in normal CNF:
+
+    A → B
+    A → ABC
+    A → aB
+    A → ABc
+    A → ε
+
+The ε exception is allowed only for the start symbol under the standard
+CNF convention.
+
+
+══════════════════════════════════════════════════════════════════════
+6. EXAMPLES OF CNF RULES
+══════════════════════════════════════════════════════════════════════
+
+VALID:
+
+    S → AB
+    A → BC
+    B → a
+    C → b
+
+All rules have the required structure.
+
+INVALID:
+
+    S → A
+
+because this is a UNIT production.
+
+INVALID:
+
+    S → ABC
+
+because there are THREE non-terminals.
+
+INVALID:
+
+    S → aB
+
+because it contains a terminal and a non-terminal together.
+
+INVALID:
+
+    S → ε
+
+unless S is the start symbol and ε must be generated.
+
+
+══════════════════════════════════════════════════════════════════════
+7. FORMAL DEFINITION OF CNF
+══════════════════════════════════════════════════════════════════════
+
+Let:
+
+    G = (V, Σ, P, S)
+
+be a CFG.
+
+Here:
+
+    V = set of variables/non-terminals
+    Σ = set of terminals
+    P = production rules
+    S = start symbol
+
+G is in CNF if every production is of one of these forms:
+
+    A → BC
+
+where:
+
+    A, B, C ∈ V
+
+or:
+
+    A → a
+
+where:
+
+    A ∈ V
+    a ∈ Σ
+
+and optionally:
+
+    S → ε
+
+provided ε ∈ L(G).
+
+
+══════════════════════════════════════════════════════════════════════
+8. IMPORTANT TERMINOLOGY FOR CNF
+══════════════════════════════════════════════════════════════════════
+
+Before conversion, understand these three things:
+
+1. ε-PRODUCTION
+
+A production that produces the empty string.
+
+Example:
+
+    A → ε
+
+
+2. UNIT PRODUCTION
+
+A production where one non-terminal produces another non-terminal.
+
+Example:
+
+    A → B
+
+
+3. USELESS SYMBOL
+
+A symbol that cannot contribute to generating a useful terminal string.
+
+There are two common categories:
+
+    • Non-generating symbols
+    • Unreachable symbols
+
+
+These must generally be removed during CNF conversion.
+
+
+══════════════════════════════════════════════════════════════════════
+9. OVERALL CNF CONVERSION PROCESS
+══════════════════════════════════════════════════════════════════════
+
+A common systematic procedure is:
+
+    Original CFG
+         |
+         v
+    Add new start symbol if necessary
+         |
+         v
+    Remove ε-productions
+         |
+         v
+    Remove unit productions
+         |
+         v
+    Remove useless symbols
+         |
+         v
+    Replace terminals in long/mixed productions
+         |
+         v
+    Break long productions
+         |
+         v
+       CNF
+
+
+IMPORTANT:
+
+The exact order can vary slightly between textbooks, but the above is a
+very useful standard procedure for examination problems.
+
+
+══════════════════════════════════════════════════════════════════════
+10. STEP 1 — NEW START SYMBOL
+══════════════════════════════════════════════════════════════════════
+
+Sometimes we introduce a new start symbol.
+
+Suppose:
+
+    S → aSb | ε
+
+If the original start symbol appears on the right-hand side, or if
+special handling of ε is required, introduce:
+
+    S₀ → S
+
+where S₀ becomes the new start symbol.
+
+Diagram:
+
+             S₀
+              |
+              v
+              S
+            /   \
+           ...  ...
+
+
+Why?
+
+It prevents problems involving the original start symbol during
+conversion.
+
+
+══════════════════════════════════════════════════════════════════════
+11. STEP 2 — REMOVE ε-PRODUCTIONS
+══════════════════════════════════════════════════════════════════════
+
+An ε-production has the form:
+
+    A → ε
+
+We want to eliminate unnecessary ε-productions.
+
+Example:
+
+    S → AB
+    A → a | ε
+    B → b
+
+Since A can produce ε:
+
+    A → ε
+
+the rule:
+
+    S → AB
+
+can generate:
+
+    ab
+
+and also:
+
+    b
+
+Therefore, after eliminating A → ε:
+
+    S → AB
+    S → B
+    A → a
+    B → b
+
+We have preserved the possibility of omitting A.
+
+
+══════════════════════════════════════════════════════════════════════
+12. NULLABLE SYMBOL
+══════════════════════════════════════════════════════════════════════
+
+A non-terminal is called NULLABLE if it can derive ε.
+
+Example:
+
+    A → ε
+
+means A is nullable.
+
+Also:
+
+    A → BC
+    B → ε
+    C → ε
+
+means:
+
+    A ⇒ BC
+      ⇒ εC
+      ⇒ ε
+
+Therefore A is also nullable.
+
+
+EXAMPLE:
+
+    S → AB
+    A → ε
+    B → b
+
+A is nullable.
+
+So:
+
+    S → AB
+
+can become:
+
+    S → AB | B
+
+after removing ε-production.
+
+
+══════════════════════════════════════════════════════════════════════
+13. MULTIPLE NULLABLE SYMBOLS
+══════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    S → ABC
+    A → ε
+    B → ε
+    C → c
+
+A and B are nullable.
+
+Therefore S can generate:
+
+    ABC
+    BC
+    AC
+    C
+
+We generate combinations by removing nullable symbols.
+
+So:
+
+    S → ABC | BC | AC | C
+
+
+IMPORTANT:
+
+Do not remove every symbol blindly.
+
+Only nullable symbols can be omitted.
+
+
+══════════════════════════════════════════════════════════════════════
+14. STEP 3 — REMOVE UNIT PRODUCTIONS
+══════════════════════════════════════════════════════════════════════
+
+A UNIT PRODUCTION has the form:
+
+    A → B
+
+where A and B are non-terminals.
+
+Example:
+
+    S → A
+    A → B
+    B → b
+
+The chain is:
+
+    S → A → B → b
+
+We can replace the chain by:
+
+    S → b
+    A → b
+    B → b
+
+Then remove:
+
+    S → A
+    A → B
+
+
+WHY?
+
+Because CNF does not allow:
+
+    A → B
+
+
+══════════════════════════════════════════════════════════════════════
+15. UNIT-PRODUCTION EXAMPLE
+══════════════════════════════════════════════════════════════════════
+
+Given:
+
+    S → A
+    A → B
+    B → a
+
+Step 1:
+
+    S can derive everything A derives.
+
+A derives B.
+
+Therefore S can ultimately derive a.
+
+Step 2:
+
+    A can derive everything B derives.
+
+Therefore:
+
+    S → a
+    A → a
+    B → a
+
+Step 3:
+
+Remove:
+
+    S → A
+    A → B
+
+Final:
+
+    S → a
+    A → a
+    B → a
+
+
+══════════════════════════════════════════════════════════════════════
+16. STEP 4 — REMOVE USELESS SYMBOLS
+══════════════════════════════════════════════════════════════════════
+
+A symbol is useless if it cannot participate in generating a useful
+terminal string reachable from the start symbol.
+
+There are two major problems:
+
+    1. Non-generating symbols
+    2. Unreachable symbols
+
+
+──────────────────────────────────────────────────────────────────────
+16.1 NON-GENERATING SYMBOL
+──────────────────────────────────────────────────────────────────────
+
+A symbol is non-generating if it cannot eventually produce a string of
+terminals.
+
+Example:
+
+    S → AB
+    A → a
+    B → C
+    C → D
+    D → C
+
+B, C and D never reach a terminal.
+
+Therefore they are non-generating.
+
+They can be removed.
+
+
+──────────────────────────────────────────────────────────────────────
+16.2 UNREACHABLE SYMBOL
+──────────────────────────────────────────────────────────────────────
+
+A symbol is unreachable if it cannot be reached from the start symbol.
+
+Example:
+
+    S → aA
+    A → b
+
+    B → c
+    C → d
+
+Starting from S, we can reach:
+
+    S → A
+
+But there is no way to reach B or C.
+
+Therefore:
+
+    B and C
+
+are unreachable.
+
+Remove them.
+
+
+══════════════════════════════════════════════════════════════════════
+17. STEP 5 — HANDLE TERMINALS IN LONG PRODUCTIONS
+══════════════════════════════════════════════════════════════════════
+
+CNF allows:
+
+    A → a
+
+But not:
+
+    A → aB
+
+or:
+
+    A → ab
+
+or:
+
+    A → aBC
+
+
+Therefore terminals appearing together with non-terminals must be
+replaced.
+
+Example:
+
+    S → aB
+
+Introduce:
+
+    X → a
+
+Then:
+
+    S → XB
+    X → a
+
+
+Now:
+
+    S → XB
+
+has two non-terminals.
+
+And:
+
+    X → a
+
+has one terminal.
+
+Both are valid CNF rules.
+
+
+══════════════════════════════════════════════════════════════════════
+18. STEP 6 — BREAK LONG PRODUCTIONS
+══════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    S → ABC
+
+This is NOT CNF.
+
+Why?
+
+Because CNF allows only two non-terminals:
+
+    A → BC
+
+not three.
+
+We introduce a new variable:
+
+    X → BC
+
+Then:
+
+    S → AX
+    X → BC
+
+Now every production has two non-terminals.
+
+
+GENERAL IDEA:
+
+    S → ABCD
+
+can become:
+
+    S → AX
+    X → BY
+    Y → CD
+
+
+Each rule has exactly two non-terminals.
+
+
+══════════════════════════════════════════════════════════════════════
+19. COMPLETE CNF EXAMPLE — EASY
+══════════════════════════════════════════════════════════════════════
+
+Consider:
+
+    S → AB
+    A → a
+    B → b
+
+Check each rule:
+
+    S → AB     ✓ two non-terminals
+    A → a      ✓ one terminal
+    B → b      ✓ one terminal
+
+Therefore the grammar is already in CNF.
+
+Language:
+
+    L(G) = {ab}
+
+
+DERIVATION:
+
+    S
+    |
+    AB
+   /  \
+  a    b
+
+Therefore:
+
+    S ⇒ AB ⇒ ab
+
+
+══════════════════════════════════════════════════════════════════════
+20. COMPLETE CNF EXAMPLE — UNIT PRODUCTION
+══════════════════════════════════════════════════════════════════════
+
+Given:
+
+    S → A
+    A → a
+
+Problem:
+
+    S → A
+
+is a unit production.
+
+Remove it.
+
+Final grammar:
+
+    S → a
+    A → a
+
+The essential language remains:
+
+    L(G) = {a}
+
+
+══════════════════════════════════════════════════════════════════════
+21. COMPLETE CNF EXAMPLE — LONG PRODUCTION
+══════════════════════════════════════════════════════════════════════
+
+Given:
+
+    S → ABC
+    A → a
+    B → b
+    C → c
+
+Problem:
+
+    S → ABC
+
+contains three non-terminals.
+
+Introduce X:
+
+    X → BC
+
+Then:
+
+    S → AX
+    X → BC
+    A → a
+    B → b
+    C → c
+
+Now all rules are CNF.
+
+Derivation:
+
+    S
+    |
+    AX
+   /  \
+  a    X
+      / \
+     b   c
+
+Yield:
+
+    abc
+
+
+══════════════════════════════════════════════════════════════════════
+22. COMPLETE CNF EXAMPLE — MIXED TERMINAL
+══════════════════════════════════════════════════════════════════════
+
+Given:
+
+    S → aB
+    B → b
+
+Problem:
+
+    S → aB
+
+contains both terminal and non-terminal.
+
+Introduce:
+
+    A → a
+
+Then:
+
+    S → AB
+    A → a
+    B → b
+
+Now:
+
+    S → AB     ✓
+    A → a      ✓
+    B → b      ✓
+
+Therefore it is CNF.
+
+
+══════════════════════════════════════════════════════════════════════
+23. COMPLETE CNF CONVERSION EXAMPLE
+══════════════════════════════════════════════════════════════════════
+
+Consider:
+
+    S → aAB
+    A → a | ε
+    B → b
+
+We will convert it carefully.
+
+STEP 1 — Identify nullable symbols
+
+    A → ε
+
+Therefore:
+
+    A is nullable.
+
+
+STEP 2 — Remove ε-production
+
+Original:
+
+    S → aAB
+
+Since A is nullable:
+
+    S → aAB | aB
+
+and remove:
+
+    A → ε
+
+So:
+
+    S → aAB | aB
+    A → a
+    B → b
+
+
+STEP 3 — Replace terminals in mixed/long productions
+
+Introduce:
+
+    X → a
+
+Then:
+
+    S → XAB | XB
+    X → a
+    A → a
+    B → b
+
+
+STEP 4 — Break the length-3 production
+
+    S → XAB
+
+Introduce:
+
+    Y → AB
+
+Then:
+
+    S → XY
+    Y → AB
+    S → XB
+    X → a
+    A → a
+    B → b
+
+
+Check:
+
+    S → XY     ✓
+    Y → AB     ✓
+    S → XB     ✓
+    X → a      ✓
+    A → a      ✓
+    B → b      ✓
+
+Therefore:
+
+    CNF achieved.
+
+
+══════════════════════════════════════════════════════════════════════
+24. IMPORTANT CNF RULE CHECKLIST
+══════════════════════════════════════════════════════════════════════
+
+For every production, ask:
+
+Q1. Is the left side exactly one non-terminal?
+
+        A → ...
+
+Q2. Is the right side exactly two non-terminals?
+
+        A → BC
+
+OR
+
+Q3. Is the right side exactly one terminal?
+
+        A → a
+
+OR
+
+Q4. Is it the permitted start-symbol ε-production?
+
+        S → ε
+
+
+If not, the grammar is not in CNF.
+
+
+══════════════════════════════════════════════════════════════════════
+25. CNF AND PARSE TREES
+══════════════════════════════════════════════════════════════════════
+
+CNF gives parse trees a binary structure.
+
+For:
+
+    S → AB
+    A → a
+    B → b
+
+we get:
+
+             S
+            / \
+           A   B
+           |   |
+           a   b
+
+This is a binary branching structure.
+
+That property is particularly useful for algorithms such as CYK parsing.
+
+
+══════════════════════════════════════════════════════════════════════
+26. GREIBACH NORMAL FORM — GNF
+══════════════════════════════════════════════════════════════════════
+
+GNF stands for:
+
+    Greibach Normal Form
+
+It is another standard form for CFGs.
+
+The central idea is different from CNF.
+
+CNF starts productions with:
+
+    non-terminal + non-terminal
+
+GNF requires productions to start with:
+
+    terminal
+
+
+══════════════════════════════════════════════════════════════════════
+27. SIMPLE DEFINITION OF GNF
+══════════════════════════════════════════════════════════════════════
+
+A CFG is in Greibach Normal Form if every production has the form:
+
+    A → aα
+
+where:
+
+    A = non-terminal
+    a = terminal
+    α = zero or more non-terminals
+
+So examples include:
+
+    A → a
+    A → aB
+    A → aBC
+    A → aBCD
+
+All start with a terminal.
+
+
+The important pattern is:
+
+    A → terminal + zero or more non-terminals
+
+
+══════════════════════════════════════════════════════════════════════
+28. FORMAL DEFINITION OF GNF
+══════════════════════════════════════════════════════════════════════
+
+A CFG:
+
+    G = (V, Σ, P, S)
+
+is in GNF if every production has the form:
+
+    A → aA₁A₂...Aₖ
+
+where:
+
+    A, A₁, A₂, ..., Aₖ ∈ V
+    a ∈ Σ
+    k ≥ 0
+
+If k = 0:
+
+    A → a
+
+So:
+
+    A → a
+    A → aB
+    A → aBC
+
+are valid GNF forms.
+
+
+══════════════════════════════════════════════════════════════════════
+29. GNF STRUCTURE
+══════════════════════════════════════════════════════════════════════
+
+Example:
+
+    A → aBC
+
+Tree:
+
+             A
+             |
+             aBC
+            / | \
+           a  B  C
+
+The FIRST symbol produced is always a terminal.
+
+This is the key idea of GNF.
+
+
+══════════════════════════════════════════════════════════════════════
+30. VALID AND INVALID GNF RULES
+══════════════════════════════════════════════════════════════════════
+
+VALID:
+
+    A → a
+    A → aB
+    A → aBC
+    S → bABC
+
+
+INVALID:
+
+    A → BC
+
+because it starts with a non-terminal.
+
+INVALID:
+
+    A → Ba
+
+because it starts with a non-terminal.
+
+INVALID:
+
+    A → ε
+
+under the standard GNF convention, except that ε may be specially
+handled by the start symbol when ε belongs to the language.
+
+INVALID:
+
+    A → ABc
+
+because the first symbol is a non-terminal.
+
+
+══════════════════════════════════════════════════════════════════════
+31. WHY IS GNF USEFUL?
+══════════════════════════════════════════════════════════════════════
+
+GNF is useful because every derivation step begins by producing a
+terminal.
+
+Suppose:
+
+    A → aBC
+
+Then the next terminal generated immediately is:
+
+    a
+
+This makes GNF useful for:
+
+• theoretical analysis
+• top-down parsing concepts
+• studying derivation length
+• proving properties of CFLs
+• understanding CFG structure
+
+
+══════════════════════════════════════════════════════════════════════
+32. GNF EXAMPLE
+══════════════════════════════════════════════════════════════════════
+
+Given:
+
+    S → aA
+    A → b
+
+Check:
+
+    S → aA     ✓ starts with terminal
+    A → b      ✓ starts with terminal
+
+Therefore the grammar is already in GNF.
+
+
+Derivation:
+
+    S
+    |
+    aA
+     \
+      b
+
+So:
+
+    S ⇒ aA ⇒ ab
+
+
+══════════════════════════════════════════════════════════════════════
+33. GNF EXAMPLE WITH MULTIPLE NON-TERMINALS
+══════════════════════════════════════════════════════════════════════
+
+Consider:
+
+    S → aAB
+    A → bC
+    B → c
+    C → d
+
+Check:
+
+    S → aAB     ✓
+    A → bC      ✓
+    B → c       ✓
+    C → d       ✓
+
+Every right-hand side begins with a terminal.
+
+Therefore the grammar is in GNF.
+
+
+══════════════════════════════════════════════════════════════════════
+34. WHY CNF AND GNF LOOK DIFFERENT
+══════════════════════════════════════════════════════════════════════
+
+CNF focuses on:
+
+    NUMBER/STRUCTURE of symbols
+
+CNF:
+
+    A → BC
+    A → a
+
+GNF focuses on:
+
+    FIRST symbol
+
+GNF:
+
+    A → aα
+
+
+Think:
+
+    CNF → Binary structure
+
+    GNF → Terminal-first structure
+
+
+══════════════════════════════════════════════════════════════════════
+35. CONVERSION TO GNF — GENERAL IDEA
+══════════════════════════════════════════════════════════════════════
+
+Converting a general CFG to GNF is more complicated than basic CNF
+conversion.
+
+A typical process involves:
+
+    Original CFG
+         |
+         v
+    Remove ε-productions
+         |
+         v
+    Remove unit productions
+         |
+         v
+    Remove useless symbols
+         |
+         v
+    Eliminate problematic recursion
+         |
+         v
+    Order non-terminals
+         |
+         v
+    Substitute productions
+         |
+         v
+    Ensure every rule begins with terminal
+         |
+         v
+        GNF
+
+
+The exact algorithm is more advanced and can require considerable
+substitution.
+
+
+══════════════════════════════════════════════════════════════════════
+36. WHY LEFT RECURSION IS A PROBLEM FOR GNF
+══════════════════════════════════════════════════════════════════════
+
+Consider:
+
+    A → AB | a
+
+The first production:
+
+    A → AB
+
+starts with a non-terminal.
+
+GNF requires the first symbol after the arrow to be a terminal.
+
+So:
+
+    A → AB
+
+must be transformed.
+
+This is one reason GNF conversion is more involved.
+
+
+══════════════════════════════════════════════════════════════════════
+37. SIMPLE LEFT-RECURSION EXAMPLE
+══════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    A → Aα | β
+
+where β does not start with A.
+
+This is left recursion.
+
+It can be transformed conceptually into a form such as:
+
+    A → βA'
+    A' → αA' | ε
+
+This removes direct left recursion.
+
+However, additional transformations may be necessary to achieve complete
+GNF.
+
+
+══════════════════════════════════════════════════════════════════════
+38. CNF VS GNF — MOST IMPORTANT DIFFERENCE
+══════════════════════════════════════════════════════════════════════
+
++----------------------+---------------------------+---------------------------+
+| Feature              | CNF                       | GNF                       |
++----------------------+---------------------------+---------------------------+
+| Full name            | Chomsky Normal Form       | Greibach Normal Form      |
+| Main structure       | A → BC or A → a           | A → aα                    |
+| RHS begins with      | Non-terminal OR terminal  | Terminal                  |
+| Number of variables  | Exactly 2 in A → BC      | Any number after terminal |
+| Terminal position    | Alone in A → a            | First symbol              |
+| Main idea             | Binary structure           | Terminal-first structure  |
+| Parsing relevance    | CYK algorithm             | Top-down/derivation ideas |
++----------------------+---------------------------+---------------------------+
+
+
+══════════════════════════════════════════════════════════════════════
+39. CNF VS GNF — EXAMPLES
+══════════════════════════════════════════════════════════════════════
+
+CNF:
+
+    S → AB
+    A → a
+    B → b
+
+GNF:
+
+    S → aAB
+    A → bC
+    B → c
+    C → d
+
+Remember:
+
+CNF permits:
+
+    A → BC
+
+GNF does NOT permit:
+
+    A → BC
+
+because GNF must start with a terminal.
+
+
+GNF permits:
+
+    A → aBC
+
+CNF does NOT permit:
+
+    A → aBC
+
+because CNF does not permit a terminal followed by variables.
+
+
+══════════════════════════════════════════════════════════════════════
+40. CNF VS ORIGINAL CFG
+══════════════════════════════════════════════════════════════════════
+
+A normal CFG may contain:
+
+    A → BC
+    A → a
+    A → ε
+    A → B
+    A → aBC
+    A → ABCD
+
+CNF restricts this to:
+
+    A → BC
+    A → a
+
+with the possible special:
+
+    S → ε
+
+
+Therefore CNF is much more structured.
+
+
+══════════════════════════════════════════════════════════════════════
+41. GNF VS ORIGINAL CFG
+══════════════════════════════════════════════════════════════════════
+
+A normal CFG may contain:
+
+    A → BC
+    A → aB
+    A → ε
+    A → AB
+    A → ABC
+
+GNF requires:
+
+    A → a
+    A → aB
+    A → aBC
+    A → aBCD
+
+Every production begins with a terminal.
+
+
+══════════════════════════════════════════════════════════════════════
+42. IMPORTANT THEORETICAL FACT
+══════════════════════════════════════════════════════════════════════
+
+For a context-free language L that does not contain ε:
+
+    L can be generated by a CFG
+    ⇓
+    L can be generated by a CFG in CNF
+    ⇓
+    L can also be generated by a CFG in GNF
+
+Therefore CNF and GNF are normal representations of CFGs/CFLs under
+their standard conditions.
+
+
+══════════════════════════════════════════════════════════════════════
+43. IMPORTANT EXCEPTION — ε
+══════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    ε ∈ L
+
+Then the grammar needs special treatment.
+
+In CNF, we may allow:
+
+    S → ε
+
+provided S is the start symbol and the standard conditions are met.
+
+In GNF, ε also requires special handling.
+
+EXAM TIP:
+
+Whenever you see:
+
+    ε
+
+during a normal-form conversion, do NOT immediately delete it.
+
+First check whether:
+
+    ε ∈ L(G)
+
+and whether the start symbol requires special handling.
+
+
+══════════════════════════════════════════════════════════════════════
+44. COMMON MISTAKES IN CNF
+══════════════════════════════════════════════════════════════════════
+
+MISTAKE 1:
+
+Writing:
+
+    A → B
+
+in final CNF.
+
+WRONG.
+
+This is a unit production.
+
+
+MISTAKE 2:
+
+Writing:
+
+    A → BCD
+
+WRONG.
+
+CNF allows only two non-terminals.
+
+
+MISTAKE 3:
+
+Writing:
+
+    A → aB
+
+as CNF.
+
+WRONG.
+
+A terminal cannot be combined with another symbol in that rule.
+
+
+MISTAKE 4:
+
+Removing ε without adding necessary alternatives.
+
+WRONG.
+
+If A is nullable in:
+
+    S → AB
+
+you may need:
+
+    S → AB | B
+
+
+MISTAKE 5:
+
+Forgetting unreachable symbols.
+
+Always check reachability from S.
+
+
+MISTAKE 6:
+
+Changing the language accidentally.
+
+Every transformation must preserve the intended language.
+
+
+══════════════════════════════════════════════════════════════════════
+45. COMMON MISTAKES IN GNF
+══════════════════════════════════════════════════════════════════════
+
+MISTAKE 1:
+
+Writing:
+
+    A → BC
+
+This is not GNF.
+
+MISTAKE 2:
+
+Writing:
+
+    A → Ba
+
+This is not GNF.
+
+MISTAKE 3:
+
+Forgetting left recursion.
+
+MISTAKE 4:
+
+Assuming every CFG that has terminals is already in GNF.
+
+FALSE.
+
+The FIRST symbol after the arrow must be a terminal.
+
+MISTAKE 5:
+
+Confusing:
+
+    A → aBC
+
+with CNF.
+
+This is valid GNF, but not CNF.
+
+
+══════════════════════════════════════════════════════════════════════
+46. B.TECH EXAM PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+Very important exam areas:
+
+★ Definition of CNF
+
+★ Definition of GNF
+
+★ Conditions for CNF
+
+★ Conditions for GNF
+
+★ ε-production removal
+
+★ Unit-production removal
+
+★ Useless-symbol removal
+
+★ Conversion of CFG to CNF
+
+★ Conversion of CFG to GNF
+
+★ CNF vs GNF
+
+★ Parse-tree structure in CNF
+
+★ Examples of grammars in normal form
+
+
+COMMON UNIVERSITY QUESTION:
+
+"Convert the following CFG into Chomsky Normal Form."
+
+Typical procedure expected:
+
+    1. New start symbol
+    2. Remove ε-productions
+    3. Remove unit productions
+    4. Remove useless symbols
+    5. Replace terminals in mixed rules
+    6. Break long productions
+    7. Write final CNF
+
+
+══════════════════════════════════════════════════════════════════════
+47. GATE / COMPETITIVE EXAM PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+Competitive questions often test whether you recognize valid rules.
+
+For example:
+
+Which production is valid in CNF?
+
+A. A → BC
+B. A → aB
+C. A → B
+D. A → ABC
+
+Answer:
+
+    A → BC
+
+Which production is valid in GNF?
+
+A. A → BC
+B. A → Ba
+C. A → aBC
+D. A → ε
+
+Answer:
+
+    A → aBC
+
+They may also ask:
+
+• Which grammars are equivalent?
+• How many productions are needed after conversion?
+• Which symbols are nullable?
+• Which symbols are useless?
+• Which grammar is in CNF?
+• Which grammar is in GNF?
+• Identify an invalid transformation.
+
+
+══════════════════════════════════════════════════════════════════════
+48. INTERVIEW PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+INTERVIEWER:
+
+"What is CNF?"
+
+GOOD ANSWER:
+
+"Chomsky Normal Form is a standard form of a CFG in which every
+production is of the form A → BC or A → a, with a possible special
+start-symbol production S → ε."
+
+
+INTERVIEWER:
+
+"What is GNF?"
+
+GOOD ANSWER:
+
+"Greibach Normal Form is a standard form of a CFG in which every
+production begins with a terminal, generally written as A → aα,
+where α is a sequence of non-terminals."
+
+
+INTERVIEWER:
+
+"Main difference?"
+
+ANSWER:
+
+"CNF imposes a binary structure on productions, whereas GNF requires
+every production to begin with a terminal."
+
+
+══════════════════════════════════════════════════════════════════════
+49. QUICK MEMORY TRICK
+══════════════════════════════════════════════════════════════════════
+
+Remember:
+
+        CNF
+         |
+         v
+    "2 variables"
+         +
+    "1 terminal"
+
+    A → BC
+    A → a
+
+
+        GNF
+         |
+         v
+    "Terminal FIRST"
+
+    A → a
+    A → aB
+    A → aBC
+
+
+SHORT MEMORY:
+
+    CNF = BINARY
+
+    GNF = TERMINAL-FIRST
+
+
+══════════════════════════════════════════════════════════════════════
+50. PRACTICE QUESTIONS — LEVEL 1
+══════════════════════════════════════════════════════════════════════
+
+Q1. What is a normal form?
+
+Q2. What does CNF stand for?
+
+Q3. What does GNF stand for?
+
+Q4. What is the standard form of a CNF production?
+
+Q5. What is the standard form of a GNF production?
+
+Q6. Is A → BC valid in CNF?
+
+Q7. Is A → aB valid in CNF?
+
+Q8. Is A → aB valid in GNF?
+
+Q9. Is A → BC valid in GNF?
+
+Q10. What is an ε-production?
+
+Q11. What is a unit production?
+
+Q12. What is a useless symbol?
+
+Q13. Why are unit productions removed?
+
+Q14. Why are long productions broken during CNF conversion?
+
+
+══════════════════════════════════════════════════════════════════════
+51. PRACTICE QUESTIONS — LEVEL 2
+══════════════════════════════════════════════════════════════════════
+
+Q1. Determine whether this grammar is in CNF:
+
+    S → AB
+    A → a
+    B → b
+
+
+Q2. Determine whether this grammar is in CNF:
+
+    S → aB
+    B → b
+
+
+Q3. Determine whether this grammar is in GNF:
+
+    S → aAB
+    A → b
+    B → c
+
+
+Q4. Determine whether this grammar is in GNF:
+
+    S → AB
+    A → a
+    B → b
+
+
+Q5. Convert:
+
+    S → ABC
+    A → a
+    B → b
+    C → c
+
+to CNF.
+
+
+Q6. Remove the unit productions:
+
+    S → A
+    A → B
+    B → b
+
+
+Q7. Identify nullable symbols:
+
+    S → AB
+    A → ε
+    B → b
+
+
+Q8. Identify unreachable symbols:
+
+    S → aA
+    A → b
+    B → c
+    C → d
+
+
+══════════════════════════════════════════════════════════════════════
+52. PRACTICE QUESTIONS — LEVEL 3
+══════════════════════════════════════════════════════════════════════
+
+Convert the following CFG into CNF:
+
+    S → aAB | B
+    A → aA | ε
+    B → bB | b
+
+
+Tasks:
+
+1. Identify nullable variables.
+2. Remove ε-productions.
+3. Remove unit productions.
+4. Replace terminals where necessary.
+5. Break long productions.
+6. Write the final CNF.
+
+
+══════════════════════════════════════════════════════════════════════
+53. GATE-STYLE CONCEPTUAL QUESTIONS
+══════════════════════════════════════════════════════════════════════
+
+Q1.
+
+Which of the following is NOT a valid CNF production?
+
+A. A → BC
+B. A → a
+C. A → ABC
+D. S → ε
+
+Think carefully about the special ε case.
+
+
+Q2.
+
+Which statement about GNF is correct?
+
+A. Every production contains exactly two variables.
+B. Every production starts with a terminal.
+C. Every production starts with a variable.
+D. Every production must contain exactly one terminal.
+
+
+Q3.
+
+Which transformation is required to eliminate:
+
+    A → B
+
+during CNF conversion?
+
+Q4.
+
+Why is:
+
+    A → aB
+
+not allowed in CNF but allowed in GNF?
+
+
+══════════════════════════════════════════════════════════════════════
+54. ACTIVE RECALL — DO NOT LOOK AT THE ANSWERS
+══════════════════════════════════════════════════════════════════════
+
+Try answering these from memory:
+
+1. What does CNF stand for?
+
+2. What does GNF stand for?
+
+3. Write the two principal CNF production forms.
+
+4. Write the general GNF production form.
+
+5. What is an ε-production?
+
+6. What is a unit production?
+
+7. What is a nullable variable?
+
+8. Why do we remove unit productions?
+
+9. Why do we introduce new variables during CNF conversion?
+
+10. Why is A → ABC invalid in CNF?
+
+11. Why is A → BC invalid in GNF?
+
+12. What is the main difference between CNF and GNF?
+
+13. Why is CNF useful for parsing?
+
+14. What is the special role of S → ε?
+
+15. What is the difference between an unreachable and non-generating
+    symbol?
+
+
+══════════════════════════════════════════════════════════════════════
+55. CHAPTER 12 — IMPORTANT FORMULAS / NOTATION
+══════════════════════════════════════════════════════════════════════
+
+CFG:
+
+    G = (V, Σ, P, S)
+
+
+CNF:
+
+    A → BC
+
+or
+
+    A → a
+
+and possibly:
+
+    S → ε
+
+
+GNF:
+
+    A → aA₁A₂...Aₖ
+
+where:
+
+    a ∈ Σ
+    Aᵢ ∈ V
+
+
+Nullable:
+
+    A ⇒* ε
+
+
+Unit production:
+
+    A → B
+
+
+CNF MEMORY:
+
+    Non-terminal → 2 non-terminals
+    Non-terminal → 1 terminal
+
+
+GNF MEMORY:
+
+    Non-terminal → terminal + zero or more non-terminals
+
+
+══════════════════════════════════════════════════════════════════════
+56. CHAPTER 12 — COMPLETE SUMMARY
+══════════════════════════════════════════════════════════════════════
+
+NORMAL FORM:
+
+A standardized representation of a CFG.
+
+CNF:
+
+    A → BC
+    A → a
+
+possibly:
+
+    S → ε
+
+Main idea:
+
+    BINARY STRUCTURE
+
+
+GNF:
+
+    A → aα
+
+where α contains zero or more non-terminals.
+
+Main idea:
+
+    TERMINAL FIRST
+
+
+CNF CONVERSION:
+
+    CFG
+     ↓
+    New start symbol
+     ↓
+    Remove ε-productions
+     ↓
+    Remove unit productions
+     ↓
+    Remove useless symbols
+     ↓
+    Replace terminals in mixed rules
+     ↓
+    Break long productions
+     ↓
+    CNF
+
+
+IMPORTANT:
+
+    ε-production:
+        A → ε
+
+    Unit production:
+        A → B
+
+    Long production:
+        A → BCD
+
+    Mixed production:
+        A → aB
+
+
+CNF fixes these structural problems.
+
+GNF requires:
+
+    FIRST symbol after → = TERMINAL
+
+
+══════════════════════════════════════════════════════════════════════
+57. MOST IMPORTANT EXAM DIFFERENCE
+══════════════════════════════════════════════════════════════════════
+
+                CNF                    GNF
+
+                ↓                      ↓
+
+        A → BC / A → a          A → aα
+
+                ↓                      ↓
+
+        Binary structure          Terminal first
+
+                ↓                      ↓
+
+         CYK parsing             Derivation-oriented
+         applications            theoretical use
+
+
+══════════════════════════════════════════════════════════════════════
+58. CHAPTER 12 COMPLETION STATUS
+══════════════════════════════════════════════════════════════════════
+
+PHASE 8 — NORMAL FORMS
+
+Chapter 12 — Normal Forms of CFG
+
+    [✓] 12.1 Chomsky Normal Form
+        [✓] Definition
+        [✓] Structure
+        [✓] ε-production removal
+        [✓] Unit-production removal
+        [✓] Useless-symbol removal
+        [✓] Terminal replacement
+        [✓] Long-production conversion
+        [✓] CNF examples
+
+    [✓] 12.2 Greibach Normal Form
+        [✓] Definition
+        [✓] Structure
+        [✓] Conversion idea
+        [✓] Examples
+        [✓] CNF vs GNF
+
+    [✓] Practice questions
+    [✓] Active recall
+    [✓] B.Tech perspective
+    [✓] GATE perspective
+    [✓] Interview perspective
+    [✓] Chapter summary
+
+
+══════════════════════════════════════════════════════════════════════
+59. UPCOMING NEXT TOPIC
+══════════════════════════════════════════════════════════════════════
+
+NEXT:
+
+    PHASE 9
+    CHAPTER 13 — PUSH DOWN AUTOMATA (PDA)
+
+    FIRST TOPIC:
+
+    13.1 PDA FUNDAMENTALS — "What is a Pushdown Automaton?"
+
+We will start from absolute zero again:
+
+    What is a stack?
+        ↓
+    Why does a finite automaton need extra memory?
+        ↓
+    What is a PDA?
+        ↓
+    Components of a PDA
+        ↓
+    States
+        ↓
+    Input
+        ↓
+    Stack
+        ↓
+    Stack alphabet
+        ↓
+    Transitions
+        ↓
+    Simple PDA example
+        ↓
+    ASCII diagram
+        ↓
+    Formal definition
+
+Do NOT move to the next topic until you type:
+
+    NEXT
+
+══════════════════════════════════════════════════════════════════════
+END OF CHAPTER 12
+══════════════════════════════════════════════════════════════════════

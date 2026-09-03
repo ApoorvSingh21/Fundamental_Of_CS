@@ -1,0 +1,2298 @@
+====================================================================
+CHAPTER 28 — NP-COMPLETENESS AND REDUCTIONS
+====================================================================
+
+PHASE 23 — NP-COMPLETENESS
+LEVEL: Competitive / GATE / Advanced B.Tech
+PREREQUISITES:
+    Chapter 26 — Complexity Theory
+    Chapter 27 — P, NP, NP-Hard, NP-Complete
+
+====================================================================
+0. CHAPTER OVERVIEW
+====================================================================
+
+In Chapter 27, we learned:
+
+    P
+    NP
+    NP-Hard
+    NP-Complete
+
+But knowing the definitions is not enough.
+
+The most important skill in NP-Completeness is:
+
+    "How do we prove that a problem is NP-Complete?"
+
+The central technique used for this is:
+
+                    REDUCTION
+
+The basic idea is:
+
+    If a problem A can be transformed into problem B
+    efficiently, then solving B efficiently would allow
+    us to solve A efficiently.
+
+This allows us to transfer computational difficulty from
+one problem to another.
+
+The main topics of this chapter are:
+
+    28.1 Polynomial-Time Reduction
+    28.2 Reduction Notation
+    28.3 Proving NP-Hardness
+    28.4 Proving NP-Completeness
+    28.5 Proving a Problem Belongs to NP
+    28.6 Proving NP-Hardness
+    28.7 Complete NP-Completeness Proof
+    28.8 Cook-Levin Theorem
+    28.9 SAT
+    28.10 3-SAT
+    28.11 Classic NP-Complete Problems
+    28.12 Common Reduction Mistakes
+    28.13 GATE-Level Understanding
+
+
+====================================================================
+1. WHAT IS A REDUCTION?
+====================================================================
+
+Simple meaning:
+
+A reduction means changing one problem into another problem.
+
+Suppose we have:
+
+    Problem A
+        |
+        | transformation
+        v
+    Problem B
+
+If we can transform an instance of A into an instance of B
+efficiently, then B is at least powerful enough to solve A.
+
+--------------------------------------------------------------------
+REAL-WORLD ANALOGY
+--------------------------------------------------------------------
+
+Suppose you know how to solve:
+
+    "Convert kilometers to meters"
+
+but you do not know how to solve:
+
+    "Convert meters to kilometers."
+
+You can transform the second problem into the first:
+
+    meters → kilometers
+            ↓
+       use known method
+            ↓
+         answer
+
+In complexity theory, we perform a similar transformation.
+
+--------------------------------------------------------------------
+COMPUTATIONAL IDEA
+--------------------------------------------------------------------
+
+Suppose:
+
+    A ≤p B
+
+Read this as:
+
+    "A is polynomial-time reducible to B."
+
+It means:
+
+    An instance of A can be transformed into an instance
+    of B in polynomial time.
+
+Then:
+
+    If B can be solved efficiently,
+    A can also be solved efficiently.
+
+
+====================================================================
+2. WHY ARE REDUCTIONS NEEDED?
+====================================================================
+
+Suppose someone gives us a new problem:
+
+    PROBLEM X
+
+They ask:
+
+    "Is X NP-Complete?"
+
+We cannot simply say:
+
+    "It looks difficult."
+
+We need a mathematical proof.
+
+The standard proof has two parts:
+
+    Part 1:
+        Show X ∈ NP
+
+    Part 2:
+        Show X is NP-Hard
+
+Therefore:
+
+        X ∈ NP
+        +
+        X is NP-Hard
+        ----------------
+        X is NP-Complete
+
+
+====================================================================
+3. POLYNOMIAL-TIME REDUCTION
+====================================================================
+
+--------------------------------------------------------------------
+SIMPLE DEFINITION
+--------------------------------------------------------------------
+
+A polynomial-time reduction transforms one problem into another
+using an algorithm whose running time is polynomial in the
+input size.
+
+--------------------------------------------------------------------
+FORMAL IDEA
+--------------------------------------------------------------------
+
+For decision problems A and B:
+
+        A ≤p B
+
+means there exists a polynomial-time computable function f such that:
+
+        x ∈ A  iff  f(x) ∈ B
+
+In words:
+
+    x is a YES-instance of A
+    exactly when
+    f(x) is a YES-instance of B.
+
+--------------------------------------------------------------------
+IMPORTANT
+--------------------------------------------------------------------
+
+The transformation must preserve the answer.
+
+For example:
+
+    A instance:
+        YES
+
+must become:
+
+    B instance:
+        YES
+
+and:
+
+    A instance:
+        NO
+
+must become:
+
+    B instance:
+        NO
+
+
+====================================================================
+4. ASCII VIEW OF A REDUCTION
+====================================================================
+
+Suppose:
+
+        A ≤p B
+
+Then:
+
+             polynomial-time
+        +----------------------+
+        |      reduction       |
+        |          f           |
+        +----------------------+
+
+      Input x                    Input f(x)
+        |                             |
+        v                             v
+    Problem A                    Problem B
+        |                             |
+        |                             |
+        +---------- same answer ------+
+
+If:
+
+        A-instance = YES
+
+then:
+
+        corresponding B-instance = YES
+
+If:
+
+        A-instance = NO
+
+then:
+
+        corresponding B-instance = NO
+
+
+====================================================================
+5. EXAMPLE OF A SIMPLE REDUCTION
+====================================================================
+
+Suppose:
+
+Problem A:
+    "Does a graph contain a clique of size k?"
+
+Problem B:
+    Another graph problem that can represent the same information.
+
+If we can construct the B-instance efficiently from every
+A-instance, then:
+
+        A ≤p B
+
+The important point is NOT merely that both problems are difficult.
+
+We need an actual transformation.
+
+
+====================================================================
+6. DIRECTION OF REDUCTION — VERY IMPORTANT
+====================================================================
+
+This is one of the most common GATE mistakes.
+
+Suppose:
+
+        A is already known to be NP-Hard.
+
+We want to prove:
+
+        B is NP-Hard.
+
+We should show:
+
+        A ≤p B
+
+NOT:
+
+        B ≤p A
+
+
+Why?
+
+Because A is already difficult.
+
+If A can be transformed into B, then:
+
+    solving B efficiently
+            ↓
+    would solve A efficiently
+            ↓
+    therefore B is at least as difficult as A
+            ↓
+    B is NP-Hard
+
+
+====================================================================
+7. GOLDEN RULE FOR NP-HARDNESS
+====================================================================
+
+To prove:
+
+        B is NP-Hard
+
+start with a problem:
+
+        A
+
+that is already known to be NP-Hard.
+
+Then prove:
+
+        A ≤p B
+
+
+MEMORIZE:
+
+    KNOWN HARD  →  NEW PROBLEM
+
+        A        →       B
+
+        A ≤p B
+
+
+====================================================================
+8. WHY THE REVERSE DIRECTION DOES NOT WORK
+====================================================================
+
+Suppose:
+
+        B ≤p A
+
+and A is NP-Hard.
+
+What does this tell us?
+
+It tells us:
+
+    B can be transformed into A.
+
+This does NOT establish that B is at least as hard as A.
+
+B might actually be very easy.
+
+Example intuition:
+
+    Easy problem → Hard problem
+
+is perfectly possible.
+
+For example:
+
+    "Is the number 5 even?"
+
+can be transformed into a complicated problem in many artificial
+ways.
+
+That does not make the easy problem NP-Hard.
+
+Therefore:
+
+    B ≤p A
+
+does not prove B is NP-Hard.
+
+
+====================================================================
+9. TRANSITIVITY OF REDUCTION
+====================================================================
+
+Polynomial-time reductions are transitive.
+
+If:
+
+        A ≤p B
+
+and:
+
+        B ≤p C
+
+then:
+
+        A ≤p C
+
+
+ASCII:
+
+        A
+        |
+        | ≤p
+        v
+        B
+        |
+        | ≤p
+        v
+        C
+
+Therefore:
+
+        A ≤p C
+
+
+This property is extremely important when building chains of
+NP-Completeness proofs.
+
+
+====================================================================
+10. REDUCTION CHAIN
+====================================================================
+
+Suppose we know:
+
+        SAT is NP-Complete.
+
+Suppose we prove:
+
+        SAT ≤p 3-SAT
+
+and:
+
+        3-SAT ≤p CLIQUE
+
+Then:
+
+        SAT ≤p CLIQUE
+
+because of transitivity.
+
+Therefore CLIQUE is NP-Hard.
+
+If CLIQUE is also in NP:
+
+        CLIQUE is NP-Complete.
+
+
+====================================================================
+11. NP-HARD
+====================================================================
+
+--------------------------------------------------------------------
+SIMPLE DEFINITION
+--------------------------------------------------------------------
+
+A problem B is NP-Hard if every problem in NP can be reduced to B
+in polynomial time.
+
+Formally:
+
+        For every A ∈ NP,
+
+        A ≤p B
+
+--------------------------------------------------------------------
+IMPORTANT
+--------------------------------------------------------------------
+
+An NP-Hard problem:
+
+    does NOT necessarily have to belong to NP.
+
+Therefore:
+
+        NP-Complete = NP-Hard + NP
+
+
+====================================================================
+12. NP-COMPLETE
+====================================================================
+
+A problem B is NP-Complete if:
+
+        1. B ∈ NP
+        2. B is NP-Hard
+
+Therefore:
+
+                NP-HARD
+                   |
+          +--------+--------+
+          |                 |
+        in NP            not in NP
+          |
+          v
+    NP-COMPLETE
+
+
+====================================================================
+13. HOW TO PROVE NP-COMPLETENESS
+====================================================================
+
+Suppose we want to prove:
+
+        X is NP-Complete.
+
+Use exactly TWO major steps.
+
+STEP 1:
+
+        Prove X ∈ NP.
+
+STEP 2:
+
+        Prove X is NP-Hard.
+
+For Step 2:
+
+    choose a known NP-Complete problem A
+
+    and show:
+
+        A ≤p X
+
+
+Therefore:
+
+        X ∈ NP
+        +
+        X is NP-Hard
+        ----------------
+        X is NP-Complete
+
+
+====================================================================
+14. STEP 1 — PROVING X ∈ NP
+====================================================================
+
+How do we prove that a problem belongs to NP?
+
+We demonstrate that a proposed solution can be verified in
+polynomial time.
+
+Usually we provide:
+
+    1. Certificate
+    2. Verification algorithm
+    3. Polynomial verification time
+
+
+--------------------------------------------------------------------
+EXAMPLE: CLIQUE
+--------------------------------------------------------------------
+
+Question:
+
+    Does graph G contain a clique of size k?
+
+Certificate:
+
+    A set of k vertices.
+
+Verifier:
+
+    1. Check that exactly k vertices were provided.
+    2. Check every pair of selected vertices.
+    3. Verify that every pair has an edge.
+
+Number of pairs:
+
+        k(k-1)/2
+
+This is polynomial.
+
+Therefore:
+
+        CLIQUE ∈ NP
+
+
+====================================================================
+15. CERTIFICATE
+====================================================================
+
+A certificate is a proposed solution that allows a verifier to
+quickly check whether the answer is YES.
+
+Example:
+
+Problem:
+
+    Does this graph contain a Hamiltonian cycle?
+
+Certificate:
+
+    A sequence of vertices representing a proposed cycle.
+
+Verifier checks:
+
+    1. Every vertex appears exactly once.
+    2. Consecutive vertices are connected.
+    3. Last vertex connects back to first.
+
+If all checks succeed:
+
+    YES.
+
+
+====================================================================
+16. NP VERIFICATION MODEL
+====================================================================
+
+                 Certificate
+                     |
+                     v
+              +-------------+
+Input ------> |  Verifier   |
+              +-------------+
+                     |
+                 polynomial
+                   time
+                     |
+                     v
+                 YES / NO
+
+
+The key is:
+
+    Verification must be polynomial-time.
+
+
+====================================================================
+17. STEP 2 — PROVING NP-HARDNESS
+====================================================================
+
+Suppose:
+
+        A is known NP-Complete.
+
+We want:
+
+        B is NP-Hard.
+
+Construct a polynomial-time transformation:
+
+        A-instance
+             |
+             v
+        B-instance
+
+and prove:
+
+        x ∈ A  iff  f(x) ∈ B
+
+Therefore:
+
+        A ≤p B
+
+Since A is NP-Hard:
+
+        B is NP-Hard.
+
+
+====================================================================
+18. COMPLETE NP-COMPLETENESS TEMPLATE
+====================================================================
+
+When writing an exam answer, use this structure:
+
+------------------------------------------------------------
+To prove that problem X is NP-Complete:
+
+1. X belongs to NP.
+
+   A certificate of X can be verified in polynomial time.
+
+2. X is NP-Hard.
+
+   Take a known NP-Complete problem A.
+
+   Construct a polynomial-time reduction:
+
+                A ≤p X
+
+   Prove that:
+
+                instance of A is YES
+                iff
+                transformed instance of X is YES.
+
+Therefore X is NP-Hard.
+
+Since:
+
+                X ∈ NP
+                and
+                X is NP-Hard
+
+we conclude:
+
+                X is NP-Complete.
+------------------------------------------------------------
+
+
+====================================================================
+19. SAT
+====================================================================
+
+SAT stands for:
+
+    Boolean Satisfiability Problem.
+
+It asks:
+
+    "Does there exist an assignment of TRUE/FALSE values
+     to variables that makes the Boolean formula TRUE?"
+
+--------------------------------------------------------------------
+EXAMPLE
+--------------------------------------------------------------------
+
+Formula:
+
+        F = (x ∨ y) ∧ (¬x ∨ z)
+
+Question:
+
+    Is there an assignment making F TRUE?
+
+Try:
+
+        x = TRUE
+        y = FALSE
+        z = TRUE
+
+Then:
+
+        (TRUE ∨ FALSE) = TRUE
+
+and:
+
+        (FALSE ∨ TRUE) = TRUE
+
+Therefore:
+
+        F = TRUE ∧ TRUE
+          = TRUE
+
+So the answer is:
+
+        YES
+
+
+====================================================================
+20. BOOLEAN TERMINOLOGY
+====================================================================
+
+Before SAT, understand:
+
+VARIABLE:
+
+    x, y, z
+
+LITERAL:
+
+    x
+    ¬x
+
+A literal is either:
+
+    a variable
+
+or:
+
+    its negation.
+
+CLAUSE:
+
+    An OR of literals.
+
+Example:
+
+    (x ∨ ¬y ∨ z)
+
+FORMULA:
+
+    Combination of variables, operators, and clauses.
+
+Example:
+
+    (x ∨ y) ∧ (¬x ∨ z)
+
+
+====================================================================
+21. SAT IS NP-COMPLETE
+====================================================================
+
+The famous result:
+
+    SAT is NP-Complete.
+
+This was established by:
+
+    Cook-Levin Theorem.
+
+This is one of the most important results in theoretical
+computer science.
+
+
+====================================================================
+22. COOK-LEVIN THEOREM
+====================================================================
+
+--------------------------------------------------------------------
+STATEMENT
+--------------------------------------------------------------------
+
+Every problem in NP can be reduced to SAT in polynomial time.
+
+Therefore:
+
+        SAT is NP-Hard.
+
+Also:
+
+        SAT ∈ NP.
+
+Hence:
+
+        SAT is NP-Complete.
+
+
+====================================================================
+23. WHY COOK-LEVIN THEOREM IS IMPORTANT
+====================================================================
+
+Before this theorem, NP was a class of problems defined through
+polynomial-time verification.
+
+Cook and Levin established that:
+
+    SAT is representative of the entire difficulty of NP.
+
+In simplified form:
+
+        Every NP problem
+              |
+              | polynomial reduction
+              v
+             SAT
+
+
+This made SAT the first known NP-Complete problem.
+
+
+====================================================================
+24. INTUITION BEHIND COOK-LEVIN
+====================================================================
+
+Suppose a nondeterministic polynomial-time machine solves
+some problem.
+
+Its computation can be represented as a structured table.
+
+For example:
+
+        time →
+        +-----------------------------+
+        | configuration at time 0     |
+        | configuration at time 1     |
+        | configuration at time 2     |
+        | configuration at time 3     |
+        | ...                         |
+        +-----------------------------+
+
+We can construct a Boolean formula that says:
+
+    "There exists a valid accepting computation."
+
+The formula is satisfiable exactly when the machine has an
+accepting computation.
+
+Thus:
+
+    NP problem
+       ↓
+    computation encoded as Boolean constraints
+       ↓
+    SAT formula
+
+
+====================================================================
+25. 3-SAT
+====================================================================
+
+3-SAT is a restricted form of SAT.
+
+Every clause contains exactly three literals.
+
+Example:
+
+        (x ∨ y ∨ z)
+        ∧
+        (¬x ∨ y ∨ ¬z)
+        ∧
+        (x ∨ ¬y ∨ z)
+
+This is a 3-CNF formula.
+
+
+====================================================================
+26. CNF
+====================================================================
+
+CNF means:
+
+    Conjunctive Normal Form.
+
+"Conjunctive" means AND.
+
+A CNF formula is:
+
+        clause1 ∧ clause2 ∧ clause3 ∧ ...
+
+Each clause contains ORs.
+
+Example:
+
+        (x ∨ y) ∧ (¬x ∨ z)
+
+Structure:
+
+            AND
+           /   \
+         OR     OR
+        /  \   /  \
+       x    y ¬x   z
+
+
+====================================================================
+27. 3-CNF
+====================================================================
+
+In 3-CNF:
+
+    each clause has three literals.
+
+Example:
+
+        (x ∨ y ∨ z)
+        ∧
+        (¬x ∨ y ∨ w)
+
+Therefore:
+
+        3-SAT = SAT restricted to 3 literals per clause.
+
+
+====================================================================
+28. 3-SAT IS NP-COMPLETE
+====================================================================
+
+3-SAT is NP-Complete.
+
+The usual conceptual proof is:
+
+        SAT
+         |
+         | polynomial reduction
+         v
+       3-SAT
+
+Therefore:
+
+        SAT ≤p 3-SAT
+
+Since SAT is NP-Complete:
+
+        3-SAT is NP-Hard.
+
+And:
+
+        3-SAT ∈ NP.
+
+Therefore:
+
+        3-SAT is NP-Complete.
+
+
+====================================================================
+29. SAT → 3-SAT — BASIC IDEA
+====================================================================
+
+A SAT formula can have clauses with many literals.
+
+For example:
+
+        (a ∨ b ∨ c ∨ d)
+
+We can introduce new variables to break the clause into
+clauses of size three.
+
+For example:
+
+        (a ∨ b ∨ y1)
+        ∧
+        (¬y1 ∨ c ∨ y2)
+        ∧
+        (¬y2 ∨ d)
+
+The exact transformation depends on the chosen construction.
+
+The important idea is:
+
+    Large clauses
+         ↓
+    introduce auxiliary variables
+         ↓
+    clauses of size 3
+
+
+====================================================================
+30. CLASSIC NP-COMPLETE PROBLEMS
+====================================================================
+
+Important problems to remember:
+
+    SAT
+    3-SAT
+    CLIQUE
+    VERTEX COVER
+    INDEPENDENT SET
+    HAMILTONIAN CYCLE
+    HAMILTONIAN PATH
+    SUBSET SUM
+    PARTITION
+    KNAPSACK (decision version)
+    TSP (decision version)
+
+
+====================================================================
+31. CLIQUE
+====================================================================
+
+Problem:
+
+    Given graph G and integer k,
+
+    does G contain k vertices such that every pair is connected?
+
+Example:
+
+             A ----- B
+              \     /
+               \   /
+                 C
+
+A, B, C form a clique of size 3.
+
+
+--------------------------------------------------------------------
+NP verification
+--------------------------------------------------------------------
+
+Certificate:
+
+    k vertices.
+
+Verifier:
+
+    Check every pair.
+
+Therefore:
+
+        CLIQUE ∈ NP.
+
+
+====================================================================
+32. VERTEX COVER
+====================================================================
+
+Problem:
+
+    Given graph G and integer k,
+
+    is there a set of at most k vertices that covers
+    every edge?
+
+"Cover" means:
+
+    Every edge has at least one endpoint in the selected set.
+
+
+Example:
+
+        A ----- B
+        |       |
+        |       |
+        C ----- D
+
+Suppose selected:
+
+        {A, D}
+
+Then:
+
+    AB → A covers it
+    AC → A covers it
+    BD → D covers it
+    CD → D covers it
+
+Therefore all edges are covered.
+
+
+====================================================================
+33. INDEPENDENT SET
+====================================================================
+
+Problem:
+
+    Does graph G contain k vertices such that no two selected
+    vertices have an edge between them?
+
+This is essentially the opposite idea of a clique.
+
+Clique:
+
+    selected vertices are highly connected.
+
+Independent set:
+
+    selected vertices have no edges between them.
+
+
+====================================================================
+34. RELATIONSHIP BETWEEN CLIQUE AND INDEPENDENT SET
+====================================================================
+
+For graph G:
+
+    G has a clique of size k
+
+iff
+
+    complement graph G̅ has an independent set of size k.
+
+ASCII intuition:
+
+    G:
+        connected pairs
+
+    complement G̅:
+        non-connected pairs become connected
+
+Thus:
+
+        CLIQUE ≤p INDEPENDENT-SET
+
+and vice versa through graph complement constructions.
+
+
+====================================================================
+35. HAMILTONIAN CYCLE
+====================================================================
+
+Problem:
+
+    Does a graph contain a cycle that visits every vertex
+    exactly once and returns to the starting vertex?
+
+Example:
+
+        A ---- B
+        |      |
+        |      |
+        D ---- C
+
+Cycle:
+
+        A → B → C → D → A
+
+Every vertex appears exactly once.
+
+Therefore this graph contains a Hamiltonian cycle.
+
+
+====================================================================
+36. SUBSET SUM
+====================================================================
+
+Given numbers:
+
+        {3, 5, 7, 10}
+
+and target:
+
+        15
+
+Question:
+
+    Is there a subset whose sum is 15?
+
+Try:
+
+        3 + 5 + 7 = 15
+
+Therefore:
+
+        YES.
+
+
+====================================================================
+37. TSP
+====================================================================
+
+Traveling Salesman Problem.
+
+Decision version:
+
+    Given cities, distances, and a bound K,
+
+    is there a tour visiting every city exactly once
+    and returning to the starting city with total cost ≤ K?
+
+Important:
+
+    Optimization TSP:
+        Find the minimum-cost tour.
+
+    Decision TSP:
+        Is there a tour with cost ≤ K?
+
+For complexity classification, the decision version is commonly
+used.
+
+The decision version of TSP is NP-Complete.
+
+
+====================================================================
+38. IMPORTANT DISTINCTION:
+    OPTIMIZATION VS DECISION
+====================================================================
+
+Optimization problem:
+
+    "What is the minimum?"
+
+Decision problem:
+
+    "Does there exist a solution with value ≤ K?"
+
+Complexity classes such as NP are formally defined using
+decision problems.
+
+Therefore, when discussing NP-Completeness, always pay attention
+to whether the problem is stated as a decision problem.
+
+
+====================================================================
+39. STANDARD NP-COMPLETE PROOF STRATEGY
+====================================================================
+
+Suppose we are given:
+
+    NEW-PROBLEM
+
+We want to prove:
+
+    NEW-PROBLEM is NP-Complete.
+
+Use this checklist:
+
+    STEP 1:
+        Show NEW-PROBLEM ∈ NP.
+
+    STEP 2:
+        Select a known NP-Complete problem.
+
+    STEP 3:
+        Construct:
+
+        KNOWN-PROBLEM ≤p NEW-PROBLEM
+
+    STEP 4:
+        Explain the transformation.
+
+    STEP 5:
+        Prove correctness:
+
+        YES → YES
+        NO  → NO
+
+        or equivalently:
+
+        x ∈ A iff f(x) ∈ B
+
+    STEP 6:
+        Show transformation runs in polynomial time.
+
+    STEP 7:
+        Conclude NEW-PROBLEM is NP-Hard.
+
+    STEP 8:
+        Since NEW-PROBLEM ∈ NP:
+
+        NEW-PROBLEM is NP-Complete.
+
+
+====================================================================
+40. EXAMPLE PROOF STRUCTURE
+====================================================================
+
+Suppose X is a new graph problem.
+
+We want to prove:
+
+        X is NP-Complete.
+
+------------------------------------------------------------
+STEP 1 — X ∈ NP
+------------------------------------------------------------
+
+Give a certificate.
+
+Explain how the certificate can be checked.
+
+Show checking takes polynomial time.
+
+Therefore:
+
+        X ∈ NP.
+
+------------------------------------------------------------
+STEP 2 — NP-HARDNESS
+------------------------------------------------------------
+
+Choose a known NP-Complete problem:
+
+        A
+
+Construct:
+
+        A ≤p X
+
+Show:
+
+        A-instance is YES
+        iff
+        corresponding X-instance is YES.
+
+Show transformation is polynomial.
+
+Therefore:
+
+        X is NP-Hard.
+
+------------------------------------------------------------
+CONCLUSION
+------------------------------------------------------------
+
+Since:
+
+        X ∈ NP
+
+and:
+
+        X is NP-Hard
+
+therefore:
+
+        X is NP-Complete.
+
+
+====================================================================
+41. COMMON MISTAKE #1 — WRONG REDUCTION DIRECTION
+====================================================================
+
+WRONG:
+
+    New problem ≤p Known NP-Complete problem
+
+This does NOT normally prove the new problem is NP-Hard.
+
+CORRECT:
+
+    Known NP-Complete problem ≤p New problem
+
+
+====================================================================
+42. COMMON MISTAKE #2 — ONLY SHOWING X ∈ NP
+====================================================================
+
+Showing:
+
+        X ∈ NP
+
+does NOT mean:
+
+        X is NP-Complete.
+
+There are many problems in NP that are not known to be
+NP-Complete.
+
+You must also prove NP-Hardness.
+
+
+====================================================================
+43. COMMON MISTAKE #3 — SAYING "IT IS HARD"
+====================================================================
+
+Do not write:
+
+    "The problem is complicated, so it is NP-Hard."
+
+Complexity classifications require mathematical proof.
+
+You need a reduction.
+
+
+====================================================================
+44. COMMON MISTAKE #4 — REDUCTION IS NOT JUST SIMILARITY
+====================================================================
+
+Two problems looking similar does not establish a reduction.
+
+You must define:
+
+    input transformation
+    correctness
+    running time
+
+
+====================================================================
+45. COMMON MISTAKE #5 — FORGETTING POLYNOMIAL TIME
+====================================================================
+
+A reduction must be computable efficiently.
+
+If the transformation itself takes exponential time, it is not
+a polynomial-time reduction.
+
+
+====================================================================
+46. COMMON MISTAKE #6 — NOT PROVING CORRECTNESS
+====================================================================
+
+Do not merely say:
+
+    "Transform graph G into graph G'."
+
+Explain why:
+
+    G has desired property
+
+iff:
+
+    G' has desired property.
+
+
+====================================================================
+47. COMMON MISTAKE #7 — CONFUSING NP-HARD AND NP-COMPLETE
+====================================================================
+
+Remember:
+
+        NP-Complete
+            =
+        NP-Hard ∩ NP
+
+So:
+
+    Every NP-Complete problem is NP-Hard.
+
+But:
+
+    Not every NP-Hard problem is NP-Complete.
+
+
+====================================================================
+48. IMPORTANT RELATIONSHIP
+====================================================================
+
+                ALL PROBLEMS
+                     |
+        +------------+------------+
+        |                         |
+       NP                      outside NP
+        |                         |
+        |                    some NP-Hard
+        |                    problems may exist
+        |
+   +----+----------------+
+   |                     |
+   P                NP-Complete
+   |                     |
+   +---------------------+
+
+More accurately:
+
+        P ⊆ NP
+
+        NP-Complete ⊆ NP
+
+        NP-Complete ⊆ NP-Hard
+
+        NP-Hard may contain problems outside NP.
+
+
+====================================================================
+49. P VS NP — IMPORTANT CONNECTION
+====================================================================
+
+We know:
+
+        P ⊆ NP
+
+The major unsolved question is:
+
+        P = NP ?
+
+If:
+
+        P = NP
+
+then every NP-Complete problem has a polynomial-time algorithm.
+
+If:
+
+        P ≠ NP
+
+then NP-Complete problems do not have polynomial-time
+algorithms, under the standard complexity assumption.
+
+
+====================================================================
+50. IF ONE NP-COMPLETE PROBLEM IS IN P
+====================================================================
+
+This is a very important theorem-like consequence.
+
+Suppose:
+
+        X is NP-Complete
+
+and:
+
+        X ∈ P.
+
+Then:
+
+        P = NP.
+
+
+Why?
+
+Every problem in NP reduces to X.
+
+If X can be solved in polynomial time, then every NP problem can
+also be solved in polynomial time.
+
+Therefore:
+
+        NP ⊆ P
+
+Since:
+
+        P ⊆ NP
+
+we get:
+
+        P = NP.
+
+
+====================================================================
+51. ASCII VIEW
+====================================================================
+
+Suppose:
+
+    A ≤p X
+
+and X has a polynomial-time algorithm.
+
+Then:
+
+    A
+    |
+    | polynomial reduction
+    v
+    X
+    |
+    | polynomial algorithm
+    v
+    answer
+
+Therefore A can also be solved in polynomial time.
+
+
+====================================================================
+52. IF P ≠ NP
+====================================================================
+
+If:
+
+        P ≠ NP
+
+then:
+
+        NP-Complete problems are not in P.
+
+This is why NP-Complete problems are considered extremely
+important.
+
+They form a boundary of efficiently solvable problems under the
+current understanding of complexity theory.
+
+
+====================================================================
+53. GATE-LEVEL CONCEPT: REDUCTION CHAIN
+====================================================================
+
+Suppose:
+
+        A is NP-Complete.
+
+You prove:
+
+        A ≤p B
+
+Then:
+
+        B is NP-Hard.
+
+If additionally:
+
+        B ∈ NP
+
+then:
+
+        B is NP-Complete.
+
+
+Now suppose:
+
+        B ≤p C
+
+and:
+
+        C ∈ NP.
+
+Then:
+
+        A ≤p B ≤p C
+
+therefore:
+
+        A ≤p C.
+
+Thus C is NP-Hard.
+
+Since C ∈ NP:
+
+        C is NP-Complete.
+
+
+====================================================================
+54. GATE TRICK QUESTION
+====================================================================
+
+Given:
+
+        A is NP-Complete
+        B ≤p A
+
+Can we conclude:
+
+        B is NP-Complete?
+
+ANSWER:
+
+        NO.
+
+Why?
+
+Because an easy problem can reduce to a hard problem.
+
+For example, many simple problems can be transformed into
+complicated problems.
+
+To prove B NP-Hard, we need:
+
+        A ≤p B
+
+not:
+
+        B ≤p A.
+
+
+====================================================================
+55. GATE TRICK QUESTION
+====================================================================
+
+Given:
+
+        A ≤p B
+        B ∈ P
+
+What can we conclude?
+
+Since A can be transformed to B in polynomial time and B can be
+solved in polynomial time:
+
+        A ∈ P.
+
+Therefore:
+
+        A ∈ P.
+
+
+====================================================================
+56. GATE TRICK QUESTION
+====================================================================
+
+Given:
+
+        A is NP-Complete
+        A ≤p B
+
+What can we conclude?
+
+        B is NP-Hard.
+
+If additionally:
+
+        B ∈ NP
+
+then:
+
+        B is NP-Complete.
+
+
+====================================================================
+57. IMPORTANT THEOREMS / FACTS TO REMEMBER
+====================================================================
+
+FACT 1:
+
+        SAT is NP-Complete.
+
+FACT 2:
+
+        3-SAT is NP-Complete.
+
+FACT 3:
+
+        If A ≤p B and B ∈ P,
+        then A ∈ P.
+
+FACT 4:
+
+        If A is NP-Hard and A ≤p B,
+        then B is NP-Hard.
+
+FACT 5:
+
+        If A ≤p B and B ≤p C,
+        then A ≤p C.
+
+FACT 6:
+
+        If any NP-Complete problem is in P,
+        then P = NP.
+
+FACT 7:
+
+        NP-Complete = NP ∩ NP-Hard.
+
+
+====================================================================
+58. B.TECH EXAM PERSPECTIVE
+====================================================================
+
+You should be able to answer:
+
+1. Define polynomial-time reduction.
+
+2. Explain A ≤p B.
+
+3. Explain the importance of reduction direction.
+
+4. Differentiate NP-Hard and NP-Complete.
+
+5. Explain how to prove a problem is NP-Complete.
+
+6. Define SAT.
+
+7. Define 3-SAT.
+
+8. State Cook-Levin theorem.
+
+9. Explain why SAT is NP-Complete.
+
+10. Explain why 3-SAT is NP-Complete.
+
+11. Explain certificate and verifier.
+
+12. Explain polynomial-time verification.
+
+13. Explain reduction chains.
+
+14. Explain consequences if an NP-Complete problem belongs to P.
+
+
+====================================================================
+59. GATE / COMPETITIVE EXAM PERSPECTIVE
+====================================================================
+
+Very important areas:
+
+    ★ Direction of reductions
+    ★ Transitivity
+    ★ P ⊆ NP
+    ★ NP-Complete ⊆ NP
+    ★ NP-Complete ⊆ NP-Hard
+    ★ SAT
+    ★ 3-SAT
+    ★ Cook-Levin theorem
+    ★ Certificate/verifier
+    ★ Reduction chains
+    ★ Consequences of NP-Complete ∈ P
+    ★ Decision vs optimization
+    ★ CLIQUE / VERTEX COVER / INDEPENDENT SET
+    ★ Hamiltonian Cycle
+    ★ Subset Sum
+
+
+====================================================================
+60. INTERVIEW PERSPECTIVE
+====================================================================
+
+Question:
+
+    What is polynomial-time reduction?
+
+Answer:
+
+    It is a polynomial-time transformation of instances of one
+    problem into instances of another problem such that the
+    YES/NO answer is preserved.
+
+Question:
+
+    How do you prove a problem is NP-Complete?
+
+Answer:
+
+    First prove that it belongs to NP, then reduce a known
+    NP-Complete problem to it in polynomial time to prove
+    NP-Hardness.
+
+Question:
+
+    Why is reduction direction important?
+
+Answer:
+
+    To prove a new problem B is NP-Hard, we reduce a known
+    hard problem A to B:
+
+            A ≤p B
+
+    This shows that B is at least as hard as A.
+
+
+====================================================================
+61. VERY SIMPLE MEMORY TRICK
+====================================================================
+
+For NP-Hardness:
+
+        HARD → NEW
+
+For NP-Completeness:
+
+        NEW ∈ NP
+
+        AND
+
+        HARD → NEW
+
+
+Remember:
+
+        KNOWN HARD
+             |
+             v
+        NEW PROBLEM
+
+
+====================================================================
+62. CHAPTER 28 MASTER SUMMARY
+====================================================================
+
+REDUCTION:
+
+    Transform one problem into another.
+
+POLYNOMIAL-TIME REDUCTION:
+
+    Transformation must take polynomial time.
+
+A ≤p B:
+
+    A can be transformed into B efficiently while preserving
+    the YES/NO answer.
+
+NP-HARD:
+
+    Every NP problem can be polynomially reduced to it.
+
+NP-COMPLETE:
+
+    Both:
+        1. It belongs to NP.
+        2. It is NP-Hard.
+
+TO PROVE NP-COMPLETE:
+
+        X ∈ NP
+        +
+        Known NP-Complete ≤p X
+        =
+        X is NP-Complete
+
+SAT:
+
+    Boolean satisfiability problem.
+
+3-SAT:
+
+    SAT where every clause has three literals.
+
+COOK-LEVIN:
+
+    Every NP problem can be polynomially reduced to SAT.
+
+Therefore:
+
+        SAT is NP-Complete.
+
+REDUCTION TRANSITIVITY:
+
+        A ≤p B
+        B ≤p C
+        -----------
+        A ≤p C
+
+MOST IMPORTANT DIRECTION:
+
+        Known Hard → New Problem
+
+
+====================================================================
+63. CHAPTER 28 QUICK REVISION TABLE
+====================================================================
+
++----------------------+---------------------------------------------+
+| Concept              | Meaning                                     |
++----------------------+---------------------------------------------+
+| Reduction            | Transform one problem into another         |
+| A ≤p B               | A reduces to B in polynomial time           |
+| NP                   | Polynomial-time verifiable problems        |
+| NP-Hard              | At least as hard as every NP problem       |
+| NP-Complete           | Both NP and NP-Hard                        |
+| SAT                  | Boolean satisfiability                     |
+| 3-SAT                | SAT with 3 literals per clause             |
+| Certificate          | Proposed solution                          |
+| Verifier             | Polynomial-time checker                    |
+| Cook-Levin           | SAT is NP-Complete                         |
++----------------------+---------------------------------------------+
+
+
+====================================================================
+64. ACTIVE RECALL — DO NOT LOOK UP THE ANSWERS
+====================================================================
+
+Q1. What is a reduction?
+
+Q2. What does A ≤p B mean?
+
+Q3. Why must a polynomial reduction run in polynomial time?
+
+Q4. What is the correct reduction direction for proving
+    NP-Hardness?
+
+Q5. If A is NP-Complete and A ≤p B, what can we conclude?
+
+Q6. If B ∈ NP as well, what can we conclude?
+
+Q7. What is a certificate?
+
+Q8. What is a verifier?
+
+Q9. What is SAT?
+
+Q10. What is 3-SAT?
+
+Q11. What is Cook-Levin theorem?
+
+Q12. Why is SAT NP-Complete?
+
+Q13. Why is 3-SAT important?
+
+Q14. What is the difference between NP-Hard and NP-Complete?
+
+Q15. What happens if an NP-Complete problem is shown to be
+     solvable in polynomial time?
+
+Q16. If A ≤p B and B ≤p C, what is the relationship between A
+     and C?
+
+Q17. Why does B ≤p A not normally prove B is NP-Hard when A
+     is already known to be NP-Hard?
+
+Q18. Why are decision versions commonly used in NP-Completeness?
+
+
+====================================================================
+65. PRACTICE QUESTIONS
+====================================================================
+
+-------------------------
+LEVEL 1 — BEGINNER
+-------------------------
+
+1. Define polynomial-time reduction.
+
+2. What does A ≤p B mean?
+
+3. Define NP-Hard.
+
+4. Define NP-Complete.
+
+5. Define SAT.
+
+6. Define 3-SAT.
+
+7. State Cook-Levin theorem.
+
+8. What is a certificate?
+
+9. What is a verifier?
+
+
+-------------------------
+LEVEL 2 — B.TECH BASIC
+-------------------------
+
+10. Explain the difference between NP-Hard and NP-Complete.
+
+11. Explain the correct direction of reduction for proving
+    NP-Hardness.
+
+12. Explain why SAT is in NP.
+
+13. Explain why 3-SAT is in NP.
+
+14. Explain the role of polynomial-time verification.
+
+15. Explain reduction transitivity.
+
+
+-------------------------
+LEVEL 3 — UNIVERSITY EXAM
+-------------------------
+
+16. Explain the procedure for proving a problem NP-Complete.
+
+17. Explain Cook-Levin theorem.
+
+18. Explain SAT and 3-SAT with examples.
+
+19. Explain the relationship among P, NP, NP-Hard and NP-Complete.
+
+20. Explain why an NP-Complete problem in P would imply P = NP.
+
+
+-------------------------
+LEVEL 4 — COMPETITIVE
+-------------------------
+
+21. A is NP-Complete and A ≤p B. B ∈ NP.
+    Classify B.
+
+22. A ≤p B and B ∈ P.
+    What can you say about A?
+
+23. A ≤p B and B ≤p C.
+    What can you conclude?
+
+24. A is NP-Hard and A ≤p B.
+    Is B necessarily NP-Hard?
+
+25. A is NP-Complete and B ≤p A.
+    Is B necessarily NP-Complete?
+
+
+-------------------------
+LEVEL 5 — GATE
+-------------------------
+
+26. Suppose:
+
+        X ≤p Y
+        Y ≤p Z
+
+    and Z ∈ P.
+
+    What can be concluded about X?
+
+27. Suppose X is NP-Complete and:
+
+        X ≤p Y
+
+    but Y is not known to be in NP.
+
+    What classification can safely be established for Y?
+
+28. Explain why reducing a new problem to a known NP-Complete
+    problem does not prove the new problem NP-Hard.
+
+29. Suppose an NP-Complete problem has a polynomial-time
+    algorithm. What follows?
+
+30. Explain why polynomial-time reductions are transitive.
+
+
+====================================================================
+66. FINAL EXAM CHECKLIST
+====================================================================
+
+Before considering Chapter 28 complete, make sure you can:
+
+[ ] Define reduction.
+
+[ ] Explain polynomial-time reduction.
+
+[ ] Read A ≤p B correctly.
+
+[ ] Explain reduction direction.
+
+[ ] Explain NP-Hard.
+
+[ ] Explain NP-Complete.
+
+[ ] Prove membership in NP.
+
+[ ] Explain certificates.
+
+[ ] Explain polynomial-time verification.
+
+[ ] Prove NP-Hardness using a known hard problem.
+
+[ ] Prove NP-Completeness using two steps.
+
+[ ] Explain SAT.
+
+[ ] Explain CNF.
+
+[ ] Explain 3-CNF.
+
+[ ] Explain 3-SAT.
+
+[ ] State Cook-Levin theorem.
+
+[ ] Explain why SAT is NP-Complete.
+
+[ ] Understand reduction chains.
+
+[ ] Understand transitivity.
+
+[ ] Understand CLIQUE.
+
+[ ] Understand VERTEX COVER.
+
+[ ] Understand INDEPENDENT SET.
+
+[ ] Understand Hamiltonian Cycle.
+
+[ ] Understand Subset Sum.
+
+[ ] Understand decision vs optimization.
+
+[ ] Solve basic GATE reduction questions.
+
+[ ] Avoid the wrong-direction reduction mistake.
+
+
+====================================================================
+67. CHAPTER 28 ONE-LINE MEMORY MAP
+====================================================================
+
+                    NP-COMPLETENESS
+                           |
+                           v
+                      REDUCTIONS
+                           |
+             +-------------+-------------+
+             |                           |
+        Polynomial                   Correct
+         Time                        Direction
+             |                           |
+             +-------------+-------------+
+                           |
+                           v
+                Known Hard → New Problem
+                           |
+                           v
+                     NP-HARDNESS
+                           |
+                           +---- X ∈ NP
+                           |
+                           v
+                   NP-COMPLETE
+                           |
+                           v
+                  SAT / 3-SAT / CLIQUE
+                  VERTEX COVER / etc.
+                           |
+                           v
+                     COOK-LEVIN
+
+
+====================================================================
+CHAPTER 28 COMPLETED
+====================================================================
+
+You have now covered:
+
+    28.1 Polynomial-time reduction
+    28.2 Reduction notation
+    28.3 Reduction direction
+    28.4 NP-Hardness
+    28.5 NP-Completeness
+    28.6 Membership in NP
+    28.7 Certificates and verification
+    28.8 Complete NP-Completeness proof strategy
+    28.9 SAT
+    28.10 CNF and 3-CNF
+    28.11 3-SAT
+    28.12 Cook-Levin theorem
+    28.13 Classic NP-Complete problems
+    28.14 Reduction chains
+    28.15 Common mistakes
+    28.16 GATE-level consequences
+
+
+====================================================================
+UPCOMING NEXT TOPIC
+====================================================================
+
+CHAPTER 29 — ADVANCED AUTOMATA THEORY
+
+FIRST TOPIC:
+
+    Moore Machines
+
+After that, we will proceed through:
+
+    Moore Machines
+        ↓
+    Mealy Machines
+        ↓
+    Moore vs Mealy Machines
+        ↓
+    Finite Transducers
+        ↓
+    Sequential Machines
+        ↓
+    Two-Way Finite Automata
+        ↓
+    Counter Automata
+        ↓
+    Cellular Automata
+        ↓
+    Omega Automata — Introduction
+
+Type:
+
+    NEXT
+
+to begin Chapter 29 → Topic 29.1: Moore Machines.
+====================================================================

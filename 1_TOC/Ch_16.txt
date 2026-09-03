@@ -1,0 +1,1711 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                 THEORY OF COMPUTATION — CHAPTER 16                  ║
+║                    DESIGNING TURING MACHINES                        ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 12 — TURING MACHINE DESIGN
+
+Prerequisite:
+    Chapter 15 — Turing Machine Fundamentals
+
+Chapter 16 Topics:
+    16.1 Basic TM Problems
+        16.1.1 Recognizing strings
+        16.1.2 Turing Machine for aⁿbⁿ
+        16.1.3 Turing Machine for aⁿbⁿcⁿ
+        16.1.4 Turing Machine for palindromes
+        16.1.5 Copying strings
+        16.1.6 Comparing strings
+        16.1.7 Counting
+
+    16.2 Arithmetic with Turing Machines
+        16.2.1 Unary arithmetic
+        16.2.2 Binary addition
+        16.2.3 Binary subtraction
+        16.2.4 Binary multiplication
+
+    16.3 TM Design Techniques
+        16.3.1 Marking symbols
+        16.3.2 Multiple passes
+        16.3.3 Moving left/right
+        16.3.4 Temporary markers
+        16.3.5 State-based memory
+        16.3.6 Tape organization
+
+
+──────────────────────────────────────────────────────────────────────
+16.0 WHAT DOES "DESIGNING A TURING MACHINE" MEAN?
+──────────────────────────────────────────────────────────────────────
+
+In Chapter 15, we learned what a Turing Machine (TM) is.
+
+Now the important question is:
+
+    "How do we actually DESIGN a Turing Machine
+     to solve a particular problem?"
+
+A Turing Machine can:
+    • read symbols
+    • write symbols
+    • move LEFT
+    • move RIGHT
+    • remember limited information through states
+    • use the tape as external memory
+
+Therefore, designing a TM means:
+
+    Given a problem/language,
+    create states + transitions + tape operations
+    so that the machine performs the required computation.
+
+Think of TM design as programming a very simple computer.
+
+──────────────────────────────────────────────────────────────────────
+16.1 BASIC TM DESIGN IDEA
+──────────────────────────────────────────────────────────────────────
+
+Suppose we want to recognize:
+
+    L = { aⁿbⁿ | n ≥ 1 }
+
+Examples:
+
+    ab          ✓
+    aabb        ✓
+    aaabbb      ✓
+    aaaabbbb    ✓
+
+But:
+
+    aab         ✗
+    abb         ✗
+    aaba        ✗
+    aaabb       ✗
+
+
+The machine must somehow compare:
+
+    number of a's = number of b's
+
+A finite automaton cannot remember an arbitrary number of a's.
+
+A Turing Machine can use its tape as memory.
+
+For example:
+
+    Input:
+        a a a b b b
+
+    Mark first a:
+        X a a b b b
+
+    Find first unmatched b:
+        X a a Y b b
+
+    Mark next a:
+        X X a Y b b
+
+    Mark next b:
+        X X a Y Y b
+
+    Continue:
+
+        X X X Y Y Y
+
+    All symbols matched → ACCEPT.
+
+
+──────────────────────────────────────────────────────────────────────
+16.2 GENERAL TM DESIGN STRATEGY
+──────────────────────────────────────────────────────────────────────
+
+For many TM problems, follow this procedure:
+
+    STEP 1
+       Understand the language/problem.
+
+    STEP 2
+       Identify what must be compared, counted, copied,
+       deleted, or modified.
+
+    STEP 3
+       Decide which symbols need markers.
+
+    STEP 4
+       Decide what information must be remembered.
+
+    STEP 5
+       Assign states for different phases of the algorithm.
+
+    STEP 6
+       Design transitions.
+
+    STEP 7
+       Test with valid strings.
+
+    STEP 8
+       Test with invalid strings.
+
+A useful mental model is:
+
+       Problem
+          ↓
+       Algorithm
+          ↓
+       Tape organization
+          ↓
+       Marking strategy
+          ↓
+       States
+          ↓
+       Transitions
+          ↓
+       Accept / Reject
+
+
+══════════════════════════════════════════════════════════════════════
+16.1 BASIC TM PROBLEMS
+══════════════════════════════════════════════════════════════════════
+
+
+──────────────────────────────────────────────────────────────────────
+16.1.1 RECOGNIZING STRINGS
+──────────────────────────────────────────────────────────────────────
+
+A TM can be designed to recognize a language.
+
+For a language L:
+
+    If w ∈ L:
+        TM accepts w.
+
+    If w ∉ L:
+        TM rejects w.
+
+For a DECIDER, the machine must eventually halt on every input.
+
+For a RECOGNIZER, the machine is guaranteed to halt on accepted
+inputs, but it may loop forever on rejected inputs.
+
+Example:
+
+    L = { strings over {0,1} containing at least one 1 }
+
+Examples:
+
+    1       ✓
+    01      ✓
+    0001    ✓
+    1010    ✓
+
+    ε       ✗
+    0000    ✗
+
+Simple TM idea:
+
+    Start at the left.
+    Scan right.
+    If 1 is found → ACCEPT.
+    If blank is reached → REJECT.
+
+ASCII:
+
+       0,1
+       ───────>
+    q0 ────────── q0
+     |
+     | 1
+     ↓
+    ACCEPT
+
+    On 0:
+        keep moving right.
+
+    On 1:
+        accept.
+
+
+──────────────────────────────────────────────────────────────────────
+16.1.2 TURING MACHINE FOR aⁿbⁿ
+──────────────────────────────────────────────────────────────────────
+
+Language:
+
+    L = { aⁿbⁿ | n ≥ 1 }
+
+Meaning:
+
+    same number of a's followed by
+    same number of b's.
+
+Examples:
+
+    ab          ✓
+    aabb        ✓
+    aaabbb      ✓
+    aaaabbbb    ✓
+
+Invalid:
+
+    aab         ✗
+    abb         ✗
+    aaabb       ✗
+    aabbb       ✗
+    abab        ✗
+
+
+KEY IDEA:
+    Match one a with one b.
+
+Use markers:
+
+    X = marked a
+    Y = marked b
+
+Algorithm:
+
+    1. Find the leftmost unmarked a.
+    2. Change it to X.
+    3. Move right until an unmarked b is found.
+    4. Change that b to Y.
+    5. Return to the left.
+    6. Repeat.
+    7. If no unmarked a remains, verify that no unmarked b remains.
+    8. Accept if everything is matched.
+
+
+Example:
+
+    Input:
+
+        a a a b b b
+
+    Round 1:
+
+        X a a b b b
+
+    Match first b:
+
+        X a a Y b b
+
+    Return left.
+
+    Round 2:
+
+        X X a Y b b
+
+    Match b:
+
+        X X a Y Y b
+
+    Round 3:
+
+        X X X Y Y Y
+
+    Everything matched.
+
+    ACCEPT.
+
+
+Conceptual ASCII:
+
+    ┌─────────────── Tape ───────────────┐
+    │ X │ X │ X │ Y │ Y │ Y │ □ │
+    └────────────────────────────────────┘
+                      ↑
+                    Head
+
+
+Important:
+    The TM does not magically "count".
+
+Instead, it performs repeated matching operations using the tape.
+
+
+──────────────────────────────────────────────────────────────────────
+16.1.3 TURING MACHINE FOR aⁿbⁿcⁿ
+──────────────────────────────────────────────────────────────────────
+
+Language:
+
+    L = { aⁿbⁿcⁿ | n ≥ 1 }
+
+Examples:
+
+    abc             ✓
+    aabbcc          ✓
+    aaabbbccc       ✓
+
+Invalid:
+
+    aabcc           ✗
+    aabbc           ✗
+    aaabbbcc        ✗
+
+Now we need to compare THREE groups:
+
+    a's = b's = c's
+
+
+Use:
+
+    X = marked a
+    Y = marked b
+    Z = marked c
+
+Algorithm:
+
+    1. Find an unmarked a.
+    2. Mark it X.
+    3. Move right and find an unmarked b.
+    4. Mark it Y.
+    5. Continue right and find an unmarked c.
+    6. Mark it Z.
+    7. Return to the beginning.
+    8. Repeat.
+    9. If no a remains, verify that no unmarked b or c remains.
+   10. Accept.
+
+
+Example:
+
+    a a a b b b c c c
+
+    Round 1:
+
+    X a a Y b b Z c c
+
+    Round 2:
+
+    X X a Y Y b Z Z c
+
+    Round 3:
+
+    X X X Y Y Y Z Z Z
+
+    ACCEPT.
+
+
+This demonstrates an important TM capability:
+
+    The tape allows us to repeatedly scan and modify data.
+
+
+──────────────────────────────────────────────────────────────────────
+16.1.4 TURING MACHINE FOR PALINDROMES
+──────────────────────────────────────────────────────────────────────
+
+A palindrome reads the same from left to right and right to left.
+
+Examples:
+
+    aba       ✓
+    aaa       ✓
+    abba      ✓
+    aabbaa    ✓
+
+Non-examples:
+
+    ab        ✗
+    aab       ✗
+    abab      ✗
+
+
+For:
+
+    L = { w | w is a palindrome over {a,b} }
+
+Basic strategy:
+
+    1. Take the leftmost unmarked symbol.
+    2. Remember whether it is a or b.
+    3. Move to the right end.
+    4. Find the rightmost unmarked symbol.
+    5. Compare it with the remembered symbol.
+    6. If different → REJECT.
+    7. If same → mark it.
+    8. Return to the left.
+    9. Repeat.
+   10. If everything matches → ACCEPT.
+
+
+Example:
+
+    Input:
+
+        a b b a
+
+    Mark first a:
+
+        X b b a
+
+    Go to right end.
+    Compare with last a.
+
+        X b b X
+
+    Return left.
+
+    Mark first remaining b:
+
+        X Y b X
+
+    Compare with last remaining b:
+
+        X Y Y X
+
+    ACCEPT.
+
+
+ASCII idea:
+
+    Left side                         Right side
+       ↓                                 ↓
+    X Y Y X
+    ↑
+
+    Match outer symbols first,
+    then move inward.
+
+
+This is a very important TM design pattern:
+
+    OUTSIDE → INSIDE
+
+It is commonly used for palindrome problems.
+
+
+──────────────────────────────────────────────────────────────────────
+16.1.5 COPYING STRINGS
+──────────────────────────────────────────────────────────────────────
+
+A TM can copy information from one part of its tape to another.
+
+Suppose:
+
+    Input:
+
+        abc
+
+We want:
+
+        abc#abc
+
+where # is a separator.
+
+Conceptually:
+
+        a b c # a b c
+
+A simple strategy:
+
+    1. Select the first unprocessed symbol.
+    2. Mark it temporarily.
+    3. Travel to the copy area.
+    4. Write the corresponding symbol.
+    5. Return.
+    6. Process the next symbol.
+
+
+Example:
+
+    Original:
+
+        a b c #
+
+
+    Copy a:
+
+        a b c # a
+
+
+    Copy b:
+
+        a b c # a b
+
+
+    Copy c:
+
+        a b c # a b c
+
+
+Final:
+
+        a b c # a b c
+
+
+Important TM lesson:
+
+    The tape can be used like memory.
+
+
+──────────────────────────────────────────────────────────────────────
+16.1.6 COMPARING STRINGS
+──────────────────────────────────────────────────────────────────────
+
+Suppose input is:
+
+    101#101
+
+We want to check whether both strings are equal.
+
+Algorithm:
+
+    1. Select the first symbol of the first string.
+    2. Remember it in the state.
+    3. Move to the corresponding position in the second string.
+    4. Compare.
+    5. If different → REJECT.
+    6. If same → mark both.
+    7. Repeat.
+
+
+Example:
+
+        1 0 1 # 1 0 1
+
+        ↑           ↑
+        Compare 1 with 1
+
+        1 0 1 # 1 0 1
+          ↑         ↑
+        Compare 0 with 0
+
+        1 0 1 # 1 0 1
+            ↑       ↑
+        Compare 1 with 1
+
+        ACCEPT.
+
+
+For:
+
+        101#100
+
+The final comparison is:
+
+        1 ≠ 0
+
+Therefore:
+
+        REJECT.
+
+
+──────────────────────────────────────────────────────────────────────
+16.1.7 COUNTING
+──────────────────────────────────────────────────────────────────────
+
+A TM can perform counting by using:
+
+    • states
+    • tape markers
+    • repeated scanning
+
+Example:
+
+    Determine whether the number of 1's is even.
+
+Language:
+
+    L = { w ∈ {0,1}* | w contains an even number of 1's }
+
+
+We only need two states:
+
+    q_even
+    q_odd
+
+Start:
+
+    q_even
+
+Every time we read 1, switch states.
+
+Reading 0 does not change the state.
+
+ASCII:
+
+                    1
+              +------------+
+              |            |
+              v            |
+          +--------+    +--------+
+    --->  | q_even |    | q_odd  |
+          +--------+    +--------+
+              ^            |
+              |            |
+              +------------+
+                    1
+
+On 0:
+
+    q_even → q_even
+    q_odd  → q_odd
+
+Final state:
+
+    q_even
+
+
+Example:
+
+    Input = 1011
+
+    Start q_even
+
+    Read 1:
+        q_even → q_odd
+
+    Read 0:
+        q_odd → q_odd
+
+    Read 1:
+        q_odd → q_even
+
+    Read 1:
+        q_even → q_odd
+
+Final state:
+
+    q_odd
+
+Therefore REJECT.
+
+
+══════════════════════════════════════════════════════════════════════
+16.2 ARITHMETIC WITH TURING MACHINES
+══════════════════════════════════════════════════════════════════════
+
+A Turing Machine is not limited to recognizing strings.
+
+It can also perform computations such as:
+
+    addition
+    subtraction
+    multiplication
+    copying
+    counting
+
+provided the numbers are encoded on the tape.
+
+
+──────────────────────────────────────────────────────────────────────
+16.2.1 UNARY REPRESENTATION
+──────────────────────────────────────────────────────────────────────
+
+Unary representation represents a number using repeated symbols.
+
+For example:
+
+    1 = 1
+    2 = 11
+    3 = 111
+    4 = 1111
+    5 = 11111
+
+Therefore:
+
+    n = n copies of 1.
+
+
+Why is unary useful?
+
+Because arithmetic becomes visually simple.
+
+Example:
+
+    3 + 2
+
+Unary:
+
+    111 + 11
+
+Result:
+
+    11111
+
+Therefore:
+
+    3 + 2 = 5
+
+
+A TM can use a separator:
+
+    111#11
+
+and transform it into:
+
+    11111
+
+
+──────────────────────────────────────────────────────────────────────
+16.2.2 UNARY ADDITION
+──────────────────────────────────────────────────────────────────────
+
+Input:
+
+    111#11
+
+Meaning:
+
+    3 + 2
+
+Remove the separator:
+
+    11111
+
+Result:
+
+    5
+
+
+Conceptually:
+
+    111 # 11
+        ↓
+    111 11
+        ↓
+    11111
+
+
+The TM can:
+
+    1. Find #.
+    2. Replace # with blank or shift information.
+    3. Combine the two blocks.
+
+
+Important idea:
+
+    Unary arithmetic often simplifies TM design.
+
+
+──────────────────────────────────────────────────────────────────────
+16.2.3 BINARY ADDITION
+──────────────────────────────────────────────────────────────────────
+
+Binary numbers use:
+
+    0 and 1
+
+Example:
+
+        101
+      + 011
+      -----
+        1000
+
+
+The TM must implement the familiar addition rules:
+
+    0 + 0 = 0
+    0 + 1 = 1
+    1 + 0 = 1
+    1 + 1 = 0 with carry 1
+
+and:
+
+    1 + 1 + 1 = 1 with carry 1
+
+
+A TM can remember the carry using states.
+
+For example:
+
+    q_no_carry
+    q_carry
+
+
+Conceptually:
+
+                read bits
+                   ↓
+          +----------------+
+          |                |
+          |  Add + carry  |
+          |                |
+          +----------------+
+                   ↓
+                write bit
+                   ↓
+              move left
+
+
+This is similar to how a digital computer performs binary addition.
+
+The major difference is that a TM performs the process through
+explicit tape operations and state transitions.
+
+
+──────────────────────────────────────────────────────────────────────
+16.2.4 BINARY SUBTRACTION
+──────────────────────────────────────────────────────────────────────
+
+Binary subtraction uses borrowing.
+
+Example:
+
+        101
+      - 011
+      -----
+        010
+
+
+A TM can use states to remember:
+
+    no borrow
+    borrow
+
+
+The machine processes bits and handles:
+
+    0 - 0 = 0
+    1 - 0 = 1
+    1 - 1 = 0
+
+When borrowing is needed:
+
+    0 - 1
+
+the machine must borrow from a higher-order bit.
+
+
+Important:
+
+    TM arithmetic is mainly studied to understand
+    how computation can be implemented mechanically.
+
+
+──────────────────────────────────────────────────────────────────────
+16.2.5 BINARY MULTIPLICATION
+──────────────────────────────────────────────────────────────────────
+
+Binary multiplication can be performed using repeated addition.
+
+Example:
+
+    3 × 2
+
+Binary:
+
+    11 × 10
+
+Conceptually:
+
+    11
+    ×10
+    ----
+    00
+    11
+    ----
+    110
+
+Therefore:
+
+    11₂ × 10₂ = 110₂
+
+A TM can implement multiplication through:
+
+    • copying
+    • shifting
+    • repeated addition
+    • temporary markers
+
+
+══════════════════════════════════════════════════════════════════════
+16.3 TURING MACHINE DESIGN TECHNIQUES
+══════════════════════════════════════════════════════════════════════
+
+
+──────────────────────────────────────────────────────────────────────
+16.3.1 MARKING SYMBOLS
+──────────────────────────────────────────────────────────────────────
+
+One of the most important TM techniques is MARKING.
+
+Suppose:
+
+    a a a b b b
+
+We need to remember which symbols have already been processed.
+
+Use:
+
+    X for processed a
+    Y for processed b
+
+Then:
+
+    a a a b b b
+    ↓
+    X a a Y b b
+    ↓
+    X X a Y Y b
+    ↓
+    X X X Y Y Y
+
+
+Why marking is useful:
+
+    The TM has no unlimited collection of variables.
+
+Instead, it can modify tape symbols to record progress.
+
+
+Common markers:
+
+    X
+    Y
+    Z
+    #
+    C
+    etc.
+
+The exact marker depends on the problem.
+
+
+──────────────────────────────────────────────────────────────────────
+16.3.2 MULTIPLE PASSES
+──────────────────────────────────────────────────────────────────────
+
+A TM can scan the same tape multiple times.
+
+For example:
+
+    Pass 1:
+        Find an a.
+
+    Pass 2:
+        Find corresponding b.
+
+    Pass 3:
+        Return to beginning.
+
+    Pass 4:
+        Find next a.
+
+
+This is called a MULTIPLE-PASS strategy.
+
+Example:
+
+    X a a Y b b
+
+              ↓
+        scan right
+
+              ↓
+
+    X a a Y Y b
+
+              ↓
+        scan left
+
+              ↓
+
+    X X a Y Y b
+
+
+Multiple passes make TM algorithms easier to design.
+
+A TM may be slow, but the goal in basic TM design is often
+CORRECTNESS rather than efficiency.
+
+
+──────────────────────────────────────────────────────────────────────
+16.3.3 MOVING LEFT AND RIGHT
+──────────────────────────────────────────────────────────────────────
+
+A TM head can move:
+
+    LEFT
+    RIGHT
+
+and can write symbols.
+
+Example:
+
+        a b c d
+            ↑
+           head
+
+Move right:
+
+        a b c d
+              ↑
+
+Move left:
+
+        a b c d
+          ↑
+
+
+Many TM algorithms follow a pattern:
+
+    LEFT → RIGHT → LEFT → RIGHT
+
+
+For example:
+
+    Search for a
+        ↓
+    Move right to find b
+        ↓
+    Move left to beginning
+        ↓
+    Search for next a
+
+
+──────────────────────────────────────────────────────────────────────
+16.3.4 TEMPORARY MARKERS
+──────────────────────────────────────────────────────────────────────
+
+Sometimes a symbol needs to be remembered temporarily.
+
+Suppose:
+
+    a b a
+
+We select the first a.
+
+We can temporarily replace it:
+
+    X b a
+
+Now X means:
+
+    "This was the symbol I selected."
+
+
+After processing, it can remain marked or be restored:
+
+    a b a
+
+
+Temporary markers are useful for:
+
+    • copying
+    • comparing
+    • matching
+    • counting
+    • searching
+
+
+──────────────────────────────────────────────────────────────────────
+16.3.5 STATE-BASED MEMORY
+──────────────────────────────────────────────────────────────────────
+
+The finite control of a TM has states.
+
+States can store small pieces of information.
+
+For example:
+
+    q_remember_a
+
+means:
+
+    "I have just seen an a."
+
+Similarly:
+
+    q_remember_b
+
+means:
+
+    "I have just seen a b."
+
+
+For binary addition:
+
+    q_no_carry
+    q_carry
+
+
+For palindrome checking:
+
+    q_left_a
+    q_left_b
+
+
+Therefore:
+
+    STATES = small/control memory
+
+    TAPE = large external memory
+
+
+This distinction is extremely important.
+
+
+──────────────────────────────────────────────────────────────────────
+16.3.6 TAPE ORGANIZATION
+──────────────────────────────────────────────────────────────────────
+
+Good tape organization makes TM design easier.
+
+Example:
+
+    Input:
+
+        1011#110
+
+We can interpret:
+
+        1011 | 110
+         ↑       ↑
+       first    second
+       string   string
+
+
+The # acts as a separator.
+
+A tape can be logically divided into regions:
+
+    ┌──────────┬───────┬──────────┐
+    │ Input A  │   #   │ Input B  │
+    └──────────┴───────┴──────────┘
+
+
+Markers can also divide sections:
+
+    ┌───────┬─────┬────────┐
+    │ Data  │  #  │ Output │
+    └───────┴─────┴────────┘
+
+
+Even though the TM has one physical tape, we can ORGANIZE it
+logically into sections.
+
+
+══════════════════════════════════════════════════════════════════════
+IMPORTANT TM DESIGN PATTERNS TO REMEMBER
+══════════════════════════════════════════════════════════════════════
+
+PATTERN 1 — MATCHING
+
+    Select symbol
+        ↓
+    Mark it
+        ↓
+    Find corresponding symbol
+        ↓
+    Mark it
+        ↓
+    Return
+        ↓
+    Repeat
+
+
+PATTERN 2 — PALINDROME
+
+    Select leftmost symbol
+        ↓
+    Remember it
+        ↓
+    Find rightmost symbol
+        ↓
+    Compare
+        ↓
+    Mark both
+        ↓
+    Move inward
+
+
+PATTERN 3 — COPYING
+
+    Select source symbol
+        ↓
+    Remember it
+        ↓
+    Move to destination
+        ↓
+    Write copy
+        ↓
+    Return
+
+
+PATTERN 4 — COUNTING
+
+    Scan symbols
+        ↓
+    Change state / mark symbols
+        ↓
+    Continue
+        ↓
+    Decide based on final condition
+
+
+PATTERN 5 — MULTIPLE PASS
+
+    Start
+      ↓
+    Scan right
+      ↓
+    Perform operation
+      ↓
+    Scan left
+      ↓
+    Return to start
+      ↓
+    Repeat
+
+
+══════════════════════════════════════════════════════════════════════
+IMPORTANT TERMINOLOGY
+══════════════════════════════════════════════════════════════════════
+
+1. TM
+   Turing Machine — an abstract computational machine with
+   an unbounded tape and a read/write head.
+
+2. Tape
+   Memory-like storage used by the TM.
+
+3. Head
+   Reads and writes tape symbols and moves left/right.
+
+4. Marker
+   A symbol used to indicate that some tape symbol has been processed.
+
+5. State
+   Part of the finite control that represents the current phase
+   of computation.
+
+6. Configuration
+   Complete description of the current TM situation:
+   tape contents + head position + current state.
+
+7. Pass
+   A scan across part or all of the tape.
+
+8. Matching
+   Pairing corresponding symbols.
+
+9. Recognition
+   Determining whether an input belongs to a language.
+
+10. Deciding
+    Accepting valid inputs and rejecting invalid inputs,
+    while halting on every input.
+
+
+══════════════════════════════════════════════════════════════════════
+BASIC TM DESIGN EXAMPLE — aⁿbⁿ
+══════════════════════════════════════════════════════════════════════
+
+Language:
+
+    L = {aⁿbⁿ | n ≥ 1}
+
+Example:
+
+    aaabbb
+
+Tape:
+
+    a a a b b b □ □ □
+    ↑
+    head
+
+
+Step 1 — Find first a:
+
+    X a a b b b
+
+Step 2 — Move right and find first b:
+
+    X a a Y b b
+
+Step 3 — Return left:
+
+    X a a Y b b
+    ↑
+
+Step 4 — Find next a:
+
+    X X a Y b b
+
+Step 5 — Find next b:
+
+    X X a Y Y b
+
+Step 6:
+
+    X X X Y Y Y
+
+Step 7:
+
+    No unmarked a remains.
+
+Check:
+
+    No unmarked b remains.
+
+Therefore:
+
+    ACCEPT.
+
+
+══════════════════════════════════════════════════════════════════════
+COMMON MISTAKES IN TM DESIGN
+══════════════════════════════════════════════════════════════════════
+
+1. Forgetting invalid input cases.
+
+2. Creating transitions only for valid strings.
+
+3. Forgetting to return the head to the correct location.
+
+4. Marking a symbol but forgetting what the marker means.
+
+5. Accidentally matching the same symbol twice.
+
+6. Forgetting to check leftover unmatched symbols.
+
+7. Confusing:
+       ACCEPT
+       REJECT
+       LOOP
+
+8. Designing states without first designing the algorithm.
+
+9. Using too many complicated states without a clear purpose.
+
+10. Not testing edge cases.
+
+Important edge cases include:
+
+    ε
+    smallest valid string
+    smallest invalid string
+    unequal counts
+    wrong ordering
+    extra symbols
+
+
+══════════════════════════════════════════════════════════════════════
+B.TECH EXAM PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+You should be able to:
+
+    ✓ Explain TM design techniques.
+    ✓ Design a TM for aⁿbⁿ.
+    ✓ Design a TM for aⁿbⁿcⁿ.
+    ✓ Design a TM for palindrome checking.
+    ✓ Explain marking techniques.
+    ✓ Explain multiple-pass techniques.
+    ✓ Explain tape organization.
+    ✓ Trace a TM computation.
+    ✓ Explain unary arithmetic.
+    ✓ Understand the idea of binary arithmetic using TMs.
+
+
+Typical university questions:
+
+    1. Design a TM for L = {aⁿbⁿ | n ≥ 1}.
+
+    2. Design a TM for L = {aⁿbⁿcⁿ | n ≥ 1}.
+
+    3. Construct a TM to recognize palindromes.
+
+    4. Explain TM design techniques.
+
+    5. Explain the use of markers in TM construction.
+
+    6. Explain multiple-pass computation.
+
+    7. Design a TM for copying a string.
+
+    8. Explain unary addition using a TM.
+
+
+══════════════════════════════════════════════════════════════════════
+GATE / COMPETITIVE EXAM PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+Important ideas:
+
+    • TM can revisit the tape.
+    • TM can modify the tape.
+    • TM can use markers as memory.
+    • States provide finite control.
+    • Tape provides unbounded storage.
+    • A TM can recognize languages beyond CFLs.
+    • aⁿbⁿ is easy for TM.
+    • aⁿbⁿcⁿ is also TM-recognizable.
+    • Palindrome recognition can be done by repeatedly
+      comparing outer symbols.
+    • A decider must halt on every input.
+    • A recognizer may fail to halt on some rejected inputs.
+
+
+Competitive-exam thinking:
+
+    DFA:
+        limited memory
+
+    PDA:
+        stack memory
+
+    TM:
+        read/write unbounded tape
+
+
+══════════════════════════════════════════════════════════════════════
+INTERVIEW PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+Q: How do you design a TM?
+
+A:
+
+    First define the algorithm.
+    Then decide how information will be represented on the tape.
+    Then decide what needs to be marked.
+    Then create states representing the different stages
+    of the algorithm.
+    Finally define transitions and test valid/invalid inputs.
+
+
+Q: Why are markers useful?
+
+A:
+
+    They allow the TM to record which symbols have already
+    been processed.
+
+
+Q: What is the difference between state memory and tape memory?
+
+A:
+
+    State memory is finite and is useful for storing small
+    pieces of control information.
+
+    Tape memory is unbounded and can store arbitrarily large
+    amounts of information.
+
+
+Q: Why can a TM recognize aⁿbⁿ?
+
+A:
+
+    Because it can repeatedly match each a with a corresponding b
+    using its writable tape.
+
+
+══════════════════════════════════════════════════════════════════════
+PRACTICE QUESTIONS
+══════════════════════════════════════════════════════════════════════
+
+LEVEL 1 — BEGINNER
+
+Q1. What is meant by designing a Turing Machine?
+
+Q2. What is a marker?
+
+Q3. Why do TMs use markers?
+
+Q4. What is a multiple-pass strategy?
+
+Q5. What is the difference between tape memory and state memory?
+
+Q6. What is unary representation?
+
+
+LEVEL 2 — B.TECH BASIC
+
+Q7. Explain the basic strategy for designing a TM for aⁿbⁿ.
+
+Q8. Explain how a TM can recognize palindromes.
+
+Q9. Explain how a TM can compare two strings.
+
+Q10. Explain tape organization using a separator.
+
+
+LEVEL 3 — B.TECH EXAM
+
+Q11. Design a TM for:
+
+        L = {aⁿbⁿ | n ≥ 1}
+
+Q12. Design a TM for:
+
+        L = {aⁿbⁿcⁿ | n ≥ 1}
+
+Q13. Design a TM for palindromes over {a,b}.
+
+Q14. Explain the marking technique with an example.
+
+Q15. Explain unary addition using a TM.
+
+
+LEVEL 4 — COMPETITIVE
+
+Q16. Why is marking more powerful than merely changing states?
+
+Q17. Explain how a TM can compare two strings separated by #.
+
+Q18. Explain why a TM can recognize aⁿbⁿcⁿ although a finite automaton cannot.
+
+Q19. Explain the role of temporary markers in TM algorithms.
+
+Q20. Design an algorithm for checking whether two binary strings
+     separated by # are identical.
+
+
+LEVEL 5 — GATE-STYLE THINKING
+
+Q21. A TM marks one a and then searches for a b. What design pattern
+     is being used?
+
+Q22. Why must a TM designed for aⁿbⁿ also check for leftover b's?
+
+Q23. Which TM component can remember an arbitrarily large amount
+     of information?
+
+Q24. Why is tape organization important even though a TM has only
+     one tape?
+
+Q25. Compare the roles of:
+        states,
+        tape symbols,
+        head movement.
+
+
+══════════════════════════════════════════════════════════════════════
+ACTIVE RECALL — DO NOT LOOK UP THE ANSWERS
+══════════════════════════════════════════════════════════════════════
+
+1. What is the first step in designing a TM?
+
+2. Why do we mark symbols?
+
+3. How does the TM recognize aⁿbⁿ?
+
+4. Why do we use X and Y in matching problems?
+
+5. What does a multiple-pass strategy mean?
+
+6. How does a TM check a palindrome?
+
+7. What is the role of a separator such as #?
+
+8. What is unary representation?
+
+9. How can states act as small memory?
+
+10. What is the difference between tape memory and state memory?
+
+
+══════════════════════════════════════════════════════════════════════
+CHAPTER 16 — QUICK REVISION
+══════════════════════════════════════════════════════════════════════
+
+TM DESIGN =
+
+    Problem
+      ↓
+    Algorithm
+      ↓
+    Tape representation
+      ↓
+    Marking strategy
+      ↓
+    States
+      ↓
+    Transitions
+      ↓
+    Testing
+      ↓
+    Accept / Reject
+
+
+Most important design techniques:
+
+    1. Marking symbols
+    2. Multiple passes
+    3. Moving left/right
+    4. Temporary markers
+    5. State-based memory
+    6. Tape organization
+
+
+Most important examples:
+
+    aⁿbⁿ
+    aⁿbⁿcⁿ
+    Palindromes
+    Copying
+    String comparison
+    Counting
+    Unary arithmetic
+    Binary arithmetic
+
+
+Most important conceptual distinction:
+
+    STATE
+       ↓
+    finite control / small memory
+
+    TAPE
+       ↓
+    potentially unbounded memory
+
+
+══════════════════════════════════════════════════════════════════════
+CHAPTER 16 COMPLETE
+══════════════════════════════════════════════════════════════════════
+
+Progress:
+
+    ✓ Chapter 1 — Introduction to TOC
+    ✓ Chapter 2 — Mathematical Foundations
+    ✓ Chapter 3 — Introduction to Formal Languages
+    ✓ Chapter 4 — Finite Automata Fundamentals
+    ✓ Chapter 5 — NFA
+    ✓ Chapter 6 — Regular Expressions
+    ✓ Chapter 7 — Automata ↔ Regular Expressions
+    ✓ Chapter 8 — Minimization of Finite Automata
+    ✓ Chapter 9 — Closure Properties
+    ✓ Chapter 10 — Pumping Lemma
+    ✓ Chapter 11 — Context-Free Grammars
+    ✓ Chapter 12 — Normal Forms
+    ✓ Chapter 13 — Pushdown Automata
+    ✓ Chapter 14 — Properties of CFLs
+    ✓ Chapter 15 — Turing Machine Fundamentals
+    ✓ Chapter 16 — Designing Turing Machines
+
+
+──────────────────────────────────────────────────────────────────────
+UPCOMING NEXT TOPIC — ONLY ONE
+──────────────────────────────────────────────────────────────────────
+
+CHAPTER 17 — ADVANCED TURING MACHINE MODELS
+
+TOPIC 17.1 — VARIANTS OF TURING MACHINES
+
+First subtopic:
+
+    Multitape Turing Machine
+
+It will cover:
+    • What is a multitape TM?
+    • Why do we need multiple tapes?
+    • Structure of a multitape TM
+    • Transition mechanism
+    • ASCII diagram
+    • Example
+    • Single-tape vs multitape TM
+    • Computational equivalence
+    • Exam/GATE questions
+
+Type:
+
+    NEXT
+
+to begin Chapter 17.

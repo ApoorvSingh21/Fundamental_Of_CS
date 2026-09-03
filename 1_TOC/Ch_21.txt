@@ -1,0 +1,1991 @@
+====================================================================
+             THEORY OF COMPUTATION — CHAPTER 21
+                    REDUCIBILITY / REDUCTIONS
+====================================================================
+
+PHASE 17 — REDUCTIONS
+
+Chapter 21 Topics:
+    21.1 Reduction Fundamentals
+         • Why reductions are needed
+         • Problem transformation
+         • Mapping reduction
+         • Many-one reduction
+
+    21.2 Using Reductions
+         • Proving undecidability
+         • Reducing known undecidable problems
+         • Reduction direction
+         • Common reduction mistakes
+
+    21.3 Important Reductions
+         • Halting Problem reductions
+         • Acceptance Problem reductions
+         • PCP reductions
+         • Language-property reductions
+
+
+====================================================================
+1. CHAPTER INTRODUCTION
+====================================================================
+
+We have already learned about:
+
+    • Turing Machines
+    • Computation
+    • Decidability
+    • Recognizers
+    • Undecidability
+    • The Halting Problem
+
+Now we need to answer an important question:
+
+    "How can we prove that a NEW problem is undecidable?"
+
+Suppose we already know:
+
+    Problem A is undecidable.
+
+Now suppose we discover a new problem B.
+
+We want to prove:
+
+    Problem B is also undecidable.
+
+Instead of proving B from scratch, we can show:
+
+    If we could solve B,
+    then we could use that solution to solve A.
+
+But A is known to be impossible to decide.
+
+Therefore:
+
+    B must also be impossible to decide.
+
+This idea is called REDUCTION.
+
+
+====================================================================
+2. WHAT IS A REDUCTION?
+====================================================================
+
+Simple definition:
+
+A reduction is a method of transforming one problem into another
+problem so that solving the second problem would allow us to solve
+the first problem.
+
+In very simple words:
+
+    "Convert Problem A into Problem B."
+
+If B is easy to solve, then A would also become easy to solve.
+
+If A is known to be impossible to solve, this tells us something
+important about B.
+
+------------------------------------------------------------
+Real-world analogy
+------------------------------------------------------------
+
+Imagine:
+
+    Problem A = Unlock a special door
+
+    Problem B = Solve a complicated puzzle
+
+Suppose you know that unlocking the special door is impossible
+under some conditions.
+
+Now imagine that you create a machine:
+
+    Puzzle B ---> Door A
+
+If someone gives you a perfect solver for Puzzle B, you can use
+that solver to unlock Door A.
+
+Therefore, a solver for B would solve A.
+
+That relationship is the basic intuition behind reduction.
+
+
+====================================================================
+3. WHY DO WE STUDY REDUCTIONS?
+====================================================================
+
+Reductions are extremely important because they allow us to:
+
+    1. Prove that problems are undecidable.
+    2. Prove that problems are difficult.
+    3. Compare computational problems.
+    4. Transfer known results from one problem to another.
+    5. Prove NP-hardness and NP-completeness later.
+
+There are two major areas where reductions are especially important:
+
+    COMPUTABILITY
+        ↓
+    Proving undecidability
+
+and
+
+    COMPLEXITY THEORY
+        ↓
+    Proving NP-hardness / NP-completeness
+
+
+====================================================================
+4. PROBLEM TRANSFORMATION
+====================================================================
+
+Suppose we have two decision problems:
+
+    A
+    B
+
+A reduction creates a transformation:
+
+             transformation
+        A --------------------> B
+
+The idea is:
+
+    Given an input for A,
+    transform it into an input for B.
+
+Then solve B.
+
+The result tells us the answer for A.
+
+
+Example:
+
+    Input x for A
+          |
+          | transformation
+          v
+    Input f(x) for B
+          |
+          | solve B
+          v
+    Answer for A
+
+
+====================================================================
+5. DECISION PROBLEMS
+====================================================================
+
+Before understanding reductions, remember what a decision problem is.
+
+A decision problem has an answer of:
+
+    YES
+    or
+    NO
+
+For example:
+
+    "Does this DFA accept the string 101?"
+
+Answer:
+
+    YES / NO
+
+Another example:
+
+    "Does this Turing Machine halt on input w?"
+
+Answer:
+
+    YES / NO
+
+
+We can represent a decision problem as a language.
+
+For example:
+
+    A = { x | x satisfies some property }
+
+Then:
+
+    x ∈ A
+        means YES
+
+    x ∉ A
+        means NO
+
+
+====================================================================
+6. MAPPING REDUCTION / MANY-ONE REDUCTION
+====================================================================
+
+The most important reduction in this chapter is:
+
+    Mapping reduction
+
+It is also called:
+
+    Many-one reduction
+
+It is written as:
+
+    A ≤m B
+
+Read this as:
+
+    "A is mapping reducible to B."
+
+------------------------------------------------------------
+Simple meaning
+------------------------------------------------------------
+
+A ≤m B means:
+
+    We can transform every instance of A
+    into an instance of B
+    such that the answer is preserved.
+
+Formally, there must exist a computable function f such that:
+
+    x ∈ A  ⇔  f(x) ∈ B
+
+In words:
+
+    x is a YES-instance of A
+    if and only if
+    f(x) is a YES-instance of B.
+
+------------------------------------------------------------
+Important notation
+------------------------------------------------------------
+
+        A ≤m B
+
+        A
+        |
+        | f
+        v
+        B
+
+where f is a computable function.
+
+The transformation must preserve the answer.
+
+
+====================================================================
+7. UNDERSTANDING THE FORMULA
+====================================================================
+
+The formal condition is:
+
+             x ∈ A  ⇔  f(x) ∈ B
+
+Let's understand every part.
+
+    x
+
+means:
+
+    An input instance.
+
+    A
+
+means:
+
+    First problem/language.
+
+    f(x)
+
+means:
+
+    The transformed input.
+
+    B
+
+means:
+
+    Second problem/language.
+
+    ⇔
+
+means:
+
+    "if and only if"
+
+Therefore:
+
+    x belongs to A
+    exactly when
+    f(x) belongs to B.
+
+
+====================================================================
+8. SIMPLE EXAMPLE OF A MAPPING
+====================================================================
+
+Suppose:
+
+    A = { even integers }
+
+and
+
+    B = { integers divisible by 2 }
+
+Define:
+
+    f(x) = x
+
+Then:
+
+    x ∈ A
+    iff
+    x ∈ B
+
+For example:
+
+    x = 8
+
+    8 is even
+    8 is divisible by 2
+
+So:
+
+    8 ∈ A
+    and
+    f(8) = 8 ∈ B
+
+
+This is a very simple mathematical example.
+
+In TOC, we use much more powerful transformations.
+
+
+====================================================================
+9. THE MOST IMPORTANT IDEA:
+       REDUCTION DIRECTION
+====================================================================
+
+This is one of the most common exam mistakes.
+
+Suppose:
+
+    A is known to be undecidable.
+
+We want to prove:
+
+    B is undecidable.
+
+We should establish:
+
+             A ≤m B
+
+NOT:
+
+             B ≤m A
+
+
+Why?
+
+Because:
+
+    A ---> B
+
+means:
+
+    If B can be solved,
+    then A can also be solved.
+
+But A is undecidable.
+
+Therefore B cannot have a decider.
+
+------------------------------------------------------------
+MEMORIZE THIS PATTERN
+------------------------------------------------------------
+
+To prove:
+
+    B is undecidable
+
+Start with:
+
+    A = known undecidable problem
+
+Then prove:
+
+    A ≤m B
+
+Therefore:
+
+    B is undecidable.
+
+
+====================================================================
+10. THE CORE UNDECIDABILITY PROOF
+====================================================================
+
+Suppose:
+
+    A is undecidable.
+
+We want to prove:
+
+    B is undecidable.
+
+Assume, for contradiction:
+
+    B is decidable.
+
+Then there exists a decider:
+
+    D_B
+
+for B.
+
+Now construct a decider for A:
+
+             Input x
+                |
+                v
+        Compute f(x)
+                |
+                v
+          D_B(f(x))
+                |
+                v
+          YES / NO
+                |
+                v
+          Answer for A
+
+Therefore:
+
+    If B were decidable,
+    then A would also be decidable.
+
+But:
+
+    A is undecidable.
+
+CONTRADICTION!
+
+Therefore:
+
+    B is undecidable.
+
+
+====================================================================
+11. ASCII DIAGRAM OF A REDUCTION
+====================================================================
+
+Suppose A is known to be undecidable
+and B is the new problem.
+
+             Input x
+                |
+                v
+        +----------------+
+        | Transformation |
+        |      f(x)      |
+        +----------------+
+                |
+                v
+        +----------------+
+        |   Decider for  |
+        |       B        |
+        +----------------+
+                |
+                v
+             YES / NO
+                |
+                v
+        Answer for A
+
+If the decider for B existed,
+we would have a decider for A.
+
+But A is undecidable.
+
+Therefore:
+
+             B is undecidable.
+
+
+====================================================================
+12. STEP-BY-STEP REDUCTION STRATEGY
+====================================================================
+
+When solving an undecidability reduction problem, use this procedure:
+
+STEP 1:
+    Identify the target problem B.
+
+STEP 2:
+    Choose a problem A whose undecidability is already known.
+
+STEP 3:
+    Write:
+
+        A ≤m B
+
+STEP 4:
+    Take an arbitrary input x of A.
+
+STEP 5:
+    Construct f(x), an input for B.
+
+STEP 6:
+    Prove:
+
+        x ∈ A ⇔ f(x) ∈ B
+
+STEP 7:
+    Assume B has a decider.
+
+STEP 8:
+    Use that decider to construct a decider for A.
+
+STEP 9:
+    Contradiction because A is undecidable.
+
+STEP 10:
+    Conclude:
+
+        B is undecidable.
+
+
+====================================================================
+13. IMPORTANT EXAMPLE:
+    HALTING PROBLEM
+====================================================================
+
+Recall the Halting Problem:
+
+    HALT_TM =
+    { <M,w> | M is a TM that halts on input w }
+
+The Halting Problem is undecidable.
+
+Suppose we have another problem:
+
+    B
+
+and we want to prove B undecidable.
+
+We can try:
+
+    HALT_TM ≤m B
+
+
+That means:
+
+    Given <M,w>,
+    construct an input y for B
+    such that:
+
+    <M,w> ∈ HALT_TM
+          iff
+    y ∈ B
+
+
+If this transformation is computable,
+then B is undecidable.
+
+
+====================================================================
+14. ACCEPTANCE PROBLEM
+====================================================================
+
+Another famous undecidable problem is:
+
+    A_TM
+
+defined as:
+
+    A_TM =
+    { <M,w> | M accepts w }
+
+Meaning:
+
+    Input:
+        A Turing Machine M
+        and input w
+
+Question:
+
+    Does M accept w?
+
+This problem is undecidable.
+
+Therefore it can be used as the source problem
+in many reductions.
+
+For example:
+
+    A_TM ≤m B
+
+can be used to prove B undecidable.
+
+
+====================================================================
+15. HALTING VS ACCEPTANCE
+====================================================================
+
+Do not confuse these two.
+
+------------------------------------------------------------
+HALTING PROBLEM
+------------------------------------------------------------
+
+Question:
+
+    Does M eventually HALT on w?
+
+Possible outcomes:
+
+    HALT
+    or
+    RUN FOREVER
+
+------------------------------------------------------------
+ACCEPTANCE PROBLEM
+------------------------------------------------------------
+
+Question:
+
+    Does M ACCEPT w?
+
+Possible outcomes:
+
+    ACCEPT
+    or
+    NOT ACCEPT
+
+The machine might:
+
+    accept
+    reject
+    loop forever
+
+Both problems are undecidable.
+
+
+====================================================================
+16. REDUCTION FROM A_TM TO ANOTHER PROBLEM
+====================================================================
+
+Suppose we want to prove:
+
+    B is undecidable.
+
+We know:
+
+    A_TM is undecidable.
+
+Construct:
+
+    f(<M,w>) = y
+
+where y is an instance of B.
+
+We must guarantee:
+
+    M accepts w
+          iff
+    y is accepted by B
+
+Then:
+
+    A_TM ≤m B
+
+Therefore:
+
+    B is undecidable.
+
+
+====================================================================
+17. WHY THE DIRECTION MATTERS
+====================================================================
+
+Suppose:
+
+    A = known undecidable problem
+    B = problem we want to prove undecidable
+
+Correct:
+
+             A ≤m B
+
+because:
+
+             A
+             |
+             v
+             B
+
+A solver for B gives us a solver for A.
+
+Since A cannot be solved by a decider:
+
+             B cannot have a decider.
+
+
+Wrong direction:
+
+             B ≤m A
+
+This does NOT automatically prove B undecidable.
+
+Why?
+
+Because A being hard does not necessarily mean
+that every problem reducible TO A is hard.
+
+For example, a very easy problem can reduce to a difficult problem.
+
+
+====================================================================
+18. A REAL-WORLD ANALOGY FOR DIRECTION
+====================================================================
+
+Imagine:
+
+    Problem A = extremely difficult puzzle
+    Problem B = new puzzle
+
+Suppose:
+
+    A can be transformed into B.
+
+Then:
+
+    A ---> B
+
+If you have a perfect solver for B,
+you can solve A.
+
+Therefore B must be at least powerful enough
+to solve something as difficult as A.
+
+But if:
+
+    B ---> A
+
+that only says B can be converted into A.
+
+That does not prove B is as difficult as A.
+
+
+====================================================================
+19. MANY-ONE REDUCTION — FORMAL DEFINITION
+====================================================================
+
+Let A and B be languages.
+
+We say:
+
+    A ≤m B
+
+if there exists a total computable function:
+
+    f : Σ* → Σ*
+
+such that for every string x:
+
+    x ∈ A  iff  f(x) ∈ B
+
+Here:
+
+    Σ*
+    
+means:
+
+    The set of all finite strings over alphabet Σ.
+
+"Computable function" means:
+
+    There is a Turing Machine that can calculate f(x)
+    and halt for every valid input x.
+
+The important condition is:
+
+    YES remains YES
+    NO remains NO
+
+
+====================================================================
+20. WHAT DOES "MANY-ONE" MEAN?
+====================================================================
+
+The term "many-one" means that many different inputs
+from A may be mapped to inputs of B.
+
+For example:
+
+    x1 ----\
+    x2 -----\
+    x3 -------> f(x)
+    x4 -----/
+    x5 ----/
+
+Multiple inputs can potentially map to the same output.
+
+The important requirement is not one-to-one correspondence.
+
+The important requirement is:
+
+    Membership must be preserved.
+
+
+====================================================================
+21. PROPERTIES OF MAPPING REDUCTIONS
+====================================================================
+
+If:
+
+    A ≤m B
+
+then:
+
+    1. A can be transformed into B.
+
+    2. The transformation must be computable.
+
+    3. YES/NO membership must be preserved.
+
+    4. If B is decidable, A is decidable.
+
+Therefore:
+
+    If A is undecidable and A ≤m B,
+    then B is undecidable.
+
+
+====================================================================
+22. IMPORTANT THEOREM
+====================================================================
+
+THEOREM:
+
+If:
+
+    A ≤m B
+
+and B is decidable,
+
+then A is decidable.
+
+Proof:
+
+Since:
+
+    A ≤m B
+
+there is a computable function f such that:
+
+    x ∈ A ⇔ f(x) ∈ B
+
+Suppose B has a decider D_B.
+
+Construct a machine D_A:
+
+    On input x:
+
+        1. Compute f(x).
+        2. Run D_B on f(x).
+        3. Return the same answer.
+
+Since:
+
+    f is computable
+    and
+    D_B always halts,
+
+D_A also always halts.
+
+Therefore A is decidable.
+
+Hence:
+
+    A ≤m B
+    and B decidable
+    ⇒ A decidable.
+
+
+====================================================================
+23. CONTRAPOSITIVE FORM
+====================================================================
+
+From:
+
+    A ≤m B
+    and
+    B decidable
+    ⇒ A decidable
+
+we obtain the important consequence:
+
+    A undecidable
+    and
+    A ≤m B
+    ⇒ B undecidable
+
+This is one of the most important formulas in
+computability theory.
+
+Remember:
+
+        KNOWN UNDECIDABLE
+               |
+               | reduction
+               v
+        TARGET PROBLEM
+               |
+               v
+        TARGET UNDECIDABLE
+
+
+====================================================================
+24. REDUCTION AND COMPLEMENT
+====================================================================
+
+Mapping reductions also have useful relationships involving
+complements.
+
+If:
+
+    A ≤m B
+
+then:
+
+    complement(A) ≤m complement(B)
+
+using the same computable transformation f.
+
+Why?
+
+Because:
+
+    x ∈ A ⇔ f(x) ∈ B
+
+Therefore:
+
+    x ∉ A ⇔ f(x) ∉ B
+
+So:
+
+    x ∈ A̅ ⇔ f(x) ∈ B̅
+
+
+====================================================================
+25. TRANSITIVITY OF REDUCTION
+====================================================================
+
+Reduction is transitive.
+
+Suppose:
+
+    A ≤m B
+
+and:
+
+    B ≤m C
+
+Then:
+
+    A ≤m C
+
+ASCII:
+
+    A -----> B -----> C
+     \               /
+      \-------------/
+
+Why?
+
+Because we can perform:
+
+    A → B
+
+and then:
+
+    B → C
+
+Therefore:
+
+    A → C
+
+
+This is extremely useful when proving many problems undecidable.
+
+
+====================================================================
+26. CHAIN OF UNDECIDABILITY
+====================================================================
+
+Suppose:
+
+    A is undecidable
+
+and:
+
+    A ≤m B
+
+and:
+
+    B ≤m C
+
+Then:
+
+    B is undecidable
+
+and:
+
+    C is undecidable.
+
+Diagram:
+
+    A
+    |
+    | ≤m
+    v
+    B
+    |
+    | ≤m
+    v
+    C
+
+Known:
+
+    A = undecidable
+
+Therefore:
+
+    B = undecidable
+    C = undecidable
+
+
+====================================================================
+27. REDUCING THE HALTING PROBLEM
+====================================================================
+
+The Halting Problem is often used as a starting point.
+
+Known:
+
+    HALT_TM is undecidable.
+
+Suppose:
+
+    HALT_TM ≤m B
+
+Then:
+
+    B is undecidable.
+
+General pattern:
+
+    <M,w>
+      |
+      | transformation
+      v
+    input y for B
+      |
+      | hypothetical B-decider
+      v
+    YES / NO
+
+This would decide whether M halts on w.
+
+Impossible.
+
+Therefore B is undecidable.
+
+
+====================================================================
+28. REDUCING THE ACCEPTANCE PROBLEM
+====================================================================
+
+Known:
+
+    A_TM is undecidable.
+
+Suppose:
+
+    A_TM ≤m B
+
+Then:
+
+    B is undecidable.
+
+We start with:
+
+    <M,w>
+
+construct:
+
+    y = f(<M,w>)
+
+and prove:
+
+    M accepts w
+        iff
+    y ∈ B
+
+
+====================================================================
+29. POST CORRESPONDENCE PROBLEM (PCP)
+====================================================================
+
+PCP stands for:
+
+    Post Correspondence Problem.
+
+It is a famous undecidable problem.
+
+The problem gives us a collection of domino-like pairs:
+
+        TOP        BOTTOM
+
+For example:
+
+        a          ab
+        ab         a
+
+The goal is to determine whether there exists a sequence
+of these tiles such that:
+
+    concatenated TOP strings
+              =
+    concatenated BOTTOM strings
+
+
+====================================================================
+30. SIMPLE PCP IDEA
+====================================================================
+
+Suppose we have:
+
+    Tile 1:
+        top    = a
+        bottom = ab
+
+    Tile 2:
+        top    = ba
+        bottom = a
+
+We can choose tiles in some order.
+
+For example:
+
+    Tile 1 + Tile 2
+
+Top:
+
+    a + ba
+    = aba
+
+Bottom:
+
+    ab + a
+    = aba
+
+Therefore this sequence gives:
+
+    TOP    = aba
+    BOTTOM = aba
+
+So this particular PCP instance has a solution.
+
+
+====================================================================
+31. PCP ASCII REPRESENTATION
+====================================================================
+
+A PCP instance can be viewed as:
+
+       +-------+-------+-------+
+TOP    |   a   |  ab   |  ...  |
+       +-------+-------+-------+
+BOTTOM |  ab   |   a   |  ...  |
+       +-------+-------+-------+
+
+We may select tiles:
+
+    1, 2, 1, 3, ...
+
+The question is:
+
+    Can we make:
+
+    TOP concatenation = BOTTOM concatenation?
+
+PCP is undecidable.
+
+
+====================================================================
+32. WHY PCP MATTERS IN REDUCTIONS
+====================================================================
+
+PCP is important because it can be used as a source
+or target problem in undecidability proofs.
+
+Typical reasoning:
+
+    Known undecidable problem
+              |
+              v
+             PCP
+              |
+              v
+       another problem
+
+or:
+
+    PCP
+     |
+     v
+    target problem
+
+If we prove:
+
+    PCP ≤m B
+
+then:
+
+    B is undecidable.
+
+
+====================================================================
+33. LANGUAGE-PROPERTY REDUCTIONS
+====================================================================
+
+Many problems ask whether a language recognized by a
+Turing Machine has a particular property.
+
+Examples:
+
+    Is L(M) empty?
+
+    Is L(M) finite?
+
+    Is L(M) regular?
+
+    Is L(M) context-free?
+
+    Is L(M) equal to Σ*?
+
+    Is L(M) empty?
+
+These are called language-property questions.
+
+Many nontrivial semantic properties of Turing Machine
+languages are undecidable.
+
+This leads to an important theorem:
+
+    Rice's Theorem
+
+which we will study later in detail.
+
+
+====================================================================
+34. SEMANTIC VS SYNTACTIC PROPERTY
+====================================================================
+
+This distinction becomes important for Rice's theorem.
+
+SYNTACTIC property:
+
+    Depends on how the machine is written.
+
+Example:
+
+    "Does the machine have exactly 10 states?"
+
+SEMANTIC property:
+
+    Depends on what language/function the machine computes.
+
+Example:
+
+    "Does the machine accept at least one string?"
+
+or:
+
+    "Is L(M) empty?"
+
+Rice's theorem concerns nontrivial semantic properties
+of languages recognized by Turing Machines.
+
+
+====================================================================
+35. EXAMPLE OF A LANGUAGE PROPERTY
+====================================================================
+
+Consider:
+
+    E_TM = { <M> | L(M) = ∅ }
+
+Meaning:
+
+    E_TM contains encodings of Turing Machines
+    that accept no strings.
+
+Question:
+
+    "Does this Turing Machine accept nothing?"
+
+This is undecidable.
+
+A reduction can be used to prove this.
+
+For example, we can reduce:
+
+    A_TM ≤m E_TM
+
+or use an appropriate known source problem and
+construct a machine whose language reflects the answer.
+
+The exact construction depends on the target problem.
+
+
+====================================================================
+36. COMMON REDUCTION PATTERN
+====================================================================
+
+Almost every undecidability reduction follows this
+general structure:
+
+    GIVEN:
+
+        A known undecidable problem A.
+
+    TARGET:
+
+        Problem B.
+
+    CONSTRUCTION:
+
+        Transform input x of A
+        into f(x), an input of B.
+
+    REQUIRED:
+
+        x ∈ A ⇔ f(x) ∈ B.
+
+    ASSUME:
+
+        B has a decider.
+
+    CONSEQUENCE:
+
+        We can decide A.
+
+    CONTRADICTION:
+
+        A is undecidable.
+
+    CONCLUSION:
+
+        B is undecidable.
+
+
+====================================================================
+37. HOW TO SOLVE A REDUCTION QUESTION
+====================================================================
+
+When you see an exam question:
+
+    "Prove that problem B is undecidable."
+
+Do NOT immediately start writing random Turing Machine states.
+
+Think:
+
+    STEP 1:
+        What known undecidable problem can I use?
+
+    STEP 2:
+        Which one is structurally similar to B?
+
+    STEP 3:
+        Can I transform its input into B?
+
+    STEP 4:
+        What should the transformed machine/input do?
+
+    STEP 5:
+        Can I prove the YES/NO equivalence?
+
+    STEP 6:
+        Assume a B-decider.
+
+    STEP 7:
+        Show how it would decide the known
+        undecidable problem.
+
+    STEP 8:
+        Contradiction.
+
+    STEP 9:
+        B is undecidable.
+
+
+====================================================================
+38. COMMON MISTAKE #1 — WRONG DIRECTION
+====================================================================
+
+Want to prove:
+
+    B is undecidable.
+
+Known:
+
+    A is undecidable.
+
+Correct:
+
+    A ≤m B
+
+Incorrect reasoning:
+
+    B ≤m A
+    therefore B is undecidable.
+
+That conclusion does not follow.
+
+
+====================================================================
+39. COMMON MISTAKE #2 — NO EQUIVALENCE
+====================================================================
+
+You must show:
+
+    x ∈ A ⇔ f(x) ∈ B
+
+It is not enough to say:
+
+    "I transformed A into B."
+
+You must prove that the transformation preserves the answer.
+
+
+====================================================================
+40. COMMON MISTAKE #3 — NON-COMPUTABLE TRANSFORMATION
+====================================================================
+
+The reduction function must be computable.
+
+You cannot define:
+
+    f(x) = "the answer to an undecidable problem"
+
+and then claim it is a valid reduction.
+
+Why?
+
+Because the reduction itself must be something
+that can actually be computed by a Turing Machine.
+
+
+====================================================================
+41. COMMON MISTAKE #4 — CONFUSING REDUCTION WITH SOLVING
+====================================================================
+
+A reduction does NOT necessarily solve the target problem.
+
+It transforms one problem into another.
+
+Think:
+
+    Reduction = transformation
+
+not:
+
+    Reduction = solution
+
+
+====================================================================
+42. COMMON MISTAKE #5 — USING AN UNKNOWN HARD PROBLEM
+====================================================================
+
+To prove B undecidable, it is safest to start with
+a problem whose undecidability is already established.
+
+Common sources include:
+
+    • A_TM
+    • HALT_TM
+    • PCP
+
+
+====================================================================
+43. B.TECH EXAM PERSPECTIVE
+====================================================================
+
+Very important questions:
+
+1. Define reduction.
+
+2. Define mapping reduction.
+
+3. Explain:
+
+       A ≤m B
+
+4. State the theorem involving decidability.
+
+5. Explain how reductions prove undecidability.
+
+6. Explain the importance of reduction direction.
+
+7. Prove that a given language is undecidable using
+   A_TM or HALT_TM.
+
+8. Explain PCP and its role in undecidability.
+
+9. Explain transitivity of reductions.
+
+10. Distinguish reduction from ordinary algorithmic
+    transformation.
+
+
+====================================================================
+44. GATE / COMPETITIVE EXAM PERSPECTIVE
+====================================================================
+
+You should be able to immediately recognize:
+
+    A ≤m B
+
+means:
+
+    "If B is decidable, A is decidable."
+
+Therefore:
+
+    A undecidable
+    +
+    A ≤m B
+    =
+    B undecidable
+
+
+Very common trick:
+
+    If B ≤m A
+
+and A is undecidable,
+
+you CANNOT automatically conclude:
+
+    B is undecidable.
+
+Remember the arrow direction.
+
+
+====================================================================
+45. INTERVIEW PERSPECTIVE
+====================================================================
+
+Interview question:
+
+    "Why are reductions useful?"
+
+Good answer:
+
+    "Reductions allow us to transform one computational problem
+     into another. If a known undecidable problem can be reduced
+     to a new problem, then a decider for the new problem would
+     provide a decider for the known undecidable problem.
+     This contradiction proves that the new problem is also
+     undecidable."
+
+
+====================================================================
+46. IMPORTANT DIFFERENCES
+====================================================================
+
+REDUCTION vs ALGORITHM
+
+Reduction:
+    Transforms one problem into another.
+
+Algorithm:
+    Directly solves a computational problem.
+
+------------------------------------------------------------
+
+A ≤m B vs B ≤m A
+
+A ≤m B:
+    A can be transformed into B.
+
+B ≤m A:
+    B can be transformed into A.
+
+The directions have different consequences.
+
+------------------------------------------------------------
+
+HALTING vs ACCEPTANCE
+
+HALT_TM:
+    Does M halt on w?
+
+A_TM:
+    Does M accept w?
+
+Both are undecidable.
+
+
+====================================================================
+47. IMPORTANT FORMULAS TO REMEMBER
+====================================================================
+
+FORMULA 1:
+
+    A ≤m B
+
+means:
+
+    ∃ computable f such that
+
+    x ∈ A ⇔ f(x) ∈ B
+
+
+FORMULA 2:
+
+    A ≤m B
+    AND
+    B decidable
+
+    ⇒
+
+    A decidable
+
+
+FORMULA 3:
+
+    A undecidable
+    AND
+    A ≤m B
+
+    ⇒
+
+    B undecidable
+
+
+FORMULA 4:
+
+    A ≤m B
+    AND
+    B ≤m C
+
+    ⇒
+
+    A ≤m C
+
+
+====================================================================
+48. MINI WORKED EXAMPLE
+====================================================================
+
+Suppose:
+
+    A = a known undecidable language.
+
+We want to prove:
+
+    B is undecidable.
+
+Assume we construct:
+
+    f(x) = some computable transformation of x.
+
+Suppose we prove:
+
+    x ∈ A
+       ⇔
+    f(x) ∈ B
+
+Therefore:
+
+    A ≤m B
+
+Now suppose B has a decider D_B.
+
+Construct:
+
+             x
+             |
+             v
+           f(x)
+             |
+             v
+          D_B
+             |
+             v
+           YES/NO
+
+This decides A.
+
+But:
+
+    A is undecidable.
+
+Contradiction.
+
+Therefore:
+
+    B is undecidable.
+
+
+====================================================================
+49. PRACTICE QUESTIONS — LEVEL 1
+====================================================================
+
+Q1. What is a reduction?
+
+Q2. What is a mapping reduction?
+
+Q3. What does A ≤m B mean?
+
+Q4. What is the purpose of a computable function f?
+
+Q5. What does the statement
+
+        x ∈ A ⇔ f(x) ∈ B
+
+    mean?
+
+Q6. What is a decision problem?
+
+Q7. Why are reductions useful?
+
+Q8. What is the Halting Problem?
+
+Q9. What is A_TM?
+
+Q10. What is PCP?
+
+
+====================================================================
+50. PRACTICE QUESTIONS — LEVEL 2
+====================================================================
+
+Q11. If A is undecidable and A ≤m B, what can you conclude?
+
+Q12. If A ≤m B and B is decidable, what can you conclude?
+
+Q13. Explain why the reduction direction matters.
+
+Q14. Is B ≤m A sufficient to prove B undecidable when A
+    is undecidable? Explain.
+
+Q15. Explain transitivity of mapping reductions.
+
+Q16. Why must the reduction function be computable?
+
+Q17. Explain how a hypothetical decider for B can be used
+    to construct a decider for A.
+
+
+====================================================================
+51. PRACTICE QUESTIONS — LEVEL 3
+====================================================================
+
+Q18. Suppose HALT_TM ≤m B. Prove that B is undecidable.
+
+Q19. Suppose A_TM ≤m B and B is decidable. What contradiction
+    follows?
+
+Q20. Given:
+
+        A ≤m B
+        B ≤m C
+
+    and A is undecidable,
+
+    determine whether C is decidable or undecidable.
+
+Q21. Explain the proof technique used when showing that
+    a new problem is undecidable by reduction.
+
+Q22. Explain the role of PCP in computability theory.
+
+
+====================================================================
+52. ACTIVE RECALL
+====================================================================
+
+Try answering these WITHOUT looking above:
+
+    1. What is reduction?
+
+    2. What does A ≤m B mean?
+
+    3. Which problem should normally be on the LEFT when
+       proving a new problem undecidable?
+
+    4. Why?
+
+    5. What must be true about f?
+
+    6. What equation describes a mapping reduction?
+
+    7. What happens if B is decidable and A ≤m B?
+
+    8. What happens if A is undecidable and A ≤m B?
+
+    9. What is A_TM?
+
+   10. What is HALT_TM?
+
+   11. What is PCP?
+
+   12. Is reduction the same thing as solving a problem?
+
+
+====================================================================
+53. CHAPTER 21 QUICK REVISION
+====================================================================
+
+REDUCTION
+    =
+    Transform one problem into another.
+
+MAPPING REDUCTION
+    =
+    A ≤m B
+
+    means there exists a computable f such that:
+
+        x ∈ A ⇔ f(x) ∈ B
+
+MOST IMPORTANT UNDECIDABILITY PATTERN:
+
+    A is known undecidable
+            |
+            | A ≤m B
+            v
+    B is undecidable
+
+MOST IMPORTANT DIRECTION:
+
+    KNOWN HARD/UNDECIDABLE
+            |
+            v
+        TARGET
+
+NOT:
+
+    TARGET
+       |
+       v
+    KNOWN HARD
+
+
+Important source problems:
+
+    • A_TM
+    • HALT_TM
+    • PCP
+
+
+Important theorem:
+
+    A ≤m B
+    and B decidable
+    ⇒ A decidable.
+
+Therefore:
+
+    A undecidable
+    and A ≤m B
+    ⇒ B undecidable.
+
+
+====================================================================
+54. CHAPTER 21 EXAM CHECKLIST
+====================================================================
+
+Before considering this chapter mastered, you should be able to:
+
+    [ ] Define reduction.
+    [ ] Explain problem transformation.
+    [ ] Define mapping reduction.
+    [ ] Explain A ≤m B.
+    [ ] Explain the computable function f.
+    [ ] Prove the main reduction theorem.
+    [ ] Understand reduction direction.
+    [ ] Prove undecidability using reduction.
+    [ ] Use HALT_TM as a source problem.
+    [ ] Use A_TM as a source problem.
+    [ ] Explain PCP.
+    [ ] Understand language-property reductions.
+    [ ] Explain transitivity.
+    [ ] Identify common reduction mistakes.
+    [ ] Solve basic reduction questions.
+    [ ] Understand the connection to Rice's theorem.
+    [ ] Understand that polynomial reductions will later be
+        used in complexity theory.
+
+
+====================================================================
+55. CONNECTION TO THE NEXT PART OF THE COURSE
+====================================================================
+
+We have now reached:
+
+    CHAPTER 21 — REDUCIBILITY
+              |
+              v
+    How can we prove that a new problem is undecidable?
+              |
+              v
+    Use reductions
+              |
+              v
+    Known undecidable problem
+              |
+              v
+    Target problem
+
+
+We will next study the class of languages that can be recognized
+by Turing Machines but may not be decidable.
+
+====================================================================
+UPCOMING NEXT TOPIC — ONLY ONE
+====================================================================
+
+CHAPTER 22 — TURING RECOGNIZABLE LANGUAGES
+
+First topic:
+
+    Turing-recognizable language
+
+We will begin from the basics:
+
+    • What does "recognize" mean?
+    • What is a Turing recognizer?
+    • Recognizer vs decider
+    • Turing-recognizable language
+    • Simple examples
+    • ASCII diagrams
+    • Formal definition
+    • Relationship with decidability
+    • Practice questions
+
+====================================================================
+END OF CHAPTER 21
+====================================================================
+
+STOP.
+
+Do NOT move to Chapter 22 until you type:
+
+    NEXT

@@ -1,0 +1,1983 @@
+============================================================
+THEORY OF COMPUTATION — CHAPTER 24
+CONTEXT-SENSITIVE GRAMMARS (CSG)
+============================================================
+
+PHASE 20 — CONTEXT-SENSITIVE LANGUAGES
+
+Prerequisites:
+    ✔ Regular Languages
+    ✔ CFG
+    ✔ PDA
+    ✔ Turing Machine
+    ✔ Chomsky Hierarchy
+
+Chapter Goal:
+    By the end of this chapter, you should understand:
+
+    1. What a Context-Sensitive Grammar is
+    2. Why CSG is more powerful than CFG
+    3. Context-sensitive production rules
+    4. Non-contracting grammars
+    5. Context-sensitive languages
+    6. Linear Bounded Automata (LBA)
+    7. Relationship between CSG and LBA
+    8. Examples of CSG
+    9. CSG vs CFG
+    10. CSG's position in the Chomsky hierarchy
+
+
+============================================================
+24.1 WHY DO WE NEED CONTEXT-SENSITIVE GRAMMARS?
+============================================================
+
+Before CSG, remember the basic language hierarchy.
+
+                    More expressive
+                         ↑
+                         |
+             Type 0     │  Recursively Enumerable
+                         |
+             Type 1     │  Context-Sensitive
+                         |
+             Type 2     │  Context-Free
+                         |
+             Type 3     │  Regular
+                         |
+                         ↓
+                    Less expressive
+
+
+The important inclusion is:
+
+    Regular
+       ⊂
+    Context-Free
+       ⊂
+    Context-Sensitive
+       ⊂
+    Recursively Enumerable
+
+
+The symbol "⊂" means:
+
+    "is a proper subset of"
+
+Therefore:
+
+    Every regular language is context-free.
+
+    Every context-free language is context-sensitive.
+
+    But the reverse is NOT always true.
+
+
+------------------------------------------------------------
+Why is CFG not enough?
+------------------------------------------------------------
+
+A Context-Free Grammar can easily generate:
+
+    L = { a^n b^n | n >= 0 }
+
+Example strings:
+
+    ε
+    ab
+    aabb
+    aaabbb
+    aaaabbbb
+    ...
+
+
+But consider:
+
+    L = { a^n b^n c^n | n >= 1 }
+
+Examples:
+
+    abc
+    aabbcc
+    aaabbbccc
+    aaaabbbbcccc
+    ...
+
+
+Here we need THREE quantities to remain equal:
+
+    number of a's
+        =
+    number of b's
+        =
+    number of c's
+
+
+This language is NOT context-free.
+
+Therefore, we need a more powerful grammar.
+
+That grammar is called:
+
+    CONTEXT-SENSITIVE GRAMMAR
+
+
+============================================================
+24.2 WHAT IS A CONTEXT-SENSITIVE GRAMMAR?
+============================================================
+
+Simple definition:
+
+A Context-Sensitive Grammar (CSG) is a grammar in which
+a production can depend on the surrounding context of a
+non-terminal.
+
+In simple words:
+
+    The replacement of a symbol may depend on what is
+    around that symbol.
+
+This is the reason for the name:
+
+    CONTEXT + SENSITIVE
+
+
+------------------------------------------------------------
+Formal definition
+------------------------------------------------------------
+
+A grammar is generally represented as:
+
+    G = (V, Σ, P, S)
+
+where:
+
+    V = set of variables/non-terminals
+
+    Σ = set of terminals
+
+    P = set of production rules
+
+    S = start symbol
+
+
+For a context-sensitive grammar, productions generally have
+the form:
+
+    αAβ → αγβ
+
+where:
+
+    A is a non-terminal
+    α and β represent the surrounding context
+    γ is a non-empty string
+
+
+The important idea is:
+
+    The replacement of A can depend on α and β.
+
+
+------------------------------------------------------------
+Very important restriction
+------------------------------------------------------------
+
+For a standard CSG:
+
+    |LHS| <= |RHS|
+
+That means:
+
+    Length of left-hand side
+        <=
+    Length of right-hand side
+
+
+In other words:
+
+    A CSG production normally DOES NOT DECREASE
+    the length of the string.
+
+
+Such grammars are therefore called:
+
+    NON-CONTRACTING GRAMMARS
+
+
+Example:
+
+    AB → ABC
+
+Length:
+
+    LHS = 2
+    RHS = 3
+
+Therefore:
+
+    2 <= 3
+
+Allowed.
+
+
+Another example:
+
+    ABC → ABDC
+
+Length:
+
+    LHS = 3
+    RHS = 4
+
+Allowed.
+
+
+But:
+
+    ABC → A
+
+Length:
+
+    LHS = 3
+    RHS = 1
+
+This decreases the length.
+
+Therefore it is NOT allowed in a standard
+non-contracting CSG.
+
+
+============================================================
+24.3 WHAT DOES "CONTEXT-SENSITIVE" MEAN?
+============================================================
+
+Let's understand the word "context".
+
+Suppose we have:
+
+    xAy
+
+Here:
+
+    A = symbol being replaced
+
+    x = left context
+
+    y = right context
+
+
+A context-sensitive rule could look like:
+
+    xAy → xBy
+
+
+Notice that A is changed to B while the surrounding context
+remains unchanged.
+
+
+ASCII representation:
+
+        left context       right context
+             |                  |
+             v                  v
+
+             x   A   y
+                 |
+                 |
+                 v
+             x   B   y
+
+
+The surrounding symbols x and y represent the context.
+
+
+------------------------------------------------------------
+Comparison with CFG
+------------------------------------------------------------
+
+CFG rule:
+
+    A → B
+
+The replacement of A does not depend on surrounding symbols.
+
+
+CSG-style rule:
+
+    xAy → xBy
+
+The replacement can depend on the context.
+
+
+Therefore:
+
+    CFG:
+        A → B
+
+    CSG:
+        xAy → xBy
+
+
+IMPORTANT:
+
+Context-sensitive grammars are more powerful than
+context-free grammars.
+
+
+============================================================
+24.4 NON-CONTRACTING GRAMMAR
+============================================================
+
+This is one of the most important concepts in this chapter.
+
+
+Definition:
+
+A grammar is non-contracting if every production satisfies:
+
+    |α| <= |β|
+
+for a production:
+
+    α → β
+
+
+That means the RHS cannot be shorter than the LHS.
+
+
+Example 1:
+
+    A → ab
+
+Length:
+
+    1 → 2
+
+Allowed.
+
+
+Example 2:
+
+    AB → abc
+
+Length:
+
+    2 → 3
+
+Allowed.
+
+
+Example 3:
+
+    ABC → ABCD
+
+Length:
+
+    3 → 4
+
+Allowed.
+
+
+Example 4:
+
+    AB → A
+
+Length:
+
+    2 → 1
+
+NOT allowed.
+
+
+------------------------------------------------------------
+Why is this restriction important?
+------------------------------------------------------------
+
+Because a context-sensitive grammar is intended to
+describe computations where the amount of information
+does not suddenly shrink.
+
+
+This property also connects CSG with:
+
+    Linear Bounded Automata (LBA)
+
+
+------------------------------------------------------------
+Special case: ε-production
+------------------------------------------------------------
+
+There is an important technical exception involving ε.
+
+Normally, CSG productions are non-contracting.
+
+However, in some formal definitions, a rule such as:
+
+    S → ε
+
+is permitted provided that:
+
+    S does not occur on the RHS of any production.
+
+
+Different textbooks may present slightly different
+formal conventions.
+
+For university/GATE preparation, remember:
+
+    Main rule:
+        |LHS| <= |RHS|
+
+    Special handling of ε may depend on the definition
+    being used.
+
+
+============================================================
+24.5 CONTEXT-SENSITIVE LANGUAGE
+============================================================
+
+Definition:
+
+A language is called a Context-Sensitive Language (CSL)
+if it can be generated by a Context-Sensitive Grammar.
+
+
+Therefore:
+
+    CSG
+      ↓ generates
+    CSL
+
+
+Notation:
+
+    L(G)
+
+means:
+
+    the language generated by grammar G.
+
+
+If G is a CSG, then:
+
+    L(G)
+
+is a context-sensitive language.
+
+
+------------------------------------------------------------
+Example
+------------------------------------------------------------
+
+Consider:
+
+    L = { a^n b^n c^n | n >= 1 }
+
+
+Some strings:
+
+    abc
+    aabbcc
+    aaabbbccc
+    aaaabbbbcccc
+    ...
+
+
+This language is context-sensitive.
+
+
+It requires equality between three groups:
+
+    a-count = b-count = c-count
+
+
+This is beyond the power of CFG.
+
+
+============================================================
+24.6 INTUITION USING a^n b^n c^n
+============================================================
+
+Let's understand why this language is difficult.
+
+Suppose:
+
+    n = 3
+
+Then:
+
+    a^3 b^3 c^3
+
+becomes:
+
+    aaabbbccc
+
+
+We need:
+
+    3 a's
+    3 b's
+    3 c's
+
+
+For:
+
+    n = 5
+
+we need:
+
+    aaaaa bbbbb ccccc
+
+
+Again:
+
+    5 = 5 = 5
+
+
+The grammar must maintain a relationship between
+THREE different groups.
+
+
+A useful conceptual picture is:
+
+    aaa | bbb | ccc
+     |     |     |
+     |     |     |
+     +-----+-----+
+       equal counts
+
+
+A CSG is powerful enough to describe such dependencies.
+
+
+============================================================
+24.7 EXAMPLE OF A CONTEXT-SENSITIVE GRAMMAR
+============================================================
+
+Consider the language:
+
+    L = { a^n b^n c^n | n >= 1 }
+
+
+One possible grammar construction can use auxiliary
+non-terminals to keep track of the matching process.
+
+
+For teaching purposes, we focus on the idea rather than
+memorizing one particular construction.
+
+Conceptually:
+
+    S
+    |
+    v
+    a A B c
+       |
+       v
+    a A B B c
+       |
+       v
+    a a A B B c
+       |
+       v
+    ...
+    |
+    v
+    a^n b^n c^n
+
+
+The grammar introduces additional symbols and uses
+context-sensitive rules to move/transform these symbols
+while preserving the required relationships.
+
+
+IMPORTANT:
+
+Do not try to memorize a CSG construction mechanically.
+
+Instead understand:
+
+    1. Introduce markers/non-terminals.
+    2. Generate the required structure.
+    3. Move markers through the string.
+    4. Convert markers into terminals.
+    5. Ensure equal quantities.
+    6. Never violate the non-contracting condition.
+
+
+============================================================
+24.8 ANOTHER IMPORTANT EXAMPLE
+============================================================
+
+Consider:
+
+    L = { ww | w ∈ {0,1}* }
+
+
+Examples:
+
+    ε
+    00
+    11
+    0101
+    0110
+    101101
+    ...
+
+
+The language requires two copies of exactly the same string.
+
+For example:
+
+    w = 101
+
+then:
+
+    ww = 101101
+
+
+This type of copying dependency is much more difficult than
+ordinary regular patterns.
+
+
+CSGs can express substantially more complex dependencies
+than CFGs.
+
+
+============================================================
+24.9 LINEAR BOUNDED AUTOMATON (LBA)
+============================================================
+
+Now we connect CSG with an automaton.
+
+
+First remember:
+
+    DFA
+      ↓
+    finite amount of memory
+
+
+    PDA
+      ↓
+    stack memory
+
+
+    Turing Machine
+      ↓
+    unbounded tape
+
+
+LBA lies between PDA and unrestricted TM in computational
+power.
+
+
+------------------------------------------------------------
+Simple definition
+------------------------------------------------------------
+
+A Linear Bounded Automaton (LBA) is a restricted
+Turing Machine whose tape usage is limited to a linear
+function of the input size.
+
+
+In simple words:
+
+    An LBA is a Turing Machine that cannot use unlimited
+    tape space.
+
+
+If input length is:
+
+    n
+
+
+then the machine can use at most:
+
+    O(n)
+
+tape cells, up to the convention used for the model.
+
+
+------------------------------------------------------------
+ASCII diagram
+------------------------------------------------------------
+
+Input:
+
+    a a b b c c
+
+Tape:
+
+    +---+---+---+---+---+---+
+    | a | a | b | b | c | c |
+    +---+---+---+---+---+---+
+          ^
+        head
+
+
+The LBA must operate within a bounded region related
+to the input.
+
+
+Unlike an ordinary TM:
+
+    Ordinary TM:
+    
+    <--- potentially unlimited tape --->
+
+
+    LBA:
+
+    |<------ O(n) cells ------>|
+
+
+============================================================
+24.10 WHY IS LBA RELATED TO CSG?
+============================================================
+
+This is one of the most important relationships in
+Theory of Computation.
+
+The fundamental correspondence is:
+
+    Context-Sensitive Languages
+                ↕
+    Linear Bounded Automata
+
+
+In standard theory:
+
+    CSL = languages accepted by LBA
+
+
+Therefore:
+
+    CSG
+      ↓
+    CSL
+      ↕
+    LBA
+
+
+This is an important part of the Chomsky hierarchy.
+
+
+============================================================
+24.11 LBA VS TURING MACHINE
+============================================================
+
+               Turing Machine       LBA
+------------------------------------------------------------
+Tape           Unbounded            Linearly bounded
+Memory         Unbounded            O(n)
+Power          More powerful        Restricted
+Language       RE languages         CSL
+Model          General computation  Restricted computation
+
+
+ASCII:
+
+
+TURING MACHINE
+
+    ----------------------------------------------->
+    potentially unbounded tape
+
+
+LBA
+
+    +-------------------------------+
+    |          bounded tape         |
+    +-------------------------------+
+
+
+The LBA has a restricted amount of workspace.
+
+
+============================================================
+24.12 CSG ↔ LBA RELATIONSHIP
+============================================================
+
+The relationship can be visualized as:
+
+             Context-Sensitive Grammar
+                       |
+                       | generates
+                       v
+             Context-Sensitive Language
+                       ^
+                       |
+                       | recognized by
+                       |
+             Linear Bounded Automaton
+
+
+Therefore:
+
+    CSG generates CSL.
+
+    LBA recognizes CSL.
+
+
+This is similar to relationships we already know:
+
+
+REGULAR:
+
+    Regular Expression
+          |
+          v
+    Regular Language
+          ^
+          |
+          |
+         DFA
+
+
+CONTEXT-FREE:
+
+    CFG
+      |
+      v
+    CFL
+      ^
+      |
+      |
+     PDA
+
+
+CONTEXT-SENSITIVE:
+
+    CSG
+      |
+      v
+    CSL
+      ^
+      |
+      |
+     LBA
+
+
+TYPE 0:
+
+    Unrestricted Grammar
+          |
+          v
+    Recursively Enumerable Language
+          ^
+          |
+          |
+          TM
+
+
+============================================================
+24.13 CHOMSKY HIERARCHY
+============================================================
+
+This chapter fits into the following hierarchy:
+
+
+    TYPE 0
+    Unrestricted Grammar
+          |
+          | more powerful
+          v
+    Recursively Enumerable Languages
+          |
+          |
+          v
+    TYPE 1
+    Context-Sensitive Grammar
+          |
+          v
+    Context-Sensitive Languages
+          |
+          v
+    Linear Bounded Automaton
+          |
+          |
+          v
+    TYPE 2
+    Context-Free Grammar
+          |
+          v
+    Context-Free Languages
+          |
+          v
+    Pushdown Automaton
+          |
+          |
+          v
+    TYPE 3
+    Regular Grammar
+          |
+          v
+    Regular Languages
+          |
+          v
+    Finite Automaton
+
+
+In terms of inclusion:
+
+
+    Regular
+       ⊂
+    Context-Free
+       ⊂
+    Context-Sensitive
+       ⊂
+    Recursively Enumerable
+
+
+============================================================
+24.14 CSG VS CFG
+============================================================
+
+This distinction is VERY IMPORTANT.
+
+
++----------------------+----------------------+----------------------+
+| Property             | CFG                  | CSG                  |
++----------------------+----------------------+----------------------+
+| Chomsky type         | Type 2               | Type 1               |
+| Production           | A → α                | α → β                 |
+| Context dependence   | No                   | Yes                  |
+| Length restriction   | Not generally        | |LHS| <= |RHS|       |
+| Memory model         | PDA                  | LBA                  |
+| Language class       | CFL                  | CSL                  |
+| Power                | Less                 | More                 |
++----------------------+----------------------+----------------------+
+
+
+Simple memory trick:
+
+    CFG → PDA
+
+    CSG → LBA
+
+
+And:
+
+    Type 2 → Context-Free
+
+    Type 1 → Context-Sensitive
+
+
+============================================================
+24.15 CFG VS CSG WITH EXAMPLES
+============================================================
+
+CFG can generate:
+
+    { a^n b^n | n >= 0 }
+
+
+Example:
+
+    S → aSb
+    S → ε
+
+
+Derivation:
+
+    S
+    ↓
+    aSb
+    ↓
+    aaSbb
+    ↓
+    aaεbb
+    ↓
+    aabb
+
+
+So:
+
+    aabb
+
+
+is generated.
+
+
+But:
+
+    { a^n b^n c^n | n >= 1 }
+
+
+is NOT context-free.
+
+
+It is context-sensitive.
+
+
+Therefore:
+
+    CFG cannot express every CSL.
+
+    CSG can express languages beyond CFL.
+
+
+============================================================
+24.16 IMPORTANT PROPERTIES OF CSL
+============================================================
+
+Important properties to remember:
+
+1. Every regular language is context-sensitive.
+
+2. Every context-free language is context-sensitive.
+
+3. Some context-sensitive languages are not context-free.
+
+4. CSGs are generally non-contracting.
+
+5. CSLs are associated with LBAs.
+
+6. LBA uses linearly bounded tape.
+
+7. CSL is Type 1 in the Chomsky hierarchy.
+
+
+============================================================
+24.17 WHAT DOES "MORE POWERFUL" MEAN?
+============================================================
+
+This is a common source of confusion.
+
+
+When we say:
+
+    CSG is more powerful than CFG
+
+
+we do NOT mean:
+
+    CSG always runs faster.
+
+
+We mean:
+
+    CSG can describe/generate a larger class of languages.
+
+
+For example:
+
+    CFG:
+        can generate a^n b^n
+
+
+    CSG:
+        can generate a^n b^n c^n
+
+
+Therefore:
+
+    More expressive power
+        ≠
+    faster computation
+
+
+============================================================
+24.18 CSG AND COMPUTATIONAL MEMORY
+============================================================
+
+A useful progression is:
+
+
+    FINITE AUTOMATON
+          |
+          | finite memory
+          v
+    REGULAR LANGUAGES
+
+
+    PDA
+          |
+          | stack memory
+          v
+    CONTEXT-FREE LANGUAGES
+
+
+    LBA
+          |
+          | O(n) bounded tape
+          v
+    CONTEXT-SENSITIVE LANGUAGES
+
+
+    TURING MACHINE
+          |
+          | unbounded tape
+          v
+    RECURSIVELY ENUMERABLE LANGUAGES
+
+
+This is one of the best ways to remember the
+Chomsky hierarchy.
+
+
+============================================================
+24.19 IMPORTANT TERMINOLOGY
+============================================================
+
+TERM                         MEANING
+------------------------------------------------------------
+
+Grammar
+    A formal system of production rules used to generate
+    strings.
+
+Terminal
+    A symbol that appears in the final generated string.
+
+Non-terminal
+    A symbol used during the derivation process.
+
+Production
+    A rule describing how symbols can be replaced.
+
+Context
+    Symbols surrounding the symbol being rewritten.
+
+CSG
+    Context-Sensitive Grammar.
+
+CSL
+    Context-Sensitive Language.
+
+Non-contracting
+    A grammar where production does not decrease string
+    length.
+
+LBA
+    Linear Bounded Automaton.
+
+Chomsky hierarchy
+    Classification of grammar/language classes by
+    expressive power.
+
+
+============================================================
+24.20 IMPORTANT NOTATION
+============================================================
+
+Grammar:
+
+    G = (V, Σ, P, S)
+
+
+where:
+
+    V = variables/non-terminals
+    Σ = terminals
+    P = productions
+    S = start symbol
+
+
+Production:
+
+    α → β
+
+
+Length condition:
+
+    |α| <= |β|
+
+
+Context-sensitive form:
+
+    αAβ → αγβ
+
+
+Language generated:
+
+    L(G)
+
+
+Context-sensitive language:
+
+    L is CSL if some CSG G generates L.
+
+
+============================================================
+24.21 STEP-BY-STEP WAY TO IDENTIFY A CSG
+============================================================
+
+Suppose an exam gives production rules.
+
+Use this procedure:
+
+
+STEP 1:
+    Identify the grammar.
+
+STEP 2:
+    Look at every production.
+
+STEP 3:
+    Check whether the RHS is shorter than the LHS.
+
+STEP 4:
+    If:
+
+        |LHS| <= |RHS|
+
+    the rule satisfies the non-contracting condition.
+
+STEP 5:
+    Check special ε-production conventions.
+
+STEP 6:
+    Determine whether the grammar fits Type 1.
+
+
+Example:
+
+
+    AB → ABC
+
+Lengths:
+
+    |AB| = 2
+    |ABC| = 3
+
+Therefore:
+
+    2 <= 3
+
+Allowed.
+
+
+Another:
+
+
+    ABC → AB
+
+Lengths:
+
+    |ABC| = 3
+    |AB| = 2
+
+Therefore:
+
+    3 > 2
+
+Not non-contracting.
+
+
+============================================================
+24.22 EXAM-STYLE EXAMPLE 1
+============================================================
+
+Question:
+
+Which of the following productions violates the
+non-contracting property?
+
+A. A → ab
+B. AB → ABC
+C. ABC → ABCD
+D. ABC → AB
+
+
+Solution:
+
+Check lengths.
+
+A:
+
+    1 → 2
+    Allowed
+
+
+B:
+
+    2 → 3
+    Allowed
+
+
+C:
+
+    3 → 4
+    Allowed
+
+
+D:
+
+    3 → 2
+    Not allowed
+
+
+Answer:
+
+    D
+
+
+============================================================
+24.23 EXAM-STYLE EXAMPLE 2
+============================================================
+
+Question:
+
+Which language is a classic example of a
+context-sensitive language that is not context-free?
+
+Options:
+
+A. {0^n | n >= 0}
+
+B. {0^n1^n | n >= 0}
+
+C. {0^n1^n2^n | n >= 1}
+
+D. {0,1}
+
+
+Answer:
+
+    C
+
+
+Reason:
+
+    {0^n1^n2^n | n >= 1}
+
+requires three equal counts and is not context-free,
+but is context-sensitive.
+
+
+============================================================
+24.24 EXAM-STYLE EXAMPLE 3
+============================================================
+
+Question:
+
+What computational model is associated with
+context-sensitive languages?
+
+Answer:
+
+    Linear Bounded Automaton (LBA)
+
+
+Remember:
+
+
+    Type 3 → FA
+    Type 2 → PDA
+    Type 1 → LBA
+    Type 0 → TM
+
+
+This is extremely important for exams.
+
+
+============================================================
+24.25 EXAM-STYLE EXAMPLE 4
+============================================================
+
+Question:
+
+Arrange the following according to increasing
+expressive power:
+
+    CSG
+    Regular Grammar
+    CFG
+    Unrestricted Grammar
+
+
+Answer:
+
+
+    Regular Grammar
+          ↓
+    Context-Free Grammar
+          ↓
+    Context-Sensitive Grammar
+          ↓
+    Unrestricted Grammar
+
+
+Equivalent language classes:
+
+
+    Regular
+       ⊂
+    Context-Free
+       ⊂
+    Context-Sensitive
+       ⊂
+    Recursively Enumerable
+
+
+============================================================
+24.26 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+Thinking:
+
+    Context-sensitive = every rule must explicitly
+    contain left and right context.
+
+
+Correction:
+
+    The formal definition is more general than this
+    intuitive picture. The important standard property
+    is the non-contracting condition, with the usual
+    formal restrictions.
+
+
+------------------------------------------------------------
+
+MISTAKE 2:
+
+Thinking:
+
+    CSG means context is required in every production.
+
+
+Correction:
+
+    Not necessarily in the informal sense.
+
+    Focus on the formal definition and non-contracting
+    property used in your syllabus.
+
+
+------------------------------------------------------------
+
+MISTAKE 3:
+
+Thinking:
+
+    CSG = CFG
+
+
+Correction:
+
+    No.
+
+    CFG = Type 2
+    CSG = Type 1
+
+
+------------------------------------------------------------
+
+MISTAKE 4:
+
+Thinking:
+
+    LBA = ordinary Turing Machine
+
+
+Correction:
+
+    LBA is a restricted Turing Machine whose tape
+    usage is linearly bounded by input size.
+
+
+------------------------------------------------------------
+
+MISTAKE 5:
+
+Thinking:
+
+    More powerful means faster.
+
+
+Correction:
+
+    More powerful means more expressive.
+
+    It can describe a larger class of languages.
+
+
+------------------------------------------------------------
+
+MISTAKE 6:
+
+Confusing:
+
+    Context-sensitive language
+
+with:
+
+    Context-free language
+
+
+Remember:
+
+    CFL → Type 2
+    CSL → Type 1
+
+
+============================================================
+24.27 B.TECH EXAM IMPORTANT POINTS
+============================================================
+
+Memorize these concepts AFTER understanding them:
+
+
+1. CSG is a Type 1 grammar.
+
+2. CSL is generated by CSG.
+
+3. CSGs are generally non-contracting.
+
+4. Standard condition:
+
+       |LHS| <= |RHS|
+
+5. CSL corresponds to Linear Bounded Automata.
+
+6. LBA uses linearly bounded tape.
+
+7. CFL ⊂ CSL.
+
+8. {a^n b^n c^n | n >= 1} is a classic CSL example.
+
+9. CSG is more expressive than CFG.
+
+10. Type 1 corresponds to context-sensitive languages.
+
+
+============================================================
+24.28 GATE / COMPETITIVE EXAM QUICK FACTS
+============================================================
+
+Very important relationships:
+
+
+    Regular Language
+        ↓
+    Finite Automaton
+
+
+    Context-Free Language
+        ↓
+    Pushdown Automaton
+
+
+    Context-Sensitive Language
+        ↓
+    Linear Bounded Automaton
+
+
+    Recursively Enumerable Language
+        ↓
+    Turing Machine
+
+
+------------------------------------------------------------
+
+Hierarchy:
+
+
+    REG ⊂ CFL ⊂ CSL ⊂ RE
+
+
+------------------------------------------------------------
+
+Classic examples:
+
+
+    Regular:
+        {0^n | n >= 0}
+
+
+    Context-Free but not Regular:
+        {0^n1^n | n >= 0}
+
+
+    Context-Sensitive but not Context-Free:
+        {0^n1^n2^n | n >= 1}
+
+
+============================================================
+24.29 INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is a context-sensitive grammar?
+
+Q2. Why is it called context-sensitive?
+
+Q3. What is the main restriction on CSG productions?
+
+Q4. What is a non-contracting grammar?
+
+Q5. What is a context-sensitive language?
+
+Q6. What is an LBA?
+
+Q7. Why is LBA associated with CSG?
+
+Q8. What is the difference between CFG and CSG?
+
+Q9. Give an example of a language that is context-sensitive
+    but not context-free.
+
+Q10. Where does CSG occur in the Chomsky hierarchy?
+
+Q11. What is the relationship between CSL and LBA?
+
+Q12. Is every CFL a CSL?
+
+Answer:
+
+    Yes.
+
+
+Q13. Is every CSL a CFL?
+
+Answer:
+
+    No.
+
+
+============================================================
+24.30 PRACTICE QUESTIONS
+============================================================
+
+LEVEL 1 — BEGINNER
+------------------
+
+1. What does CSG stand for?
+
+2. What does CSL stand for?
+
+3. Which Chomsky type corresponds to CSG?
+
+4. What does non-contracting mean?
+
+5. What is an LBA?
+
+6. Which automaton is associated with CSL?
+
+
+LEVEL 2 — B.TECH BASIC
+----------------------
+
+7. Explain the formal representation of a grammar.
+
+8. Explain the condition:
+
+       |LHS| <= |RHS|
+
+9. Explain why:
+
+       ABC → AB
+
+    violates the non-contracting property.
+
+10. Differentiate CFG and CSG.
+
+11. Explain the relationship between CSG and CSL.
+
+
+LEVEL 3 — UNIVERSITY EXAM
+-------------------------
+
+12. Define Context-Sensitive Grammar.
+
+13. Explain non-contracting grammars with examples.
+
+14. Explain Context-Sensitive Languages.
+
+15. Explain Linear Bounded Automata.
+
+16. Explain the relationship:
+
+       CSG ↔ CSL ↔ LBA
+
+17. Explain the position of CSG in the Chomsky hierarchy.
+
+18. Compare CFG and CSG.
+
+
+LEVEL 4 — COMPETITIVE
+---------------------
+
+19. Which of the following languages are definitely
+    context-sensitive?
+
+    a) {a^n}
+    b) {a^n b^n}
+    c) {a^n b^n c^n}
+    d) All regular languages
+
+
+20. If a grammar has a production:
+
+       ABC → AB
+
+    can it satisfy the standard non-contracting
+    condition?
+
+21. Which automaton has linearly bounded memory?
+
+22. Arrange:
+
+       FA, PDA, LBA, TM
+
+    according to increasing computational power.
+
+
+============================================================
+24.31 ACTIVE RECALL
+============================================================
+
+Do NOT look at the answers immediately.
+
+Try answering mentally:
+
+Q1. What is a Context-Sensitive Grammar?
+
+Q2. Why is CSG called "context-sensitive"?
+
+Q3. What does non-contracting mean?
+
+Q4. What is the mathematical condition for
+    non-contracting productions?
+
+Q5. What is a Context-Sensitive Language?
+
+Q6. Give one famous CSL example.
+
+Q7. Is {a^n b^n c^n} context-free?
+
+Q8. What is an LBA?
+
+Q9. What does LBA stand for?
+
+Q10. What is the relationship between CSL and LBA?
+
+Q11. Which is more powerful: CFG or CSG?
+
+Q12. Which Chomsky type is CSG?
+
+Q13. Complete:
+
+       Type 3 → ______
+       Type 2 → ______
+       Type 1 → ______
+       Type 0 → ______
+
+
+============================================================
+24.32 ONE-MINUTE REVISION
+============================================================
+
+Remember this chain:
+
+
+    TYPE 3
+       ↓
+    REGULAR
+       ↓
+    FINITE AUTOMATON
+
+
+    TYPE 2
+       ↓
+    CONTEXT-FREE
+       ↓
+    PDA
+
+
+    TYPE 1
+       ↓
+    CONTEXT-SENSITIVE
+       ↓
+    LBA
+
+
+    TYPE 0
+       ↓
+    RECURSIVELY ENUMERABLE
+       ↓
+    TURING MACHINE
+
+
+And:
+
+
+    REG ⊂ CFL ⊂ CSL ⊂ RE
+
+
+CSG:
+
+    Type 1 grammar
+
+
+Main property:
+
+    Non-contracting
+
+    |LHS| <= |RHS|
+
+
+Classic example:
+
+    {a^n b^n c^n | n >= 1}
+
+
+Machine equivalent:
+
+    LBA
+
+
+============================================================
+24.33 CHAPTER 24 SUMMARY
+============================================================
+
+Context-Sensitive Grammar:
+
+    A Type 1 grammar capable of generating
+    context-sensitive languages.
+
+
+Main production property:
+
+    |LHS| <= |RHS|
+
+
+Non-contracting:
+
+    Production cannot reduce the length of
+    the sentential form.
+
+
+Context-Sensitive Language:
+
+    A language generated by a CSG.
+
+
+Classic example:
+
+    {a^n b^n c^n | n >= 1}
+
+
+Machine associated with CSL:
+
+    Linear Bounded Automaton.
+
+
+LBA:
+
+    A restricted Turing Machine using tape space
+    linearly bounded by the input size.
+
+
+Hierarchy:
+
+    Regular
+       ⊂
+    Context-Free
+       ⊂
+    Context-Sensitive
+       ⊂
+    Recursively Enumerable
+
+
+Automata correspondence:
+
+    Regular       → FA
+    Context-Free  → PDA
+    Context-Sensitive → LBA
+    Type 0        → TM
+
+
+============================================================
+24.34 CHAPTER 24 EXAM CHEAT SHEET
+============================================================
+
+                 GRAMMAR        MACHINE
+                 -------        -------
+
+Type 3           Regular        FA
+                   ↓
+Type 2           CFG            PDA
+                   ↓
+Type 1           CSG            LBA
+                   ↓
+Type 0           Unrestricted   TM
+
+
+Language hierarchy:
+
+    REG ⊂ CFL ⊂ CSL ⊂ RE
+
+
+Most important example:
+
+    {a^n b^n c^n | n >= 1}
+
+Most important production property:
+
+    |LHS| <= |RHS|
+
+Most important machine:
+
+    LBA = Linear Bounded Automaton
+
+
+============================================================
+CHAPTER 24 STATUS
+============================================================
+
+PHASE 20 — CONTEXT-SENSITIVE LANGUAGES
+
+Chapter 24 — Context-Sensitive Grammar
+
+Status:
+    ✓ CSG fundamentals
+    ✓ Context-sensitive definition
+    ✓ Non-contracting grammars
+    ✓ Context-sensitive languages
+    ✓ LBA fundamentals
+    ✓ CSG ↔ CSL ↔ LBA
+    ✓ Chomsky hierarchy connection
+    ✓ Examples
+    ✓ CFG vs CSG
+    ✓ Exam preparation
+    ✓ GATE preparation
+    ✓ Practice questions
+    ✓ Active recall
+    ✓ Revision
+
+
+============================================================
+UPCOMING NEXT TOPIC
+============================================================
+
+NEXT TOPIC:
+
+CHAPTER 25 — ADVANCED COMPUTABILITY
+
+TOPIC 25.1:
+    RICE'S THEOREM
+
+We will begin with:
+
+    • What is Rice's Theorem?
+    • Why do we need it?
+    • Semantic vs syntactic properties
+    • Formal statement
+    • Intuition
+    • Examples
+    • Step-by-step applications
+    • Common mistakes
+    • B.Tech questions
+    • GATE-level questions
+
+Type:
+
+    NEXT
+
+to begin Chapter 25, Topic 25.1 — Rice's Theorem.
+============================================================

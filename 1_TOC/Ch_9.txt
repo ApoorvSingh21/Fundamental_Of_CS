@@ -1,0 +1,1799 @@
+======================================================================
+THEORY OF COMPUTATION — CHAPTER 9
+PHASE 6 — PROPERTIES OF REGULAR LANGUAGES
+TOPIC: CLOSURE PROPERTIES OF REGULAR LANGUAGES
+======================================================================
+
+PREREQUISITE:
+You should already know:
+    • Alphabet
+    • String
+    • Language
+    • DFA
+    • NFA
+    • Regular expression
+    • Regular language
+
+CHAPTER 9 SYLLABUS
+------------------
+9.1 Closure Under
+    9.1.1 Union
+    9.1.2 Intersection
+    9.1.3 Complement
+    9.1.4 Difference
+    9.1.5 Concatenation
+    9.1.6 Kleene Star
+    9.1.7 Kleene Plus
+    9.1.8 Reversal
+    9.1.9 Homomorphism
+    9.1.10 Inverse Homomorphism
+
+9.2 Closure Proofs
+    9.2.1 Closure using DFA
+    9.2.2 Closure using NFA
+    9.2.3 Closure using Regular Expressions
+    9.2.4 Product Construction
+
+
+======================================================================
+1. CHAPTER INTRODUCTION
+======================================================================
+
+Before learning closure properties, remember:
+
+A LANGUAGE is simply a set of strings.
+
+For example, over alphabet Σ = {0,1},
+
+L = {0, 1, 00, 01, 10, 11, ...}
+
+A language is called REGULAR if some finite automaton (DFA/NFA/ε-NFA)
+can recognize it.
+
+The important question in this chapter is:
+
+    "If I already have regular languages, and I perform operations
+     on them, will the resulting language still be regular?"
+
+For example:
+
+    L1 = strings ending in 0
+    L2 = strings containing at least one 1
+
+What happens if we calculate:
+
+    L1 ∪ L2
+    L1 ∩ L2
+    L1 - L2
+    complement(L1)
+
+Will these new languages still be regular?
+
+For regular languages, the answer is YES for all operations covered
+in this chapter.
+
+
+======================================================================
+2. WHAT DOES "CLOSED UNDER" MEAN?
+======================================================================
+
+Simple meaning:
+
+A collection is CLOSED under an operation if performing that operation
+on members of the collection produces another member of the same
+collection.
+
+In TOC:
+
+"Regular languages are closed under UNION"
+
+means:
+
+    If L1 and L2 are regular,
+    then L1 ∪ L2 is also regular.
+
+Formally:
+
+    If L1 ∈ REG and L2 ∈ REG,
+
+    then:
+
+    L1 ∪ L2 ∈ REG
+
+
+IMPORTANT:
+
+Closure does NOT mean that every possible language is regular.
+
+It means:
+
+    REGULAR + allowed operation + REGULAR
+                         ↓
+                    REGULAR
+
+
+======================================================================
+3. WHY DO WE STUDY CLOSURE PROPERTIES?
+======================================================================
+
+Closure properties are useful because they allow us to prove that
+new languages are regular without constructing a completely new DFA
+from scratch.
+
+Suppose:
+
+    L1 is regular
+    L2 is regular
+
+If we want to prove:
+
+    L1 ∪ L2
+
+is regular, we can use the closure theorem.
+
+This is often much easier than constructing a machine manually.
+
+Closure properties are important for:
+
+    • B.Tech examinations
+    • DFA/NFA theory
+    • Regular-language proofs
+    • GATE
+    • Competitive examinations
+    • Formal-language reasoning
+
+
+======================================================================
+4. UNION
+======================================================================
+
+4.1 SIMPLE DEFINITION
+---------------------
+
+The UNION of two languages contains every string that belongs to
+at least one of them.
+
+Notation:
+
+    L1 ∪ L2
+
+Read as:
+
+    "L1 union L2"
+
+
+4.2 SET DEFINITION
+------------------
+
+    L1 ∪ L2 = {w | w ∈ L1 OR w ∈ L2}
+
+
+4.3 EXAMPLE
+------------
+
+Let:
+
+    L1 = {a, ab, aaa}
+    L2 = {b, ab, bb}
+
+Then:
+
+    L1 ∪ L2 = {a, ab, aaa, b, bb}
+
+Notice that "ab" occurs only once.
+
+
+4.4 REGULAR LANGUAGE PROPERTY
+-----------------------------
+
+If:
+
+    L1 is regular
+    L2 is regular
+
+then:
+
+    L1 ∪ L2 is regular.
+
+
+4.5 DFA IDEA
+------------
+
+Suppose DFA M1 recognizes L1:
+
+                 M1
+    input ──────> [DFA 1]
+
+and DFA M2 recognizes L2:
+
+                 M2
+    input ──────> [DFA 2]
+
+For union, we can simulate both machines simultaneously.
+
+The combined machine accepts if:
+
+    M1 accepts OR M2 accepts.
+
+
+======================================================================
+5. INTERSECTION
+======================================================================
+
+5.1 SIMPLE DEFINITION
+---------------------
+
+Intersection contains only strings that belong to BOTH languages.
+
+Notation:
+
+    L1 ∩ L2
+
+Formal definition:
+
+    L1 ∩ L2 = {w | w ∈ L1 AND w ∈ L2}
+
+
+5.2 EXAMPLE
+------------
+
+Let:
+
+    L1 = {a, ab, abc, b}
+    L2 = {ab, b, bb}
+
+Then:
+
+    L1 ∩ L2 = {ab, b}
+
+
+5.3 REGULAR LANGUAGE PROPERTY
+-----------------------------
+
+If L1 and L2 are regular:
+
+    L1 ∩ L2
+
+is also regular.
+
+
+5.4 IMPORTANT DFA IDEA
+----------------------
+
+The standard method is PRODUCT CONSTRUCTION.
+
+Suppose:
+
+    M1 recognizes L1
+    M2 recognizes L2
+
+Create states of the form:
+
+    (q1, q2)
+
+where:
+
+    q1 = current state of M1
+    q2 = current state of M2
+
+The combined machine accepts only when:
+
+    q1 is final AND q2 is final.
+
+
+ASCII IDEA:
+
+                  input
+                    |
+            +-------+-------+
+            |               |
+            v               v
+          M1                M2
+            |               |
+            +-------+-------+
+                    |
+              BOTH ACCEPT?
+                    |
+                   YES
+                    |
+                 ACCEPT
+
+
+======================================================================
+6. COMPLEMENT
+======================================================================
+
+6.1 SIMPLE DEFINITION
+---------------------
+
+The complement of a language contains all strings over the alphabet
+that are NOT in the language.
+
+If:
+
+    Σ = {0,1}
+
+and:
+
+    L = strings ending in 1
+
+then:
+
+    Lᶜ = strings over {0,1} that do NOT end in 1.
+
+
+6.2 FORMAL DEFINITION
+---------------------
+
+The complement is:
+
+    Lᶜ = Σ* - L
+
+Here:
+
+    Σ* = all possible finite strings over Σ.
+
+
+6.3 EXAMPLE
+------------
+
+Let:
+
+    Σ = {0,1}
+
+    L = {strings ending in 1}
+
+Then:
+
+    Lᶜ = {strings ending in 0} ∪ {ε}
+
+
+Why ε?
+
+Because ε does not end in 1.
+
+
+6.4 DFA COMPLEMENT
+------------------
+
+This is extremely important.
+
+If a DFA is COMPLETE, we can obtain its complement by:
+
+    • Keeping all states
+    • Keeping all transitions
+    • Changing final states into non-final states
+    • Changing non-final states into final states
+
+
+Original:
+
+    q0 ----0----> q1*
+    
+    q1* = accepting
+
+
+Complement:
+
+    q0* ----0----> q1
+
+The accepting status is reversed.
+
+
+IMPORTANT WARNING:
+------------------
+
+This simple state-swapping method requires a COMPLETE DFA.
+
+Every state must have a transition for every symbol.
+
+If a transition is missing, first add a dead/trap state.
+
+
+======================================================================
+7. DIFFERENCE
+======================================================================
+
+7.1 SIMPLE DEFINITION
+---------------------
+
+The difference between L1 and L2 contains strings that are:
+
+    in L1
+
+but:
+
+    NOT in L2.
+
+
+7.2 NOTATION
+------------
+
+    L1 - L2
+
+or:
+
+    L1 \ L2
+
+
+7.3 FORMAL DEFINITION
+---------------------
+
+    L1 - L2 = {w | w ∈ L1 AND w ∉ L2}
+
+
+7.4 EXAMPLE
+------------
+
+Let:
+
+    L1 = {a, ab, abc, b}
+    L2 = {ab, b}
+
+Then:
+
+    L1 - L2 = {a, abc}
+
+
+7.5 IMPORTANT RELATION
+----------------------
+
+Difference can be expressed using intersection and complement:
+
+    L1 - L2 = L1 ∩ L2ᶜ
+
+
+Since regular languages are closed under:
+
+    • Complement
+    • Intersection
+
+regular languages are also closed under difference.
+
+
+======================================================================
+8. CONCATENATION
+======================================================================
+
+8.1 SIMPLE DEFINITION
+---------------------
+
+Concatenation means joining strings together.
+
+For example:
+
+    x = ab
+    y = 101
+
+Then:
+
+    xy = ab101
+
+
+8.2 LANGUAGE CONCATENATION
+--------------------------
+
+For languages L1 and L2:
+
+    L1L2 = {xy | x ∈ L1 and y ∈ L2}
+
+
+8.3 EXAMPLE
+------------
+
+Let:
+
+    L1 = {a, b}
+    L2 = {0, 1}
+
+Then:
+
+    L1L2 = {a0, a1, b0, b1}
+
+
+8.4 REGULARITY
+--------------
+
+If:
+
+    L1 is regular
+    L2 is regular
+
+then:
+
+    L1L2 is regular.
+
+
+8.5 NFA IDEA
+------------
+
+Concatenation is particularly easy with an NFA.
+
+Suppose:
+
+    NFA 1 accepts L1
+    NFA 2 accepts L2
+
+Connect the final states of NFA 1 to the start state of NFA 2
+using ε-transitions.
+
+ASCII:
+
+    NFA 1                    NFA 2
+
+   --> q0 ---> q1*   ε   ---> p0 ---> p1*
+                  \______________/
+
+The machine first processes a string belonging to L1 and then
+processes a string belonging to L2.
+
+
+======================================================================
+9. KLEENE STAR
+======================================================================
+
+9.1 SIMPLE DEFINITION
+---------------------
+
+Kleene Star means:
+
+    "zero or more repetitions"
+
+
+Notation:
+
+    L*
+
+If L is a language, L* contains strings formed by concatenating
+zero or more strings from L.
+
+
+9.2 FORMAL DEFINITION
+---------------------
+
+    L* = L⁰ ∪ L¹ ∪ L² ∪ L³ ∪ ...
+
+where:
+
+    L⁰ = {ε}
+
+
+9.3 EXAMPLE
+------------
+
+Let:
+
+    L = {a}
+
+Then:
+
+    L* = {ε, a, aa, aaa, aaaa, ...}
+
+
+Another example:
+
+    L = {ab}
+
+Then:
+
+    L* = {ε, ab, abab, ababab, ...}
+
+
+9.4 IMPORTANT POINT
+-------------------
+
+Kleene Star ALWAYS includes ε.
+
+This is a very common exam trap.
+
+
+======================================================================
+10. KLEENE PLUS
+======================================================================
+
+10.1 SIMPLE DEFINITION
+----------------------
+
+Kleene Plus means:
+
+    "one or more repetitions"
+
+
+Notation:
+
+    L+
+
+
+10.2 FORMAL DEFINITION
+----------------------
+
+    L+ = L¹ ∪ L² ∪ L³ ∪ ...
+
+
+10.3 EXAMPLE
+------------
+
+If:
+
+    L = {a}
+
+then:
+
+    L+ = {a, aa, aaa, aaaa, ...}
+
+
+10.4 STAR VS PLUS
+-----------------
+
+                 STAR (*)       PLUS (+)
+
+Repetitions      0 or more       1 or more
+
+Contains ε?      YES             Not necessarily
+
+Example L={a}:
+                 {ε,a,aa,...}    {a,aa,aaa,...}
+
+
+10.5 IMPORTANT RELATION
+-----------------------
+
+    L+ = LL*
+
+and:
+
+    L* = {ε} ∪ L+
+
+
+======================================================================
+11. REVERSAL
+======================================================================
+
+11.1 STRING REVERSAL
+--------------------
+
+Reverse a string by reading it from right to left.
+
+Example:
+
+    w = abc
+
+then:
+
+    wᴿ = cba
+
+
+Another:
+
+    10110
+
+becomes:
+
+    01101
+
+
+11.2 LANGUAGE REVERSAL
+----------------------
+
+For language L:
+
+    Lᴿ = {wᴿ | w ∈ L}
+
+
+11.3 EXAMPLE
+------------
+
+Let:
+
+    L = {ab, abc, 10}
+
+Then:
+
+    Lᴿ = {ba, cba, 01}
+
+
+11.4 REGULARITY
+---------------
+
+If L is regular, then:
+
+    Lᴿ
+
+is also regular.
+
+
+11.5 NFA IDEA
+-------------
+
+Take an NFA for L.
+
+To construct an automaton for Lᴿ:
+
+    • Reverse every transition
+    • Make the old final states new starting possibilities
+    • Make the old start state the new final state
+
+Because there may be multiple old final states, an ε-NFA can be used
+with a new start state.
+
+
+ASCII:
+
+Original:
+
+    --> q0 ----a----> q1 ----b----> q2*
+
+Reversed idea:
+
+    --> q2 ----b----> q1 ----a----> q0*
+
+If there are multiple final states, connect a new start state to all
+of them using ε-transitions.
+
+
+======================================================================
+12. HOMOMORPHISM
+======================================================================
+
+This is a more advanced topic, so understand the intuition first.
+
+
+12.1 SIMPLE IDEA
+----------------
+
+A homomorphism is a systematic replacement of symbols.
+
+For example:
+
+    h(0) = a
+    h(1) = bb
+
+Then:
+
+    h(01) = h(0)h(1)
+          = a bb
+          = abb
+
+
+12.2 FORMAL DEFINITION
+----------------------
+
+A homomorphism h maps symbols from one alphabet to strings over
+another alphabet.
+
+If:
+
+    h : Σ → Γ*
+
+then for a string:
+
+    w = a1a2...an
+
+we define:
+
+    h(w) = h(a1)h(a2)...h(an)
+
+
+12.3 EXAMPLE
+------------
+
+Let:
+
+    h(0) = x
+    h(1) = yz
+
+Then:
+
+    h(001)
+
+= h(0)h(0)h(1)
+
+= x x yz
+
+= xxyz
+
+
+12.4 LANGUAGE HOMOMORPHISM
+--------------------------
+
+For language L:
+
+    h(L) = {h(w) | w ∈ L}
+
+
+12.5 CLOSURE PROPERTY
+---------------------
+
+If L is regular, then:
+
+    h(L)
+
+is also regular.
+
+
+======================================================================
+13. INVERSE HOMOMORPHISM
+======================================================================
+
+This is the reverse-direction concept.
+
+Instead of applying h to strings in L, we ask:
+
+    "Which strings are mapped by h INTO L?"
+
+
+13.1 FORMAL DEFINITION
+----------------------
+
+For language L over Γ:
+
+    h⁻¹(L) = {w ∈ Σ* | h(w) ∈ L}
+
+
+13.2 SIMPLE EXAMPLE
+-------------------
+
+Suppose:
+
+    h(0) = a
+    h(1) = b
+
+and:
+
+    L = {strings ending in a}
+
+Then:
+
+    h⁻¹(L)
+
+contains binary strings that, after replacing:
+
+    0 → a
+    1 → b
+
+produce strings ending in a.
+
+Therefore:
+
+    h⁻¹(L) = strings ending in 0.
+
+
+13.3 CLOSURE PROPERTY
+---------------------
+
+If L is regular, then:
+
+    h⁻¹(L)
+
+is also regular.
+
+
+======================================================================
+14. COMPLETE CLOSURE TABLE
+======================================================================
+
+For regular languages:
+
+    Operation                  Closed?
+
+    Union                      YES
+    Intersection               YES
+    Complement                 YES
+    Difference                 YES
+    Concatenation              YES
+    Kleene Star                YES
+    Kleene Plus                YES
+    Reversal                   YES
+    Homomorphism               YES
+    Inverse Homomorphism       YES
+
+
+Therefore:
+
+    REGULAR LANGUAGES
+           |
+           +---- union
+           |
+           +---- intersection
+           |
+           +---- complement
+           |
+           +---- difference
+           |
+           +---- concatenation
+           |
+           +---- star
+           |
+           +---- plus
+           |
+           +---- reversal
+           |
+           +---- homomorphism
+           |
+           +---- inverse homomorphism
+                         |
+                         v
+                 STILL REGULAR
+
+
+======================================================================
+15. PRODUCT CONSTRUCTION
+======================================================================
+
+Product construction is one of the most important ideas in this
+chapter and is frequently useful in GATE questions.
+
+
+15.1 BASIC IDEA
+---------------
+
+Suppose:
+
+    M1 = DFA for L1
+    M2 = DFA for L2
+
+We construct a new DFA whose states are PAIRS:
+
+    (q1, q2)
+
+
+If:
+
+    M1 has m states
+    M2 has n states
+
+then the product DFA has at most:
+
+    m × n
+
+states.
+
+
+15.2 EXAMPLE
+------------
+
+Suppose M1 has:
+
+    Q1 = {A, B}
+
+and M2 has:
+
+    Q2 = {X, Y}
+
+Then product states are:
+
+    (A,X)
+    (A,Y)
+    (B,X)
+    (B,Y)
+
+
+ASCII:
+
+                  M2 states
+
+                X          Y
+             +----------+----------+
+        A    |  (A,X)   |  (A,Y)   |
+             +----------+----------+
+        B    |  (B,X)   |  (B,Y)   |
+             +----------+----------+
+
+
+15.3 TRANSITION
+---------------
+
+If:
+
+    δ1(q1,a) = p1
+
+and:
+
+    δ2(q2,a) = p2
+
+then product transition is:
+
+    δ((q1,q2),a) = (p1,p2)
+
+
+In simple words:
+
+    Read the same input symbol in both machines
+    and record both resulting states.
+
+
+======================================================================
+16. PRODUCT CONSTRUCTION FOR INTERSECTION
+======================================================================
+
+For:
+
+    L1 ∩ L2
+
+the product DFA accepts when BOTH machines are in final states.
+
+If:
+
+    F1 = final states of M1
+    F2 = final states of M2
+
+then:
+
+    F = F1 × F2
+
+
+That means:
+
+    (q1,q2) is final
+    iff
+    q1 ∈ F1 AND q2 ∈ F2
+
+
+ASCII:
+
+       M1                         M2
+       |                          |
+       v                          v
+   current q1                current q2
+       |                          |
+       +------------+-------------+
+                    |
+                    v
+                 (q1,q2)
+                    |
+            BOTH final?
+               /       \
+             YES        NO
+              |          |
+           ACCEPT      REJECT
+
+
+======================================================================
+17. PRODUCT CONSTRUCTION FOR UNION
+======================================================================
+
+For:
+
+    L1 ∪ L2
+
+the product DFA accepts when AT LEAST ONE machine is in a final state.
+
+Therefore:
+
+    (q1,q2) is final
+
+if:
+
+    q1 ∈ F1 OR q2 ∈ F2
+
+
+Truth table:
+
+    M1       M2       UNION
+    --------------------------------
+    No       No       No
+    No       Yes      Yes
+    Yes      No       Yes
+    Yes      Yes      Yes
+
+
+Compare with intersection:
+
+    M1       M2       INTERSECTION
+    --------------------------------
+    No       No       No
+    No       Yes      No
+    Yes      No       No
+    Yes      Yes      Yes
+
+
+======================================================================
+18. PRODUCT CONSTRUCTION — GENERAL IDEA
+======================================================================
+
+The product construction is closely related to Boolean logic.
+
+For each pair of states:
+
+    (q1,q2)
+
+we remember the state of both machines.
+
+Then we decide whether the pair is accepting according to the
+required operation.
+
+Examples:
+
+    UNION:
+        q1 final OR q2 final
+
+    INTERSECTION:
+        q1 final AND q2 final
+
+    DIFFERENCE:
+        q1 final AND q2 not final
+
+
+This is extremely useful in exam problems.
+
+
+======================================================================
+19. CLOSURE USING REGULAR EXPRESSIONS
+======================================================================
+
+Another way to understand closure is through regular expressions.
+
+Regular expressions are built from operations such as:
+
+    • Union
+    • Concatenation
+    • Kleene Star
+
+Therefore, if:
+
+    R1
+
+and:
+
+    R2
+
+are regular expressions, then:
+
+    R1 | R2
+
+is also a regular expression.
+
+Likewise:
+
+    R1R2
+
+and:
+
+    R1*
+
+are regular expressions.
+
+Hence the languages represented by them are regular.
+
+
+Example:
+
+    R1 = 0*
+    R2 = 1*
+
+Then:
+
+    R1R2 = 0*1*
+
+represents:
+
+    {0^i 1^j | i,j >= 0}
+
+which is regular.
+
+
+======================================================================
+20. CLOSURE USING NFA
+======================================================================
+
+NFAs are especially convenient for several constructions.
+
+UNION:
+
+    Create a new start state.
+
+    From new start:
+          ε → NFA1
+          ε → NFA2
+
+ASCII:
+
+                  ε ---> NFA1
+                 /
+        new q0 --
+                 \
+                  ε ---> NFA2
+
+
+CONCATENATION:
+
+    Connect final states of NFA1 to start of NFA2 using ε.
+
+
+KLEENE STAR:
+
+    Add a new start/final state and ε-transitions that allow the
+    machine to repeat the original NFA zero or more times.
+
+
+REVERSAL:
+
+    Reverse transitions and use a new start state if necessary.
+
+
+======================================================================
+21. IMPORTANT THEOREM
+======================================================================
+
+THEOREM:
+
+    The class of regular languages is closed under:
+
+    • Union
+    • Intersection
+    • Complement
+    • Difference
+    • Concatenation
+    • Kleene Star
+    • Kleene Plus
+    • Reversal
+    • Homomorphism
+    • Inverse Homomorphism
+
+
+Meaning:
+
+    Starting with regular languages and applying any of these
+    operations produces another regular language.
+
+
+======================================================================
+22. HOW TO SOLVE CLOSURE QUESTIONS
+======================================================================
+
+When you see:
+
+    "L1 and L2 are regular. Prove that ______ is regular."
+
+Use this strategy:
+
+STEP 1:
+    Identify the operation.
+
+STEP 2:
+    Recall the closure property.
+
+STEP 3:
+    State that L1 and L2 are regular.
+
+STEP 4:
+    Apply the appropriate closure theorem.
+
+STEP 5:
+    Conclude that the resulting language is regular.
+
+
+Example:
+
+    Given:
+        L1 is regular
+        L2 is regular
+
+    Prove:
+        L1 - L2 is regular.
+
+
+Solution:
+
+    L1 - L2 = L1 ∩ L2ᶜ
+
+    Since L2 is regular:
+        L2ᶜ is regular.
+
+    Since regular languages are closed under intersection:
+        L1 ∩ L2ᶜ is regular.
+
+    Therefore:
+        L1 - L2 is regular.
+
+
+======================================================================
+23. IMPORTANT EXAM DISTINCTIONS
+======================================================================
+
+UNION vs INTERSECTION
+---------------------
+
+Union:
+    At least one language contains the string.
+
+Intersection:
+    Both languages contain the string.
+
+
+STAR vs PLUS
+------------
+
+L*:
+    zero or more repetitions.
+
+L+:
+    one or more repetitions.
+
+
+COMPLEMENT vs DIFFERENCE
+------------------------
+
+Complement:
+
+    Lᶜ = Σ* - L
+
+Difference:
+
+    L1 - L2 = L1 ∩ L2ᶜ
+
+
+HOMOMORPHISM vs INVERSE HOMOMORPHISM
+------------------------------------
+
+Homomorphism:
+
+    Start with a string w
+    ↓
+    Apply h
+    ↓
+    h(w)
+
+
+Inverse homomorphism:
+
+    Start with language L
+    ↓
+    Find all w such that h(w) ∈ L
+
+
+======================================================================
+24. COMMON MISTAKES
+======================================================================
+
+MISTAKE 1:
+    Thinking "closed" means every language is regular.
+
+CORRECT:
+    Only when the input languages are already regular.
+
+
+MISTAKE 2:
+    Forgetting ε in L*.
+
+CORRECT:
+    L* always contains ε.
+
+
+MISTAKE 3:
+    Thinking L+ always contains ε.
+
+CORRECT:
+    Not necessarily.
+
+
+MISTAKE 4:
+    Using DFA state swapping for complement when the DFA is incomplete.
+
+CORRECT:
+    Complete the DFA first.
+
+
+MISTAKE 5:
+    Confusing:
+
+        L1 - L2
+
+    with:
+
+        L2 - L1
+
+They are generally different.
+
+
+MISTAKE 6:
+    For intersection, accepting if either DFA accepts.
+
+CORRECT:
+    Both must accept.
+
+
+MISTAKE 7:
+    For union, requiring both DFAs to accept.
+
+CORRECT:
+    At least one must accept.
+
+
+======================================================================
+25. B.TECH EXAM PERSPECTIVE
+======================================================================
+
+VERY IMPORTANT QUESTIONS:
+
+1. Define closure property.
+
+2. Prove that regular languages are closed under union.
+
+3. Prove that regular languages are closed under intersection.
+
+4. Prove closure under complement.
+
+5. Prove closure under concatenation.
+
+6. Prove closure under Kleene star.
+
+7. Explain closure under reversal.
+
+8. Explain product construction.
+
+9. Prove that regular languages are closed under difference.
+
+10. Explain homomorphism and inverse homomorphism.
+
+11. Construct a DFA for L1 ∩ L2 using product construction.
+
+12. Construct a DFA for L1 ∪ L2 using product construction.
+
+
+======================================================================
+26. GATE / COMPETITIVE EXAM PERSPECTIVE
+======================================================================
+
+Remember these facts:
+
+    REGULAR ∩ REGULAR = REGULAR
+
+    REGULAR ∪ REGULAR = REGULAR
+
+    complement(REGULAR) = REGULAR
+
+    REGULAR - REGULAR = REGULAR
+
+    REGULAR · REGULAR = REGULAR
+
+    REGULAR* = REGULAR
+
+    REGULAR+ = REGULAR
+
+    reverse(REGULAR) = REGULAR
+
+    h(REGULAR) = REGULAR
+
+    h⁻¹(REGULAR) = REGULAR
+
+
+A common GATE trick is to give two regular languages and ask about
+an operation on them.
+
+First identify the operation.
+
+Then recall closure.
+
+
+======================================================================
+27. PRACTICE QUESTIONS — LEVEL 1
+======================================================================
+
+Q1. What does "closed under an operation" mean?
+
+Q2. Is the union of two regular languages always regular?
+
+Q3. Is the intersection of two regular languages always regular?
+
+Q4. What does L* mean?
+
+Q5. Does L* always contain ε?
+
+Q6. What does L+ mean?
+
+Q7. What is the difference between L* and L+?
+
+Q8. Define L1 - L2.
+
+Q9. Define complement of L.
+
+Q10. What is string reversal?
+
+
+======================================================================
+28. PRACTICE QUESTIONS — LEVEL 2
+======================================================================
+
+Q11. Let:
+
+    L1 = {a, ab, b}
+    L2 = {b, bb, ab}
+
+Find:
+
+    L1 ∪ L2
+
+    L1 ∩ L2
+
+    L1 - L2
+
+
+Q12. Let:
+
+    L = {a}
+
+Find:
+
+    L*
+
+and:
+
+    L+
+
+
+Q13. Let:
+
+    L = {ab, abc, 10}
+
+Find:
+
+    Lᴿ
+
+
+Q14. If L1 and L2 are regular, explain why:
+
+    L1 ∪ L2
+
+is regular.
+
+
+Q15. If L1 and L2 are regular, prove:
+
+    L1 - L2
+
+is regular.
+
+
+======================================================================
+29. PRACTICE QUESTIONS — LEVEL 3
+======================================================================
+
+Q16. Two DFAs M1 and M2 have 3 and 4 states respectively.
+
+What is the maximum number of states in their product DFA?
+
+
+Q17. Explain how product construction can be used to recognize:
+
+    L1 ∩ L2
+
+
+Q18. Explain how product construction can be used to recognize:
+
+    L1 ∪ L2
+
+
+Q19. Explain how product construction can be used to recognize:
+
+    L1 - L2
+
+
+Q20. Why must a DFA be complete before directly swapping its final
+states and non-final states to obtain the complement?
+
+
+======================================================================
+30. GATE-STYLE THINKING QUESTION
+======================================================================
+
+Suppose:
+
+    L1 is regular
+    L2 is regular.
+
+Which of the following must be regular?
+
+    A. L1 ∪ L2
+    B. L1 ∩ L2
+    C. L1 - L2
+    D. L1L2
+
+Correct concept:
+
+    ALL OF THEM.
+
+Reason:
+
+    Regular languages are closed under all four operations.
+
+
+======================================================================
+31. ACTIVE RECALL — DO NOT LOOK AT NOTES
+======================================================================
+
+Try answering these yourself:
+
+Q1. What does closure mean?
+
+Q2. What does it mean for regular languages to be closed under union?
+
+Q3. What is the difference between union and intersection?
+
+Q4. What is the complement of L?
+
+Q5. Why is difference also a closure property?
+
+Q6. What is L*?
+
+Q7. What is L+?
+
+Q8. What is the relationship between L* and L+?
+
+Q9. What is product construction?
+
+Q10. For intersection, when is a product state final?
+
+Q11. For union, when is a product state final?
+
+Q12. Why is a complete DFA important for complement?
+
+Q13. What is reversal of a language?
+
+Q14. What is a homomorphism?
+
+Q15. What is inverse homomorphism?
+
+
+======================================================================
+32. CHAPTER 9 QUICK REVISION
+======================================================================
+
+                    REGULAR LANGUAGES
+                           |
+          +----------------+----------------+
+          |                |                |
+        UNION        INTERSECTION       COMPLEMENT
+          |                |                |
+          +----------------+----------------+
+                           |
+                    DIFFERENCE
+                           |
+                    CONCATENATION
+                           |
+                      KLEENE STAR
+                           |
+                      KLEENE PLUS
+                           |
+                       REVERSAL
+                           |
+                    HOMOMORPHISM
+                           |
+                INVERSE HOMOMORPHISM
+                           |
+                           v
+                      REGULAR
+
+
+MOST IMPORTANT FORMULAS:
+
+    L1 ∪ L2
+        = strings in L1 OR L2
+
+    L1 ∩ L2
+        = strings in both L1 and L2
+
+    Lᶜ
+        = Σ* - L
+
+    L1 - L2
+        = L1 ∩ L2ᶜ
+
+    L*
+        = L⁰ ∪ L¹ ∪ L² ∪ ...
+
+    L+
+        = L¹ ∪ L² ∪ L³ ∪ ...
+
+    L+
+        = LL*
+
+    L*
+        = {ε} ∪ L+
+
+
+======================================================================
+33. CHAPTER 9 EXAM CHEAT SHEET
+======================================================================
+
+                    REGULAR LANGUAGE
+                           |
+       +-------------------+-------------------+
+       |                   |                   |
+      DFA                 NFA                  RE
+       |                   |                   |
+       +-------------------+-------------------+
+                           |
+                    Closure Properties
+                           |
+       +-------+-------+-------+-------+-------+
+       |       |       |       |       |       |
+      ∪       ∩       -       *       +       reverse
+       |       |       |       |       |       |
+      YES     YES     YES     YES     YES     YES
+
+Additional:
+    Complement       → YES
+    Homomorphism     → YES
+    Inverse Hom.     → YES
+
+
+PRODUCT CONSTRUCTION:
+
+    States = Q1 × Q2
+
+For intersection:
+    final = F1 × F2
+
+For union:
+    final if q1 ∈ F1 OR q2 ∈ F2
+
+For difference:
+    final if q1 ∈ F1 AND q2 ∉ F2
+
+
+======================================================================
+34. FINAL CHAPTER SUMMARY
+======================================================================
+
+The central idea of Chapter 9 is:
+
+    "Regular languages remain regular when we apply many standard
+     language operations to them."
+
+You learned:
+
+    1. Closure
+    2. Union
+    3. Intersection
+    4. Complement
+    5. Difference
+    6. Concatenation
+    7. Kleene Star
+    8. Kleene Plus
+    9. Reversal
+    10. Homomorphism
+    11. Inverse Homomorphism
+    12. Closure proofs
+    13. DFA-based constructions
+    14. NFA-based constructions
+    15. Regular-expression reasoning
+    16. Product construction
+
+
+THE MOST IMPORTANT IDEA TO REMEMBER:
+
+    If L1 and L2 are REGULAR,
+
+    then applying the standard closure operations produces
+    another REGULAR LANGUAGE.
+
+
+======================================================================
+PROGRESS
+======================================================================
+
+PHASE 1  [✓] Foundations
+PHASE 2  [✓] Formal Languages
+PHASE 3  [✓] Finite Automata
+PHASE 4  [✓] Regular Languages
+PHASE 5  [✓] DFA/NFA Minimization
+PHASE 6  [✓] Properties of Regular Languages — Chapter 9
+
+CURRENT POSITION:
+    Chapter 9 — Closure Properties of Regular Languages
+    COMPLETED
+
+UPCOMING NEXT TOPIC:
+    CHAPTER 10 — PUMPING LEMMA FOR REGULAR LANGUAGES
+
+    First topic:
+        10.1 Pumping Lemma — Why the Pumping Lemma is Required
+
+
+IMPORTANT:
+Do NOT move to Chapter 10 until you type:
+
+    NEXT
+
+======================================================================

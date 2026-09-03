@@ -1,0 +1,1645 @@
+======================================================================
+                 THEORY OF COMPUTATION — CHAPTER 8
+              MINIMIZATION OF FINITE AUTOMATA
+======================================================================
+
+PHASE 5 — DFA/NFA MINIMIZATION
+
+Chapter 8 contains:
+
+8.1 DFA MINIMIZATION
+    • Why minimization is needed
+    • Equivalent states
+    • Distinguishable states
+    • Indistinguishable states
+
+8.2 MINIMIZATION METHODS
+    • Partition method
+    • Table-filling method
+    • State equivalence
+    • Iterative refinement
+
+8.3 DFA MINIMIZATION PROCEDURE
+    • Remove unreachable states
+    • Initial partition
+    • Partition refinement
+    • Merge equivalent states
+    • Construct minimized DFA
+
+8.4 MYHILL-NERODE FOUNDATION
+    • Distinguishability
+    • Right congruence
+    • Equivalence classes
+    • Myhill-Nerode relation
+    • Myhill-Nerode theorem
+    • Connection to minimal DFA
+
+
+======================================================================
+8.1 DFA MINIMIZATION
+======================================================================
+
+----------------------------------------------------------------------
+1. TOPIC INTRODUCTION
+----------------------------------------------------------------------
+
+A DFA can sometimes contain more states than it actually needs.
+
+Two or more states may behave exactly the same for every possible
+future input.
+
+If two states always produce the same final decision, we do not need
+to keep both states separately.
+
+We can merge them.
+
+This process is called:
+
+                    DFA MINIMIZATION
+
+The goal is to construct an equivalent DFA having the minimum possible
+number of states.
+
+"Equivalent" means:
+
+    The original DFA and minimized DFA accept exactly the same language.
+
+Important:
+
+    Minimization changes the structure of the DFA,
+    but NOT the language accepted by the DFA.
+
+
+----------------------------------------------------------------------
+2. WHY DO WE STUDY DFA MINIMIZATION?
+----------------------------------------------------------------------
+
+Suppose a DFA has:
+
+    100 states
+
+but several states perform exactly the same job.
+
+We may be able to reduce it to:
+
+    60 states
+
+or even:
+
+    20 states.
+
+A smaller DFA is useful because:
+
+    • It is easier to understand.
+    • It is easier to implement.
+    • It uses less memory.
+    • It makes proofs easier.
+    • It is important in compiler design.
+    • It is important in pattern matching.
+    • It is frequently asked in B.Tech exams.
+    • It is very important for GATE.
+
+
+----------------------------------------------------------------------
+3. SIMPLE DEFINITION
+----------------------------------------------------------------------
+
+DFA minimization is the process of converting a DFA into an equivalent
+DFA with the minimum possible number of states.
+
+In simple words:
+
+    REMOVE unnecessary states
+             +
+    MERGE equivalent states
+             =
+    MINIMUM DFA
+
+
+----------------------------------------------------------------------
+4. FORMAL IDEA
+----------------------------------------------------------------------
+
+Suppose:
+
+    M = (Q, Σ, δ, q0, F)
+
+is a DFA.
+
+A minimized DFA:
+
+    M' = (Q', Σ, δ', q0', F')
+
+must satisfy:
+
+    L(M) = L(M')
+
+where:
+
+    L(M) = language accepted by original DFA
+    L(M') = language accepted by minimized DFA
+
+and M' has the minimum possible number of states.
+
+Therefore:
+
+    |Q'| ≤ |Q|
+
+while preserving the accepted language.
+
+
+======================================================================
+5. IMPORTANT TERMINOLOGY
+======================================================================
+
+5.1 REACHABLE STATE
+-------------------
+
+A state is reachable if there exists some input string that can take
+the DFA from the start state to that state.
+
+Example:
+
+        0
+   --> q0 -----> q1
+
+q1 is reachable because input "0" takes q0 to q1.
+
+If a state cannot be reached from the start state using any input,
+it is called an:
+
+    UNREACHABLE STATE
+
+
+5.2 EQUIVALENT STATES
+---------------------
+
+Two states are equivalent if no possible future input can distinguish
+their behavior.
+
+Suppose q1 and q2 are equivalent.
+
+For every string w:
+
+    δ*(q1,w) is accepting
+        exactly when
+    δ*(q2,w) is accepting.
+
+Here δ* means:
+
+    "process the entire string w starting from the given state."
+
+
+5.3 DISTINGUISHABLE STATES
+--------------------------
+
+Two states are distinguishable if there exists at least one string
+that makes one state accept and the other reject.
+
+Formally, q1 and q2 are distinguishable if there exists some string w
+such that:
+
+    δ*(q1,w) ∈ F
+
+but
+
+    δ*(q2,w) ∉ F
+
+OR vice versa.
+
+
+5.4 INDISTINGUISHABLE STATES
+----------------------------
+
+If no string can distinguish two states, they are indistinguishable.
+
+Therefore:
+
+    Indistinguishable states
+            =
+    Equivalent states
+
+
+======================================================================
+6. REAL-WORLD ANALOGY
+======================================================================
+
+Imagine two employees in a company.
+
+Whenever a customer asks either employee any possible question,
+both employees always give exactly the same type of answer.
+
+Then keeping both employees for the same job may be unnecessary.
+
+We can think of them as performing the same function.
+
+Similarly, if two DFA states always behave identically for every
+possible future input, we can merge them.
+
+
+======================================================================
+7. BASIC EXAMPLE
+======================================================================
+
+Consider:
+
+        0
+   --> A --------> B*
+       |           |
+       |           |
+       1           0
+       |           |
+       v           v
+       C --------> D
+        0
+
+Suppose the transition behavior of B and D is identical.
+
+Then B and D may be equivalent.
+
+Instead of:
+
+    B
+    D
+
+we can create one state:
+
+    BD
+
+
+======================================================================
+8. IMPORTANT OBSERVATION
+======================================================================
+
+Two states are NOT equivalent merely because they have similar names,
+similar arrows, or similar immediate transitions.
+
+We must consider:
+
+    EVERY POSSIBLE FUTURE INPUT STRING.
+
+This is one of the most important ideas in DFA minimization.
+
+
+======================================================================
+8.2 MINIMIZATION METHODS
+======================================================================
+
+There are two major methods commonly used:
+
+    1. Partition method
+    2. Table-filling method
+
+
+----------------------------------------------------------------------
+METHOD 1 — PARTITION METHOD
+----------------------------------------------------------------------
+
+The partition method divides states into groups.
+
+Initially, we separate:
+
+    FINAL STATES
+        from
+    NON-FINAL STATES
+
+because a final state and a non-final state can immediately be
+distinguished by the empty string ε.
+
+Then we repeatedly split groups whenever two states behave differently
+under some input symbol.
+
+Finally, every group contains equivalent states.
+
+Each group becomes one state in the minimized DFA.
+
+
+----------------------------------------------------------------------
+METHOD 2 — TABLE-FILLING METHOD
+----------------------------------------------------------------------
+
+The table-filling method examines pairs of states.
+
+For every pair:
+
+    Mark the pair if the states are distinguishable.
+
+Unmarked pairs are equivalent.
+
+Then merge equivalent states.
+
+This method is also called:
+
+    Distinguishability table method.
+
+
+======================================================================
+8.3 DFA MINIMIZATION PROCEDURE
+======================================================================
+
+The standard minimization procedure is:
+
+    STEP 1 → Remove unreachable states
+    STEP 2 → Separate final and non-final states
+    STEP 3 → Refine the partitions
+    STEP 4 → Merge equivalent states
+    STEP 5 → Construct the minimized DFA
+
+
+======================================================================
+STEP 1 — REMOVE UNREACHABLE STATES
+======================================================================
+
+First determine which states can actually be reached from q0.
+
+Any state that can never be reached is irrelevant to the language.
+
+Example:
+
+             0
+        --> A -----> B*
+             |
+             1
+             v
+             C
+
+Suppose there is another state:
+
+             D*
+
+but no path from A to D exists.
+
+Then D is unreachable.
+
+Remove D.
+
+
+======================================================================
+STEP 2 — INITIAL PARTITION
+======================================================================
+
+Divide states into two groups:
+
+    P0 = {Final states}
+         +
+         {Non-final states}
+
+Why?
+
+Because a final and non-final state are automatically distinguishable.
+
+For example:
+
+    Q = {A, B, C, D}
+
+    F = {C, D}
+
+Then:
+
+    P0 = {{A,B}, {C,D}}
+
+We do NOT put a final state and non-final state in the same group.
+
+
+======================================================================
+STEP 3 — PARTITION REFINEMENT
+======================================================================
+
+Now examine states inside each group.
+
+For every input symbol, check where each state goes.
+
+If two states go to different groups, they cannot remain together.
+
+Split the group.
+
+Repeat until no further splitting is possible.
+
+
+======================================================================
+STEP 4 — MERGE EQUIVALENT STATES
+======================================================================
+
+After refinement stops, every group contains equivalent states.
+
+Each group becomes one state.
+
+For example:
+
+    {A,B}      → X
+    {C}        → Y
+    {D,E}      → Z
+
+Then the minimized DFA contains:
+
+    X, Y, Z
+
+instead of:
+
+    A, B, C, D, E
+
+
+======================================================================
+STEP 5 — CONSTRUCT MINIMIZED DFA
+======================================================================
+
+For every group:
+
+    • Create one new state.
+    • Determine the new start state.
+    • Determine the new final states.
+    • Determine transitions between groups.
+
+
+======================================================================
+DETAILED PARTITION METHOD EXAMPLE
+======================================================================
+
+Consider the DFA:
+
+States:
+
+    Q = {A, B, C, D}
+
+Alphabet:
+
+    Σ = {0,1}
+
+Start state:
+
+    A
+
+Final states:
+
+    F = {C,D}
+
+Transition table:
+
+    +-------+-----+-----+
+    | State |  0  |  1  |
+    +-------+-----+-----+
+    |   A   |  B  |  C  |
+    |   B   |  A  |  D  |
+    |   C   |  C  |  D  |
+    |   D   |  C  |  D  |
+    +-------+-----+-----+
+
+
+STEP 1:
+Check reachability.
+
+From A:
+
+    A --0--> B
+    A --1--> C
+
+From B:
+
+    B --0--> A
+    B --1--> D
+
+C and D are also reachable.
+
+Therefore:
+
+    No unreachable states.
+
+
+STEP 2:
+Initial partition.
+
+Non-final states:
+
+    {A,B}
+
+Final states:
+
+    {C,D}
+
+Therefore:
+
+    P0 = {{A,B}, {C,D}}
+
+
+STEP 3:
+Check group {A,B}.
+
+For A:
+
+    0 → B → group {A,B}
+    1 → C → group {C,D}
+
+For B:
+
+    0 → A → group {A,B}
+    1 → D → group {C,D}
+
+Both have the same group behavior:
+
+    A: 0 → {A,B}, 1 → {C,D}
+    B: 0 → {A,B}, 1 → {C,D}
+
+Therefore:
+
+    A and B remain together.
+
+
+Now check {C,D}.
+
+For C:
+
+    0 → C → {C,D}
+    1 → D → {C,D}
+
+For D:
+
+    0 → C → {C,D}
+    1 → D → {C,D}
+
+Therefore:
+
+    C and D remain together.
+
+
+No group needs further splitting.
+
+Final partition:
+
+    {{A,B}, {C,D}}
+
+
+Therefore:
+
+    A ≡ B
+    C ≡ D
+
+
+Merge:
+
+    A,B → X
+    C,D → Y
+
+
+The minimized DFA has only two states.
+
+
+MINIMIZED DFA:
+
+             1
+        +----------+
+        |          v
+     -->X --------> Y*
+        ^            |
+        |            |
+        +------------+
+             0
+
+More precisely:
+
+    X --0--> X
+    X --1--> Y
+    Y --0--> Y
+    Y --1--> Y
+
+
+Transition table:
+
+    +-------+-----+-----+
+    | State |  0  |  1  |
+    +-------+-----+-----+
+    |   X   |  X  |  Y  |
+    |   Y   |  Y  |  Y  |
+    +-------+-----+-----+
+
+Start state:
+
+    X
+
+Final state:
+
+    Y
+
+
+======================================================================
+8.4 TABLE-FILLING METHOD
+======================================================================
+
+The table-filling method works by finding distinguishable pairs.
+
+Suppose:
+
+    Q = {A,B,C,D}
+
+We consider pairs:
+
+    (A,B)
+    (A,C)
+    (A,D)
+    (B,C)
+    (B,D)
+    (C,D)
+
+We do not need:
+
+    (B,A)
+
+because (A,B) and (B,A) represent the same pair.
+
+
+----------------------------------------------------------------------
+STEP 1 — MARK FINAL/NON-FINAL PAIRS
+----------------------------------------------------------------------
+
+If one state is final and the other is non-final, mark the pair.
+
+Example:
+
+    Final = {C,D}
+
+    Non-final = {A,B}
+
+Then mark:
+
+    (A,C)
+    (A,D)
+    (B,C)
+    (B,D)
+
+Why?
+
+Because ε itself distinguishes them.
+
+Starting at a final state:
+
+    ε → accept
+
+Starting at a non-final state:
+
+    ε → reject
+
+
+----------------------------------------------------------------------
+STEP 2 — CHECK UNMARKED PAIRS
+----------------------------------------------------------------------
+
+Suppose (A,B) is currently unmarked.
+
+For each input symbol x:
+
+    δ(A,x)
+    δ(B,x)
+
+are examined.
+
+If the resulting pair is already marked, then:
+
+    (A,B)
+
+must also be marked.
+
+
+----------------------------------------------------------------------
+STEP 3 — REPEAT
+----------------------------------------------------------------------
+
+Continue until no new pair can be marked.
+
+At the end:
+
+    Marked pair
+        =
+    distinguishable states
+
+    Unmarked pair
+        =
+    equivalent states
+
+
+======================================================================
+TABLE-FILLING EXAMPLE
+======================================================================
+
+Using our earlier DFA:
+
+    +-------+-----+-----+
+    | State |  0  |  1  |
+    +-------+-----+-----+
+    |   A   |  B  |  C  |
+    |   B   |  A  |  D  |
+    |   C   |  C  |  D  |
+    |   D   |  C  |  D  |
+    +-------+-----+-----+
+
+Final:
+
+    C,D
+
+
+Pairs:
+
+    (A,B)
+    (A,C)
+    (A,D)
+    (B,C)
+    (B,D)
+    (C,D)
+
+
+Initial marking:
+
+    (A,C)  X
+    (A,D)  X
+    (B,C)  X
+    (B,D)  X
+
+because one is final and one is non-final.
+
+Now inspect (A,B).
+
+On input 0:
+
+    A --0--> B
+    B --0--> A
+
+Pair:
+
+    (B,A)
+
+which is the same as:
+
+    (A,B)
+
+No distinction yet.
+
+On input 1:
+
+    A --1--> C
+    B --1--> D
+
+Pair:
+
+    (C,D)
+
+This pair is NOT marked.
+
+Therefore:
+
+    (A,B) remains unmarked.
+
+Hence:
+
+    A and B are equivalent.
+
+
+Now inspect (C,D).
+
+On input 0:
+
+    C → C
+    D → C
+
+Pair:
+
+    (C,C)
+
+No distinction.
+
+On input 1:
+
+    C → D
+    D → D
+
+Pair:
+
+    (D,D)
+
+No distinction.
+
+Therefore:
+
+    C and D are equivalent.
+
+
+Result:
+
+    A ≡ B
+    C ≡ D
+
+
+======================================================================
+PARTITION METHOD vs TABLE-FILLING METHOD
+======================================================================
+
++----------------------+----------------------------+
+| Partition Method     | Table-Filling Method       |
++----------------------+----------------------------+
+| Groups states        | Examines pairs of states   |
+| Uses partitions       | Uses distinguishability    |
+| Repeated splitting    | Repeated marking           |
+| Very systematic       | Very useful for exams      |
+| Produces equivalence  | Produces equivalent pairs  |
+| classes               |                            |
++----------------------+----------------------------+
+
+
+======================================================================
+IMPORTANT CONCEPT — STATE EQUIVALENCE
+======================================================================
+
+Let p and q be states of a DFA.
+
+We say:
+
+    p ≡ q
+
+if for every string w ∈ Σ*:
+
+    δ*(p,w) ∈ F
+        iff
+    δ*(q,w) ∈ F
+
+In simple words:
+
+    No input string can make p and q behave differently
+    with respect to acceptance.
+
+
+======================================================================
+IMPORTANT CONCEPT — DISTINGUISHABILITY
+======================================================================
+
+p and q are distinguishable if there exists some string w such that:
+
+    δ*(p,w) ∈ F
+    and
+    δ*(q,w) ∉ F
+
+or:
+
+    δ*(p,w) ∉ F
+    and
+    δ*(q,w) ∈ F
+
+
+Example:
+
+Suppose:
+
+    p --0--> final state
+    q --0--> non-final state
+
+Then string:
+
+    w = 0
+
+distinguishes p and q.
+
+Therefore:
+
+    p ≠ q
+    in the equivalence sense.
+
+
+======================================================================
+IMPORTANT FACT
+======================================================================
+
+Final vs non-final states are ALWAYS distinguishable.
+
+Why?
+
+Because:
+
+    ε
+
+distinguishes them.
+
+If p is final and q is not final:
+
+    Starting from p:
+        ε is accepted.
+
+    Starting from q:
+        ε is rejected.
+
+
+======================================================================
+ITERATIVE REFINEMENT
+======================================================================
+
+Partition refinement means repeatedly splitting groups.
+
+Example:
+
+Initial:
+
+    P0 = {{A,B,C}, {D,E}}
+
+Suppose A and B behave identically but C behaves differently.
+
+Then:
+
+    P1 = {{A,B}, {C}, {D,E}}
+
+Suppose later D and E behave differently.
+
+Then:
+
+    P2 = {{A,B}, {C}, {D}, {E}}
+
+If no further splitting is possible:
+
+    Pfinal = {{A,B}, {C}, {D}, {E}}
+
+Therefore only A and B are equivalent.
+
+
+======================================================================
+WHY DOES MINIMIZATION WORK?
+======================================================================
+
+The central idea is:
+
+    If two states cannot be distinguished by ANY possible input,
+    then they have identical future behavior.
+
+Therefore, we do not need two separate states.
+
+We can replace:
+
+        p       q
+
+with:
+
+        [p,q]
+
+This does not change whether any input string is accepted.
+
+
+======================================================================
+ASCII VIEW OF MERGING
+======================================================================
+
+BEFORE:
+
+             0
+        +--------+
+        |        |
+        v        |
+     -->A -----> B*
+        |        |
+        |        |
+        +----?---+
+
+Suppose A and another state C are equivalent.
+
+Then:
+
+    A ≡ C
+
+Merge them:
+
+AFTER:
+
+             +-------+
+             |       |
+             v       |
+          -->[A,C] ----> B*
+             ^            |
+             |            |
+             +------------+
+
+
+======================================================================
+MYHILL-NERODE FOUNDATION
+======================================================================
+
+DFA minimization has a deeper mathematical foundation called:
+
+                    MYHILL-NERODE THEORY
+
+
+----------------------------------------------------------------------
+1. DISTINGUISHABILITY
+----------------------------------------------------------------------
+
+Two strings x and y are distinguishable with respect to language L
+if there exists some string z such that:
+
+    xz ∈ L
+
+but:
+
+    yz ∉ L
+
+or vice versa.
+
+Meaning:
+
+    x and y may look different now,
+    but we ask whether some SAME future continuation z
+    can make their acceptance behavior different.
+
+
+----------------------------------------------------------------------
+2. INTUITION
+----------------------------------------------------------------------
+
+Imagine that x and y are two partial inputs.
+
+We ask:
+
+    "Can I append something to one or both of them
+     that causes different acceptance results?"
+
+If YES:
+
+    x and y are distinguishable.
+
+If NO:
+
+    x and y are equivalent with respect to L.
+
+
+======================================================================
+3. RIGHT CONGRUENCE
+======================================================================
+
+A relation ~ on strings is useful when:
+
+    x ~ y
+
+means that x and y have the same future behavior.
+
+For language L:
+
+    x ~L y
+
+if for every z ∈ Σ*:
+
+    xz ∈ L  iff  yz ∈ L
+
+
+In words:
+
+    No continuation z can distinguish x and y.
+
+
+======================================================================
+4. EQUIVALENCE CLASSES
+======================================================================
+
+An equivalence class contains all strings that have the same future
+behavior.
+
+For example, suppose a language only cares about whether the number
+of 1s seen so far is even or odd.
+
+Then strings can be divided into two groups:
+
+    EVEN number of 1s
+
+and:
+
+    ODD number of 1s
+
+
+For example:
+
+    EVEN:
+        ε
+        0
+        00
+        11
+        101
+        110
+
+    ODD:
+        1
+        01
+        10
+        111
+        1011
+
+
+A minimized DFA needs one state for each distinct future-behavior
+class.
+
+Therefore:
+
+    2 equivalence classes
+        ↓
+    2 states in minimal DFA.
+
+
+======================================================================
+5. MYHILL-NERODE RELATION
+======================================================================
+
+For a language L, define:
+
+    x ≡L y
+
+if:
+
+    for every z ∈ Σ*,
+
+    xz ∈ L  iff  yz ∈ L
+
+
+This means:
+
+    x and y cannot be distinguished by any continuation z.
+
+
+======================================================================
+6. MYHILL-NERODE THEOREM
+======================================================================
+
+The most important statement is:
+
+    A language L is regular
+    IF AND ONLY IF
+    L has a finite number of Myhill-Nerode equivalence classes.
+
+
+In addition:
+
+    The number of states in the minimal DFA
+    equals the number of Myhill-Nerode equivalence classes.
+
+
+This gives a mathematical explanation for DFA minimization.
+
+
+======================================================================
+IMPORTANT CONSEQUENCE
+======================================================================
+
+If a language has:
+
+    5 equivalence classes
+
+then its minimal DFA has exactly:
+
+    5 states.
+
+
+If a language has:
+
+    infinitely many equivalence classes
+
+then:
+
+    the language is NOT regular.
+
+
+This is extremely important for proving that languages are
+non-regular.
+
+
+======================================================================
+MYHILL-NERODE AND MINIMAL DFA
+======================================================================
+
+The connection can be visualized as:
+
+        Strings
+           |
+           v
+   Group strings having
+   identical future behavior
+           |
+           v
+   Equivalence classes
+           |
+           v
+   One DFA state per class
+           |
+           v
+      MINIMAL DFA
+
+
+======================================================================
+DFA MINIMIZATION — COMPLETE FLOW
+======================================================================
+
+                    ORIGINAL DFA
+                         |
+                         v
+              Remove unreachable states
+                         |
+                         v
+              Separate final/non-final
+                         |
+                         v
+                 Initial partition
+                         |
+                         v
+                Refine partitions
+                         |
+                         v
+              Find equivalent states
+                         |
+                         v
+                 Merge states
+                         |
+                         v
+                MINIMAL DFA
+                         |
+                         v
+           Same language as original DFA
+
+
+======================================================================
+VERY IMPORTANT DIFFERENCES
+======================================================================
+
+1. EQUIVALENT vs DISTINGUISHABLE
+
+Equivalent:
+    No string can distinguish the states.
+
+Distinguishable:
+    At least one string can distinguish the states.
+
+
+2. REACHABLE vs UNREACHABLE
+
+Reachable:
+    Can be reached from start state.
+
+Unreachable:
+    Cannot be reached from start state.
+
+
+3. MINIMIZATION vs CONVERSION
+
+Minimization:
+    Reduces states of an equivalent DFA.
+
+Conversion:
+    Changes one representation/model into another.
+
+Example:
+
+    NFA → DFA
+
+is conversion.
+
+    DFA → smaller equivalent DFA
+
+is minimization.
+
+
+4. FINAL vs NON-FINAL
+
+A final and non-final state are always distinguishable.
+
+
+======================================================================
+COMMON MISTAKES
+======================================================================
+
+MISTAKE 1:
+Merging states just because their immediate transitions look similar.
+
+CORRECTION:
+Check their behavior for every possible future input.
+
+
+MISTAKE 2:
+Forgetting unreachable states.
+
+CORRECTION:
+Remove unreachable states before minimization.
+
+
+MISTAKE 3:
+Putting final and non-final states in the same initial partition.
+
+CORRECTION:
+Always separate them initially.
+
+
+MISTAKE 4:
+Stopping partition refinement too early.
+
+CORRECTION:
+Continue until no group can be split further.
+
+
+MISTAKE 5:
+Thinking every different state must remain separate.
+
+CORRECTION:
+Different states may be equivalent.
+
+
+MISTAKE 6:
+Thinking minimization changes the language.
+
+CORRECTION:
+A correct minimized DFA accepts exactly the same language.
+
+
+MISTAKE 7:
+Forgetting that the start state may belong to a merged group.
+
+CORRECTION:
+The new start state is the group containing the original start state.
+
+
+======================================================================
+B.TECH EXAM PERSPECTIVE
+======================================================================
+
+You should be able to:
+
+    • Define DFA minimization.
+    • Define equivalent states.
+    • Define distinguishable states.
+    • Identify unreachable states.
+    • Apply partition method.
+    • Apply table-filling method.
+    • Construct minimized DFA.
+    • Explain state equivalence.
+    • Explain Myhill-Nerode theorem.
+    • Compare minimization methods.
+
+
+VERY COMMON EXAM QUESTION:
+
+    "Minimize the following DFA using the partition method."
+
+
+Another common question:
+
+    "Use the table-filling method to find equivalent states."
+
+
+Another:
+
+    "State and explain the Myhill-Nerode theorem."
+
+
+======================================================================
+GATE / COMPETITIVE EXAM PERSPECTIVE
+======================================================================
+
+For GATE, focus especially on:
+
+    1. Equivalent states
+    2. Distinguishable states
+    3. Unreachable states
+    4. Partition refinement
+    5. Number of states in minimal DFA
+    6. Myhill-Nerode theorem
+    7. Lower bounds on DFA states
+
+
+IMPORTANT GATE IDEA:
+
+If you can find k pairwise distinguishable strings/classes,
+then any DFA accepting the language requires at least k states.
+
+
+======================================================================
+INTERVIEW PERSPECTIVE
+======================================================================
+
+Typical questions:
+
+Q:
+Why minimize a DFA?
+
+A:
+To remove redundant states while preserving the accepted language.
+
+
+Q:
+Can a minimized DFA have unreachable states?
+
+A:
+No. A proper minimal DFA has no unreachable states.
+
+
+Q:
+Can two different states be equivalent?
+
+A:
+Yes. That is exactly why state merging is possible.
+
+
+Q:
+Can a final state and non-final state be equivalent?
+
+A:
+No.
+
+
+Q:
+What is the relationship between Myhill-Nerode and DFA minimization?
+
+A:
+Each Myhill-Nerode equivalence class corresponds to one state of the
+minimal DFA.
+
+
+======================================================================
+PRACTICE QUESTIONS
+======================================================================
+
+LEVEL 1 — BEGINNER
+
+Q1. What is DFA minimization?
+
+Q2. What is an equivalent state?
+
+Q3. What is a distinguishable state?
+
+Q4. What is an unreachable state?
+
+Q5. Can a final state and non-final state be equivalent?
+
+Q6. Why are unreachable states removed?
+
+
+LEVEL 2 — B.TECH BASIC
+
+Q7. Explain the partition method.
+
+Q8. Explain the table-filling method.
+
+Q9. What is iterative partition refinement?
+
+Q10. Why are final and non-final states separated initially?
+
+
+LEVEL 3 — UNIVERSITY EXAM
+
+Q11. Minimize a DFA with 6 states using the partition method.
+
+Q12. Find all equivalent states using the table-filling method.
+
+Q13. Construct the minimized DFA after identifying equivalent states.
+
+Q14. Explain DFA minimization with a suitable example.
+
+
+LEVEL 4 — COMPETITIVE
+
+Q15. A DFA has 10 states, of which 2 are unreachable. After removing
+     unreachable states, 3 pairs of equivalent states are found.
+     Determine the number of states after merging, considering whether
+     the pairs overlap.
+
+Q16. If a language has exactly 7 Myhill-Nerode equivalence classes,
+     what is the number of states in its minimal DFA?
+
+Q17. If infinitely many pairwise distinguishable strings can be found
+     for a language, what can you conclude?
+
+
+LEVEL 5 — GATE STYLE
+
+Q18. Consider a DFA with states q0,...,q7. Determine the minimum number
+     of states after applying equivalence-class minimization.
+
+Q19. Which of the following pairs of states are distinguishable?
+
+Q20. Given a language, determine the minimum DFA state count using
+     Myhill-Nerode reasoning.
+
+
+======================================================================
+ACTIVE RECALL
+======================================================================
+
+Do NOT look at the earlier explanation while answering if possible.
+
+Q1. What is DFA minimization?
+
+Q2. Why are unreachable states removed?
+
+Q3. What does it mean for two states to be equivalent?
+
+Q4. What does it mean for two states to be distinguishable?
+
+Q5. Why are final and non-final states always distinguishable?
+
+Q6. What is the first partition in the partition method?
+
+Q7. What happens during partition refinement?
+
+Q8. What does an unmarked pair mean in the table-filling method?
+
+Q9. What is the central idea behind Myhill-Nerode theory?
+
+Q10. What is the relationship between the number of Myhill-Nerode
+    equivalence classes and the number of states in the minimal DFA?
+
+Q11. What does an infinite number of Myhill-Nerode equivalence classes
+    tell us about a language?
+
+
+======================================================================
+CHAPTER 8 QUICK REVISION
+======================================================================
+
+DFA MINIMIZATION:
+
+    Equivalent DFA
+        ↓
+    Fewer states
+        ↓
+    Same language
+
+
+MAIN STEPS:
+
+    1. Remove unreachable states.
+    2. Separate final/non-final states.
+    3. Refine partitions.
+    4. Find equivalent states.
+    5. Merge equivalent states.
+    6. Construct minimized DFA.
+
+
+KEY RELATIONSHIP:
+
+    No distinguishing string
+             ↓
+       Equivalent states
+             ↓
+       Same equivalence class
+             ↓
+       Merge into one state
+
+
+MYHILL-NERODE:
+
+    x ≡L y
+
+    iff
+
+    for every z ∈ Σ*:
+
+        xz ∈ L  ↔  yz ∈ L
+
+
+THEOREM:
+
+    L is regular
+    ↔
+    L has finitely many Myhill-Nerode equivalence classes.
+
+
+MINIMAL DFA:
+
+    Number of states
+    =
+    Number of Myhill-Nerode equivalence classes.
+
+
+======================================================================
+CHAPTER 8 COMPLETE
+======================================================================
+
+You have now covered:
+
+    ✓ DFA minimization
+    ✓ Equivalent states
+    ✓ Distinguishable states
+    ✓ Indistinguishable states
+    ✓ Reachable/unreachable states
+    ✓ Partition method
+    ✓ Table-filling method
+    ✓ Iterative refinement
+    ✓ State equivalence
+    ✓ DFA minimization procedure
+    ✓ Myhill-Nerode relation
+    ✓ Equivalence classes
+    ✓ Myhill-Nerode theorem
+    ✓ Connection between Myhill-Nerode and minimal DFA
+
+
+======================================================================
+UPCOMING NEXT TOPIC
+======================================================================
+
+NEXT TOPIC:
+
+    CHAPTER 9 — PROPERTIES OF REGULAR LANGUAGES
+
+    Topic 9.1 — Closure Properties
+
+    First subtopic:
+        Closure under UNION
+
+When you type:
+
+    NEXT
+
+we will begin only this upcoming topic.
+======================================================================

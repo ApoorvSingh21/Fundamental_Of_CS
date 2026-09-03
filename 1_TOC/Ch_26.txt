@@ -1,0 +1,2018 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                    THEORY OF COMPUTATION                            ║
+║              CHAPTER 26 — INTRODUCTION TO COMPLEXITY               ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 22 — COMPLEXITY THEORY
+
+IMPORTANT:
+You have completed Chapters 1–25 in the planned sequence.
+We now begin:
+
+CHAPTER 26 — INTRODUCTION TO COMPLEXITY
+
+This chapter is the foundation for:
+    → P
+    → NP
+    → NP-Hard
+    → NP-Complete
+    → Polynomial-time reductions
+    → GATE-level Complexity Theory
+
+──────────────────────────────────────────────────────────────────────
+CHAPTER 26 — TOPICS
+──────────────────────────────────────────────────────────────────────
+
+26.1 What is Computational Complexity?
+26.2 Why Do We Study Complexity?
+26.3 Problem Size / Input Size
+26.4 Algorithms and Computational Resources
+26.5 Time Complexity
+26.6 Space Complexity
+26.7 Polynomial Time
+26.8 Exponential Time
+26.9 Worst-Case Complexity
+26.10 Best-Case Complexity
+26.11 Average-Case Complexity
+26.12 Complexity Classes — Introduction
+26.13 Decision Problems
+26.14 Optimization Problems
+26.15 Tractable vs Intractable Problems
+26.16 Important Complexity Notation
+26.17 Complexity Comparison
+26.18 B.Tech Exam Perspective
+26.19 GATE Perspective
+26.20 Interview Perspective
+26.21 Practice Questions
+26.22 Active Recall
+26.23 Chapter Summary
+
+──────────────────────────────────────────────────────────────────────
+26.1 WHAT IS COMPUTATIONAL COMPLEXITY?
+──────────────────────────────────────────────────────────────────────
+
+First, remember an important distinction:
+
+COMPUTABILITY asks:
+
+    "Can this problem be solved by a computer at all?"
+
+COMPLEXITY asks:
+
+    "If it can be solved, how much computational resource
+     does solving it require?"
+
+For example:
+
+Problem A:
+    Can be solved in 1 second.
+
+Problem B:
+    Can theoretically be solved, but may require
+    millions of years for a large input.
+
+Both may be COMPUTABLE.
+
+But they have very different COMPLEXITIES.
+
+So:
+
+    COMPUTABILITY
+          ↓
+    Can it be solved?
+
+    COMPLEXITY
+          ↓
+    How efficiently can it be solved?
+
+
+SIMPLE DEFINITION
+─────────────────
+
+Computational complexity is the study of the amount of
+resources required to solve computational problems.
+
+The two most important resources are:
+
+    1. Time
+    2. Space
+
+
+FORMAL IDEA
+───────────
+
+For an algorithm A and input of size n:
+
+    Time(A,n)  = amount of computational time required
+
+    Space(A,n) = amount of memory required
+
+We study how these quantities grow as n becomes large.
+
+
+──────────────────────────────────────────────────────────────────────
+26.2 WHY DO WE STUDY COMPLEXITY?
+──────────────────────────────────────────────────────────────────────
+
+Suppose two algorithms solve the same problem.
+
+Algorithm A:
+
+    1,000 operations
+
+Algorithm B:
+
+    1,000,000,000 operations
+
+For a small input, both may appear acceptable.
+
+For a very large input, Algorithm B may become unusable.
+
+Therefore, simply knowing:
+
+    "An algorithm exists"
+
+is not enough.
+
+We also want to know:
+
+    "Is the algorithm practical?"
+
+
+REAL-WORLD ANALOGY
+──────────────────
+
+Imagine two roads between City A and City B.
+
+Road 1:
+    Distance = 10 km
+
+Road 2:
+    Distance = 10,000 km
+
+Both roads allow you to reach the destination.
+
+But one is much more efficient.
+
+Similarly:
+
+    COMPUTABILITY = Is there a road?
+
+    COMPLEXITY = How expensive is the road?
+
+
+──────────────────────────────────────────────────────────────────────
+26.3 PROBLEM SIZE / INPUT SIZE
+──────────────────────────────────────────────────────────────────────
+
+Before measuring complexity, we need to define:
+
+    What is the size of the input?
+
+Usually we represent input size by:
+
+    n
+
+Example:
+
+Input:
+    101101
+
+Number of symbols:
+
+    n = 6
+
+So the input size is 6.
+
+
+EXAMPLE 1
+─────────
+
+Input:
+
+    1111111111
+
+There are 10 symbols.
+
+Therefore:
+
+    n = 10
+
+
+EXAMPLE 2
+─────────
+
+Suppose we have an array:
+
+    [4, 8, 2, 9, 1]
+
+Number of elements:
+
+    n = 5
+
+
+EXAMPLE 3
+─────────
+
+Suppose we have a graph containing:
+
+    100 vertices
+
+Then:
+
+    n may be related to the number of vertices.
+
+Depending on the problem, input size may be measured using:
+
+    number of elements
+    number of bits
+    number of characters
+    number of vertices + edges
+    etc.
+
+
+IMPORTANT:
+
+Input size must be defined carefully.
+
+For a binary number:
+
+    1000000
+
+we usually consider the number of bits, not its numerical value.
+
+The number 1,000,000 can be represented using only about 20 bits.
+
+This distinction becomes important in complexity theory.
+
+
+──────────────────────────────────────────────────────────────────────
+26.4 ALGORITHMS AND COMPUTATIONAL RESOURCES
+──────────────────────────────────────────────────────────────────────
+
+An ALGORITHM is a finite, well-defined procedure for solving
+a computational problem.
+
+An algorithm consumes resources.
+
+Main resources:
+
+        ┌─────────────────────────────┐
+        │       ALGORITHM             │
+        └──────────────┬──────────────┘
+                       │
+             ┌─────────┴─────────┐
+             ↓                   ↓
+       TIME RESOURCE        SPACE RESOURCE
+             ↓                   ↓
+       Number of steps       Memory used
+
+
+TIME
+────
+
+How many computational steps are required?
+
+SPACE
+─────
+
+How much memory is required?
+
+
+Example:
+
+Suppose an algorithm performs:
+
+    5n + 3
+
+operations.
+
+Its time grows approximately proportionally to:
+
+    n
+
+So we call it:
+
+    O(n)
+
+
+──────────────────────────────────────────────────────────────────────
+26.5 TIME COMPLEXITY
+──────────────────────────────────────────────────────────────────────
+
+TIME COMPLEXITY describes how the running time of an algorithm
+grows with input size.
+
+
+IMPORTANT:
+
+In theoretical computer science, we generally do not focus on:
+
+    "This program takes exactly 2.4 seconds."
+
+Instead, we study how the number of operations grows as n grows.
+
+
+Example:
+
+Algorithm:
+
+    for i = 1 to n
+        print(i)
+
+Number of iterations:
+
+    n
+
+Therefore:
+
+    T(n) = n
+
+Time complexity:
+
+    O(n)
+
+
+ASCII VIEW
+──────────
+
+Input size:
+
+    n = 10
+    → approximately 10 operations
+
+    n = 100
+    → approximately 100 operations
+
+    n = 1000
+    → approximately 1000 operations
+
+
+Growth:
+
+    n increases
+       ↓
+    operations increase roughly proportionally
+
+
+──────────────────────────────────────────────────────────────────────
+26.6 BIG-O NOTATION
+──────────────────────────────────────────────────────────────────────
+
+Big-O notation describes an asymptotic upper bound on growth.
+
+Do not think:
+
+    O(n) = exactly n operations.
+
+Instead:
+
+    O(n) describes the growth rate.
+
+For example:
+
+    T(n) = 3n + 5
+
+We write:
+
+    T(n) = O(n)
+
+
+Why?
+
+Because for large n, the dominant growth comes from:
+
+    n
+
+Constants are ignored in asymptotic analysis.
+
+Similarly:
+
+    T(n) = 5n² + 10n + 20
+
+becomes:
+
+    O(n²)
+
+
+GENERAL RULE
+────────────
+
+Keep the fastest-growing dominant term.
+
+Examples:
+
+    7n + 100             → O(n)
+
+    3n² + 5n + 7         → O(n²)
+
+    4n³ + n² + 20        → O(n³)
+
+    2n⁴ + 100n²          → O(n⁴)
+
+
+──────────────────────────────────────────────────────────────────────
+26.7 COMMON TIME COMPLEXITIES
+──────────────────────────────────────────────────────────────────────
+
+From generally faster growth to slower growth:
+
+    O(1)
+      ↓
+    O(log n)
+      ↓
+    O(n)
+      ↓
+    O(n log n)
+      ↓
+    O(n²)
+      ↓
+    O(n³)
+      ↓
+    O(2ⁿ)
+      ↓
+    O(n!)
+
+
+ASCII CONCEPTUAL GRAPH:
+
+Time
+ ^
+ |
+ |                              O(n!)
+ |                            /
+ |                         /
+ |                     O(2ⁿ)
+ |                   /
+ |              O(n³)
+ |             /
+ |          O(n²)
+ |        /
+ |      O(n log n)
+ |    /
+ |  O(n)
+ | /
+ |_______________________________> n
+
+
+Important:
+
+The graph is conceptual, not drawn to exact scale.
+
+
+──────────────────────────────────────────────────────────────────────
+26.8 O(1) — CONSTANT TIME
+──────────────────────────────────────────────────────────────────────
+
+An algorithm takes approximately the same amount of time
+regardless of input size.
+
+Example:
+
+    access A[5]
+
+If accessing an array element directly takes constant time:
+
+    T(n) = O(1)
+
+
+Example:
+
+    x = 10
+    y = 20
+    z = x + y
+
+Number of operations does not depend significantly on n.
+
+Therefore:
+
+    O(1)
+
+
+──────────────────────────────────────────────────────────────────────
+26.9 O(log n) — LOGARITHMIC TIME
+──────────────────────────────────────────────────────────────────────
+
+A logarithmic algorithm reduces the problem size substantially
+at each step.
+
+Classic example:
+
+    Binary Search
+
+
+Suppose:
+
+    n = 16
+
+Binary search repeatedly divides the search space:
+
+    16
+     ↓
+     8
+     ↓
+     4
+     ↓
+     2
+     ↓
+     1
+
+Only about:
+
+    log₂(16) = 4
+
+divisions are required.
+
+
+General:
+
+    T(n) = O(log n)
+
+
+Why is logarithmic time powerful?
+
+Because doubling n does not double the number of steps.
+
+It adds approximately one extra step.
+
+
+──────────────────────────────────────────────────────────────────────
+26.10 O(n) — LINEAR TIME
+──────────────────────────────────────────────────────────────────────
+
+An algorithm examines each input element once.
+
+Example:
+
+    Find maximum element in an array.
+
+Array:
+
+    [7, 2, 9, 4, 1]
+
+We may inspect:
+
+    7
+    2
+    9
+    4
+    1
+
+For n elements:
+
+    approximately n inspections
+
+Therefore:
+
+    O(n)
+
+
+ASCII:
+
+    [a1][a2][a3][a4]...[an]
+      ↓   ↓   ↓   ↓       ↓
+     inspect each element once
+
+
+──────────────────────────────────────────────────────────────────────
+26.11 O(n²) — QUADRATIC TIME
+──────────────────────────────────────────────────────────────────────
+
+Suppose we have nested loops:
+
+    for i = 1 to n
+        for j = 1 to n
+            perform operation
+
+
+Outer loop:
+
+    n times
+
+Inner loop:
+
+    n times for each outer iteration
+
+Total:
+
+    n × n
+
+    = n²
+
+Therefore:
+
+    O(n²)
+
+
+Example:
+
+    n = 10
+    operations ≈ 100
+
+    n = 100
+    operations ≈ 10,000
+
+    n = 1000
+    operations ≈ 1,000,000
+
+
+This shows why quadratic algorithms become expensive
+for large inputs.
+
+
+──────────────────────────────────────────────────────────────────────
+26.12 O(n³) — CUBIC TIME
+──────────────────────────────────────────────────────────────────────
+
+Three nested loops may give:
+
+    n × n × n
+
+    = n³
+
+Therefore:
+
+    O(n³)
+
+
+Example:
+
+    for i = 1 to n
+        for j = 1 to n
+            for k = 1 to n
+                operation
+
+
+Time:
+
+    O(n³)
+
+
+──────────────────────────────────────────────────────────────────────
+26.13 EXPONENTIAL TIME
+──────────────────────────────────────────────────────────────────────
+
+An exponential algorithm may have complexity:
+
+    O(2ⁿ)
+
+
+This grows extremely rapidly.
+
+Example:
+
+    n = 1     → 2
+    n = 2     → 4
+    n = 3     → 8
+    n = 4     → 16
+    n = 10    → 1024
+    n = 20    → 1,048,576
+    n = 30    → 1,073,741,824
+
+
+Notice the dramatic growth.
+
+Therefore:
+
+    O(2ⁿ)
+
+is generally considered much less scalable than:
+
+    O(n)
+    O(n²)
+    O(n³)
+
+
+──────────────────────────────────────────────────────────────────────
+26.14 FACTORIAL TIME
+──────────────────────────────────────────────────────────────────────
+
+Another extremely fast-growing complexity is:
+
+    O(n!)
+
+
+Examples:
+
+    1! = 1
+    2! = 2
+    3! = 6
+    4! = 24
+    5! = 120
+    10! = 3,628,800
+    20! = 2,432,902,008,176,640,000
+
+
+Factorial growth is extremely rapid.
+
+A brute-force algorithm that tries every permutation
+may have factorial complexity.
+
+
+──────────────────────────────────────────────────────────────────────
+26.15 SPACE COMPLEXITY
+──────────────────────────────────────────────────────────────────────
+
+TIME asks:
+
+    "How much computation?"
+
+SPACE asks:
+
+    "How much memory?"
+
+
+Example:
+
+An algorithm creates an array of size n.
+
+Additional memory:
+
+    n elements
+
+Therefore:
+
+    Space = O(n)
+
+
+ASCII:
+
+    Input
+      │
+      ↓
+    Algorithm
+      │
+      ├──────────→ CPU operations
+      │
+      └──────────→ Memory
+                    │
+                    ↓
+                 [ ][ ][ ][ ]...[ ]
+                      n cells
+
+
+SPACE COMPLEXITY INCLUDES:
+─────────────────────────
+
+    Variables
+    Arrays
+    Data structures
+    Recursion stack
+    Temporary storage
+
+
+──────────────────────────────────────────────────────────────────────
+26.16 POLYNOMIAL TIME
+──────────────────────────────────────────────────────────────────────
+
+A problem is commonly said to have a polynomial-time algorithm
+if its running time is bounded by:
+
+    O(n^k)
+
+for some constant k.
+
+
+Examples:
+
+    O(1)
+    O(log n)
+    O(n)
+    O(n log n)
+    O(n²)
+    O(n³)
+    O(n^10)
+
+
+These are generally considered efficiently solvable
+from the viewpoint of complexity theory.
+
+
+IMPORTANT:
+
+Polynomial does NOT mean "always fast."
+
+For example:
+
+    O(n^100)
+
+is technically polynomial but may be impractical.
+
+The key theoretical distinction is between polynomial and
+super-polynomial/exponential growth.
+
+
+──────────────────────────────────────────────────────────────────────
+26.17 EXPONENTIAL TIME
+──────────────────────────────────────────────────────────────────────
+
+Examples:
+
+    O(2ⁿ)
+    O(3ⁿ)
+    O(cⁿ), where c > 1
+
+
+These grow faster than every fixed polynomial.
+
+Compare:
+
+    n²
+    n³
+    n^10
+
+against:
+
+    2ⁿ
+
+
+For sufficiently large n:
+
+    2ⁿ grows much faster.
+
+
+IMPORTANT EXAM POINT:
+
+Polynomial:
+
+    n^k
+
+Exponential:
+
+    c^n
+
+where k is a constant and c > 1.
+
+
+──────────────────────────────────────────────────────────────────────
+26.18 WORST-CASE COMPLEXITY
+──────────────────────────────────────────────────────────────────────
+
+Worst-case complexity asks:
+
+    "What is the maximum amount of resources the algorithm
+     may require for an input of size n?"
+
+
+Example:
+
+Linear search:
+
+    Search for x in:
+
+    [10, 20, 30, 40, 50]
+
+
+If x = 10:
+
+    1 comparison
+
+If x = 30:
+
+    3 comparisons
+
+If x = 50:
+
+    5 comparisons
+
+If x is absent:
+
+    5 comparisons
+
+
+Worst case:
+
+    n comparisons
+
+Therefore:
+
+    Worst-case time = O(n)
+
+
+ASCII:
+
+    [10][20][30][40][50]
+     ↑
+    best case
+
+    [10][20][30][40][50]
+                     ↑
+                  worst case
+
+    or x not found
+
+
+──────────────────────────────────────────────────────────────────────
+26.19 BEST-CASE COMPLEXITY
+──────────────────────────────────────────────────────────────────────
+
+Best-case complexity asks:
+
+    "What is the minimum amount of resources required
+     for an input of size n?"
+
+
+For linear search:
+
+If the desired element is the first element:
+
+    only 1 comparison
+
+Therefore:
+
+    Best case = O(1)
+
+
+Important:
+
+Best case may not describe typical behavior.
+
+That is why worst-case analysis is often more useful.
+
+
+──────────────────────────────────────────────────────────────────────
+26.20 AVERAGE-CASE COMPLEXITY
+──────────────────────────────────────────────────────────────────────
+
+Average-case complexity asks:
+
+    "What resources does the algorithm require on average
+     over inputs of size n?"
+
+
+For linear search, if every position is equally likely:
+
+Expected number of comparisons is approximately:
+
+    (n + 1) / 2
+
+Therefore asymptotically:
+
+    O(n)
+
+
+So:
+
+    Best case       → O(1)
+    Average case    → O(n)
+    Worst case      → O(n)
+
+
+──────────────────────────────────────────────────────────────────────
+26.21 IMPORTANT COMPARISON
+──────────────────────────────────────────────────────────────────────
+
+Suppose:
+
+    n = input size
+
+Then:
+
+    Best case
+         ↓
+    Minimum work
+
+    Average case
+         ↓
+    Expected/average work
+
+    Worst case
+         ↓
+    Maximum work
+
+
+ASCII:
+
+                    INPUTS
+                      │
+          ┌───────────┼───────────┐
+          ↓           ↓           ↓
+       BEST        AVERAGE      WORST
+          │           │           │
+       minimum     expected     maximum
+       resource    resource     resource
+
+
+──────────────────────────────────────────────────────────────────────
+26.22 COMPLEXITY CLASSES — INTRODUCTION
+──────────────────────────────────────────────────────────────────────
+
+A complexity class is a collection of problems grouped according
+to computational resource requirements.
+
+Examples you will study next:
+
+    P
+    NP
+    NP-Hard
+    NP-Complete
+
+
+The basic idea:
+
+        COMPUTATIONAL PROBLEMS
+                  │
+        ┌─────────┴─────────┐
+        ↓                   ↓
+   efficiently          potentially
+   solvable              difficult
+        │                   │
+        ↓                   ↓
+        P              NP / NP-Hard /
+                       NP-Complete
+
+
+Do NOT memorize this diagram as a complete definition yet.
+
+Chapter 27 will formally define these classes.
+
+
+──────────────────────────────────────────────────────────────────────
+26.23 DECISION PROBLEMS
+──────────────────────────────────────────────────────────────────────
+
+A decision problem is a problem whose answer is:
+
+    YES
+or
+    NO
+
+
+Example:
+
+Question:
+
+    "Is 17 a prime number?"
+
+Answer:
+
+    YES
+
+
+Question:
+
+    "Is 21 a prime number?"
+
+Answer:
+
+    NO
+
+
+Another example:
+
+    "Does this graph contain a Hamiltonian cycle?"
+
+Answer:
+
+    YES / NO
+
+
+Decision problems are extremely important in complexity theory
+because P, NP and NP-completeness are usually defined using
+decision problems.
+
+
+──────────────────────────────────────────────────────────────────────
+26.24 OPTIMIZATION PROBLEMS
+──────────────────────────────────────────────────────────────────────
+
+An optimization problem asks us to find the best solution.
+
+Examples:
+
+    Find the shortest path.
+
+    Find the minimum-cost spanning structure.
+
+    Find the maximum profit.
+
+    Find the shortest possible traveling-salesperson tour.
+
+
+Difference:
+
+DECISION:
+    "Is there a solution with cost ≤ 100?"
+
+OPTIMIZATION:
+    "What is the minimum possible cost?"
+
+
+Decision versions are particularly important for
+NP-completeness theory.
+
+
+──────────────────────────────────────────────────────────────────────
+26.25 TRACTABLE VS INTRACTABLE
+──────────────────────────────────────────────────────────────────────
+
+TRACTABLE
+
+Informally, a problem is tractable if it can be solved
+efficiently, commonly meaning in polynomial time.
+
+Examples often include algorithms with:
+
+    O(n)
+    O(n log n)
+    O(n²)
+    O(n³)
+
+
+INTRACTABLE
+
+Informally, a problem is called intractable when no known
+polynomial-time algorithm solves it, or when its known
+algorithms require prohibitively large resources.
+
+IMPORTANT:
+
+"Intractable" does NOT automatically mean:
+
+    "Mathematically impossible."
+
+A problem may be computable but computationally expensive.
+
+
+This is a very important distinction:
+
+    UNDECIDABLE
+        ≠
+    INTRACTABLE
+
+
+UNDECIDABLE:
+    No algorithm can solve every instance correctly and halt.
+
+INTRACTABLE:
+    A solution may exist algorithmically, but efficient
+    computation may be unavailable/unknown.
+
+
+──────────────────────────────────────────────────────────────────────
+26.26 COMPLEXITY VS COMPUTABILITY
+──────────────────────────────────────────────────────────────────────
+
+This distinction is extremely important for exams.
+
+COMPUTABILITY THEORY:
+
+    Can a problem be solved by an algorithm?
+
+COMPLEXITY THEORY:
+
+    How much resource is required?
+
+
+Example:
+
+Problem A:
+
+    Has an algorithm requiring O(n²).
+
+This is:
+
+    COMPUTABLE
+    and polynomial-time solvable.
+
+
+Problem B:
+
+    Has an algorithm requiring O(2ⁿ).
+
+This may still be:
+
+    COMPUTABLE
+
+but potentially computationally expensive.
+
+
+Problem C:
+
+    No algorithm can solve all instances and halt.
+
+This is:
+
+    UNDECIDABLE
+
+
+Therefore:
+
+    COMPUTABLE
+       ↓
+    May be easy OR hard
+
+    UNDECIDABLE
+       ↓
+    Cannot be solved algorithmically in general
+
+
+──────────────────────────────────────────────────────────────────────
+26.27 COMPLEXITY COMPARISON TABLE
+──────────────────────────────────────────────────────────────────────
+
+    Complexity       General growth idea
+
+    O(1)             Constant
+    O(log n)         Logarithmic
+    O(n)             Linear
+    O(n log n)       Linearithmic
+    O(n²)            Quadratic
+    O(n³)            Cubic
+    O(n^k)           Polynomial
+    O(2ⁿ)            Exponential
+    O(n!)            Factorial
+
+
+Generally:
+
+    O(1)
+      <
+    O(log n)
+      <
+    O(n)
+      <
+    O(n log n)
+      <
+    O(n²)
+      <
+    O(n³)
+      <
+    O(2ⁿ)
+      <
+    O(n!)
+
+
+Here "<" means:
+
+    grows more slowly than.
+
+
+──────────────────────────────────────────────────────────────────────
+26.28 IMPORTANT ASYMPTOTIC IDEA
+──────────────────────────────────────────────────────────────────────
+
+When n becomes very large, growth rate matters more than
+constant factors.
+
+Suppose:
+
+    A = 100n
+
+    B = n²
+
+For small n, the comparison may not be obvious.
+
+But as n grows:
+
+    n² eventually dominates 100n.
+
+
+Example:
+
+    n = 10
+
+    100n = 1,000
+    n²   = 100
+
+Here 100n is larger.
+
+But:
+
+    n = 10,000
+
+    100n = 1,000,000
+    n²   = 100,000,000
+
+Now n² is much larger.
+
+
+This is why asymptotic analysis focuses on growth.
+
+
+──────────────────────────────────────────────────────────────────────
+26.29 STEP-BY-STEP EXAMPLE
+──────────────────────────────────────────────────────────────────────
+
+QUESTION:
+
+Find the time complexity of:
+
+    for i = 1 to n
+        print(i)
+
+
+STEP 1:
+Identify the input size.
+
+    n
+
+
+STEP 2:
+How many times does the loop execute?
+
+    n times
+
+
+STEP 3:
+What is done inside?
+
+    Constant amount of work
+
+
+STEP 4:
+
+    T(n) = c × n
+
+where c is a constant.
+
+
+STEP 5:
+
+    T(n) = O(n)
+
+
+FINAL ANSWER:
+
+    O(n)
+
+
+──────────────────────────────────────────────────────────────────────
+26.30 STEP-BY-STEP EXAMPLE — NESTED LOOP
+──────────────────────────────────────────────────────────────────────
+
+QUESTION:
+
+Determine the time complexity:
+
+    for i = 1 to n
+        for j = 1 to n
+            print(i,j)
+
+
+STEP 1:
+
+Outer loop:
+
+    n iterations
+
+
+STEP 2:
+
+For each outer iteration:
+
+    inner loop = n iterations
+
+
+STEP 3:
+
+Total:
+
+    n × n
+
+
+STEP 4:
+
+    n²
+
+
+FINAL:
+
+    O(n²)
+
+
+──────────────────────────────────────────────────────────────────────
+26.31 STEP-BY-STEP EXAMPLE — TWO SEPARATE LOOPS
+──────────────────────────────────────────────────────────────────────
+
+Consider:
+
+    for i = 1 to n
+        operation
+
+    for j = 1 to n
+        operation
+
+
+First loop:
+
+    O(n)
+
+Second loop:
+
+    O(n)
+
+
+Total:
+
+    O(n) + O(n)
+
+    = O(2n)
+
+    = O(n)
+
+
+IMPORTANT:
+
+Sequential loops are generally ADDED.
+
+Nested loops are generally MULTIPLIED.
+
+
+REMEMBER:
+
+    Sequential:
+        O(n) + O(n) = O(n)
+
+    Nested:
+        O(n) × O(n) = O(n²)
+
+
+──────────────────────────────────────────────────────────────────────
+26.32 B.TECH EXAM IMPORTANT DIFFERENCES
+──────────────────────────────────────────────────────────────────────
+
+COMPUTABILITY vs COMPLEXITY
+
+    COMPUTABILITY:
+    Whether a problem can be solved algorithmically.
+
+    COMPLEXITY:
+    Resources required to solve it.
+
+
+TIME vs SPACE
+
+    TIME:
+    Computational steps/time required.
+
+    SPACE:
+    Memory required.
+
+
+BEST vs WORST CASE
+
+    BEST:
+    Minimum resource requirement.
+
+    WORST:
+    Maximum resource requirement.
+
+
+POLYNOMIAL vs EXPONENTIAL
+
+    Polynomial:
+        n^k
+
+    Exponential:
+        c^n
+
+
+DECIDABLE vs INTRACTABLE
+
+    Decidable:
+        There exists a terminating algorithm.
+
+    Intractable:
+        Efficient solution is not known/available
+        under the relevant computational model;
+        it does not mean impossible.
+
+
+──────────────────────────────────────────────────────────────────────
+26.33 COMMON MISTAKES
+──────────────────────────────────────────────────────────────────────
+
+MISTAKE 1:
+
+Thinking:
+
+    O(n) = exactly n seconds.
+
+WRONG.
+
+O(n) describes asymptotic growth, not exact wall-clock time.
+
+
+MISTAKE 2:
+
+Thinking:
+
+    Exponential = undecidable.
+
+WRONG.
+
+An exponential-time problem can still be decidable.
+
+
+MISTAKE 3:
+
+Thinking:
+
+    Polynomial always means practically fast.
+
+WRONG.
+
+A very high-degree polynomial can be impractical.
+
+
+MISTAKE 4:
+
+Thinking:
+
+    Worst-case means the algorithm always takes that much time.
+
+WRONG.
+
+It means the maximum resource usage among inputs of the
+specified size.
+
+
+MISTAKE 5:
+
+Confusing:
+
+    input VALUE
+
+with:
+
+    input SIZE.
+
+
+MISTAKE 6:
+
+Forgetting that:
+
+    nested loops → often multiplication
+
+while:
+
+    sequential loops → often addition.
+
+
+──────────────────────────────────────────────────────────────────────
+26.34 B.TECH UNIVERSITY EXAM PERSPECTIVE
+──────────────────────────────────────────────────────────────────────
+
+IMPORTANT DEFINITIONS:
+
+1. Computational complexity
+2. Time complexity
+3. Space complexity
+4. Input size
+5. Polynomial time
+6. Exponential time
+7. Worst-case complexity
+8. Best-case complexity
+9. Average-case complexity
+10. Decision problem
+11. Optimization problem
+12. Tractable problem
+13. Intractable problem
+
+
+IMPORTANT QUESTIONS:
+
+Q1. Define computational complexity.
+
+Q2. Explain time complexity and space complexity.
+
+Q3. What is asymptotic analysis?
+
+Q4. Explain polynomial and exponential complexity.
+
+Q5. Differentiate best-case, average-case and worst-case
+    complexity.
+
+Q6. Differentiate computability and complexity.
+
+Q7. Explain decision and optimization problems.
+
+Q8. Explain tractable and intractable problems.
+
+Q9. Arrange common complexity functions in increasing
+    order of growth.
+
+Q10. Determine the time complexity of given algorithms.
+
+
+──────────────────────────────────────────────────────────────────────
+26.35 GATE / COMPETITIVE EXAM PERSPECTIVE
+──────────────────────────────────────────────────────────────────────
+
+You should be able to:
+
+    ✓ Compare growth rates
+    ✓ Identify dominant terms
+    ✓ Analyze nested loops
+    ✓ Analyze sequential loops
+    ✓ Understand logarithmic growth
+    ✓ Distinguish polynomial and exponential
+    ✓ Distinguish computability and complexity
+    ✓ Understand decision problems
+    ✓ Understand asymptotic behavior
+
+
+Typical GATE-style thought:
+
+Which grows faster?
+
+    n²
+    n log n
+    2ⁿ
+
+
+Answer:
+
+    n log n < n² < 2ⁿ
+
+for sufficiently large n.
+
+
+──────────────────────────────────────────────────────────────────────
+26.36 INTERVIEW PERSPECTIVE
+──────────────────────────────────────────────────────────────────────
+
+INTERVIEW QUESTION:
+
+"What is the difference between P and NP?"
+
+At this point, do NOT give the complete answer yet.
+
+You have only built the foundation.
+
+Chapter 27 will formally introduce:
+
+    P
+    NP
+    NP-Hard
+    NP-Complete
+
+This is intentionally postponed so that you understand
+complexity before memorizing complexity classes.
+
+
+──────────────────────────────────────────────────────────────────────
+26.37 PRACTICE QUESTIONS — LEVEL 1
+──────────────────────────────────────────────────────────────────────
+
+Try these without looking at the answers.
+
+Q1. What is computational complexity?
+
+Q2. What are the two major computational resources studied
+    in this chapter?
+
+Q3. What does n usually represent?
+
+Q4. What is time complexity?
+
+Q5. What is space complexity?
+
+Q6. What is a decision problem?
+
+Q7. What is an optimization problem?
+
+Q8. What is polynomial time?
+
+Q9. What is exponential time?
+
+Q10. What is worst-case complexity?
+
+
+──────────────────────────────────────────────────────────────────────
+26.38 PRACTICE QUESTIONS — LEVEL 2
+──────────────────────────────────────────────────────────────────────
+
+Q11. Find the complexity:
+
+        for i = 1 to n
+            operation
+
+
+Q12. Find the complexity:
+
+        for i = 1 to n
+            for j = 1 to n
+                operation
+
+
+Q13. Find the complexity:
+
+        for i = 1 to n
+            operation
+
+        for j = 1 to n
+            operation
+
+
+Q14. Simplify:
+
+        7n + 20
+
+
+Q15. Simplify:
+
+        5n² + 10n + 100
+
+
+Q16. Arrange in increasing order:
+
+        n²
+        log n
+        2ⁿ
+        n
+        n³
+
+
+Q17. Is an exponential-time algorithm necessarily
+     undecidable?
+
+Q18. Is every decidable problem polynomial-time solvable?
+
+Q19. Explain the difference between computability
+     and complexity.
+
+Q20. Explain why input size matters.
+
+
+──────────────────────────────────────────────────────────────────────
+26.39 PRACTICE QUESTIONS — LEVEL 3
+──────────────────────────────────────────────────────────────────────
+
+Q21. Analyze:
+
+        for i = 1 to n
+            for j = 1 to i
+                operation
+
+
+Q22. Analyze:
+
+        i = 1
+
+        while i < n:
+            operation
+            i = 2i
+
+
+Q23. Determine the asymptotic complexity:
+
+        T(n) = 4n³ + 7n² + 100n + 50
+
+
+Q24. Compare:
+
+        2^n
+
+        n^10
+
+Which eventually grows faster?
+
+
+Q25. Explain why:
+
+        O(2n) = O(n)
+
+but:
+
+        O(n²) ≠ O(n)
+
+
+──────────────────────────────────────────────────────────────────────
+26.40 ACTIVE RECALL
+──────────────────────────────────────────────────────────────────────
+
+Do NOT look at the chapter while answering.
+
+Q1. What does complexity theory study?
+
+Q2. What is the difference between time and space complexity?
+
+Q3. What does n represent?
+
+Q4. What is Big-O used for?
+
+Q5. What is polynomial time?
+
+Q6. What is exponential time?
+
+Q7. What is the difference between best-case and worst-case?
+
+Q8. What is a decision problem?
+
+Q9. What is the difference between computable and
+    undecidable?
+
+Q10. What is the difference between tractable and intractable?
+
+Q11. Why are P and NP called complexity classes?
+
+Q12. Which generally grows faster:
+
+        n² or 2ⁿ?
+
+
+──────────────────────────────────────────────────────────────────────
+26.41 CHAPTER SUMMARY
+──────────────────────────────────────────────────────────────────────
+
+COMPUTATIONAL COMPLEXITY
+    ↓
+Study of computational resource requirements.
+
+MAIN RESOURCES
+    ↓
+    Time
+    Space
+
+INPUT SIZE
+    ↓
+Usually represented by n.
+
+TIME COMPLEXITY
+    ↓
+How computational work grows with n.
+
+SPACE COMPLEXITY
+    ↓
+How memory requirements grow with n.
+
+COMMON COMPLEXITIES
+    ↓
+O(1)
+O(log n)
+O(n)
+O(n log n)
+O(n²)
+O(n³)
+O(2ⁿ)
+O(n!)
+
+POLYNOMIAL
+    ↓
+O(n^k)
+
+EXPONENTIAL
+    ↓
+O(c^n)
+
+CASES
+    ↓
+Best case
+Average case
+Worst case
+
+PROBLEM TYPES
+    ↓
+Decision problems
+Optimization problems
+
+IMPORTANT DISTINCTION
+    ↓
+Computability ≠ Complexity
+
+Computability:
+    "Can it be solved?"
+
+Complexity:
+    "How efficiently can it be solved?"
+
+
+──────────────────────────────────────────────────────────────────────
+26.42 MASTER CONCEPT MAP
+──────────────────────────────────────────────────────────────────────
+
+                    COMPLEXITY THEORY
+                           │
+             ┌─────────────┴─────────────┐
+             ↓                           ↓
+           TIME                         SPACE
+             │                           │
+             ↓                           ↓
+       Running steps                  Memory
+             │
+             ↓
+       Growth with n
+             │
+     ┌───────┼────────┐
+     ↓       ↓        ↓
+   Best   Average    Worst
+     │       │        │
+     └───────┼────────┘
+             ↓
+      ASYMPTOTIC ANALYSIS
+             │
+     ┌───────┴────────┐
+     ↓                ↓
+ Polynomial        Exponential
+     │                │
+     ↓                ↓
+   n^k               c^n
+     │
+     ↓
+ Complexity Classes
+     │
+     ├── P
+     ├── NP
+     ├── NP-Hard
+     └── NP-Complete
+
+
+──────────────────────────────────────────────────────────────────────
+26.43 WHAT YOU SHOULD NOW UNDERSTAND
+──────────────────────────────────────────────────────────────────────
+
+After Chapter 26, you should understand:
+
+✓ What computational complexity means.
+
+✓ Why complexity matters.
+
+✓ What input size means.
+
+✓ What time complexity means.
+
+✓ What space complexity means.
+
+✓ What Big-O represents.
+
+✓ The meaning of O(1), O(log n), O(n), O(n²), O(2ⁿ), etc.
+
+✓ Polynomial vs exponential growth.
+
+✓ Best-case complexity.
+
+✓ Average-case complexity.
+
+✓ Worst-case complexity.
+
+✓ Decision problems.
+
+✓ Optimization problems.
+
+✓ Tractable vs intractable problems.
+
+✓ Computability vs complexity.
+
+✓ Why complexity classes are needed.
+
+
+══════════════════════════════════════════════════════════════════════
+                         CHAPTER 26 COMPLETE
+══════════════════════════════════════════════════════════════════════
+
+NEXT TOPIC / UPCOMING CHAPTER
+──────────────────────────────────────────────────────────────────────
+
+CHAPTER 27 — COMPLEXITY CLASSES
+
+The next chapter will teach:
+
+    27.1 P
+        → Definition
+        → Polynomial-time algorithms
+        → Examples
+
+    27.2 NP
+        → Definition
+        → Polynomial-time verification
+        → Certificates
+        → Nondeterministic computation
+
+    27.3 NP-HARD
+        → Definition
+        → Characteristics
+        → Examples
+
+    27.4 NP-COMPLETE
+        → Definition
+        → Characteristics
+        → Relationship with NP
+        → Relationship with NP-Hard
+
+    27.5 Important Problems
+        → SAT
+        → 3-SAT
+        → Clique
+        → Vertex Cover
+        → Hamiltonian Cycle
+        → Traveling Salesman Problem
+        → Subset Sum
+
+    IMPORTANT:
+    We will build P → NP → NP-Hard → NP-Complete
+    from absolute basics rather than memorizing the diagram.
+
+──────────────────────────────────────────────────────────────────────
+COMMAND TO CONTINUE
+──────────────────────────────────────────────────────────────────────
+
+Type:
+
+    NEXT
+
+to begin:
+
+    CHAPTER 27 — COMPLEXITY CLASSES
+    Topic 27.1 — P (Polynomial-Time Complexity Class)

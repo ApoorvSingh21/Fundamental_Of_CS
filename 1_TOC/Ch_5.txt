@@ -1,0 +1,1565 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║              THEORY OF COMPUTATION — CHAPTER 5                      ║
+║          NONDETERMINISTIC FINITE AUTOMATA (NFA)                     ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+COURSE POSITION
+────────────────
+Phase 3 — Finite Automata
+Chapter 4 — DFA Fundamentals       ✓ Previous
+Chapter 5 — NFA                     ← CURRENT
+Chapter 6 — Regular Expressions     → Next chapter
+
+Chapter 5 Topics
+────────────────
+5.1 NFA — Concept and Fundamentals
+5.2 Formal Definition of NFA
+5.3 NFA Transition Function
+5.4 NFA Computation and Acceptance
+5.5 ε-NFA
+5.6 ε-Closure
+5.7 NFA Construction
+5.8 NFA for Pattern Matching
+5.9 DFA vs NFA
+5.10 Expressive Power of DFA and NFA
+5.11 NFA → DFA Conversion
+5.12 Important Exam Problems
+5.13 Practice Questions
+5.14 Chapter Summary
+
+
+══════════════════════════════════════════════════════════════════════
+5.1 WHAT IS AN NFA?
+══════════════════════════════════════════════════════════════════════
+
+NFA stands for:
+
+    N = Nondeterministic
+    F = Finite
+    A = Automaton
+
+Before understanding NFA, recall the basic idea of a finite automaton.
+
+A finite automaton is a mathematical machine that:
+
+    1. Reads an input string.
+    2. Moves between a finite number of states.
+    3. Finally decides whether the input is accepted or rejected.
+
+A DFA has exactly ONE possible next state for every:
+
+    current state + input symbol
+
+An NFA is more flexible.
+
+For a given:
+
+    current state + input symbol
+
+an NFA may have:
+
+    • zero possible next states
+    • one possible next state
+    • multiple possible next states
+
+This is the key idea of nondeterminism.
+
+
+──────────────────────────────────────────────────────────────────────
+SIMPLE DEFINITION
+──────────────────────────────────────────────────────────────────────
+
+An NFA is a finite automaton in which a state may have multiple possible
+transitions for the same input symbol.
+
+
+──────────────────────────────────────────────────────────────────────
+REAL-WORLD ANALOGY
+──────────────────────────────────────────────────────────────────────
+
+Imagine you are standing at a road junction.
+
+You see:
+
+                 ┌──── Road A
+                 │
+            YOU ─┼──── Road B
+                 │
+                 └──── Road C
+
+A deterministic decision means:
+
+    "For this situation, I must choose exactly one road."
+
+A nondeterministic decision means:
+
+    "Several possible roads are available."
+
+The NFA conceptually explores the possible choices.
+
+If ANY possible path eventually reaches an accepting state,
+the string is accepted.
+
+
+══════════════════════════════════════════════════════════════════════
+5.2 WHY DO WE NEED NFA?
+══════════════════════════════════════════════════════════════════════
+
+DFA can represent every regular language.
+
+So NFA is NOT more powerful than DFA in terms of the languages
+it can recognize.
+
+Then why use NFA?
+
+Because NFAs are often:
+
+    • easier to design
+    • easier to understand
+    • smaller than equivalent DFAs
+    • especially useful for pattern matching
+    • useful as an intermediate representation for regular expressions
+
+For example, suppose we want a machine that accepts strings containing
+the pattern "101".
+
+With a DFA, we carefully track how much of "101" has been matched.
+
+With an NFA, we can conceptually "guess" where the substring begins.
+
+
+══════════════════════════════════════════════════════════════════════
+5.3 DFA VS NFA — BASIC IDEA
+══════════════════════════════════════════════════════════════════════
+
+DFA:
+
+For every state and input symbol:
+
+    EXACTLY ONE next state
+
+NFA:
+
+For every state and input symbol:
+
+    ZERO, ONE, OR MANY next states
+
+
+Example:
+
+DFA:
+
+              0
+        ┌──────────┐
+        ↓          │
+       q0 ───────> q1
+       
+For input 0 from q0:
+
+    q0 → q1
+
+Only one possibility.
+
+
+NFA:
+
+              0
+          ┌────────┐
+          ↓        ↓
+         q1        q2
+          ↑
+          │
+         q0
+
+For input 0 from q0:
+
+    q0 → q1
+    q0 → q2
+
+There are two possible transitions.
+
+
+══════════════════════════════════════════════════════════════════════
+5.4 FORMAL DEFINITION OF NFA
+══════════════════════════════════════════════════════════════════════
+
+An NFA is formally represented using a 5-tuple:
+
+                    N = (Q, Σ, δ, q₀, F)
+
+Do not memorize this blindly.
+
+Understand every component.
+
+Q
+─
+Set of states.
+
+Example:
+
+    Q = {q0, q1, q2}
+
+
+Σ
+─
+Input alphabet.
+
+Example:
+
+    Σ = {0,1}
+
+
+δ
+─
+Transition function.
+
+For an NFA:
+
+    δ : Q × Σ → 2^Q
+
+The important difference is:
+
+DFA:
+
+    δ : Q × Σ → Q
+
+NFA:
+
+    δ : Q × Σ → 2^Q
+
+Why 2^Q?
+
+Because the result can be a SET of states.
+
+For example:
+
+    δ(q0, 0) = {q1,q2}
+
+This means that from q0 on input 0, the NFA can go to q1 OR q2.
+
+
+q₀
+──
+Initial/start state.
+
+The machine begins here.
+
+
+F
+─
+Set of final/accepting states.
+
+Example:
+
+    F = {q2}
+
+A string is accepted if at least one valid computation path ends
+in a final state.
+
+
+══════════════════════════════════════════════════════════════════════
+5.5 IMPORTANT NFA NOTATION
+══════════════════════════════════════════════════════════════════════
+
+Consider:
+
+                   0
+             ┌──────────>
+             │
+          → q0 ───────> q1*
+                   0
+
+Here:
+
+    → q0 = start state
+    q0,q1 = states
+    q1* = accepting/final state
+    0 = transition label
+
+
+A transition:
+
+    q0 --0--> q1
+
+means:
+
+    "When the machine is in q0 and reads 0,
+     it may move to q1."
+
+
+══════════════════════════════════════════════════════════════════════
+5.6 BASIC NFA EXAMPLE
+══════════════════════════════════════════════════════════════════════
+
+Let:
+
+    Q = {q0,q1,q2}
+    Σ = {0,1}
+
+Transitions:
+
+    δ(q0,0) = {q0,q1}
+    δ(q0,1) = {q0}
+    δ(q1,0) = ∅
+    δ(q1,1) = {q2}
+
+    q2 is final.
+
+
+ASCII diagram:
+
+                         0
+                    ┌─────────┐
+                    │         │
+                    ↓         │
+                 → q0 ────────┘
+                   │
+                   │ 0
+                   ↓
+                   q1
+                   │
+                   │ 1
+                   ↓
+                  q2*
+                   
+q0 also has a 1-loop:
+
+                         1
+                      ┌─────┐
+                      │     │
+                      ↓     │
+                 → q0 ──────┘
+
+
+The important NFA transition is:
+
+    q0 --0--> q0
+    q0 --0--> q1
+
+Same state + same input = multiple possibilities.
+
+
+══════════════════════════════════════════════════════════════════════
+5.7 NFA TRANSITION FUNCTION
+══════════════════════════════════════════════════════════════════════
+
+For a DFA:
+
+    δ(q, a) = one state
+
+For example:
+
+    δ(q0,0) = q1
+
+
+For an NFA:
+
+    δ(q, a) = a SET of states
+
+For example:
+
+    δ(q0,0) = {q1,q2}
+
+It can also be:
+
+    δ(q0,0) = ∅
+
+meaning there is no possible transition.
+
+
+Therefore an NFA can have:
+
+    δ(q, a) = ∅
+    δ(q, a) = {q1}
+    δ(q, a) = {q1,q2}
+    δ(q, a) = {q1,q2,q3,...}
+
+
+══════════════════════════════════════════════════════════════════════
+5.8 NFA TRANSITION TABLE
+══════════════════════════════════════════════════════════════════════
+
+Consider:
+
+    δ(q0,0) = {q0,q1}
+    δ(q0,1) = {q0}
+    δ(q1,0) = ∅
+    δ(q1,1) = {q2}
+    δ(q2,0) = ∅
+    δ(q2,1) = ∅
+
+
+Transition table:
+
+    ┌───────┬────────────┬────────────┐
+    │ State │     0      │     1      │
+    ├───────┼────────────┼────────────┤
+    │  q0   │ {q0,q1}    │ {q0}       │
+    │  q1   │ ∅          │ {q2}       │
+    │  q2*  │ ∅          │ ∅          │
+    └───────┴────────────┴────────────┘
+
+Notice that an NFA transition table can contain SETS of states.
+
+A DFA transition table contains exactly one state in each cell.
+
+
+══════════════════════════════════════════════════════════════════════
+5.9 HOW DOES AN NFA PROCESS A STRING?
+══════════════════════════════════════════════════════════════════════
+
+This is extremely important.
+
+Suppose the NFA has:
+
+    q0 --0--> q0
+    q0 --0--> q1
+
+and input:
+
+    01
+
+Initially:
+
+    Current state = {q0}
+
+Read 0:
+
+    From q0:
+
+        q0 → q0
+        q0 → q1
+
+Therefore:
+
+    Current states = {q0,q1}
+
+
+Now read 1.
+
+From q0:
+
+    q0 → q0
+
+From q1:
+
+    q1 → q2
+
+Therefore:
+
+    Current states = {q0,q2}
+
+
+If q2 is final:
+
+    q2 ∈ current states
+
+Therefore:
+
+    ACCEPT
+
+
+══════════════════════════════════════════════════════════════════════
+5.10 IMPORTANT IDEA — "ANY PATH"
+══════════════════════════════════════════════════════════════════════
+
+Suppose an NFA has several computation paths.
+
+Example:
+
+                         path 1 → REJECT
+                        /
+Input → NFA ──────────<
+                        \
+                         path 2 → ACCEPT
+
+The NFA accepts if:
+
+    AT LEAST ONE path accepts.
+
+It does NOT require all paths to accept.
+
+Therefore:
+
+    NFA acceptance = existence of an accepting path.
+
+
+This is one of the most important concepts in NFA.
+
+
+══════════════════════════════════════════════════════════════════════
+5.11 NFA ACCEPTANCE
+══════════════════════════════════════════════════════════════════════
+
+A string w is accepted by an NFA if there exists at least one
+computation path that consumes the entire string and finishes
+in a final state.
+
+In simple words:
+
+    "If even ONE possible path accepts, the NFA accepts."
+
+
+Example:
+
+    Input = 101
+
+Possible paths:
+
+    Path A → reject
+    Path B → reject
+    Path C → accept
+    Path D → reject
+
+Final result:
+
+    ACCEPT
+
+
+If:
+
+    All paths reject
+
+then:
+
+    REJECT.
+
+
+══════════════════════════════════════════════════════════════════════
+5.12 NFA VS DFA — IMPORTANT DIFFERENCE
+══════════════════════════════════════════════════════════════════════
+
+              DFA                         NFA
+              ───                         ───
+
+Transitions:
+    Exactly one                 Zero, one, or many
+
+Transition result:
+    State                       Set of states
+
+δ:
+    Q × Σ → Q                   Q × Σ → 2^Q
+
+Computation:
+    One path                    Multiple possible paths
+
+Acceptance:
+    The unique path             At least one path
+
+Missing transition:
+    Usually represented         Allowed
+    using trap/dead state
+
+Ease of construction:
+    Sometimes harder            Often easier
+
+Expressive power:
+    Same                        Same
+
+
+IMPORTANT:
+
+    NFA ≠ More Powerful Than DFA
+
+Both recognize exactly the:
+
+    REGULAR LANGUAGES
+
+
+══════════════════════════════════════════════════════════════════════
+5.13 NONDETERMINISM — WHAT DOES IT REALLY MEAN?
+══════════════════════════════════════════════════════════════════════
+
+"Nondeterministic" does NOT mean:
+
+    • random
+    • unpredictable
+    • physically magical
+
+It is a mathematical model in which multiple possible computations
+may exist.
+
+For language recognition, we ask:
+
+    "Does there exist an accepting computation?"
+
+This "existence of a path" is the key mathematical interpretation.
+
+
+══════════════════════════════════════════════════════════════════════
+5.14 ε-NFA — INTRODUCTION
+══════════════════════════════════════════════════════════════════════
+
+Now we introduce another important concept:
+
+    ε-NFA
+
+Here:
+
+    ε = epsilon
+
+Epsilon represents the EMPTY STRING.
+
+It means:
+
+    "consume no input symbol."
+
+An ε-transition allows the automaton to change state without
+reading an input symbol.
+
+
+Example:
+
+             ε
+        q0 ───────> q1
+
+The machine can move:
+
+    q0 → q1
+
+without consuming 0 or 1.
+
+
+This is different from:
+
+             0
+        q0 ───────> q1
+
+because this transition consumes one input symbol: 0.
+
+
+══════════════════════════════════════════════════════════════════════
+5.15 WHY ARE ε-TRANSITIONS USEFUL?
+══════════════════════════════════════════════════════════════════════
+
+ε-transitions make automata construction easier.
+
+They are especially useful when constructing an automaton from:
+
+    • union
+    • concatenation
+    • Kleene star
+    • regular expressions
+
+For example, we can join two machines using ε-transitions
+without consuming input.
+
+
+══════════════════════════════════════════════════════════════════════
+5.16 ε-NFA EXAMPLE
+══════════════════════════════════════════════════════════════════════
+
+Consider:
+
+                    ε
+              ┌────────────>
+              │
+           → q0              q1
+                              │
+                              │ 0
+                              ↓
+                             q2*
+                             
+The machine may:
+
+    q0 --ε--> q1
+
+without consuming anything.
+
+Then:
+
+    q1 --0--> q2
+
+So the input:
+
+    0
+
+can be accepted.
+
+
+══════════════════════════════════════════════════════════════════════
+5.17 ε-CLOSURE
+══════════════════════════════════════════════════════════════════════
+
+ε-closure is extremely important.
+
+Definition:
+
+The ε-closure of a state is the set of states reachable from that
+state using ZERO or MORE ε-transitions.
+
+"Zero or more" is important.
+
+Therefore every state belongs to its own ε-closure.
+
+Example:
+
+             ε              ε
+        q0 ─────> q1 ─────> q2
+
+Then:
+
+    ε-closure(q0) = {q0,q1,q2}
+
+    ε-closure(q1) = {q1,q2}
+
+    ε-closure(q2) = {q2}
+
+
+Why is q0 included?
+
+Because zero ε-moves are allowed.
+
+
+══════════════════════════════════════════════════════════════════════
+5.18 ε-CLOSURE WITH A LOOP
+══════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+             ε
+        ┌──────────┐
+        │          ↓
+       q0 ──ε──> q1 ──ε──> q2
+        ↑                   │
+        └─────── ε ─────────┘
+
+Then:
+
+    ε-closure(q0)
+    
+    = {q0,q1,q2}
+
+because all three states are reachable using only ε-transitions.
+
+
+══════════════════════════════════════════════════════════════════════
+5.19 NFA CONSTRUCTION — BASIC STRATEGY
+══════════════════════════════════════════════════════════════════════
+
+When constructing an NFA from a language description:
+
+STEP 1
+──────
+Understand exactly what the language requires.
+
+STEP 2
+──────
+Identify the important pattern.
+
+STEP 3
+──────
+Create states representing progress through that pattern.
+
+STEP 4
+──────
+Add nondeterministic choices where useful.
+
+STEP 5
+──────
+Mark accepting states.
+
+STEP 6
+──────
+Test several accepted and rejected strings.
+
+
+══════════════════════════════════════════════════════════════════════
+5.20 EXAMPLE — NFA FOR STRINGS CONTAINING "101"
+══════════════════════════════════════════════════════════════════════
+
+Language:
+
+    L = { w ∈ {0,1}* | w contains 101 as a substring }
+
+We want strings such as:
+
+    101          ACCEPT
+    0101         ACCEPT
+    1010         ACCEPT
+    11011        ACCEPT
+
+But:
+
+    000          REJECT
+    111          REJECT
+    100          REJECT
+
+
+An NFA can guess where the substring "101" begins.
+
+States:
+
+    q0 = searching
+    q1 = matched 1
+    q2 = matched 10
+    q3 = matched 101
+
+q3 is final.
+
+
+ASCII diagram:
+
+                         1
+                    ┌───────────┐
+                    │           │
+                    ↓           │
+                → q0 ───────────┘
+                   │
+                   │ 1
+                   ↓
+                  q1
+                   │
+                   │ 0
+                   ↓
+                  q2
+                   │
+                   │ 1
+                   ↓
+                  q3*
+                   
+The q0 loop means we can continue searching.
+
+The transition:
+
+    q0 --1--> q1
+
+allows the NFA to guess:
+
+    "Maybe this 1 is the beginning of 101."
+
+
+══════════════════════════════════════════════════════════════════════
+5.21 TRACE "1101"
+══════════════════════════════════════════════════════════════════════
+
+Input:
+
+    1101
+
+Start:
+
+    {q0}
+
+Read first 1:
+
+    q0 → q0
+    q0 → q1
+
+Current states:
+
+    {q0,q1}
+
+
+Read second 1:
+
+    q0 → q0
+    q1 has no useful 1-transition
+
+Current:
+
+    {q0}
+
+
+Read 0:
+
+    q0 → q0
+
+Current:
+
+    {q0}
+
+
+Read 1:
+
+    q0 → q0
+    q0 → q1
+
+Current:
+
+    {q0,q1}
+
+This particular simple NFA construction needs to be designed with
+the correct continuation behavior for arbitrary occurrence searching.
+The general lesson is:
+
+    NFA construction must account for every possible starting
+    position of the target pattern.
+
+For pattern-recognition NFAs, always test:
+
+    • pattern at beginning
+    • pattern in middle
+    • pattern at end
+    • repeated patterns
+    • overlapping patterns
+
+
+══════════════════════════════════════════════════════════════════════
+5.22 NFA FOR UNION — BASIC IDEA
+══════════════════════════════════════════════════════════════════════
+
+Suppose we want:
+
+    L = L1 ∪ L2
+
+An ε-NFA can choose either machine.
+
+Conceptually:
+
+                         ε → Machine 1
+                        /
+                   q0
+                        \
+                         ε → Machine 2
+
+The machine nondeterministically chooses one branch.
+
+If either branch accepts:
+
+    ACCEPT
+
+
+══════════════════════════════════════════════════════════════════════
+5.23 NFA FOR CONCATENATION
+══════════════════════════════════════════════════════════════════════
+
+For:
+
+    L = L1L2
+
+we can connect the accepting portion of the first machine
+to the second machine.
+
+Conceptually:
+
+    Machine 1 ──ε──> Machine 2
+
+The ε-transition consumes no input.
+
+The input is first processed by the first component,
+then by the second.
+
+
+══════════════════════════════════════════════════════════════════════
+5.24 NFA FOR KLEENE STAR
+══════════════════════════════════════════════════════════════════════
+
+For:
+
+    L*
+
+the machine must allow:
+
+    • zero repetitions
+    • one repetition
+    • two repetitions
+    • three repetitions
+    • ...
+
+Conceptually:
+
+                         ε
+                    ┌─────────┐
+                    │         ↓
+                  START → Machine
+                    ↑         │
+                    └───ε─────┘
+
+The ε-path allows zero repetitions.
+
+The loop allows repeated execution.
+
+
+══════════════════════════════════════════════════════════════════════
+5.25 NFA → DFA — WHY CONVERT?
+══════════════════════════════════════════════════════════════════════
+
+Since DFA and NFA have the same expressive power, we can convert
+an NFA into an equivalent DFA.
+
+This is called:
+
+    Subset Construction
+
+or:
+
+    Powerset Construction
+
+
+The main idea:
+
+    ONE DFA STATE represents a SET of NFA STATES.
+
+
+For example:
+
+    DFA state A = {q0,q1}
+
+means:
+
+    "The NFA could currently be in q0 or q1."
+
+
+══════════════════════════════════════════════════════════════════════
+5.26 SUBSET CONSTRUCTION — CORE IDEA
+══════════════════════════════════════════════════════════════════════
+
+Suppose NFA has:
+
+    Q = {q0,q1}
+
+Possible subsets are:
+
+    ∅
+    {q0}
+    {q1}
+    {q0,q1}
+
+Therefore the DFA may have states corresponding to these subsets.
+
+
+For n NFA states, there can be at most:
+
+    2^n
+
+DFA states.
+
+IMPORTANT:
+
+    2^n is an upper bound.
+
+The actual DFA may contain fewer reachable states.
+
+
+══════════════════════════════════════════════════════════════════════
+5.27 SIMPLE NFA → DFA EXAMPLE
+══════════════════════════════════════════════════════════════════════
+
+NFA:
+
+    q0 --0--> q0
+    q0 --0--> q1
+    q1 --1--> q2
+
+q2 is final.
+
+
+Start NFA state:
+
+    {q0}
+
+For input 0:
+
+    q0 → {q0,q1}
+
+Therefore DFA transition:
+
+    {q0} --0--> {q0,q1}
+
+
+From {q0,q1} on 1:
+
+    q0 has no useful 1-transition
+    q1 → q2
+
+Therefore:
+
+    {q0,q1} --1--> {q2}
+
+
+Since q2 is final:
+
+    {q2} is a final DFA state.
+
+
+The central idea is:
+
+    NFA's collection of possible states
+                 ↓
+    becomes one DFA state.
+
+
+══════════════════════════════════════════════════════════════════════
+5.28 NFA → DFA ALGORITHM
+══════════════════════════════════════════════════════════════════════
+
+For an NFA without ε-transitions:
+
+STEP 1:
+    Start with the subset containing the NFA start state.
+
+STEP 2:
+    For each DFA subset and each input symbol,
+    calculate all reachable NFA states.
+
+STEP 3:
+    Treat that set as a new DFA state.
+
+STEP 4:
+    Continue until no new subsets appear.
+
+STEP 5:
+    Any DFA subset containing an NFA final state
+    becomes a final DFA state.
+
+
+For ε-NFA:
+
+Before/after moving on an input symbol,
+ε-closure must also be considered.
+
+
+══════════════════════════════════════════════════════════════════════
+5.29 EXPRESSIVE POWER
+══════════════════════════════════════════════════════════════════════
+
+DFA and NFA recognize exactly the same class of languages:
+
+                    REGULAR LANGUAGES
+
+Therefore:
+
+    DFA ≡ NFA ≡ ε-NFA
+
+in expressive power.
+
+But they may differ greatly in number of states.
+
+An NFA with n states can sometimes have an equivalent DFA
+requiring up to:
+
+    2^n
+
+states.
+
+
+══════════════════════════════════════════════════════════════════════
+5.30 IMPORTANT DISTINCTION
+══════════════════════════════════════════════════════════════════════
+
+DO NOT SAY:
+
+    "NFA is more powerful than DFA."
+
+Correct statement:
+
+    "NFA is not more expressive than DFA."
+
+Both recognize exactly the regular languages.
+
+NFA is often:
+
+    easier to construct
+
+while DFA is:
+
+    deterministic and has exactly one computation path.
+
+
+══════════════════════════════════════════════════════════════════════
+5.31 COMMON MISTAKES
+══════════════════════════════════════════════════════════════════════
+
+MISTAKE 1:
+Thinking an NFA must choose randomly.
+
+CORRECT:
+Nondeterminism represents multiple possible computations.
+
+
+MISTAKE 2:
+Thinking all NFA paths must accept.
+
+CORRECT:
+Only ONE accepting path is required.
+
+
+MISTAKE 3:
+Thinking NFA recognizes non-regular languages.
+
+CORRECT:
+NFA recognizes only regular languages.
+
+
+MISTAKE 4:
+Confusing ε with a normal input symbol.
+
+CORRECT:
+ε means no input symbol is consumed.
+
+
+MISTAKE 5:
+Forgetting that an NFA transition returns a SET of states.
+
+CORRECT:
+
+    δ(q,a) ⊆ Q
+
+
+MISTAKE 6:
+Forgetting the state itself in ε-closure.
+
+CORRECT:
+
+    q ∈ ε-closure(q)
+
+
+MISTAKE 7:
+Assuming every possible subset must appear in the converted DFA.
+
+CORRECT:
+At most 2^n subsets exist, but only reachable subsets need to
+be included in the useful constructed DFA.
+
+
+══════════════════════════════════════════════════════════════════════
+5.32 B.TECH EXAM PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+VERY IMPORTANT:
+
+1. Define NFA.
+
+2. Give the formal 5-tuple representation.
+
+3. Explain the NFA transition function.
+
+4. Explain nondeterministic computation.
+
+5. Explain acceptance of an NFA.
+
+6. Explain ε-NFA.
+
+7. Define ε-closure.
+
+8. Construct an NFA for a given language.
+
+9. Convert NFA to DFA.
+
+10. Compare DFA and NFA.
+
+11. Explain why DFA and NFA are equivalent in expressive power.
+
+12. Solve transition-table and string-tracing problems.
+
+
+══════════════════════════════════════════════════════════════════════
+5.33 GATE / COMPETITIVE EXAM PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+Remember these high-value facts:
+
+    • Every DFA is an NFA.
+    • Every NFA has an equivalent DFA.
+    • Every ε-NFA has an equivalent DFA.
+    • DFA, NFA and ε-NFA recognize exactly the regular languages.
+    • NFA transitions return subsets of states.
+    • An NFA accepts if at least one path accepts.
+    • ε consumes no input.
+    • ε-closure includes the state itself.
+    • n-state NFA → at most 2^n DFA states.
+    • The actual number of reachable DFA states may be much smaller.
+    • NFA can be exponentially smaller than an equivalent DFA.
+
+
+══════════════════════════════════════════════════════════════════════
+5.34 INTERVIEW QUESTIONS
+══════════════════════════════════════════════════════════════════════
+
+Q1. What is an NFA?
+
+Q2. Why is it called nondeterministic?
+
+Q3. What is the difference between DFA and NFA?
+
+Q4. Can an NFA have multiple transitions on the same input?
+
+Q5. Can an NFA have no transition for an input?
+
+Q6. What does an NFA accept?
+
+Q7. Is NFA more powerful than DFA?
+
+Q8. What is an ε-transition?
+
+Q9. What is ε-closure?
+
+Q10. Why can an NFA be easier to construct than a DFA?
+
+Q11. What is subset construction?
+
+Q12. What is the maximum number of DFA states generated from
+     an n-state NFA?
+
+
+══════════════════════════════════════════════════════════════════════
+5.35 PRACTICE QUESTIONS — LEVEL 1
+══════════════════════════════════════════════════════════════════════
+
+1. What does NFA stand for?
+
+2. Define an NFA in simple words.
+
+3. What is a state?
+
+4. What is a transition?
+
+5. What is the difference between DFA and NFA?
+
+6. Can an NFA have multiple transitions for the same symbol?
+
+7. What does ∅ mean in an NFA transition table?
+
+8. What is an accepting state?
+
+9. What does nondeterministic mean?
+
+10. Does an NFA accept when all paths accept?
+
+
+══════════════════════════════════════════════════════════════════════
+5.36 PRACTICE QUESTIONS — LEVEL 2
+══════════════════════════════════════════════════════════════════════
+
+1. Construct an NFA for strings ending in 01.
+
+2. Construct an NFA for strings containing 11.
+
+3. Construct an NFA for strings containing 101.
+
+4. Trace the input 101 through a given NFA.
+
+5. Determine whether a given string is accepted.
+
+6. Create a transition table for a given NFA.
+
+7. Convert a transition table into an NFA diagram.
+
+
+══════════════════════════════════════════════════════════════════════
+5.37 PRACTICE QUESTIONS — LEVEL 3
+══════════════════════════════════════════════════════════════════════
+
+1. Convert a given NFA into an equivalent DFA.
+
+2. Find all reachable subsets during subset construction.
+
+3. Construct an ε-NFA for:
+
+       (0|1)*01
+
+4. Find ε-closure for every state.
+
+5. Determine the language accepted by an ε-NFA.
+
+6. Explain why an NFA and DFA have equivalent expressive power.
+
+
+══════════════════════════════════════════════════════════════════════
+5.38 GATE-STYLE CONCEPTUAL QUESTIONS
+══════════════════════════════════════════════════════════════════════
+
+Q1.
+An NFA has 4 states. What is the maximum possible number of states
+in the equivalent DFA?
+
+Do not answer immediately. Think first.
+
+Q2.
+Which statement is correct?
+
+    A. NFA is strictly more powerful than DFA.
+    B. DFA is strictly more powerful than NFA.
+    C. DFA and NFA recognize the same class of languages.
+    D. NFA recognizes only finite languages.
+
+Q3.
+For an NFA, δ(q,a) can be:
+
+    A. only one state
+    B. only two states
+    C. a subset of Q
+    D. always the empty set
+
+Q4.
+An NFA has several computation paths. It accepts if:
+
+    A. every path accepts
+    B. at least one path accepts
+    C. no path accepts
+    D. exactly two paths accept
+
+
+══════════════════════════════════════════════════════════════════════
+5.39 QUICK REVISION TABLE
+══════════════════════════════════════════════════════════════════════
+
+    ┌───────────────────────┬─────────────────────────────────────┐
+    │ Concept               │ Meaning                             │
+    ├───────────────────────┼─────────────────────────────────────┤
+    │ NFA                   │ Nondeterministic finite automaton   │
+    │ State                 │ Current machine condition          │
+    │ Transition            │ Movement between states            │
+    │ δ(q,a)                │ Set of possible next states        │
+    │ Final state            │ Accepting state                    │
+    │ Nondeterminism        │ Multiple possible computations      │
+    │ ε                     │ Empty string/no input consumed      │
+    │ ε-transition          │ Move without consuming input       │
+    │ ε-closure             │ States reachable using ε-moves     │
+    │ Subset construction   │ NFA → DFA conversion               │
+    │ Regular language      │ Language recognized by DFA/NFA      │
+    └───────────────────────┴─────────────────────────────────────┘
+
+
+══════════════════════════════════════════════════════════════════════
+5.40 MOST IMPORTANT RELATIONSHIP
+══════════════════════════════════════════════════════════════════════
+
+                 REGULAR LANGUAGES
+                        ▲
+                        │
+             ┌──────────┼──────────┐
+             │          │          │
+            DFA        NFA       ε-NFA
+             │          │          │
+             └──────────┼──────────┘
+                        │
+                 Same expressive
+                     power
+
+
+Remember:
+
+    DFA ≡ NFA ≡ ε-NFA
+                 │
+                 ↓
+        Regular Languages
+
+
+══════════════════════════════════════════════════════════════════════
+5.41 CHAPTER 5 SUMMARY
+══════════════════════════════════════════════════════════════════════
+
+An NFA is a finite automaton that can have multiple possible
+transitions for the same state and input symbol.
+
+Formal representation:
+
+    N = (Q, Σ, δ, q₀, F)
+
+For NFA:
+
+    δ : Q × Σ → 2^Q
+
+Unlike DFA, an NFA may have:
+
+    • zero transitions
+    • one transition
+    • multiple transitions
+
+An NFA accepts a string if:
+
+    AT LEAST ONE possible computation path
+    ends in an accepting state.
+
+An ε-NFA additionally allows:
+
+    ε-transitions
+
+which consume:
+
+    NO INPUT SYMBOL.
+
+ε-closure(q) means:
+
+    all states reachable from q using zero or more ε-transitions.
+
+NFA can be converted to DFA using:
+
+    SUBSET / POWERSET CONSTRUCTION
+
+For n NFA states:
+
+    Maximum DFA states = 2^n
+
+But the actual DFA may contain fewer states.
+
+Most important fact:
+
+    DFA, NFA and ε-NFA have the SAME EXPRESSIVE POWER.
+
+They all recognize:
+
+    REGULAR LANGUAGES.
+
+
+══════════════════════════════════════════════════════════════════════
+5.42 ACTIVE RECALL — TRY WITHOUT LOOKING ABOVE
+══════════════════════════════════════════════════════════════════════
+
+Q1. What does NFA stand for?
+
+Q2. What is the main difference between DFA and NFA?
+
+Q3. What does δ(q,a) return in an NFA?
+
+Q4. What does nondeterministic mean?
+
+Q5. When does an NFA accept a string?
+
+Q6. What is an ε-transition?
+
+Q7. Does an ε-transition consume an input symbol?
+
+Q8. What is ε-closure?
+
+Q9. Why is q always included in ε-closure(q)?
+
+Q10. What is subset construction?
+
+Q11. What is the maximum number of DFA states obtainable from
+     an N-state NFA?
+
+Q12. Is an NFA more powerful than a DFA?
+
+Q13. What class of languages is recognized by both DFA and NFA?
+
+
+══════════════════════════════════════════════════════════════════════
+CHAPTER 5 STATUS
+══════════════════════════════════════════════════════════════════════
+
+PHASE 3 — FINITE AUTOMATA
+
+Chapter 4 — DFA Fundamentals                 ✓ Completed
+Chapter 5 — NFA                              ✓ Taught
+Chapter 6 — Regular Expressions               → UPCOMING
+
+──────────────────────────────────────────────────────────────────────
+UPCOMING NEXT TOPIC
+──────────────────────────────────────────────────────────────────────
+
+CHAPTER 6 — REGULAR EXPRESSIONS
+
+Topic 6.1 — Regular Expression Basics
+
+We will begin with:
+    • What is a regular expression?
+    • Why regular expressions are needed
+    • Symbols
+    • ∅
+    • ε
+    • Union
+    • Concatenation
+    • Kleene Star
+    • Kleene Plus
+    • Operator precedence
+
+Type:
+
+    NEXT
+
+to begin Chapter 6, Topic 6.1.
+══════════════════════════════════════════════════════════════════════

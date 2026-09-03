@@ -1,0 +1,2206 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║              THEORY OF COMPUTATION — CHAPTER 25                    ║
+║                 ADVANCED UNDECIDABILITY                            ║
+║                                                                      ║
+║ Topics:                                                              ║
+║   25.1 Rice's Theorem                                                ║
+║   25.2 Rice-Shapiro Theorem                                          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+0. CHAPTER INTRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In the previous chapters, we learned:
+
+    Turing Machines
+          ↓
+    Computability
+          ↓
+    Decidability
+          ↓
+    Undecidability
+          ↓
+    Halting Problem
+          ↓
+    Reductions
+
+Now we study a very powerful idea:
+
+        "Can we automatically determine some property
+         of the language recognized by a Turing Machine?"
+
+Rice's Theorem gives a general answer to a huge class of such questions.
+
+For example, suppose M is a Turing Machine.
+
+Can we build an algorithm that always determines:
+
+    • Does M accept at least one string?
+    • Does M accept every string?
+    • Does M accept a finite language?
+    • Does M accept an infinite language?
+    • Does M accept the string "101"?
+    • Does M accept any even-length string?
+
+Many such questions are UNDECIDABLE.
+
+Rice's Theorem lets us prove this systematically.
+
+The central idea is:
+
+    If a property is about WHAT LANGUAGE a TM recognizes,
+    and the property is non-trivial,
+
+                    THEN
+
+             the property is undecidable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. PREREQUISITES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before Rice's Theorem, remember these concepts.
+
+1.1 TURING MACHINE
+
+A Turing Machine is a mathematical model of computation.
+
+It has:
+
+    • states
+    • tape
+    • tape alphabet
+    • input alphabet
+    • read/write head
+    • transition function
+    • start state
+    • accept state
+    • reject state
+
+A simplified picture:
+
+                 Read/Write Head
+                       ↓
+        ┌───┬───┬───┬───┬───┬───┐
+Tape →  │ 0 │ 1 │ 1 │ 0 │ B │ B │ ...
+        └───┴───┴───┴───┴───┴───┘
+                       ↑
+                       │
+                    Head
+
+
+1.2 LANGUAGE RECOGNIZED BY A TM
+
+For a Turing Machine M:
+
+    L(M) = { w | M accepts w }
+
+In words:
+
+    L(M) is the set of all strings that M accepts.
+
+
+Example:
+
+Suppose M accepts:
+
+    0
+    01
+    011
+    0111
+    ...
+
+Then:
+
+    L(M) = { 0, 01, 011, 0111, ... }
+
+
+1.3 DECIDER
+
+A TM is a DECIDER if it halts on every input.
+
+It either:
+
+    ACCEPTS
+       OR
+    REJECTS
+
+and never runs forever.
+
+
+1.4 RECOGNIZER
+
+A recognizer may run forever.
+
+For input w:
+
+    If w ∈ L:
+        TM eventually accepts.
+
+    If w ∉ L:
+        TM may reject
+        OR
+        run forever.
+
+
+1.5 DECIDABLE LANGUAGE
+
+A language L is decidable if some TM decides it.
+
+That means:
+
+    Every input eventually receives
+        ACCEPT or REJECT.
+
+
+1.6 RECOGNIZABLE / RECURSIVELY ENUMERABLE LANGUAGE
+
+A language is Turing-recognizable if some TM recognizes it.
+
+The machine is guaranteed to halt on YES instances,
+but may loop forever on NO instances.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. THE BIG IDEA BEHIND CHAPTER 25
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Imagine thousands of different Turing Machines:
+
+        M1
+        M2
+        M3
+        M4
+        ...
+        Mn
+
+Each machine recognizes some language.
+
+              Turing Machine
+                    │
+                    ↓
+              Recognized Language
+
+Example:
+
+    M1 → L1
+    M2 → L2
+    M3 → L3
+    M4 → L4
+
+
+Now suppose we ask:
+
+    "Does this machine recognize a language
+     having property P?"
+
+For example:
+
+    P = "language is empty"
+
+or:
+
+    P = "language is finite"
+
+or:
+
+    P = "language contains 101"
+
+Rice's Theorem tells us that almost all interesting
+semantic properties of TM-recognized languages are undecidable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. SEMANTIC VS SYNTACTIC PROPERTIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This distinction is EXTREMELY IMPORTANT.
+
+3.1 SYNTACTIC PROPERTY
+
+A syntactic property concerns the DESCRIPTION or STRUCTURE
+of the Turing Machine.
+
+Examples:
+
+    • Does M have 10 states?
+    • Does M use symbol X?
+    • Does M have a transition from q1 to q2?
+    • Does M contain a particular state?
+    • Does M have 5 tape symbols?
+
+These are properties of the MACHINE DESCRIPTION.
+
+
+3.2 SEMANTIC PROPERTY
+
+A semantic property concerns the BEHAVIOR or MEANING
+of the machine.
+
+For a TM:
+
+    "What language does M recognize?"
+
+Examples:
+
+    • Is L(M) empty?
+    • Is L(M) finite?
+    • Is L(M) infinite?
+    • Is L(M) = Σ*?
+    • Does L(M) contain 101?
+    • Is L(M) regular?
+    • Is L(M) context-free?
+
+
+These concern the language recognized by M.
+
+
+3.3 EASY WAY TO REMEMBER
+
+SYNTACTIC:
+
+    "How is the machine written?"
+
+SEMANTIC:
+
+    "What does the machine DO?"
+
+
+Example:
+
+    M has 7 states.
+
+This is syntactic.
+
+    M accepts exactly the strings ending in 1.
+
+This is semantic.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. IMPORTANT CONCEPT — LANGUAGE PROPERTY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A property of languages is a collection of languages satisfying
+some condition.
+
+Suppose P is:
+
+    "The language is finite."
+
+Then:
+
+    P = { L | L is finite }
+
+
+Another property:
+
+    "The language contains 101."
+
+Then:
+
+    P = { L | 101 ∈ L }
+
+
+Another:
+
+    "The language is regular."
+
+Then:
+
+    P = { L | L is regular }
+
+
+The property is applied to the LANGUAGE, not directly
+to the machine's syntax.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. TRIVIAL AND NON-TRIVIAL PROPERTIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is essential for Rice's Theorem.
+
+Suppose P is a property of languages.
+
+A property is called TRIVIAL if it is either:
+
+    true for every language
+
+OR
+
+    false for every language.
+
+
+Example:
+
+    P = "The language is a language."
+
+Every language satisfies this.
+
+Therefore it is trivial.
+
+
+Another example:
+
+    P = "The language has exactly 100 strings."
+
+This is not true for every language.
+
+It is also not false for every language.
+
+Some languages satisfy it.
+
+Some do not.
+
+Therefore it is NON-TRIVIAL.
+
+
+5.1 SIMPLE DIAGRAM
+
+                    ALL LANGUAGES
+                ┌──────────────────┐
+                │                  │
+                │   P = TRUE       │
+                │   for every L    │
+                │                  │
+                └──────────────────┘
+
+                OR
+
+                    ALL LANGUAGES
+                ┌──────────────────┐
+                │                  │
+                │   P = FALSE      │
+                │   for every L    │
+                │                  │
+                └──────────────────┘
+
+                  = TRIVIAL
+
+
+Non-trivial:
+
+                ┌──────────────────────────┐
+                │       ALL LANGUAGES      │
+                │                          │
+                │   ┌──────────────┐       │
+                │   │ Languages    │       │
+                │   │ satisfying P │       │
+                │   └──────────────┘       │
+                │                          │
+                │   Other languages        │
+                └──────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. RICE'S THEOREM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+6.1 SIMPLE DEFINITION
+
+Rice's Theorem says:
+
+    Every non-trivial semantic property of
+    recursively enumerable (Turing-recognizable) languages
+    is undecidable.
+
+In simpler words:
+
+    If you ask an interesting YES/NO question about
+    WHAT LANGUAGE a Turing Machine recognizes,
+    then generally there is NO algorithm that can always
+    answer the question.
+
+
+6.2 FORMAL STATEMENT
+
+Let P be a property of recursively enumerable languages.
+
+If:
+
+    1. P is a semantic property, and
+    2. P is non-trivial,
+
+then:
+
+    { <M> | L(M) has property P }
+
+is undecidable.
+
+
+Here:
+
+    <M>
+
+means an encoding/description of Turing Machine M.
+
+
+And:
+
+    L(M)
+
+means the language recognized by M.
+
+
+6.3 THE FORMULA TO REMEMBER
+
+    Non-trivial
+          +
+    Semantic property
+          ↓
+    UNDECIDABLE
+
+
+This is one of the most important patterns in
+Theory of Computation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. WHY IS RICE'S THEOREM IMPORTANT?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Without Rice's Theorem, we might need to construct a separate
+reduction for every new problem.
+
+Rice's Theorem provides a general shortcut.
+
+Instead of repeatedly proving:
+
+    Problem X is undecidable
+
+we can identify:
+
+    "This is a non-trivial semantic property
+     of a TM-recognized language."
+
+Then:
+
+    Rice's Theorem
+          ↓
+    Problem is undecidable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. EXAMPLE 1 — IS L(M) EMPTY?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+    Given a TM M, can we decide whether:
+
+        L(M) = ∅ ?
+
+In words:
+
+    Does M accept NO strings?
+
+
+This is a property of the language.
+
+Property:
+
+    P = "language is empty"
+
+
+Is it non-trivial?
+
+Yes.
+
+Example of a language satisfying P:
+
+    ∅
+
+
+Example of a language not satisfying P:
+
+    {0}
+
+
+Therefore P is non-trivial.
+
+It is semantic because it depends on L(M).
+
+Therefore, by Rice's Theorem:
+
+    EMPTY_TM = { <M> | L(M) = ∅ }
+
+is UNDECIDABLE.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. EXAMPLE 2 — IS L(M) FINITE?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+    Given M, determine whether L(M) is finite.
+
+Property:
+
+    P = "language is finite"
+
+
+Some languages satisfying P:
+
+    ∅
+    {0}
+    {0,1}
+    {001,101}
+
+
+Some languages not satisfying P:
+
+    {0,1}*
+    {0^n | n ≥ 0}
+
+
+Therefore the property is non-trivial.
+
+It is semantic.
+
+Therefore:
+
+    "Is L(M) finite?"
+
+is undecidable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. EXAMPLE 3 — IS L(M) INFINITE?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Property:
+
+    P = "language is infinite"
+
+
+Some languages satisfy it:
+
+    Σ*
+
+Some do not:
+
+    ∅
+
+
+Therefore it is non-trivial.
+
+It is semantic.
+
+Hence:
+
+    {<M> | L(M) is infinite}
+
+is undecidable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. EXAMPLE 4 — DOES M ACCEPT "101"?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+    Given M, does M accept 101?
+
+This can be written as:
+
+    101 ∈ L(M) ?
+
+This is a property of L(M).
+
+Property:
+
+    P = "language contains 101"
+
+
+Some languages have this property:
+
+    {101}
+
+Some do not:
+
+    ∅
+
+Therefore it is non-trivial.
+
+It is semantic.
+
+Therefore, by Rice's Theorem:
+
+    {<M> | M accepts 101}
+
+is undecidable.
+
+
+NOTE:
+
+This is essentially the TM acceptance problem.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. EXAMPLE 5 — IS L(M) = Σ*?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+    Does M accept every possible input?
+
+That means:
+
+    L(M) = Σ*
+
+
+This is a property of the recognized language.
+
+Some languages satisfy it:
+
+    Σ*
+
+Some do not:
+
+    ∅
+
+
+Therefore the property is non-trivial.
+
+Hence it is undecidable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. EXAMPLE 6 — IS L(M) REGULAR?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+    Given a TM M, is L(M) regular?
+
+This is a semantic property.
+
+Why?
+
+Because it depends on the language recognized by M.
+
+Some TM-recognizable languages are regular:
+
+    ∅
+    Σ*
+    {0,1}
+    strings ending in 1
+
+
+Some are not regular:
+
+    {0^n1^n | n ≥ 0}
+
+
+Therefore the property is non-trivial.
+
+Hence:
+
+    {<M> | L(M) is regular}
+
+is undecidable.
+
+
+IMPORTANT:
+
+Rice's Theorem does not say that the language itself is
+undecidable.
+
+It says that the PROBLEM OF DETERMINING THIS PROPERTY
+FROM THE DESCRIPTION OF M is undecidable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. A VERY IMPORTANT EXAMPLE — IS L(M) CONTEXT-FREE?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Property:
+
+    "L(M) is context-free."
+
+Some TM-recognizable languages are context-free.
+
+For example:
+
+    {0^n1^n | n ≥ 0}
+
+Some are not context-free.
+
+For example:
+
+    {0^n1^n2^n | n ≥ 0}
+
+
+Therefore this is a non-trivial semantic property.
+
+By Rice's Theorem:
+
+    Determining whether L(M) is context-free
+    is undecidable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. WHAT RICE'S THEOREM DOES NOT APPLY TO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rice's Theorem applies to:
+
+    NON-TRIVIAL
+    SEMANTIC
+    LANGUAGE PROPERTIES
+
+It does NOT directly apply to purely syntactic properties.
+
+Example:
+
+    "Does M have exactly 10 states?"
+
+This concerns the description of M.
+
+It does not concern what language M recognizes.
+
+Therefore Rice's Theorem does NOT apply.
+
+
+Another example:
+
+    "Does M contain a transition
+     from q1 to q2?"
+
+Syntactic.
+
+Rice's Theorem does not apply.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. SEMANTIC VS SYNTACTIC — EXAM TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    ┌──────────────────────────────┬──────────────────────────────┐
+    │ Semantic                     │ Syntactic                    │
+    ├──────────────────────────────┼──────────────────────────────┤
+    │ About L(M)                   │ About description of M       │
+    │ Behavior/meaning             │ Structure/form               │
+    │ Language property            │ Machine property             │
+    │ Rice's Theorem may apply     │ Rice's Theorem doesn't apply │
+    └──────────────────────────────┴──────────────────────────────┘
+
+
+Examples:
+
+SEMANTIC:
+
+    Is L(M) empty?
+    Is L(M) finite?
+    Is L(M) infinite?
+    Is L(M) regular?
+    Is L(M) CFL?
+    Does L(M) contain 101?
+    Is L(M) = Σ*?
+
+
+SYNTACTIC:
+
+    Does M have 5 states?
+    Does M use symbol X?
+    Does M have a transition q1 → q2?
+    Does M have exactly 3 accepting states?
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. RICE'S THEOREM — HOW TO APPLY IT IN EXAMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When you see a problem involving a TM property,
+follow these steps.
+
+STEP 1:
+
+Identify what is being asked.
+
+Example:
+
+    "Determine whether L(M) is finite."
+
+
+STEP 2:
+
+Ask:
+
+    Is this about L(M)?
+
+If yes:
+
+    It is likely semantic.
+
+
+STEP 3:
+
+Check whether the property is non-trivial.
+
+Find:
+
+    One language satisfying P
+
+and:
+
+    One language not satisfying P.
+
+
+STEP 4:
+
+Apply Rice's Theorem.
+
+Conclusion:
+
+    The problem is undecidable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. RICE'S THEOREM PROBLEM-SOLVING TEMPLATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use this template in university/GATE answers:
+
+    Given property P of L(M).
+
+    1. P is a semantic property because it depends only
+       on the language L(M), not on the syntactic structure
+       of M.
+
+    2. P is non-trivial because there exists at least one
+       recursively enumerable language having P and at
+       least one recursively enumerable language not
+       having P.
+
+    3. Therefore, by Rice's Theorem,
+
+           {<M> | L(M) has property P}
+
+       is undecidable.
+
+
+This structure is extremely useful in exams.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. IMPORTANT WARNING — "ANY PROPERTY" IS NOT ENOUGH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A common mistake is saying:
+
+    "It is a property of a TM, therefore Rice's Theorem applies."
+
+WRONG.
+
+The property must be a property of the LANGUAGE recognized
+by the TM.
+
+Correct:
+
+    "Is L(M) finite?"
+
+Incorrect for direct Rice application:
+
+    "Does M have 10 states?"
+
+
+Another common mistake:
+
+    "The property is semantic, therefore undecidable."
+
+Incomplete.
+
+It must also be NON-TRIVIAL.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. RICE'S THEOREM — INTUITIVE IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Think of a Turing Machine as a program.
+
+Different programs can have different internal code,
+but they may compute exactly the same language.
+
+For example:
+
+        Program A ──────┐
+                        ├──→ Same language L
+        Program B ──────┘
+
+Rice's Theorem focuses on the behavior:
+
+        "What language does this program recognize?"
+
+not:
+
+        "What does the program look like internally?"
+
+
+Therefore, if the question is about the meaning/behavior
+of an arbitrary program and asks a non-trivial property,
+there is generally no algorithm that always answers it.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. RICE'S THEOREM AND REDUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rice's Theorem is itself a powerful undecidability result.
+
+It is related to the Halting Problem.
+
+Conceptually:
+
+        HALTING / ACCEPTANCE
+                  │
+                  ↓
+        Other TM language properties
+                  │
+                  ↓
+            Rice's Theorem
+
+
+Many undecidable problems can be shown using
+Rice's Theorem instead of constructing a reduction manually.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. RICE'S THEOREM — QUICK EXAMPLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+QUESTION                              RESULT
+──────────────────────────────────────────────────────────────────────
+Is L(M) empty?                        UNDECIDABLE
+Is L(M) finite?                       UNDECIDABLE
+Is L(M) infinite?                     UNDECIDABLE
+Is L(M) regular?                      UNDECIDABLE
+Is L(M) context-free?                 UNDECIDABLE
+Is L(M) = Σ*?                         UNDECIDABLE
+Does L(M) contain 101?                UNDECIDABLE
+Does L(M) contain at least one 1?     UNDECIDABLE
+
+
+BUT:
+
+Does M have exactly 5 states?
+
+    Rice's Theorem does not apply directly.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. IMPORTANT SUBTLETY — EMPTY LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    P = "L(M) = ∅"
+
+This is a semantic property.
+
+It is non-trivial because:
+
+    M1 accepts nothing:
+
+        L(M1) = ∅
+
+while:
+
+    M2 accepts 0:
+
+        L(M2) = {0}
+
+Therefore Rice's Theorem applies.
+
+Hence:
+
+    {<M> | L(M) = ∅}
+
+is undecidable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. IMPORTANT SUBTLETY — NON-EMPTY LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Property:
+
+    P = "L(M) ≠ ∅"
+
+Some languages satisfy:
+
+    {0}
+
+Some do not:
+
+    ∅
+
+Therefore non-trivial.
+
+Therefore undecidable.
+
+
+Notice:
+
+    "empty"
+
+and
+
+    "non-empty"
+
+are both semantic properties.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. RICE'S THEOREM AND COMPLEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose P is:
+
+    "L(M) is finite."
+
+Its opposite is:
+
+    "L(M) is infinite."
+
+Both are non-trivial semantic properties.
+
+Therefore both corresponding decision problems are
+undecidable.
+
+
+Similarly:
+
+    "L(M) is regular"
+
+and:
+
+    "L(M) is non-regular"
+
+are non-trivial semantic properties.
+
+Both are undecidable decision problems.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. RICE-SHAPIRO THEOREM — INTRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rice-Shapiro Theorem is a deeper theorem concerning
+properties of recursively enumerable languages.
+
+Rice's Theorem tells us broadly:
+
+    Non-trivial semantic properties of RE languages
+    are undecidable.
+
+Rice-Shapiro goes further.
+
+It characterizes which properties of recursively enumerable
+languages can be RE (recursively enumerable).
+
+
+This is a more advanced topic.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. RECALL — WHAT IS AN RE LANGUAGE?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RE means:
+
+    Recursively Enumerable
+
+or:
+
+    Turing-recognizable.
+
+
+If L is RE, then there exists a TM M such that:
+
+    w ∈ L
+        ⇒
+    M eventually accepts w.
+
+
+For w ∉ L:
+
+    M may reject
+    OR
+    M may run forever.
+
+
+Diagram:
+
+                  Input w
+                     │
+                     ↓
+                ┌─────────┐
+                │   TM M  │
+                └────┬────┘
+                     │
+             ┌───────┴────────┐
+             ↓                ↓
+          w ∈ L            w ∉ L
+             │                │
+             ↓                ↓
+          ACCEPT          REJECT
+                             OR
+                          LOOP FOREVER
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. FINITE SUBSETS — IMPORTANT IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rice-Shapiro uses the idea of finite pieces of a language.
+
+Suppose:
+
+    L = {0, 01, 011, 0111, ...}
+
+A finite subset could be:
+
+    {0}
+
+or:
+
+    {0,01}
+
+or:
+
+    {0,01,011}
+
+These are finite approximations of L.
+
+
+Think:
+
+        finite information
+               ↓
+        larger information
+               ↓
+        complete RE language
+
+
+Because an RE machine can discover accepted strings
+one by one, finite accepted portions are important.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. MONOTONE / POSITIVE LANGUAGE PROPERTIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A property is informally "positive" or monotone if:
+
+    Once a finite set of accepted strings establishes
+    the property, adding more strings does not destroy it.
+
+
+Example:
+
+    Property:
+        "Language is non-empty."
+
+Suppose:
+
+    F = {101}
+
+has the property.
+
+If we add more strings:
+
+    {101, 0}
+    {101, 0, 1}
+    ...
+
+the language remains non-empty.
+
+
+Another example:
+
+    Property:
+        "Language contains 101."
+
+If:
+
+    101 ∈ L
+
+then adding more strings cannot make:
+
+    101 ∉ L
+
+Therefore this is positive.
+
+
+But consider:
+
+    "Language is empty."
+
+If:
+
+    L = ∅
+
+has the property,
+
+adding one string gives:
+
+    {0}
+
+which destroys the property.
+
+So emptiness is NOT positive.
+
+
+This distinction is important for Rice-Shapiro.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. RICE-SHAPIRO THEOREM — INTUITIVE FORM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Very informally:
+
+    A non-trivial property of RE languages is RE only if
+    it can be witnessed by some finite subset of the language,
+    in a way that remains true when more strings are added.
+
+
+Another way to remember:
+
+    RE computation discovers positive information.
+
+It can observe:
+
+    "I have found accepted strings."
+
+But it cannot safely confirm a negative statement such as:
+
+    "There will never be another accepted string."
+
+Therefore RE properties need to have finite positive witnesses.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. RICE-SHAPIRO — FORMAL-STYLE STATEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Let P be a property of recursively enumerable languages.
+
+The class:
+
+    { L | L is RE and L has property P }
+
+is recursively enumerable if and only if:
+
+    For every RE language L having P,
+    there exists a finite subset F ⊆ L such that
+    every RE language L' satisfying
+
+        F ⊆ L'
+
+    also has property P.
+
+In simpler language:
+
+    If L has property P, then there must be some finite
+    collection F of strings from L that is enough to
+    establish P permanently.
+
+Once F is present, adding more accepted strings cannot
+destroy P.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. WHY FINITE WITNESSES?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A Turing Machine recognizing an RE language can enumerate
+or discover accepted strings gradually.
+
+Suppose:
+
+    L = {w1, w2, w3, ...}
+
+The machine can discover:
+
+    w1
+    ↓
+    w2
+    ↓
+    w3
+    ↓
+    ...
+
+If a finite set F is sufficient to prove the property,
+the recognizer can eventually discover F.
+
+Then it can accept the representation of the property.
+
+But if proving the property requires checking infinitely
+many negative facts, an RE machine cannot generally do that.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. EXAMPLE — NON-EMPTY PROPERTY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Property:
+
+    P = "L is non-empty."
+
+
+Suppose:
+
+    L ≠ ∅
+
+Then there exists some string:
+
+    w ∈ L
+
+Take:
+
+    F = {w}
+
+This is finite.
+
+Any language L' satisfying:
+
+    {w} ⊆ L'
+
+must also be non-empty.
+
+Therefore the property has a finite positive witness.
+
+Hence:
+
+    "L is non-empty"
+
+is RE as a property of RE languages.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. EXAMPLE — CONTAINS A SPECIFIC STRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Property:
+
+    P = "101 ∈ L"
+
+
+Suppose L has this property.
+
+Then:
+
+    101 ∈ L
+
+Choose:
+
+    F = {101}
+
+Any language containing F also contains 101.
+
+Therefore the property has a finite positive witness.
+
+Hence this property is RE.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. EXAMPLE — CONTAINS AT LEAST 5 STRINGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Property:
+
+    P = "|L| ≥ 5"
+
+
+Suppose L has at least 5 strings.
+
+Choose five strings:
+
+    w1, w2, w3, w4, w5
+
+and let:
+
+    F = {w1,w2,w3,w4,w5}
+
+Any language containing F has at least five strings.
+
+Therefore a finite positive witness exists.
+
+Hence the property is RE.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. EXAMPLE — LANGUAGE IS EMPTY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Property:
+
+    P = "L = ∅"
+
+
+Can we find a finite positive witness F?
+
+If:
+
+    L = ∅
+
+the only finite subset is:
+
+    F = ∅
+
+But every language contains:
+
+    ∅
+
+For example:
+
+    L' = {0}
+
+also contains ∅.
+
+Yet:
+
+    L' ≠ ∅
+
+Therefore no finite subset can permanently establish
+the property "empty."
+
+So:
+
+    "L is empty"
+
+is NOT RE as a property in the Rice-Shapiro sense.
+
+
+This matches the intuition:
+
+    To prove emptiness, we must know that no string
+    will ever be accepted.
+
+That is negative/infinite information.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. POSITIVE VS NEGATIVE INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is the easiest intuition for Rice-Shapiro.
+
+POSITIVE INFORMATION:
+
+    "This string belongs to L."
+
+A recognizer can eventually discover this.
+
+NEGATIVE INFORMATION:
+
+    "This string does NOT belong to L."
+
+A recognizer may never know this, because the machine
+could simply keep running.
+
+
+Therefore:
+
+    RE computation is naturally suited to
+    POSITIVE properties.
+
+
+Examples of positive properties:
+
+    L contains 101
+    L is non-empty
+    L contains at least 5 strings
+
+
+Examples of negative-style properties:
+
+    L is empty
+    L contains no strings
+    L has at most 5 strings
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. RICE'S THEOREM VS RICE-SHAPIRO THEOREM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    ┌──────────────────────┬───────────────────────────────────────┐
+    │ Rice's Theorem      │ Rice-Shapiro Theorem                   │
+    ├──────────────────────┼───────────────────────────────────────┤
+    │ About undecidability │ Characterizes RE properties            │
+    │                      │                                       │
+    │ Non-trivial semantic │ Uses finite positive witnesses        │
+    │ property             │                                       │
+    │                      │                                       │
+    │ Says property cannot │ Determines when property itself can   │
+    │ be decided           │ be RE                                  │
+    └──────────────────────┴───────────────────────────────────────┘
+
+
+VERY SHORT MEMORY:
+
+    RICE
+      ↓
+    UNDECIDABLE
+
+    RICE-SHAPIRO
+      ↓
+    RE PROPERTY + FINITE POSITIVE WITNESS
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. COMMON EXAM TRAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRAP 1:
+
+    "Every property of a TM is undecidable by Rice's Theorem."
+
+FALSE.
+
+Only non-trivial semantic language properties qualify.
+
+
+TRAP 2:
+
+    "Number of states is semantic."
+
+FALSE.
+
+It is syntactic.
+
+
+TRAP 3:
+
+    "L(M) is finite" is syntactic.
+
+FALSE.
+
+It is semantic.
+
+
+TRAP 4:
+
+    "Semantic automatically means undecidable."
+
+Not sufficient.
+
+It must be non-trivial.
+
+
+TRAP 5:
+
+    Rice's Theorem says every undecidable problem is
+    a language property.
+
+FALSE.
+
+
+TRAP 6:
+
+    Rice's Theorem can be used for DFA properties.
+
+Not directly in the same form.
+
+Rice's Theorem is about properties of languages recognized
+by Turing Machines / RE languages.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. B.TECH EXAM IMPORTANT DEFINITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION 1 — Semantic Property
+
+A property determined solely by the language recognized
+by a machine, rather than by the syntactic representation
+of the machine.
+
+
+DEFINITION 2 — Trivial Property
+
+A property that is either true for every language or false
+for every language.
+
+
+DEFINITION 3 — Non-Trivial Property
+
+A property that is true for at least one language and false
+for at least one language.
+
+
+DEFINITION 4 — Rice's Theorem
+
+Every non-trivial semantic property of recursively enumerable
+languages is undecidable.
+
+
+DEFINITION 5 — Finite Positive Witness
+
+A finite subset F of a language such that every RE language
+containing F also satisfies the property under consideration.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. B.TECH EXAM QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LEVEL 1 — BASIC
+
+Q1. What is Rice's Theorem?
+
+Q2. What is a semantic property?
+
+Q3. What is a syntactic property?
+
+Q4. Define trivial and non-trivial properties.
+
+Q5. State Rice's Theorem.
+
+Q6. What is the difference between semantic and syntactic
+    properties?
+
+
+LEVEL 2 — B.TECH BASIC
+
+Q7. Explain why "L(M) is empty" is a semantic property.
+
+Q8. Show that "L(M) is finite" is non-trivial.
+
+Q9. Explain why "M has exactly 10 states" is not covered
+    by Rice's Theorem.
+
+Q10. Is "L(M) is regular" a semantic property? Explain.
+
+
+LEVEL 3 — UNIVERSITY EXAM
+
+Q11. State and explain Rice's Theorem with examples.
+
+Q12. Use Rice's Theorem to show that determining whether
+     L(M) is finite is undecidable.
+
+Q13. Prove that determining whether L(M) is regular is
+     undecidable using Rice's Theorem.
+
+Q14. Explain the difference between syntactic and semantic
+     properties with examples.
+
+Q15. Explain Rice-Shapiro Theorem.
+
+
+LEVEL 4 — COMPETITIVE
+
+Q16. Which of the following properties can be directly
+     attacked using Rice's Theorem?
+
+     A. M has 10 states
+     B. L(M) is empty
+     C. M contains symbol X
+     D. M has 5 transitions
+
+Q17. Is "L(M) contains at least one string" a non-trivial
+     semantic property?
+
+Q18. Is "L(M) has at most 10 strings" semantic?
+
+Q19. Is "L(M) is infinite" semantic?
+
+Q20. Why does Rice's Theorem not apply to machine structure?
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. GATE-STYLE THINKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+Which of the following is a semantic property of a TM?
+
+    A. Number of states is even
+    B. Number of transitions is 10
+    C. Accepted language is finite
+    D. Tape alphabet contains X
+
+Answer:
+
+    C
+
+Reason:
+
+    "Accepted language is finite"
+
+depends on L(M).
+
+Therefore it is semantic.
+
+
+------------------------------------------------------------
+
+Question:
+
+Which property is non-trivial?
+
+    A. L(M) is a language
+    B. L(M) is finite
+    C. L(M) is equal to itself
+    D. L(M) is a set of strings
+
+Answer:
+
+    B
+
+Because some languages are finite and some are infinite.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. QUICK DECISION TREE FOR RICE'S THEOREM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When you see a problem:
+
+                 Property of TM?
+                       │
+                       ↓
+                Is it about L(M)?
+                 /            \
+               NO              YES
+               │                │
+               ↓                ↓
+          Syntactic         Semantic
+               │                │
+               ↓                ↓
+       Rice doesn't       Is it non-trivial?
+       directly apply      /          \
+                         NO            YES
+                         │              │
+                         ↓              ↓
+                  Rice doesn't      RICE'S
+                  give result       THEOREM
+                                        │
+                                        ↓
+                                  UNDECIDABLE
+
+
+MEMORIZE THIS FLOW.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. CHAPTER-WIDE CONCEPT MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                  TURING MACHINE
+                        │
+                        ↓
+                    L(M)
+              recognized language
+                        │
+                        ↓
+              ┌─────────────────┐
+              │ Language        │
+              │ Property        │
+              └────────┬────────┘
+                       │
+             ┌─────────┴─────────┐
+             ↓                   ↓
+        Syntactic             Semantic
+             │                   │
+             │             Is it non-trivial?
+             │                   │
+             │                   ↓
+             │              YES → Rice
+             │                   │
+             │                   ↓
+             │             Undecidable
+             │
+             └── Rice does not
+                 directly apply
+
+
+                    RE LANGUAGES
+                         │
+                         ↓
+                  Rice-Shapiro
+                         │
+                         ↓
+              Finite positive witness
+                         │
+                         ↓
+                Positive information
+                         │
+                         ↓
+                   RE property
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. IMPORTANT DIFFERENCES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RICE'S THEOREM vs HALTING PROBLEM
+
+    Halting Problem:
+        Can M halt on input w?
+
+    Rice:
+        Does L(M) have property P?
+
+
+RICE vs REDUCTION
+
+    Reduction:
+        Transform one problem into another.
+
+    Rice:
+        General theorem for non-trivial semantic
+        language properties.
+
+
+SEMANTIC vs SYNTACTIC
+
+    Semantic:
+        What language does M recognize?
+
+    Syntactic:
+        What does M's description look like?
+
+
+TRIVIAL vs NON-TRIVIAL
+
+    Trivial:
+        Property holds for all or none.
+
+    Non-trivial:
+        Some languages satisfy it, some do not.
+
+
+RICE vs RICE-SHAPIRO
+
+    Rice:
+        Non-trivial semantic property
+        → undecidable.
+
+    Rice-Shapiro:
+        Characterizes RE properties using finite
+        positive witnesses.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. COMMON MISTAKES TO AVOID
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Confusing machine properties with language properties.
+
+2. Forgetting the word "non-trivial."
+
+3. Saying every semantic property is undecidable without
+   checking whether it is non-trivial.
+
+4. Using Rice's Theorem for:
+       "M has exactly 7 states."
+
+5. Forgetting that:
+       L(M)
+   means the language recognized by M.
+
+6. Confusing:
+       "M accepts w"
+   with:
+       "M has a transition involving w."
+
+7. Thinking Rice's Theorem proves the language itself is
+   undecidable.
+
+   It proves that a decision problem about the property
+   is undecidable.
+
+8. Confusing Rice's Theorem with Rice-Shapiro Theorem.
+
+9. Forgetting that RE computation can discover positive
+   information but cannot generally confirm infinite
+   negative information.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. CHAPTER SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The most important ideas are:
+
+1. A Turing Machine M recognizes a language L(M).
+
+2. A semantic property depends on L(M).
+
+3. A syntactic property depends on the description/structure
+   of M.
+
+4. A trivial property is true for all languages or false
+   for all languages.
+
+5. A non-trivial property is true for some languages and
+   false for others.
+
+6. Rice's Theorem:
+
+       Every non-trivial semantic property of
+       RE languages is undecidable.
+
+7. Examples covered by Rice:
+
+       L(M) = ∅
+       L(M) is finite
+       L(M) is infinite
+       L(M) is regular
+       L(M) is context-free
+       101 ∈ L(M)
+       L(M) = Σ*
+
+8. Rice's Theorem does NOT directly apply to:
+
+       number of states
+       number of transitions
+       machine syntax
+       tape-symbol usage
+
+9. Rice-Shapiro studies when properties of RE languages
+   themselves are RE.
+
+10. Rice-Shapiro is based on finite positive witnesses.
+
+11. RE computation is naturally associated with positive
+    information:
+
+       "This string belongs to L."
+
+12. Negative/infinite information is generally not
+    confirmable by an RE recognizer.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. ACTIVE RECALL — DO NOT LOOK AT THE ABOVE ANSWERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Try answering these yourself:
+
+Q1. What is a semantic property?
+
+Q2. What is a syntactic property?
+
+Q3. What makes a property non-trivial?
+
+Q4. State Rice's Theorem.
+
+Q5. Is "L(M) is finite" semantic or syntactic?
+
+Q6. Is "M has exactly 10 states" semantic or syntactic?
+
+Q7. Why is "L(M) is empty" non-trivial?
+
+Q8. Why is "L(M) is regular" a semantic property?
+
+Q9. What is the main idea of Rice-Shapiro?
+
+Q10. What is a finite positive witness?
+
+Q11. Why is "L is non-empty" naturally RE?
+
+Q12. Why is "L is empty" not naturally RE?
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. PRACTICE PROBLEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Try these without looking at the chapter.
+
+PROBLEM 1
+
+Determine whether the following is semantic:
+
+    "L(M) contains at least one string."
+
+
+PROBLEM 2
+
+Determine whether:
+
+    "M contains exactly 20 states"
+
+is covered by Rice's Theorem.
+
+
+PROBLEM 3
+
+Use Rice's Theorem to determine the status of:
+
+    {<M> | L(M) is infinite}
+
+
+PROBLEM 4
+
+Determine whether:
+
+    {<M> | 0101 ∈ L(M)}
+
+is undecidable using Rice's Theorem.
+
+
+PROBLEM 5
+
+Is:
+
+    {<M> | L(M) is regular}
+
+a candidate for Rice's Theorem?
+
+Explain.
+
+
+PROBLEM 6
+
+Explain why "L(M) is empty" is non-trivial.
+
+
+PROBLEM 7
+
+Consider:
+
+    P(L) = "L contains at least 3 strings."
+
+Does a finite positive witness exist?
+
+Explain.
+
+
+PROBLEM 8
+
+Consider:
+
+    P(L) = "L contains no strings."
+
+Can a finite positive witness establish P?
+
+Explain.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. FINAL EXAM MEMORY SHEET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    RICE'S THEOREM
+
+       Is property about L(M)?
+                │
+               YES
+                ↓
+       Is property non-trivial?
+                │
+               YES
+                ↓
+        ┌───────────────────┐
+        │ Rice's Theorem    │
+        │    applies        │
+        └─────────┬─────────┘
+                  ↓
+             UNDECIDABLE
+
+
+Examples:
+
+    L(M) = ∅                 → UNDECIDABLE
+    L(M) is finite           → UNDECIDABLE
+    L(M) is infinite         → UNDECIDABLE
+    L(M) is regular          → UNDECIDABLE
+    L(M) is CFL              → UNDECIDABLE
+    101 ∈ L(M)               → UNDECIDABLE
+    L(M) = Σ*                → UNDECIDABLE
+
+
+Not direct Rice examples:
+
+    M has 10 states
+    M has 20 transitions
+    M uses symbol X
+    M has state q5
+
+
+                    RICE-SHAPIRO
+
+       RE language property
+                │
+                ↓
+       Finite positive witness
+                │
+                ↓
+       Property remains true
+       when more strings are added
+                │
+                ↓
+             RE property
+
+
+ONE-LINE MEMORY:
+
+    RICE:
+        "Non-trivial + semantic = undecidable."
+
+    RICE-SHAPIRO:
+        "RE properties need finite positive witnesses."
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                  CHAPTER 25 COMPLETION                             ║
+║                                                                      ║
+║ Phase 21 — Advanced Computability                                  ║
+║ Chapter 25 — Advanced Undecidability                               ║
+║                                                                      ║
+║ ✓ Rice's Theorem                                                    ║
+║ ✓ Semantic vs syntactic properties                                 ║
+║ ✓ Trivial vs non-trivial properties                                 ║
+║ ✓ Applications of Rice's Theorem                                   ║
+║ ✓ Rice-Shapiro Theorem                                              ║
+║ ✓ Finite positive witnesses                                         ║
+║ ✓ Positive vs negative information                                  ║
+║ ✓ Exam strategy and practice                                       ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+UPCOMING NEXT TOPIC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CHAPTER 26 — INTRODUCTION TO COMPLEXITY
+
+FIRST TOPIC:
+
+    "What is Computational Complexity?"
+
+We will start from zero again and first understand:
+
+    computation
+       ↓
+    efficiency
+       ↓
+    input size
+       ↓
+    time
+       ↓
+    space
+       ↓
+    complexity
+
+Then we will gradually move toward:
+
+    P → NP → NP-Hard → NP-Complete
+
+Do NOT jump ahead until you type:
+
+    NEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

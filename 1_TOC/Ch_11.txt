@@ -1,0 +1,2535 @@
+====================================================================
+                 THEORY OF COMPUTATION — CHAPTER 11
+                 CONTEXT-FREE GRAMMARS (CFG)
+====================================================================
+
+PHASE 7 — CONTEXT-FREE LANGUAGES
+CHAPTER 11 — CONTEXT-FREE GRAMMARS
+
+Prerequisites:
+    ✓ Sets
+    ✓ Alphabet
+    ✓ Symbols
+    ✓ Strings
+    ✓ Languages
+    ✓ DFA / NFA
+    ✓ Regular expressions
+    ✓ Regular languages
+
+Goal of this chapter:
+    By the end of this chapter, you should be able to:
+
+    1. Explain what a grammar is.
+    2. Distinguish terminals and non-terminals.
+    3. Understand production rules.
+    4. Understand start symbols.
+    5. Define a Context-Free Grammar formally.
+    6. Construct CFGs for languages.
+    7. Perform derivations.
+    8. Perform leftmost derivations.
+    9. Perform rightmost derivations.
+   10. Construct parse trees.
+   11. Understand sentential forms and sentences.
+   12. Detect ambiguous grammars.
+   13. Understand ambiguous strings.
+   14. Understand inherently ambiguous languages.
+   15. Understand how ambiguity can sometimes be removed.
+   16. Solve B.Tech and GATE-style CFG problems.
+
+
+====================================================================
+                    11.1 GRAMMAR FUNDAMENTALS
+====================================================================
+
+--------------------------------------------------------------------
+11.1.1 WHAT IS A GRAMMAR?
+--------------------------------------------------------------------
+
+Simple meaning:
+
+A grammar is a set of rules used to generate valid strings of a
+language.
+
+Think about English.
+
+For example:
+
+    "The boy eats rice."
+
+English has rules such as:
+
+    Sentence → Noun Phrase + Verb Phrase
+
+Similarly, programming languages have grammar rules.
+
+For example, a simplified programming language might have:
+
+    Expression → Expression + Number
+    Expression → Number
+
+These rules tell us which strings are valid.
+
+Therefore:
+
+    Grammar = Rules for constructing valid strings.
+
+In Theory of Computation, we use mathematical grammars to describe
+formal languages.
+
+
+--------------------------------------------------------------------
+11.1.2 WHY DO WE NEED GRAMMARS?
+--------------------------------------------------------------------
+
+Finite automata are excellent for describing regular languages.
+
+But some languages require more structure.
+
+Consider:
+
+    L = { a^n b^n | n >= 0 }
+
+Examples:
+
+    ε
+    ab
+    aabb
+    aaabbb
+    aaaabbbb
+    ...
+
+The number of a's must equal the number of b's.
+
+A finite automaton cannot generally remember an arbitrarily large
+number of a's.
+
+A grammar can describe this structure naturally:
+
+    S → aSb
+    S → ε
+
+Let's generate:
+
+    S
+    ↓
+    aSb
+    ↓
+    aaSbb
+    ↓
+    aaaSbbb
+    ↓
+    aaaεbbb
+    ↓
+    aaabbb
+
+Therefore grammar provides a powerful way to describe languages.
+
+
+====================================================================
+11.1.3 FORMAL GRAMMAR
+====================================================================
+
+A grammar is formally represented as:
+
+    G = (V, T, P, S)
+
+where:
+
+    V = set of variables / non-terminals
+    T = set of terminals
+    P = set of production rules
+    S = start symbol
+
+These four components are extremely important.
+
+
+--------------------------------------------------------------------
+11.1.4 TERMINALS
+--------------------------------------------------------------------
+
+Simple definition:
+
+A terminal is a symbol that appears in the final string generated
+by the grammar.
+
+Terminals cannot normally be replaced further.
+
+Example:
+
+    G = ({S}, {a,b}, P, S)
+
+Here:
+
+    a and b are terminals.
+
+If the generated string is:
+
+    aaabbb
+
+then:
+
+    a, b
+
+are terminal symbols.
+
+
+Real-world analogy:
+
+Think of terminals as LEGO pieces that cannot be further expanded
+by the grammar.
+
+
+Example:
+
+    S → aSb
+
+Here:
+
+    a and b = terminals
+    S     = non-terminal
+
+
+Important notation:
+
+Terminals are often written using:
+
+    a, b, c, 0, 1, (, ), +, *
+
+depending on the language.
+
+
+====================================================================
+11.1.5 NON-TERMINALS
+====================================================================
+
+A non-terminal is a symbol used during the generation process.
+
+It represents something that can still be expanded.
+
+Example:
+
+    S → aSb
+
+Here:
+
+    S = non-terminal
+
+because S can be replaced again.
+
+For example:
+
+    S
+    ↓
+    aSb
+    ↓
+    aaSbb
+    ↓
+    aaaSbbb
+
+
+Common notation:
+
+    S, A, B, C, E, X, Y
+
+are often used for non-terminals.
+
+
+Important distinction:
+
+    TERMINAL       NON-TERMINAL
+    --------------------------------
+    Final symbol   Intermediate symbol
+    Cannot expand  Can be expanded
+    Appears in     Used during derivation
+    final string
+
+
+====================================================================
+11.1.6 PRODUCTION RULES
+====================================================================
+
+A production rule tells us how one symbol or group of symbols can
+be replaced by another group.
+
+Example:
+
+    S → aSb
+
+This means:
+
+    S can be replaced by aSb.
+
+Another example:
+
+    S → aS
+    S → b
+
+This means S has two possible productions.
+
+Production rules are sometimes simply called:
+
+    productions
+    production rules
+    grammar rules
+
+
+Example:
+
+    S → aS
+    S → b
+
+Starting from S:
+
+    S
+    ↓
+    aS
+    ↓
+    aaS
+    ↓
+    aab
+
+Therefore:
+
+    aab
+
+can be generated.
+
+
+====================================================================
+11.1.7 START SYMBOL
+====================================================================
+
+The start symbol is the symbol from which generation begins.
+
+It is usually written as:
+
+    S
+
+Example:
+
+    G = ({S}, {a,b}, P, S)
+
+Here:
+
+    S = start symbol
+
+Every derivation begins with S.
+
+
+Diagram:
+
+                    START
+                      |
+                      v
+                     [S]
+                      |
+                      v
+                  production
+                      |
+                      v
+                 intermediate
+                    string
+                      |
+                      v
+               terminal string
+
+
+The start symbol is usually a non-terminal.
+
+
+====================================================================
+11.1.8 THE FOUR COMPONENTS OF A GRAMMAR
+====================================================================
+
+Remember:
+
+                G = (V, T, P, S)
+
+Example:
+
+    G = ({S}, {a,b}, {S → aSb, S → ε}, S)
+
+Then:
+
+    V = {S}
+        Non-terminal set
+
+    T = {a,b}
+        Terminal set
+
+    P = {S → aSb, S → ε}
+        Production rules
+
+    S = S
+        Start symbol
+
+
+Memory trick:
+
+    V → Variables
+    T → Terminals
+    P → Productions
+    S → Start
+
+
+====================================================================
+                 11.2 CONTEXT-FREE GRAMMAR
+====================================================================
+
+--------------------------------------------------------------------
+11.2.1 WHAT IS A CONTEXT-FREE GRAMMAR?
+--------------------------------------------------------------------
+
+A Context-Free Grammar, abbreviated:
+
+    CFG
+
+is a grammar in which every production has exactly one
+non-terminal on the left-hand side.
+
+General form:
+
+    A → α
+
+where:
+
+    A = one non-terminal
+    α = a string of terminals and/or non-terminals
+
+
+For example:
+
+    S → aSb
+
+is context-free.
+
+    A → aA
+    B → b
+    S → AB
+
+are also context-free.
+
+
+--------------------------------------------------------------------
+11.2.2 FORMAL DEFINITION OF CFG
+--------------------------------------------------------------------
+
+A CFG is a four-tuple:
+
+    G = (V, Σ, P, S)
+
+where:
+
+    V  = finite set of variables/non-terminals
+    Σ  = finite set of terminals
+    P  = finite set of productions
+    S  = start symbol
+
+with:
+
+    V ∩ Σ = ∅
+
+and every production has the form:
+
+    A → α
+
+where:
+
+    A ∈ V
+
+and:
+
+    α ∈ (V ∪ Σ)*
+
+
+In simple words:
+
+    Left side:
+        exactly ONE non-terminal.
+
+    Right side:
+        any finite combination of terminals and non-terminals,
+        including ε.
+
+
+====================================================================
+11.2.3 WHY IS IT CALLED "CONTEXT-FREE"?
+====================================================================
+
+Suppose we have:
+
+    A → a
+
+The rule says:
+
+    A can be replaced by a.
+
+It does not matter what symbols are around A.
+
+For example:
+
+    XAY
+    ↓
+    XaY
+
+The replacement depends only on A.
+
+It does NOT depend on:
+
+    X
+    Y
+
+or the surrounding context.
+
+Hence:
+
+    CONTEXT-FREE
+
+
+Example:
+
+    S → aSb
+
+If we have:
+
+    XSY
+
+we can replace S:
+
+    XS Y
+     ↓
+    XaSbY
+
+The surrounding context does not affect the rule.
+
+
+====================================================================
+11.2.4 CFG EXAMPLE
+====================================================================
+
+Consider:
+
+    G = (V, Σ, P, S)
+
+where:
+
+    V = {S}
+    Σ = {a,b}
+
+    P:
+        S → aSb
+        S → ε
+
+    Start:
+        S
+
+
+Let's generate strings.
+
+
+String 1:
+
+    S
+    ↓
+    ε
+
+Therefore:
+
+    ε ∈ L(G)
+
+
+String 2:
+
+    S
+    ↓
+    aSb
+    ↓
+    aεb
+    ↓
+    ab
+
+Therefore:
+
+    ab ∈ L(G)
+
+
+String 3:
+
+    S
+    ↓
+    aSb
+    ↓
+    aaSbb
+    ↓
+    aaεbb
+    ↓
+    aabb
+
+
+String 4:
+
+    S
+    ↓
+    aSb
+    ↓
+    aaSbb
+    ↓
+    aaaSbbb
+    ↓
+    aaaεbbb
+    ↓
+    aaabbb
+
+
+Therefore:
+
+    L(G) = {a^n b^n | n >= 0}
+
+
+====================================================================
+11.2.5 CFG vs REGULAR GRAMMAR
+====================================================================
+
+Regular grammar:
+
+    A → aB
+    A → a
+    A → ε
+
+CFG:
+
+    A → α
+
+where α can contain multiple terminals and non-terminals.
+
+For example:
+
+    S → aSb
+
+is a CFG but is not in the usual right-linear regular grammar form.
+
+
+Important relationship:
+
+    Regular Languages ⊂ Context-Free Languages
+
+
+That means:
+
+    Every regular language is context-free.
+
+But:
+
+    Not every context-free language is regular.
+
+
+Classic example:
+
+    {a^n b^n | n >= 0}
+
+is context-free but not regular.
+
+
+====================================================================
+                  11.3 DERIVATIONS
+====================================================================
+
+--------------------------------------------------------------------
+11.3.1 WHAT IS A DERIVATION?
+--------------------------------------------------------------------
+
+A derivation is the process of repeatedly applying production rules
+starting from the start symbol to obtain a string.
+
+Example:
+
+    S → aSb
+    S → ε
+
+
+Derivation:
+
+    S
+    ⇒ aSb
+    ⇒ aaSbb
+    ⇒ aabb
+
+
+The symbol:
+
+    ⇒
+
+means:
+
+    "derives in one or more appropriate production steps"
+
+
+Sometimes:
+
+    ⇒*
+
+means:
+
+    "derives in zero or more steps"
+
+
+Example:
+
+    S ⇒* aabb
+
+
+means:
+
+    S can eventually generate aabb.
+
+
+====================================================================
+11.3.2 SENTENTIAL FORM
+====================================================================
+
+A sentential form is any string of terminals and/or non-terminals
+that can be derived from the start symbol.
+
+Example:
+
+    S → aSb
+    S → ε
+
+Derivation:
+
+    S
+    ⇒ aSb
+    ⇒ aaSbb
+    ⇒ aabb
+
+
+Then:
+
+    S
+    aSb
+    aaSbb
+    aabb
+
+are all sentential forms.
+
+But there is an important distinction:
+
+    aSb
+    aaSbb
+
+contain non-terminals.
+
+    aabb
+
+contains only terminals.
+
+
+====================================================================
+11.3.3 SENTENCE
+====================================================================
+
+A sentence is a sentential form containing only terminals.
+
+Example:
+
+    S ⇒ aaSbb ⇒ aabb
+
+Therefore:
+
+    aabb
+
+is a sentence generated by the grammar.
+
+
+Important:
+
+    Sentential form:
+        may contain terminals + non-terminals.
+
+    Sentence:
+        contains only terminals.
+
+
+====================================================================
+11.3.4 LANGUAGE GENERATED BY A GRAMMAR
+====================================================================
+
+The language generated by grammar G is written:
+
+    L(G)
+
+It is the set of all terminal strings that can be derived from S.
+
+Formally:
+
+    L(G) = { w ∈ Σ* | S ⇒* w }
+
+
+In words:
+
+    L(G) is the set of all strings w made only of terminals such
+    that the start symbol S can derive w.
+
+
+Example:
+
+    S → aSb
+    S → ε
+
+Then:
+
+    L(G) = { ε, ab, aabb, aaabbb, aaaabbbb, ... }
+
+
+====================================================================
+11.3.5 LEFTMOST DERIVATION
+====================================================================
+
+In a leftmost derivation, at every step we replace the LEFTMOST
+non-terminal first.
+
+Notation:
+
+    ⇒lm
+
+Consider:
+
+    S → AB
+    A → aA
+    A → a
+    B → b
+
+
+We want:
+
+    aab
+
+
+Start:
+
+    S
+
+Apply:
+
+    S → AB
+
+    S
+    ⇒ AB
+
+
+Non-terminals:
+
+    A B
+    ^
+    LEFTMOST
+
+
+Replace A:
+
+    AB
+    ⇒ aAB
+
+
+Replace the leftmost non-terminal A again:
+
+    aAB
+    ⇒ aaB
+
+
+Now only B remains:
+
+    aaB
+    ⇒ aab
+
+
+Therefore:
+
+    S ⇒lm AB
+      ⇒lm aAB
+      ⇒lm aaB
+      ⇒lm aab
+
+
+This is a leftmost derivation.
+
+
+====================================================================
+11.3.6 RIGHTMOST DERIVATION
+====================================================================
+
+In a rightmost derivation, at every step we replace the RIGHTMOST
+non-terminal first.
+
+Using:
+
+    S → AB
+    A → aA
+    A → a
+    B → b
+
+
+Start:
+
+    S
+    ⇒ AB
+
+
+Rightmost non-terminal:
+
+    A B
+      ^
+      RIGHTMOST
+
+
+Replace B first:
+
+    AB
+    ⇒ Ab
+
+
+Now replace A:
+
+    Ab
+    ⇒ aAb
+
+
+Again replace A:
+
+    aAb
+    ⇒ aab
+
+
+Therefore:
+
+    S ⇒rm AB
+      ⇒rm Ab
+      ⇒rm aAb
+      ⇒rm aab
+
+
+This is a rightmost derivation.
+
+
+====================================================================
+11.3.7 LEFTMOST VS RIGHTMOST DERIVATION
+====================================================================
+
++----------------------+-------------------------+
+| Leftmost             | Rightmost               |
++----------------------+-------------------------+
+| Replace leftmost     | Replace rightmost      |
+| non-terminal first   | non-terminal first     |
++----------------------+-------------------------+
+| Used in parsing      | Used in parsing        |
+| concepts             | concepts               |
++----------------------+-------------------------+
+
+
+Important:
+
+Both can generate the same final string.
+
+They may use production rules in different orders.
+
+
+====================================================================
+11.3.8 DETAILED DERIVATION EXAMPLE
+====================================================================
+
+Grammar:
+
+    S → aSb
+    S → ε
+
+Generate:
+
+    aaabbb
+
+
+Step 1:
+
+    S
+
+Step 2:
+
+    S ⇒ aSb
+
+Step 3:
+
+    aSb ⇒ aaSbb
+
+Step 4:
+
+    aaSbb ⇒ aaaSbbb
+
+Step 5:
+
+    aaaSbbb ⇒ aaaεbbb
+
+Step 6:
+
+    aaaεbbb ⇒ aaabbb
+
+
+Therefore:
+
+    S ⇒* aaabbb
+
+
+Observe the structure:
+
+        a       a       a
+        |       |       |
+        v       v       v
+
+       S
+       |
+      aSb
+       |
+      aaSbb
+       |
+     aaaSbbb
+       |
+    aaaεbbb
+       |
+    aaabbb
+
+
+This grammar generates equal numbers of a's and b's.
+
+
+====================================================================
+                    11.4 PARSE TREES
+====================================================================
+
+--------------------------------------------------------------------
+11.4.1 WHAT IS A PARSE TREE?
+--------------------------------------------------------------------
+
+A parse tree is a tree representation of a derivation.
+
+It shows how the start symbol is expanded until the final string
+is produced.
+
+A parse tree is also called a:
+
+    derivation tree
+
+
+General structure:
+
+                S
+              / | \
+             ... ...
+            /       \
+        symbols    symbols
+
+
+The root is the start symbol.
+
+Internal nodes are usually non-terminals.
+
+Leaves are terminals or ε.
+
+Reading the leaves from left to right gives the generated string.
+
+
+====================================================================
+11.4.2 SIMPLE PARSE TREE
+====================================================================
+
+Grammar:
+
+    S → aSb
+    S → ε
+
+Generate:
+
+    aabb
+
+
+Derivation:
+
+    S
+    ⇒ aSb
+    ⇒ aaSbb
+    ⇒ aabb
+
+
+Parse tree:
+
+                    S
+                  / | \
+                 a  S  b
+                   /|\
+                  a S b
+                    |
+                    ε
+
+
+Read leaves from left to right:
+
+    a a ε b b
+
+Ignoring ε:
+
+    aabb
+
+
+Therefore the yield of the parse tree is:
+
+    aabb
+
+
+====================================================================
+11.4.3 PARTS OF A PARSE TREE
+====================================================================
+
+A parse tree contains:
+
+    1. Root
+    2. Internal nodes
+    3. Edges
+    4. Leaves
+
+
+Root:
+
+    The start symbol.
+
+
+Internal node:
+
+    Usually a non-terminal.
+
+
+Leaf:
+
+    Terminal or ε.
+
+
+Example:
+
+                    S
+                  / | \
+                 a  S  b
+                   /|\
+                  a S b
+                    |
+                    ε
+
+Root:
+
+    S
+
+Internal S nodes:
+
+    S, S
+
+Leaves:
+
+    a, a, ε, b, b
+
+
+====================================================================
+11.4.4 YIELD OF A PARSE TREE
+====================================================================
+
+The yield is the string obtained by reading the leaves from
+left to right.
+
+Example:
+
+                    S
+                  / | \
+                 a  S  b
+                    |
+                    ε
+
+Leaves:
+
+    a ε b
+
+Ignoring ε:
+
+    ab
+
+
+Therefore:
+
+    Yield = ab
+
+
+====================================================================
+11.4.5 PARSE TREE FOR EXPRESSION GRAMMAR
+====================================================================
+
+Consider:
+
+    E → E + E
+    E → E * E
+    E → id
+
+
+Generate:
+
+    id + id
+
+
+Tree:
+
+                    E
+                  / | \
+                 E  +  E
+                 |     |
+                id    id
+
+
+Reading leaves:
+
+    id + id
+
+
+This demonstrates why grammars are useful for programming-language
+expressions.
+
+
+====================================================================
+11.4.6 DERIVATION VS PARSE TREE
+====================================================================
+
+Derivation:
+
+    Describes the sequence of applying productions.
+
+Parse tree:
+
+    Shows the hierarchical structure of those productions.
+
+
+Think:
+
+    Derivation = sequence of steps
+
+    Parse tree = structure of those steps
+
+
+A single parse tree can correspond to different derivation orders
+such as leftmost and rightmost derivations.
+
+
+====================================================================
+                    11.5 AMBIGUITY
+====================================================================
+
+--------------------------------------------------------------------
+11.5.1 WHAT IS AMBIGUITY?
+--------------------------------------------------------------------
+
+A grammar is ambiguous if there exists at least one string in the
+language that has more than one distinct parse tree.
+
+Simple definition:
+
+    One string
+        +
+    More than one parse tree
+        =
+    Ambiguity
+
+
+Formally:
+
+A CFG G is ambiguous if there exists some string:
+
+    w ∈ L(G)
+
+such that w has two or more distinct parse trees.
+
+
+Equivalent idea:
+
+    A string has more than one distinct leftmost derivation.
+
+OR:
+
+    A string has more than one distinct rightmost derivation.
+
+
+====================================================================
+11.5.2 WHY IS AMBIGUITY IMPORTANT?
+====================================================================
+
+Ambiguity can cause problems in programming languages.
+
+Consider:
+
+    2 + 3 * 4
+
+
+Should it mean:
+
+    (2 + 3) * 4
+
+or:
+
+    2 + (3 * 4)
+
+
+These have different results:
+
+    (2 + 3) * 4 = 20
+
+    2 + (3 * 4) = 14
+
+
+Therefore a grammar for programming expressions should normally
+establish precedence and associativity clearly.
+
+
+====================================================================
+11.5.3 CLASSIC AMBIGUOUS GRAMMAR
+====================================================================
+
+Consider:
+
+    E → E + E
+    E → E * E
+    E → id
+
+
+Consider the string:
+
+    id + id * id
+
+
+There are multiple possible interpretations.
+
+
+Interpretation 1:
+
+    id + (id * id)
+
+
+Tree structure:
+
+                  E
+                / | \
+               E  +  E
+               |    /|\
+              id   E * E
+                   |   |
+                  id  id
+
+
+Interpretation 2:
+
+    (id + id) * id
+
+
+Tree structure:
+
+                  E
+                / | \
+               E  *  E
+             / | \
+            E  +  E
+            |     |
+           id    id
+                     \
+                      id
+
+
+More clearly:
+
+                  E
+                / | \
+               E  *  E
+             / | \    |
+            E  +  E   id
+            |     |
+           id    id
+
+
+These are different parse trees.
+
+Therefore the grammar is ambiguous.
+
+
+====================================================================
+11.5.4 AMBIGUOUS STRING
+====================================================================
+
+A string is ambiguous with respect to a grammar if it has multiple
+parse trees.
+
+Example:
+
+    id + id * id
+
+can have two parse trees under:
+
+    E → E + E
+    E → E * E
+    E → id
+
+
+Therefore:
+
+    Grammar = ambiguous
+
+because:
+
+    ∃ string with multiple parse trees.
+
+
+IMPORTANT:
+
+We say a grammar is ambiguous.
+
+A particular string can have multiple parse trees under that grammar.
+
+
+====================================================================
+11.5.5 AMBIGUITY USING DERIVATIONS
+====================================================================
+
+Consider:
+
+    E → E + E
+    E → E * E
+    E → id
+
+
+For:
+
+    id + id * id
+
+One possible leftmost derivation corresponds to:
+
+    id + (id * id)
+
+Another corresponds to:
+
+    (id + id) * id
+
+
+The important point is that they produce different structural
+interpretations.
+
+Therefore:
+
+    Multiple distinct leftmost derivations
+                 ↓
+          Multiple parse trees
+                 ↓
+             Ambiguity
+
+
+====================================================================
+11.5.6 HOW TO REMOVE AMBIGUITY
+====================================================================
+
+Sometimes we can design a different grammar that expresses the
+same language without ambiguity.
+
+For arithmetic expressions, we can introduce separate non-terminals.
+
+Example:
+
+    E → E + T | T
+
+    T → T * F | F
+
+    F → id
+
+
+Here:
+
+    E = Expression
+    T = Term
+    F = Factor
+
+
+This grammar establishes:
+
+    * has higher precedence than +
+
+because multiplication is handled inside T before addition is
+handled by E.
+
+
+For:
+
+    id + id * id
+
+the intended structure becomes:
+
+    id + (id * id)
+
+
+Conceptually:
+
+                    E
+                  / | \
+                 E  +  T
+                 |    /|\
+                 T   T * F
+                 |   |   |
+                 F   F  id
+                 |   |
+                id  id
+
+
+Therefore grammar structure can encode precedence.
+
+
+====================================================================
+11.5.7 ASSOCIATIVITY
+====================================================================
+
+Associativity tells us how operators of the same precedence group.
+
+For example:
+
+    a - b - c
+
+
+Left associativity means:
+
+    (a - b) - c
+
+
+Right associativity means:
+
+    a - (b - c)
+
+
+Grammar design can encode associativity.
+
+For example:
+
+    E → E + T | T
+
+is naturally left-recursive and can represent left associativity.
+
+
+====================================================================
+11.5.8 INHERENTLY AMBIGUOUS LANGUAGE
+====================================================================
+
+Important distinction:
+
+    Ambiguous grammar
+        ≠
+    Inherently ambiguous language
+
+
+An ambiguous grammar means:
+
+    There exists at least one grammar for the language that is
+    ambiguous.
+
+But the same language might have another unambiguous grammar.
+
+
+A language is inherently ambiguous if:
+
+    EVERY CFG generating that language is ambiguous.
+
+
+Therefore:
+
+    Ambiguous grammar:
+        At least one grammar is ambiguous.
+
+    Inherently ambiguous language:
+        No unambiguous CFG exists for that language.
+
+
+This is a much stronger property.
+
+
+====================================================================
+              11.6 CONSTRUCTING CFGs
+====================================================================
+
+The most important practical skill in this chapter is constructing
+a CFG for a given language.
+
+
+--------------------------------------------------------------------
+EXAMPLE 1 — Generate a*
+--------------------------------------------------------------------
+
+Language:
+
+    L = {a^n | n >= 0}
+
+Examples:
+
+    ε
+    a
+    aa
+    aaa
+    aaaa
+    ...
+
+
+CFG:
+
+    S → aS | ε
+
+
+Generation:
+
+    S
+    ⇒ ε
+
+    S
+    ⇒ aS
+    ⇒ aaS
+    ⇒ aaaS
+    ⇒ aaaaS
+    ⇒ aaaa
+
+
+Therefore:
+
+    L(G) = {a^n | n >= 0}
+
+
+--------------------------------------------------------------------
+EXAMPLE 2 — Equal a's and b's in the form a^n b^n
+--------------------------------------------------------------------
+
+Language:
+
+    L = {a^n b^n | n >= 0}
+
+
+CFG:
+
+    S → aSb | ε
+
+
+Examples:
+
+    ε
+    ab
+    aabb
+    aaabbb
+    aaaabbbb
+
+
+Why does this work?
+
+Every application of:
+
+    S → aSb
+
+adds:
+
+    one a
+
+and:
+
+    one b
+
+Therefore their counts remain equal.
+
+
+--------------------------------------------------------------------
+EXAMPLE 3 — Balanced parentheses
+--------------------------------------------------------------------
+
+A simple grammar:
+
+    S → SS
+    S → (S)
+    S → ε
+
+
+Examples generated:
+
+    ε
+    ()
+    (())
+    ()()
+    (()())
+    ((()))
+    ...
+
+
+For example:
+
+    S
+    ⇒ (S)
+    ⇒ (SS)
+    ⇒ (S)(S)
+    ⇒ ()()
+
+
+Therefore:
+
+    ()()
+
+is generated.
+
+
+This is an important example because balanced structures are
+naturally handled by CFGs.
+
+
+====================================================================
+             11.7 IMPORTANT DISTINCTIONS
+====================================================================
+
+--------------------------------------------------------------------
+GRAMMAR vs LANGUAGE
+--------------------------------------------------------------------
+
+Grammar:
+
+    A mechanism/rules used to generate strings.
+
+Language:
+
+    The set of strings generated by the grammar.
+
+
+Think:
+
+    Grammar → generator
+
+    Language → result
+
+
+--------------------------------------------------------------------
+TERMINAL vs NON-TERMINAL
+--------------------------------------------------------------------
+
+Terminal:
+
+    Appears in final strings.
+
+Non-terminal:
+
+    Used as an intermediate representation.
+
+
+Example:
+
+    S → aSb
+
+    S = non-terminal
+    a,b = terminals
+
+
+--------------------------------------------------------------------
+SENTENTIAL FORM vs SENTENCE
+--------------------------------------------------------------------
+
+Sentential form:
+
+    Can contain terminals and non-terminals.
+
+Sentence:
+
+    Contains only terminals.
+
+
+Example:
+
+    aaSbb      → sentential form
+
+    aabb       → sentence
+
+
+--------------------------------------------------------------------
+LEFTMOST vs RIGHTMOST DERIVATION
+--------------------------------------------------------------------
+
+Leftmost:
+
+    Expand leftmost non-terminal first.
+
+Rightmost:
+
+    Expand rightmost non-terminal first.
+
+
+--------------------------------------------------------------------
+DERIVATION vs PARSE TREE
+--------------------------------------------------------------------
+
+Derivation:
+
+    Sequence of rule applications.
+
+Parse tree:
+
+    Hierarchical representation of generation.
+
+
+--------------------------------------------------------------------
+AMBIGUOUS GRAMMAR vs INHERENTLY AMBIGUOUS LANGUAGE
+--------------------------------------------------------------------
+
+Ambiguous grammar:
+
+    At least one string has multiple parse trees.
+
+Inherently ambiguous language:
+
+    Every CFG for that language is ambiguous.
+
+
+====================================================================
+                    11.8 COMMON MISTAKES
+====================================================================
+
+Mistake 1:
+
+Thinking terminals can continue to be replaced.
+
+Correction:
+
+    Terminals are final symbols.
+
+
+Mistake 2:
+
+Thinking every grammar is context-free.
+
+Correction:
+
+    A CFG requires exactly one non-terminal on the left side
+    of every production.
+
+
+Mistake 3:
+
+Confusing ε with the empty language.
+
+    ε = empty string
+
+    ∅ = empty language
+
+
+Mistake 4:
+
+Thinking every sentential form is a sentence.
+
+Correction:
+
+    A sentence contains only terminals.
+
+
+Mistake 5:
+
+Forgetting the start symbol.
+
+Correction:
+
+    Derivation always begins from S.
+
+
+Mistake 6:
+
+Thinking ambiguity means two different strings.
+
+Wrong.
+
+Ambiguity means:
+
+    SAME string
+    +
+    multiple distinct parse trees.
+
+
+Mistake 7:
+
+Thinking two different derivation orders automatically mean
+ambiguity.
+
+Not necessarily.
+
+Leftmost and rightmost derivations can represent the SAME parse tree.
+
+Ambiguity requires distinct parse-tree structures.
+
+
+Mistake 8:
+
+Confusing ambiguous grammar with inherently ambiguous language.
+
+They are not the same.
+
+
+====================================================================
+                 11.9 B.TECH EXAM PERSPECTIVE
+====================================================================
+
+VERY IMPORTANT DEFINITIONS:
+
+1. Define grammar.
+
+2. Define Context-Free Grammar.
+
+3. Define terminal and non-terminal.
+
+4. Define production rule.
+
+5. Define derivation.
+
+6. Define sentential form.
+
+7. Define sentence.
+
+8. Define parse tree.
+
+9. Define leftmost derivation.
+
+10. Define rightmost derivation.
+
+11. Define ambiguous grammar.
+
+12. Define inherently ambiguous language.
+
+
+VERY IMPORTANT FORMULA:
+
+    G = (V, Σ, P, S)
+
+
+VERY IMPORTANT LANGUAGE DEFINITION:
+
+    L(G) = {w ∈ Σ* | S ⇒* w}
+
+
+VERY IMPORTANT CFG PRODUCTION FORM:
+
+    A → α
+
+where:
+
+    A ∈ V
+
+and:
+
+    α ∈ (V ∪ Σ)*
+
+
+IMPORTANT LONG-ANSWER QUESTIONS:
+
+1. Define CFG formally and explain its components.
+
+2. Construct a CFG for:
+
+       L = {a^n b^n | n >= 0}
+
+3. Find a leftmost derivation for a given string.
+
+4. Find a rightmost derivation for a given string.
+
+5. Construct the parse tree for a given string.
+
+6. Explain ambiguity with a suitable example.
+
+7. Prove that a given grammar is ambiguous.
+
+8. Explain the difference between leftmost and rightmost derivation.
+
+9. Explain sentential form and sentence.
+
+10. Explain ambiguous grammar and inherently ambiguous language.
+
+
+====================================================================
+                    11.10 GATE PERSPECTIVE
+====================================================================
+
+GATE commonly tests:
+
+    ✓ Whether a grammar generates a particular string
+    ✓ Language generated by a grammar
+    ✓ Number of derivations
+    ✓ Parse trees
+    ✓ Ambiguity
+    ✓ Leftmost/rightmost derivation
+    ✓ CFG construction
+    ✓ Relationship between regular languages and CFLs
+    ✓ Grammar properties
+
+
+KEY GATE THINKING:
+
+If asked:
+
+    "Is this grammar ambiguous?"
+
+Look for:
+
+    SAME STRING
+        ↓
+    TWO DIFFERENT PARSE TREES
+        ↓
+    AMBIGUOUS
+
+
+If asked:
+
+    "What language does this grammar generate?"
+
+Try:
+
+    1. Generate small strings.
+    2. Identify the pattern.
+    3. Check ε.
+    4. Check n = 1.
+    5. Check n = 2.
+    6. Check n = 3.
+    7. Formulate the language.
+
+
+====================================================================
+                   11.11 INTERVIEW PERSPECTIVE
+====================================================================
+
+Question:
+
+    What is a CFG?
+
+Answer:
+
+    A Context-Free Grammar is a formal grammar in which every
+    production has exactly one non-terminal on its left-hand side.
+
+
+Question:
+
+    Why are CFGs important?
+
+Answer:
+
+    CFGs are powerful enough to describe many nested and
+    hierarchical structures, including programming-language syntax
+    and balanced expressions.
+
+
+Question:
+
+    What is ambiguity?
+
+Answer:
+
+    A grammar is ambiguous if at least one string generated by the
+    grammar has more than one distinct parse tree.
+
+
+Question:
+
+    What is the difference between a sentence and a sentential form?
+
+Answer:
+
+    A sentential form may contain terminals and non-terminals,
+    whereas a sentence contains only terminals.
+
+
+Question:
+
+    What is the difference between a grammar and a language?
+
+Answer:
+
+    A grammar is a set of rules used to generate strings, while
+    the language is the set of terminal strings generated by those
+    rules.
+
+
+====================================================================
+                    11.12 QUICK REVISION
+====================================================================
+
+GRAMMAR:
+
+    Rules for generating strings.
+
+
+CFG:
+
+    G = (V, Σ, P, S)
+
+
+V:
+
+    Variables / non-terminals
+
+
+Σ:
+
+    Terminals
+
+
+P:
+
+    Production rules
+
+
+S:
+
+    Start symbol
+
+
+CFG PRODUCTION:
+
+    A → α
+
+where A is exactly one non-terminal.
+
+
+DERIVATION:
+
+    Repeated application of productions.
+
+
+SENTENTIAL FORM:
+
+    Terminals + non-terminals.
+
+
+SENTENCE:
+
+    Terminals only.
+
+
+LANGUAGE:
+
+    L(G) = {w ∈ Σ* | S ⇒* w}
+
+
+LEFTMOST DERIVATION:
+
+    Replace leftmost non-terminal first.
+
+
+RIGHTMOST DERIVATION:
+
+    Replace rightmost non-terminal first.
+
+
+PARSE TREE:
+
+    Tree representation of a derivation.
+
+
+AMBIGUITY:
+
+    Same string → multiple parse trees.
+
+
+INHERENT AMBIGUITY:
+
+    Every CFG generating the language is ambiguous.
+
+
+====================================================================
+                    11.13 CHAPTER SUMMARY
+====================================================================
+
+The conceptual chain is:
+
+    Grammar
+       ↓
+    Production rules
+       ↓
+    Start symbol
+       ↓
+    Derivation
+       ↓
+    Sentential forms
+       ↓
+    Terminal string
+       ↓
+    Sentence
+       ↓
+    Language
+
+
+For CFG:
+
+    G = (V, Σ, P, S)
+
+
+And:
+
+    L(G) = {w ∈ Σ* | S ⇒* w}
+
+
+The most important CFG example:
+
+    S → aSb | ε
+
+generates:
+
+    {a^n b^n | n >= 0}
+
+
+The most important structural idea:
+
+    Derivation = HOW we generate
+
+    Parse tree = STRUCTURE of generation
+
+
+The most important ambiguity idea:
+
+    One string
+         ↓
+    two different parse trees
+         ↓
+    ambiguous grammar
+
+
+The major relationship to remember:
+
+    REGULAR LANGUAGES
+          ⊂
+    CONTEXT-FREE LANGUAGES
+
+
+Therefore:
+
+    Every regular language is context-free,
+    but some context-free languages are not regular.
+
+
+====================================================================
+                11.14 ACTIVE RECALL — DON'T LOOK UP
+====================================================================
+
+Try answering these yourself:
+
+Q1. What is a grammar?
+
+Q2. What are the four components of a CFG?
+
+Q3. What is a terminal?
+
+Q4. What is a non-terminal?
+
+Q5. What is a production rule?
+
+Q6. What is the start symbol?
+
+Q7. What is a derivation?
+
+Q8. What is a sentential form?
+
+Q9. What is a sentence?
+
+Q10. What is a leftmost derivation?
+
+Q11. What is a rightmost derivation?
+
+Q12. What is a parse tree?
+
+Q13. What is the yield of a parse tree?
+
+Q14. What makes a grammar ambiguous?
+
+Q15. What is an inherently ambiguous language?
+
+Q16. Construct a CFG for:
+
+        L = {a^n b^n | n >= 0}
+
+Q17. What language is generated by:
+
+        S → aS | ε
+
+Q18. Is every CFG ambiguous?
+
+Q19. Is every regular language context-free?
+
+Q20. Can an ambiguous grammar sometimes be replaced by an
+    unambiguous grammar for the same language?
+
+
+====================================================================
+                     11.15 PRACTICE QUESTIONS
+====================================================================
+
+LEVEL 1 — BEGINNER
+------------------
+
+1. Identify terminals and non-terminals:
+
+       S → aSb | ε
+
+2. Identify V, Σ, P and S for:
+
+       S → 0S1 | ε
+
+3. Generate three strings from:
+
+       S → aS | ε
+
+4. Determine whether "aabb" can be generated by:
+
+       S → aSb | ε
+
+5. Define sentential form.
+
+
+LEVEL 2 — B.TECH BASIC
+----------------------
+
+6. Construct a CFG for:
+
+       L = {a^n b^n | n >= 0}
+
+7. Construct a CFG for:
+
+       L = {a^n | n >= 1}
+
+8. Find a leftmost derivation for:
+
+       aabb
+
+    using:
+
+       S → AB
+       A → aA | a
+       B → bB | b
+
+9. Find a rightmost derivation for the same string.
+
+10. Draw the parse tree for:
+
+       aabb
+
+
+LEVEL 3 — UNIVERSITY EXAM
+-------------------------
+
+11. Define CFG formally and explain all four components.
+
+12. Explain leftmost and rightmost derivations with examples.
+
+13. Explain parse trees with a suitable example.
+
+14. Explain ambiguity in CFGs.
+
+15. Determine whether:
+
+       E → E + E | E * E | id
+
+    is ambiguous.
+
+16. Show two different interpretations of:
+
+       id + id * id
+
+
+LEVEL 4 — COMPETITIVE
+---------------------
+
+17. Determine the language generated by:
+
+       S → aSbS | ε
+
+18. Determine whether a given grammar generates ε.
+
+19. Determine whether a grammar is ambiguous by constructing
+    two parse trees for a suitable string.
+
+20. Compare:
+
+       Grammar
+       Language
+       Derivation
+       Parse tree
+
+
+LEVEL 5 — GATE STYLE
+--------------------
+
+21. Given a CFG, determine which strings belong to L(G).
+
+22. Given a string and grammar, determine the number of possible
+    parse structures.
+
+23. Identify whether multiple derivations correspond to different
+    parse trees or merely different derivation orders.
+
+24. Determine whether a proposed grammar correctly represents a
+    specified language.
+
+25. Identify the language generated by a recursive production.
+
+
+====================================================================
+                    11.16 EXAM MEMORY MAP
+====================================================================
+
+                    CONTEXT-FREE GRAMMAR
+                            |
+          +-----------------+-----------------+
+          |                 |                 |
+          v                 v                 v
+      COMPONENTS        DERIVATION        PARSE TREE
+          |                 |                 |
+      V, Σ, P, S       Leftmost/Rightmost   Structure
+          |                 |                 |
+          +-----------------+-----------------+
+                            |
+                            v
+                         LANGUAGE
+                            |
+                            v
+                       AMBIGUITY
+                            |
+                  +---------+---------+
+                  |                   |
+                  v                   v
+            Multiple trees     Inherently ambiguous
+            for a string          language
+
+
+====================================================================
+                    11.17 MOST IMPORTANT FACTS
+====================================================================
+
+★ CFG = Context-Free Grammar.
+
+★ Formal representation:
+
+      G = (V, Σ, P, S)
+
+★ Every CFG production has exactly one non-terminal on the
+  left-hand side.
+
+★ Terminals appear in the final generated string.
+
+★ Non-terminals are intermediate symbols.
+
+★ S is the start symbol.
+
+★ Derivation begins from S.
+
+★ A sentential form can contain terminals and non-terminals.
+
+★ A sentence contains only terminals.
+
+★ Leftmost derivation expands the leftmost non-terminal.
+
+★ Rightmost derivation expands the rightmost non-terminal.
+
+★ A parse tree represents the hierarchical structure of a
+  derivation.
+
+★ The leaves of a parse tree give the generated string.
+
+★ A grammar is ambiguous if at least one string has two or more
+  distinct parse trees.
+
+★ An inherently ambiguous language has no unambiguous CFG.
+
+★ Important CFG:
+
+      S → aSb | ε
+
+  generates:
+
+      {a^n b^n | n >= 0}
+
+
+====================================================================
+                    CHAPTER 11 COMPLETE
+====================================================================
+
+Completed in this chapter:
+
+    ✓ 11.1 Grammar fundamentals
+        ✓ Grammar definition
+        ✓ Formal grammar
+        ✓ Terminals
+        ✓ Non-terminals
+        ✓ Production rules
+        ✓ Start symbol
+
+    ✓ 11.2 Context-Free Grammar
+        ✓ CFG definition
+        ✓ Four-tuple representation
+        ✓ Formal definition
+        ✓ CFG examples
+
+    ✓ 11.3 Derivations
+        ✓ Derivation
+        ✓ Sentential forms
+        ✓ Sentences
+        ✓ Leftmost derivation
+        ✓ Rightmost derivation
+        ✓ Language generated by grammar
+
+    ✓ 11.4 Parse Trees
+        ✓ Parse tree definition
+        ✓ Parse tree construction
+        ✓ Root
+        ✓ Internal nodes
+        ✓ Leaves
+        ✓ Yield
+        ✓ Parse-tree examples
+
+    ✓ 11.5 Ambiguity
+        ✓ Ambiguous grammar
+        ✓ Ambiguous strings
+        ✓ Multiple parse trees
+        ✓ Operator precedence
+        ✓ Associativity
+        ✓ Removing ambiguity
+        ✓ Inherently ambiguous languages
+
+
+====================================================================
+                 UPCOMING NEXT TOPIC
+====================================================================
+
+CHAPTER 12 — NORMAL FORMS OF CFG
+
+NEXT TOPIC:
+
+    12.1 Chomsky Normal Form (CNF)
+
+In the next chapter we will begin with:
+
+    "What is a normal form?"
+
+and then learn:
+
+    CNF definition
+        ↓
+    CNF structure
+        ↓
+    Why CNF is needed
+        ↓
+    Removing ε-productions
+        ↓
+    Removing unit productions
+        ↓
+    Removing useless symbols
+        ↓
+    Complete CFG → CNF conversion
+        ↓
+    Worked examples
+        ↓
+    B.Tech/GATE practice
+
+
+To continue, type:
+
+    NEXT
+====================================================================

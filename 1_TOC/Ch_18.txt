@@ -1,0 +1,2039 @@
+====================================================================
+THEORY OF COMPUTATION — CHAPTER 18
+PHASE 14 — CHURCH-TURING THESIS / COMPUTABILITY FOUNDATIONS
+====================================================================
+
+CHAPTER 18: COMPUTABILITY FOUNDATIONS
+
+Prerequisites:
+    ✓ Finite Automata
+    ✓ Context-Free Languages
+    ✓ Pushdown Automata
+    ✓ Turing Machines
+    ✓ Basic understanding of algorithms
+
+Goal of this chapter:
+    Understand what "computation" really means, what an algorithm is,
+    why Turing Machines are used as a mathematical model of computation,
+    and what the Church-Turing Thesis says.
+
+IMPORTANT:
+    Church-Turing Thesis is NOT a theorem that has been mathematically
+    proved. It is a thesis/claim about the intuitive meaning of
+    "effectively computable".
+
+====================================================================
+1. WHAT IS COMPUTATION?
+====================================================================
+
+Before understanding computability, we need to understand the word
+"computation".
+
+Simple definition:
+
+    Computation = a systematic process of transforming input into
+                  an output according to a set of rules.
+
+For example:
+
+    Input
+      |
+      v
+   Process
+      |
+      v
+    Output
+
+Example:
+
+    Input:  5
+    Rule:   multiply by 2
+    Output: 10
+
+Another example:
+
+    Input:  7
+    Rule:   determine whether it is even
+    Output: NO
+
+A computer performs computations using algorithms and instructions.
+
+--------------------------------------------------------------------
+Formal idea
+--------------------------------------------------------------------
+
+A computation can be viewed as a sequence of well-defined steps:
+
+    Initial configuration
+            |
+            v
+       Step 1
+            |
+            v
+       Step 2
+            |
+            v
+          ...
+            |
+            v
+       Final configuration
+
+A computation may:
+
+    1. Halt and produce an answer.
+    2. Halt and reject.
+    3. Continue forever.
+
+This third case becomes extremely important later when we study
+undecidability.
+
+====================================================================
+2. WHAT IS AN ALGORITHM?
+====================================================================
+
+Simple definition:
+
+    An algorithm is a finite, precise sequence of instructions used
+    to solve a problem.
+
+Example:
+
+Problem:
+    Find whether a number is even.
+
+Algorithm:
+
+    Step 1: Read number n.
+    Step 2: Calculate n mod 2.
+    Step 3: If result = 0, output "Even".
+    Step 4: Otherwise output "Odd".
+    Step 5: Stop.
+
+ASCII representation:
+
+       INPUT
+         |
+         v
+    +------------+
+    | Read n     |
+    +------------+
+         |
+         v
+    +------------+
+    | n mod 2    |
+    +------------+
+         |
+       /   \
+      /     \
+     0       1
+     |       |
+     v       v
+   EVEN     ODD
+     \       /
+      \     /
+       v   v
+        STOP
+
+--------------------------------------------------------------------
+Important properties of an algorithm
+--------------------------------------------------------------------
+
+A classical algorithm should have:
+
+1. Finiteness
+   The procedure should consist of a finite number of instructions.
+
+2. Definiteness
+   Each instruction should be precise and unambiguous.
+
+3. Effectiveness
+   Each step should be mechanically executable.
+
+4. Input
+   It may receive zero or more inputs.
+
+5. Output
+   It should produce a result when the computation terminates.
+
+6. Termination
+   For an algorithm intended to solve a decision problem, it should
+   eventually halt for every valid input.
+
+--------------------------------------------------------------------
+Algorithm vs program
+--------------------------------------------------------------------
+
+Algorithm:
+
+    General step-by-step method for solving a problem.
+
+Program:
+
+    An implementation of an algorithm in a programming language.
+
+Example:
+
+    Algorithm:
+        Sort numbers.
+
+    Program:
+        Python/C++/Java implementation of sorting.
+
+====================================================================
+3. WHAT DOES "EFFECTIVELY COMPUTABLE" MEAN?
+====================================================================
+
+This is one of the most important ideas of this chapter.
+
+Suppose someone says:
+
+    "This function can be computed."
+
+What exactly does "computed" mean?
+
+We need a precise mathematical meaning.
+
+Informally:
+
+    A function is effectively computable if there is a finite,
+    mechanical procedure that can calculate its output.
+
+The problem is:
+
+    What exactly is a "mechanical procedure"?
+
+This question motivated the development of formal models such as:
+
+    • Turing Machines
+    • Lambda Calculus
+    • Recursive Functions
+
+These apparently different models turned out to describe the same
+general class of effectively computable functions.
+
+This observation leads to the Church-Turing Thesis.
+
+====================================================================
+4. MECHANICAL PROCEDURE
+====================================================================
+
+A mechanical procedure means a procedure that can be carried out by
+following precise rules without requiring creativity, intuition,
+guessing, or human intelligence at each step.
+
+Example:
+
+    To calculate:
+
+        25 × 14
+
+You can follow a fixed procedure.
+
+Similarly:
+
+    To determine whether a binary string contains "101",
+
+a fixed procedure can be followed.
+
+For example, a finite automaton can process the input symbol by symbol.
+
+The important idea is:
+
+    The procedure must be completely specified.
+
+====================================================================
+5. WHY DID WE NEED A FORMAL MODEL OF COMPUTATION?
+====================================================================
+
+Historically, mathematicians wanted to answer questions such as:
+
+    "Is there a general method for solving this class of problems?"
+
+But "general method" was not a precise mathematical concept.
+
+For example:
+
+    What exactly counts as an algorithm?
+
+    What exactly does it mean for something to be computable?
+
+    Are there problems for which NO algorithm can ever exist?
+
+To answer these questions, mathematics needed a formal definition
+of computation.
+
+Several models were developed.
+
+Important models include:
+
+    1. Turing Machine
+    2. Lambda Calculus
+    3. Recursive Functions
+
+Surprisingly, they all describe essentially the same class of
+computable functions.
+
+====================================================================
+6. TURING MACHINE AS A MODEL OF COMPUTATION
+====================================================================
+
+You already studied Turing Machines in Chapter 15.
+
+Recall the basic idea.
+
+A Turing Machine has:
+
+    • An infinite tape
+    • A read/write head
+    • States
+    • A transition function
+    • An input alphabet
+    • A tape alphabet
+    • A start state
+    • Accept/reject states
+
+ASCII view:
+
+                 Read / Write Head
+                        |
+                        v
+        +----+----+----+----+----+----+
+        |  1 |  0 |  1 |  1 |  B |  B |
+        +----+----+----+----+----+----+
+                    ^
+                    |
+                   Head
+
+              +-------------+
+              | Finite      |
+              | Control     |
+              +-------------+
+                    |
+                    v
+              Transition
+                Rules
+
+The machine repeatedly:
+
+    1. Reads a symbol.
+    2. Changes state.
+    3. Writes a symbol.
+    4. Moves left or right.
+
+Therefore a Turing Machine provides a precise mathematical model
+for step-by-step computation.
+
+====================================================================
+7. TURING MACHINE AS AN ABSTRACT COMPUTER
+====================================================================
+
+A Turing Machine is not intended to be a literal modern computer.
+
+It is an abstract mathematical model.
+
+Think of it as:
+
+       Problem
+          |
+          v
+    +-------------+
+    | Encode      |
+    | input       |
+    +-------------+
+          |
+          v
+    +-------------+
+    | Turing      |
+    | Machine     |
+    +-------------+
+          |
+          v
+       Result
+
+The purpose is to answer theoretical questions such as:
+
+    Can this problem be solved algorithmically?
+
+    Can every problem be solved?
+
+    Are some problems impossible for computers?
+
+The answer to the last question is:
+
+    YES.
+
+Some problems are undecidable.
+
+We will study them in later chapters.
+
+====================================================================
+8. TURING-COMPUTABLE FUNCTION
+====================================================================
+
+Simple definition:
+
+    A function is Turing-computable if some Turing Machine can compute
+    its output.
+
+Suppose we have:
+
+    f(n) = n + 1
+
+For input:
+
+    4
+
+the output is:
+
+    5
+
+A Turing Machine can be designed to perform this computation.
+
+Therefore:
+
+    f(n) = n + 1
+
+is computable.
+
+Another example:
+
+    f(n) = n²
+
+is also computable.
+
+A Turing Machine can perform the necessary operations using its tape.
+
+====================================================================
+9. COMPUTABLE PROBLEMS
+====================================================================
+
+A problem is computable if there exists an algorithm that solves it.
+
+For decision problems, we usually want an algorithm that:
+
+    • accepts YES instances
+    • rejects NO instances
+    • halts on every input
+
+Example:
+
+Problem:
+    "Is a given binary string of even length?"
+
+This is computable.
+
+Algorithm:
+
+    1. Read the string.
+    2. Count its symbols.
+    3. Check whether length mod 2 = 0.
+    4. Output YES or NO.
+    5. Halt.
+
+A Turing Machine can implement this procedure.
+
+Therefore the problem is computable.
+
+====================================================================
+10. NON-COMPUTABLE / UNCOMPUTABLE PROBLEMS
+====================================================================
+
+Now we reach a fundamental discovery.
+
+Not every problem has an algorithmic solution.
+
+A problem is called uncomputable if:
+
+    No algorithm can solve every instance of the problem.
+
+The famous example is:
+
+                 HALTING PROBLEM
+
+Question:
+
+    Given a Turing Machine M and input w,
+    will M eventually halt on w?
+
+There is no general algorithm that can correctly answer this question
+for every possible M and w.
+
+Therefore:
+
+    HALTING PROBLEM = UNDECIDABLE
+
+We will study the proof in detail in Chapter 20.
+
+====================================================================
+11. COMPUTABLE vs UNCOMPUTABLE
+====================================================================
+
+                    COMPUTATION
+                        |
+             +----------+----------+
+             |                     |
+             v                     v
+       COMPUTABLE            UNCOMPUTABLE
+             |                     |
+             v                     v
+       Algorithm exists      No algorithm exists
+       that solves it        for all instances
+
+Example:
+
+    Sorting numbers
+        → Computable
+
+    Finding whether a finite string contains "101"
+        → Computable
+
+    Checking whether a DFA accepts a string
+        → Computable
+
+    General Halting Problem
+        → Undecidable / uncomputable
+
+====================================================================
+12. CHURCH'S WORK
+====================================================================
+
+Alonzo Church was an American mathematician and logician.
+
+He developed:
+
+    Lambda Calculus
+
+Lambda calculus provides a formal mathematical system for expressing
+computation.
+
+It was developed independently from Turing's work.
+
+Church investigated the concept of effectively calculable functions.
+
+====================================================================
+13. TURING'S WORK
+====================================================================
+
+Alan Turing developed the concept of the:
+
+    Turing Machine
+
+His model provided a mathematical description of mechanical
+computation.
+
+Turing showed that many mathematical problems can be studied in terms
+of what a machine can and cannot compute.
+
+His work was foundational to computability theory and theoretical
+computer science.
+
+====================================================================
+14. CHURCH-TURING THESIS
+====================================================================
+
+This is the CENTRAL CONCEPT of Chapter 18.
+
+Simple statement:
+
+    Anything that can be computed by an effective algorithm can be
+    computed by a Turing Machine.
+
+More carefully:
+
+    The class of effectively computable functions is the same as the
+    class of functions computable by a Turing Machine.
+
+Symbolically, informally:
+
+    EFFECTIVELY COMPUTABLE
+             =
+    TURING-COMPUTABLE
+
+This is the Church-Turing Thesis.
+
+====================================================================
+15. WHY IS IT CALLED A "THESIS"?
+====================================================================
+
+Very important exam point.
+
+The Church-Turing Thesis is NOT a mathematical theorem.
+
+Why?
+
+Because "effectively computable" is an intuitive concept.
+
+There is no formal mathematical definition of the intuitive concept
+that exists independently of the models being compared.
+
+Therefore we cannot prove:
+
+    "Every intuitive algorithm is a Turing Machine"
+
+in the same way that we prove a mathematical theorem.
+
+Instead, there is overwhelming evidence that different formal models
+of computation capture the same concept.
+
+Therefore it is called:
+
+    CHURCH-TURING THESIS
+
+NOT:
+
+    Church-Turing Theorem.
+
+--------------------------------------------------------------------
+EXAM POINT
+--------------------------------------------------------------------
+
+Remember:
+
+    Church-Turing Thesis
+        ↓
+    A claim about the nature of effective computation
+        ↓
+    NOT a conventional mathematical theorem
+        ↓
+    NOT a specific programming language
+        ↓
+    NOT a statement about computational efficiency
+====================================================================
+
+16. EQUIVALENT MODELS OF COMPUTATION
+====================================================================
+
+Several independent formal models were developed.
+
+Important ones:
+
+    1. Turing Machines
+    2. Lambda Calculus
+    3. μ-recursive / recursive functions
+
+They appear very different.
+
+Yet they compute the same class of functions.
+
+Conceptually:
+
+        Turing Machines
+              |
+              |
+              v
+      +----------------+
+      | Same class of  |
+      | computable     |
+      | functions      |
+      +----------------+
+          ^         ^
+          |         |
+          |         |
+    Lambda       Recursive
+    Calculus     Functions
+
+This agreement is one of the strongest reasons supporting the
+Church-Turing Thesis.
+
+====================================================================
+17. TURING MACHINE vs LAMBDA CALCULUS
+====================================================================
+
+Turing Machine:
+
+    Uses:
+        • tape
+        • head
+        • states
+        • transition rules
+
+Lambda Calculus:
+
+    Uses:
+        • functions
+        • function application
+        • variable substitution
+
+They look completely different.
+
+However, both can represent the same class of effectively computable
+functions.
+
+Therefore:
+
+    Turing-computable functions
+        =
+    Lambda-definable functions
+
+in the standard computability-theoretic sense.
+
+You do not need to learn Lambda Calculus deeply at this stage unless
+your syllabus specifically requires it.
+
+====================================================================
+18. TURING MACHINE vs RECURSIVE FUNCTIONS
+====================================================================
+
+Recursive function theory provides another mathematical approach to
+computation.
+
+Again, the important result is:
+
+    Turing-computable
+        =
+    Recursive
+        =
+    Lambda-definable
+
+at the level of computability.
+
+This is sometimes called:
+
+    Church's Thesis
+    or
+    Church-Turing Thesis
+
+depending on context.
+
+====================================================================
+19. IMPORTANT IDEA: COMPUTABILITY ≠ EFFICIENCY
+====================================================================
+
+This is an extremely important distinction.
+
+Church-Turing Thesis is about:
+
+    WHAT can be computed.
+
+It does NOT tell us:
+
+    HOW FAST can it be computed?
+
+For example, suppose a problem has an algorithm that takes:
+
+    2^n
+
+steps.
+
+It may still be computable.
+
+The Church-Turing Thesis does not say that the algorithm is efficient.
+
+This distinction leads to:
+
+    COMPUTABILITY
+          vs
+    COMPLEXITY
+
+Computability asks:
+
+    "Can we solve it at all?"
+
+Complexity asks:
+
+    "How efficiently can we solve it?"
+
+====================================================================
+20. COMPUTABILITY vs COMPLEXITY
+====================================================================
+
+Example:
+
+Problem A:
+
+    An algorithm exists and takes O(n²).
+
+    Computable? YES
+    Efficient? Generally YES/POLYNOMIAL
+
+Problem B:
+
+    An algorithm exists and takes O(2^n).
+
+    Computable? YES
+    Efficient? Usually considered inefficient for large n
+
+Problem C:
+
+    No algorithm exists that solves all instances.
+
+    Computable? NO
+    Decidable? NO
+
+ASCII:
+
+               PROBLEMS
+                  |
+       +----------+----------+
+       |                     |
+       v                     v
+   COMPUTABLE            UNCOMPUTABLE
+       |
+       |
+       +----------------------+
+       |                      |
+       v                      v
+    Efficient             Inefficient
+    algorithms            algorithms
+    may exist             may exist
+
+Complexity theory mainly studies the computable side.
+
+====================================================================
+21. EFFECTIVE PROCEDURE
+====================================================================
+
+An effective procedure should be:
+
+    • finite
+    • precise
+    • mechanical
+    • unambiguous
+    • executable step by step
+
+Example:
+
+    To calculate factorial:
+
+        n! = n × (n-1) × ... × 1
+
+Algorithm:
+
+        factorial(n):
+            result = 1
+            for i = 1 to n:
+                result = result × i
+            return result
+
+This is an effective procedure.
+
+For example:
+
+    factorial(4)
+
+    result = 1
+    result = 1 × 1 = 1
+    result = 1 × 2 = 2
+    result = 2 × 3 = 6
+    result = 6 × 4 = 24
+
+Output:
+
+    24
+
+====================================================================
+22. FORMAL COMPUTATIONAL MODELS
+====================================================================
+
+A computational model is a mathematical framework used to describe
+computation.
+
+Examples:
+
+    Finite Automaton
+    Pushdown Automaton
+    Turing Machine
+    Lambda Calculus
+    Recursive Functions
+
+But these models do NOT have equal computational power.
+
+For example:
+
+    Finite Automaton
+        < Pushdown Automaton
+        < Turing Machine
+
+in terms of general language-recognition capability.
+
+Why?
+
+Because each model has different memory capabilities.
+
+--------------------------------------------------------------------
+Finite Automaton
+--------------------------------------------------------------------
+
+Has only finite memory.
+
+Good for:
+
+    Regular languages.
+
+--------------------------------------------------------------------
+Pushdown Automaton
+--------------------------------------------------------------------
+
+Has a stack.
+
+Good for:
+
+    Context-free languages.
+
+--------------------------------------------------------------------
+Turing Machine
+--------------------------------------------------------------------
+
+Has an unbounded tape.
+
+Can model general algorithmic computation.
+
+ASCII:
+
+    Finite Automaton
+         |
+      finite
+      memory
+
+    Pushdown Automaton
+         |
+       stack
+
+    Turing Machine
+         |
+     unbounded tape
+
+More memory → greater computational capability.
+
+====================================================================
+23. INTUITIVE NOTION OF ALGORITHM
+====================================================================
+
+Before formal models were developed, "algorithm" was an intuitive
+concept.
+
+Humans could describe procedures such as:
+
+    "Follow these steps."
+
+But mathematics needed a precise model.
+
+Turing's idea:
+
+    Imagine a simple machine that follows exact rules one step at
+    a time.
+
+This gives us the Turing Machine.
+
+Therefore:
+
+    Intuitive algorithm
+            ↓
+    Formal computational model
+            ↓
+       Turing Machine
+            ↓
+    Mathematical analysis
+
+====================================================================
+24. WHY THE CHURCH-TURING THESIS IS IMPORTANT
+====================================================================
+
+The thesis gives us a practical boundary for what we call
+"computable".
+
+It allows computer scientists to say:
+
+    If no Turing Machine can compute a function,
+    then no effective algorithm can compute it.
+
+This is extraordinarily powerful.
+
+Suppose we prove:
+
+    Problem P is not Turing-computable.
+
+Then, under the Church-Turing Thesis:
+
+    There is no effective algorithm for P.
+
+Therefore computability theory can establish fundamental limits
+of computation.
+
+====================================================================
+25. WHAT THE CHURCH-TURING THESIS DOES NOT SAY
+====================================================================
+
+It does NOT say:
+
+    ❌ Turing Machines are physically identical to computers.
+
+    ❌ Every Turing Machine is efficient.
+
+    ❌ Every computable problem can be solved quickly.
+
+    ❌ Modern computers are literally infinite-tape machines.
+
+    ❌ Turing Machines describe the exact architecture of CPUs.
+
+    ❌ P = NP.
+
+    ❌ Every problem is computable.
+
+Instead, it concerns:
+
+    The class of effectively computable functions.
+
+====================================================================
+26. IMPORTANT DISTINCTION:
+    TURING-COMPUTABLE vs TURING-DECIDABLE
+====================================================================
+
+These terms are related but should not be confused.
+
+For functions:
+
+    Turing-computable function
+        =
+    A Turing Machine can calculate its output.
+
+For languages:
+
+    Turing-decidable language
+        =
+    A Turing Machine exists that halts on every input and correctly
+    accepts/rejects it.
+
+Example:
+
+    L = { w | w contains at least one 1 }
+
+This is decidable.
+
+A TM can:
+
+    scan the input
+    find 1 → accept
+    reach blank without 1 → reject
+
+and always halt.
+
+====================================================================
+27. DECIDER vs RECOGNIZER
+====================================================================
+
+This distinction will become extremely important in Chapter 19.
+
+DECIDER:
+
+    A Turing Machine that halts on every input.
+
+    YES → accept
+    NO  → reject
+
+RECOGNIZER:
+
+    A Turing Machine that accepts strings in the language.
+
+    For strings NOT in the language, it may reject OR run forever.
+
+ASCII:
+
+DECIDER:
+
+       Input
+         |
+         v
+      +------+
+      |  TM  |
+      +------+
+       /    \
+      /      \
+   ACCEPT   REJECT
+      \      /
+       \    /
+       HALTS
+       ALWAYS
+
+
+RECOGNIZER:
+
+       Input
+         |
+         v
+      +------+
+      |  TM  |
+      +------+
+       /    \
+      /      \
+   ACCEPT   NON-MEMBER
+               |
+          may loop forever
+
+This distinction becomes essential for recursively enumerable
+languages.
+
+====================================================================
+28. COMPUTABILITY HIERARCHY IDEA
+====================================================================
+
+At a high level:
+
+                    ALL PROBLEMS
+                         |
+             +-----------+-----------+
+             |                       |
+             v                       v
+         COMPUTABLE             UNCOMPUTABLE
+             |
+       +-----+------+
+       |            |
+       v            v
+    Decidable    Recognizable
+    languages    languages
+       |
+       v
+   Algorithms
+   that always
+      halt
+
+This will be developed formally in later chapters.
+
+====================================================================
+29. REAL-WORLD ANALOGY
+====================================================================
+
+Imagine a vending machine.
+
+You insert money and select a product.
+
+The machine follows fixed rules:
+
+    Insert money
+         ↓
+    Check amount
+         ↓
+    Select product
+         ↓
+    Check availability
+         ↓
+    Release product
+
+There is no need for the machine to "understand" the situation
+like a human.
+
+It simply follows rules.
+
+This is similar to the idea of mechanical computation.
+
+A Turing Machine is an extremely simplified mathematical version
+of this idea.
+
+====================================================================
+30. DETAILED EXAMPLE:
+    COMPUTING f(n) = n + 1
+====================================================================
+
+Suppose input:
+
+    n = 3
+
+We want:
+
+    f(3) = 4
+
+Conceptually:
+
+       Input
+         |
+         v
+        3
+         |
+         v
+     Turing Machine
+         |
+         v
+        4
+         |
+         v
+       Output
+
+A TM can represent numbers in unary.
+
+For example:
+
+    3 = 111
+    4 = 1111
+
+Conceptual process:
+
+    Tape:
+
+       1 1 1 B
+       ^
+       |
+      head
+
+    Move to the end:
+
+       1 1 1 B
+             ^
+             |
+            head
+
+    Write 1:
+
+       1 1 1 1 B
+             ^
+             |
+            head
+
+Result:
+
+    1111
+
+Therefore:
+
+    f(n) = n + 1
+
+is computable.
+
+====================================================================
+31. DETAILED EXAMPLE:
+    EVEN NUMBER TEST
+====================================================================
+
+Problem:
+
+    Given n, determine whether n is even.
+
+Algorithm:
+
+    1. Input n.
+    2. Compute n mod 2.
+    3. If result = 0, accept.
+    4. Otherwise reject.
+
+Example:
+
+    n = 8
+
+    8 mod 2 = 0
+
+    Therefore:
+
+        ACCEPT
+
+Example:
+
+    n = 7
+
+    7 mod 2 = 1
+
+    Therefore:
+
+        REJECT
+
+This is an effective procedure.
+
+Therefore the problem is computable.
+
+====================================================================
+32. DETAILED EXAMPLE:
+    A PROBLEM THAT IS NOT COMPUTABLE
+====================================================================
+
+Consider:
+
+    HALT(M, w)
+
+Question:
+
+    "Does machine M halt when given input w?"
+
+Imagine that someone claims:
+
+    "I have written a perfect program H that answers this."
+
+That means:
+
+       M + w
+         |
+         v
+       +-----+
+       |  H  |
+       +-----+
+        /   \
+       /     \
+    HALT    LOOP
+
+The problem is that such a perfect H cannot exist.
+
+A contradiction argument proves this.
+
+We will study the complete proof in Chapter 20.
+
+The important point for this chapter:
+
+    Some computational problems cannot be solved by any algorithm.
+
+====================================================================
+33. COMPUTABILITY IS A LIMIT OF COMPUTERS
+====================================================================
+
+This is one of the deepest ideas in TOC.
+
+Students often think:
+
+    "If a computer is made powerful enough, it can solve anything."
+
+That is false.
+
+Increasing:
+
+    CPU speed
+    RAM
+    storage
+    number of processors
+
+does NOT solve every theoretical problem.
+
+Some problems are impossible to solve algorithmically.
+
+Therefore:
+
+    More hardware power ≠ solution to every problem
+
+This is why computability theory is important.
+
+====================================================================
+34. COMPUTABILITY vs PHYSICAL POSSIBILITY
+====================================================================
+
+Be careful.
+
+Computability theory asks:
+
+    "Does an algorithm exist?"
+
+It does not primarily ask:
+
+    "Can today's computer physically run it?"
+
+For example:
+
+    An algorithm requiring 2^1000 operations may be technically
+    computable but practically impossible to execute.
+
+That is a complexity/practicality issue.
+
+An undecidable problem is fundamentally different:
+
+    No algorithm exists that solves all instances.
+
+====================================================================
+35. THREE IMPORTANT QUESTIONS
+====================================================================
+
+When given a computational problem, ask:
+
+    QUESTION 1:
+    Is it computable?
+
+        ↓
+
+    Does an algorithm exist?
+
+        ↓
+
+    If YES:
+
+    QUESTION 2:
+    Is it decidable?
+
+        ↓
+
+    Does the algorithm halt on every input?
+
+        ↓
+
+    If YES:
+
+    QUESTION 3:
+    How efficiently can it be solved?
+
+        ↓
+
+    Complexity theory.
+
+Therefore:
+
+    COMPUTABILITY
+          ↓
+    DECIDABILITY
+          ↓
+    COMPLEXITY
+
+These are related but different concepts.
+
+====================================================================
+36. IMPORTANT TERMINOLOGY
+====================================================================
+
+COMPUTATION
+    A sequence of rule-based steps transforming input into output.
+
+ALGORITHM
+    A finite, precise procedure for solving a problem.
+
+EFFECTIVE PROCEDURE
+    A mechanical, unambiguous procedure that can be carried out
+    step by step.
+
+COMPUTABLE
+    A problem/function for which an appropriate algorithm exists.
+
+TURING-COMPUTABLE
+    Computable by a Turing Machine.
+
+UNCOMPUTABLE
+    No algorithm exists that solves the problem in the required
+    general sense.
+
+TURING MACHINE
+    A mathematical model of general computation.
+
+CHURCH-TURING THESIS
+    The claim that effectively computable functions are exactly the
+    functions computable by Turing Machines.
+
+DECIDER
+    A TM that halts on every input.
+
+RECOGNIZER
+    A TM that accepts members but may run forever on non-members.
+
+====================================================================
+37. IMPORTANT DIFFERENCES
+====================================================================
+
+--------------------------------------------------------------------
+Algorithm vs Turing Machine
+--------------------------------------------------------------------
+
+Algorithm:
+    General procedure for solving a problem.
+
+Turing Machine:
+    Formal mathematical model used to represent such computation.
+
+--------------------------------------------------------------------
+Computability vs Complexity
+--------------------------------------------------------------------
+
+Computability:
+    Can the problem be solved at all?
+
+Complexity:
+    How much time/space is required?
+
+--------------------------------------------------------------------
+Computable vs Decidable
+--------------------------------------------------------------------
+
+For functions:
+    Computable → a TM can calculate the function.
+
+For languages:
+    Decidable → a TM can always halt and correctly accept/reject.
+
+--------------------------------------------------------------------
+Church-Turing Thesis vs Theorem
+--------------------------------------------------------------------
+
+Thesis:
+    Claim concerning the intuitive notion of effective computation.
+
+Theorem:
+    A mathematical statement established by proof.
+
+Church-Turing Thesis:
+    NOT a conventional theorem.
+
+====================================================================
+38. B.TECH EXAM PERSPECTIVE
+====================================================================
+
+VERY IMPORTANT QUESTIONS:
+
+1. Define computability.
+
+2. What is an algorithm?
+
+3. Define effective computation.
+
+4. Explain the need for a formal model of computation.
+
+5. What is the Church-Turing Thesis?
+
+6. Why is it called a thesis rather than a theorem?
+
+7. Explain the relationship between Turing Machines and effective
+   computation.
+
+8. Explain different models of computation.
+
+9. Differentiate computability and complexity.
+
+10. Differentiate a decider and a recognizer.
+
+11. Explain the importance of the Church-Turing Thesis.
+
+12. What is an uncomputable problem?
+
+--------------------------------------------------------------------
+Typical 5-mark question:
+--------------------------------------------------------------------
+
+    "Explain the Church-Turing Thesis."
+
+Expected structure:
+
+    1. Define effective computation.
+    2. Explain Turing Machine.
+    3. State the thesis.
+    4. Explain why it is called a thesis.
+    5. Mention equivalent computational models.
+    6. Explain significance.
+
+--------------------------------------------------------------------
+Typical 10-mark question:
+--------------------------------------------------------------------
+
+    "Explain the concept of computability and Church-Turing Thesis
+     in detail."
+
+Include:
+
+    • computation
+    • algorithm
+    • effective procedure
+    • formal computational models
+    • Turing Machine
+    • Church's contribution
+    • Turing's contribution
+    • Church-Turing Thesis
+    • computable vs uncomputable
+    • computability vs complexity
+    • significance
+
+====================================================================
+39. GATE / COMPETITIVE EXAM PERSPECTIVE
+====================================================================
+
+Remember these facts:
+
+    1. Church-Turing Thesis concerns effective computability.
+
+    2. It is not a theorem in the usual mathematical sense.
+
+    3. Turing Machines characterize the class of effectively
+       computable functions under the thesis.
+
+    4. Computability and complexity are different.
+
+    5. A problem may be computable but computationally expensive.
+
+    6. Some problems are undecidable.
+
+    7. A decider always halts.
+
+    8. A recognizer may loop forever on non-members.
+
+    9. Turing Machines are a model of computation, not a literal
+       description of modern hardware.
+
+   10. Equivalent computational models support the Church-Turing
+       viewpoint.
+
+====================================================================
+40. INTERVIEW PERSPECTIVE
+====================================================================
+
+Q1. What is computability?
+
+Answer:
+
+    Computability asks whether a problem or function can be solved
+    by an algorithm. In formal computability theory, Turing Machines
+    are used as a standard model of algorithmic computation.
+
+--------------------------------------------------------------------
+
+Q2. What is the Church-Turing Thesis?
+
+Answer:
+
+    It states that every effectively computable function can be
+    computed by a Turing Machine, and hence the intuitive notion of
+    effective computation coincides with Turing computability.
+
+--------------------------------------------------------------------
+
+Q3. Is Church-Turing Thesis a theorem?
+
+Answer:
+
+    No. It is a thesis because "effectively computable" is an
+    intuitive notion rather than an independently formalized
+    mathematical concept.
+
+--------------------------------------------------------------------
+
+Q4. Does Church-Turing Thesis say that every problem is solvable?
+
+Answer:
+
+    No. It characterizes what is effectively computable. There are
+    problems, such as the Halting Problem, that are not computable.
+
+--------------------------------------------------------------------
+
+Q5. Does computable mean efficient?
+
+Answer:
+
+    No. Computability asks whether a solution exists; complexity
+    studies the resources required to obtain the solution.
+
+====================================================================
+41. COMMON MISTAKES
+====================================================================
+
+MISTAKE 1:
+
+    "Church-Turing Theorem"
+
+CORRECT:
+
+    Church-Turing Thesis.
+
+--------------------------------------------------------------------
+
+MISTAKE 2:
+
+    "Turing Machines can solve every problem."
+
+WRONG.
+
+Correct:
+
+    Some problems are undecidable.
+
+--------------------------------------------------------------------
+
+MISTAKE 3:
+
+    "Computable means fast."
+
+WRONG.
+
+Computable only means that an appropriate algorithm exists.
+
+--------------------------------------------------------------------
+
+MISTAKE 4:
+
+    "Turing Machine is the same as a modern computer."
+
+WRONG.
+
+It is an abstract mathematical model of computation.
+
+--------------------------------------------------------------------
+
+MISTAKE 5:
+
+    "More powerful hardware can solve undecidable problems."
+
+WRONG.
+
+Undecidability is a theoretical limitation, not merely a hardware
+limitation.
+
+--------------------------------------------------------------------
+
+MISTAKE 6:
+
+    "Every recognizer is a decider."
+
+WRONG.
+
+A recognizer may run forever on strings not in the language.
+
+====================================================================
+42. CHAPTER 18 — CORE CONCEPT MAP
+====================================================================
+
+                       COMPUTATION
+                           |
+                           v
+                      ALGORITHM
+                           |
+                           v
+                 EFFECTIVE PROCEDURE
+                           |
+                           v
+              FORMAL MODEL OF COMPUTATION
+                           |
+             +-------------+-------------+
+             |             |             |
+             v             v             v
+          Turing       Lambda       Recursive
+          Machine      Calculus     Functions
+             \             |             /
+              \            |            /
+               +-----------+-----------+
+                           |
+                           v
+                 CHURCH-TURING THESIS
+                           |
+                           v
+               EFFECTIVELY COMPUTABLE
+                           =
+                  TURING-COMPUTABLE
+                           |
+                 +---------+---------+
+                 |                   |
+                 v                   v
+            COMPUTABLE          UNCOMPUTABLE
+                 |
+                 v
+             DECIDABLE
+                 |
+                 v
+            COMPLEXITY
+        (How efficiently?)
+
+====================================================================
+43. CHAPTER 18 — QUICK REVISION
+====================================================================
+
+Remember this sequence:
+
+    Computation
+        ↓
+    Algorithm
+        ↓
+    Effective Procedure
+        ↓
+    Formal Computational Model
+        ↓
+    Turing Machine
+        ↓
+    Turing Computability
+        ↓
+    Church-Turing Thesis
+        ↓
+    Computability Limits
+        ↓
+    Undecidability
+
+The central question is:
+
+    "What can be computed?"
+
+The answer is studied by:
+
+    COMPUTABILITY THEORY
+
+The central formal model is:
+
+    TURING MACHINE
+
+The central thesis is:
+
+    CHURCH-TURING THESIS
+
+The central limitation is:
+
+    NOT EVERYTHING IS COMPUTABLE.
+
+====================================================================
+44. SHORT ACTIVE-RECALL QUESTIONS
+====================================================================
+
+Do NOT look for the answers immediately.
+Try answering yourself.
+
+Q1. What is computation?
+
+Q2. What is an algorithm?
+
+Q3. What does "effective procedure" mean?
+
+Q4. Why do we need a formal model of computation?
+
+Q5. What is a Turing Machine?
+
+Q6. What is a computable function?
+
+Q7. What is an uncomputable problem?
+
+Q8. State the Church-Turing Thesis.
+
+Q9. Why is Church-Turing called a thesis rather than a theorem?
+
+Q10. Name three formal models associated with the Church-Turing
+    viewpoint.
+
+Q11. What is the difference between computability and complexity?
+
+Q12. What is the difference between a decider and a recognizer?
+
+Q13. Does the Church-Turing Thesis say that every problem can be
+    solved?
+
+Q14. Is an exponential-time problem necessarily uncomputable?
+
+Q15. Why is the Halting Problem important?
+
+====================================================================
+45. PRACTICE QUESTIONS
+====================================================================
+
+LEVEL 1 — BEGINNER
+
+1. Define computation.
+
+2. Define algorithm.
+
+3. What is an effective procedure?
+
+4. What is a Turing Machine?
+
+5. Define computable function.
+
+6. State the Church-Turing Thesis.
+
+
+LEVEL 2 — B.TECH BASIC
+
+7. Explain the need for formal models of computation.
+
+8. Explain the concept of effective computation.
+
+9. Differentiate algorithm and Turing Machine.
+
+10. Explain computability using a suitable example.
+
+
+LEVEL 3 — UNIVERSITY EXAM
+
+11. Explain the Church-Turing Thesis in detail.
+
+12. Discuss the relationship between Turing Machines and
+    effectively computable functions.
+
+13. Explain different formal models of computation.
+
+14. Explain why the Church-Turing Thesis is important in theoretical
+    computer science.
+
+
+LEVEL 4 — COMPETITIVE
+
+15. Is every computable problem necessarily efficiently solvable?
+    Explain.
+
+16. Can a problem be computable but practically infeasible?
+    Explain.
+
+17. Explain why undecidability is different from computational
+    inefficiency.
+
+18. Differentiate:
+        Computable
+        Decidable
+        Recognizable
+        Undecidable
+
+
+LEVEL 5 — GATE-STYLE THINKING
+
+19. Consider the following statements:
+
+    A. Every decidable language is recognizable.
+    B. Every recognizable language is decidable.
+    C. A decider halts on every input.
+    D. An algorithm for an undecidable problem exists.
+
+    Identify the correct statements.
+
+20. Which statement best describes the Church-Turing Thesis?
+
+    A. Every problem can be solved by a computer.
+    B. Every polynomial-time problem is Turing-computable.
+    C. Effective computation coincides with Turing computation.
+    D. Every Turing Machine runs in polynomial time.
+
+21. A problem requires 2^n time but always terminates.
+    Is it computable? Is it necessarily efficient?
+
+====================================================================
+46. MINI TEST
+====================================================================
+
+Answer these without looking back.
+
+1. Fill in the blank:
+
+   A finite, precise procedure for solving a problem is called
+   an __________.
+
+2. Fill in the blank:
+
+   A mathematical model of general computation is the
+   __________.
+
+3. True or False:
+
+   The Church-Turing Thesis is a conventional mathematical theorem.
+
+4. True or False:
+
+   Every uncomputable problem can be solved by using a faster
+   computer.
+
+5. True or False:
+
+   A decider must halt on every input.
+
+6. Short answer:
+
+   What is the difference between computability and complexity?
+
+7. Short answer:
+
+   Why is the Halting Problem important?
+
+====================================================================
+47. FINAL CHAPTER SUMMARY
+====================================================================
+
+The most important ideas of Chapter 18 are:
+
+    1. Computation is a rule-based process of transforming input
+       into output.
+
+    2. An algorithm is a finite, precise procedure for solving a
+       problem.
+
+    3. Effective computation means mechanical, unambiguous,
+       step-by-step computation.
+
+    4. Turing Machines provide a formal mathematical model of
+       general computation.
+
+    5. A function is Turing-computable if a Turing Machine can
+       compute it.
+
+    6. Some problems are uncomputable.
+
+    7. The Halting Problem is a famous example of an undecidable
+       problem.
+
+    8. Church and Turing independently developed important formal
+       approaches to computation.
+
+    9. The Church-Turing Thesis says that effectively computable
+       functions are exactly the functions computable by Turing
+       Machines.
+
+   10. The Church-Turing Thesis is a thesis, not a conventional
+       mathematical theorem.
+
+   11. Turing Machines, Lambda Calculus, and recursive functions
+       characterize the same general class of computable functions.
+
+   12. Computability asks:
+           "Can it be solved?"
+
+   13. Complexity asks:
+           "How efficiently can it be solved?"
+
+   14. Computability is therefore different from efficiency.
+
+====================================================================
+48. ONE-MINUTE MEMORY SHEET
+====================================================================
+
+    ALGORITHM
+        ↓
+    Effective step-by-step procedure
+        ↓
+    TURING MACHINE
+        ↓
+    Formal model of computation
+        ↓
+    TURING-COMPUTABLE
+        ↓
+    Church-Turing Thesis
+        ↓
+    Effectively computable = Turing-computable
+        ↓
+    BUT
+        ↓
+    Some problems are NOT computable
+        ↓
+    HALTING PROBLEM
+        ↓
+    UNDECIDABILITY
+
+Remember:
+
+    COMPUTABILITY = CAN IT BE DONE?
+
+    COMPLEXITY    = HOW MUCH RESOURCE DOES IT NEED?
+
+====================================================================
+CHAPTER 18 STATUS
+====================================================================
+
+PHASE 14 — COMPUTABILITY FOUNDATIONS
+
+    ✓ Effective computation
+    ✓ Algorithm
+    ✓ Mechanical procedure
+    ✓ Computability
+    ✓ Turing-computability
+    ✓ Formal computational models
+    ✓ Church's contribution
+    ✓ Turing's contribution
+    ✓ Church-Turing Thesis
+    ✓ Intuitive notion of algorithm
+    ✓ Equivalent computational models
+    ✓ Computability vs complexity
+    ✓ Computable vs uncomputable
+    ✓ Decider vs recognizer — introductory foundation
+
+Chapter 18 completed.
+
+====================================================================
+UPCOMING NEXT TOPIC
+====================================================================
+
+CHAPTER 19 — DECIDABLE AND UNDECIDABLE PROBLEMS
+
+NEXT TOPIC:
+
+    19.1 DECIDABILITY
+
+We will begin with:
+
+    • What is a decidable language?
+    • What is a decider?
+    • What is a recognizer?
+    • Recursive language
+    • Recursively enumerable language
+    • Decider vs recognizer
+    • Decidable vs recognizable
+
+And then move toward important decidable and undecidable problems.
+
+Type:
+
+    NEXT
+
+to begin Chapter 19, Topic 19.1 — Decidability.
+====================================================================

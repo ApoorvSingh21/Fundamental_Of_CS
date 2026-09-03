@@ -1,0 +1,1714 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                    THEORY OF COMPUTATION — CHAPTER 7                ║
+║        EQUIVALENCE OF AUTOMATA AND REGULAR EXPRESSIONS              ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 4 — REGULAR LANGUAGES
+
+CHAPTER 7
+    EQUIVALENCE OF AUTOMATA AND REGULAR EXPRESSIONS
+
+Prerequisites:
+    ✓ Chapter 3 — Formal Languages
+    ✓ Chapter 4 — DFA
+    ✓ Chapter 5 — NFA / ε-NFA
+    ✓ Chapter 6 — Regular Expressions
+
+──────────────────────────────────────────────────────────────────────
+CHAPTER GOAL
+──────────────────────────────────────────────────────────────────────
+
+By the end of this chapter, you should understand:
+
+    Regular Expression
+          ↕
+    ε-NFA
+          ↕
+         NFA
+          ↕
+         DFA
+
+and why all of these can describe exactly the class of
+REGULAR LANGUAGES.
+
+You will also learn the important conversion methods:
+
+    RE → ε-NFA
+    NFA → DFA
+    ε-NFA → DFA
+    DFA → RE
+    Automaton → RE
+    State elimination
+
+and finally:
+
+    KLEENE'S THEOREM
+
+
+══════════════════════════════════════════════════════════════════════
+1. WHAT DOES "EQUIVALENCE" MEAN?
+══════════════════════════════════════════════════════════════════════
+
+Before learning conversions, understand the word "equivalent".
+
+Two machines/descriptions are equivalent if they recognize
+the SAME LANGUAGE.
+
+For example:
+
+    DFA A accepts:
+        {0, 01, 001, 0001, ...}
+
+    Regular Expression B:
+        0*1
+
+If both accept exactly the same strings, then:
+
+    A ≡ B
+
+
+Important:
+
+    Equivalent does NOT mean they look the same.
+
+They may have:
+
+    different numbers of states
+    different structures
+    different representations
+
+but still recognize the same language.
+
+
+ASCII:
+
+        Regular Expression
+                |
+                | describes
+                v
+        ┌─────────────────┐
+        │ Regular Language│
+        └─────────────────┘
+          ^             ^
+          |             |
+        DFA             NFA
+
+
+Example:
+
+    RE:
+        0*
+
+    DFA:
+
+              0
+           ┌─────┐
+           │     │
+        -->q0*───┘
+
+This DFA and the RE describe the same language:
+
+    {ε, 0, 00, 000, ...}
+
+
+══════════════════════════════════════════════════════════════════════
+2. REGULAR LANGUAGES
+══════════════════════════════════════════════════════════════════════
+
+A language is called REGULAR if it can be represented by a
+regular expression.
+
+Equivalently, a language is regular if it can be accepted by
+a finite automaton.
+
+Therefore:
+
+    L is regular
+
+if and only if:
+
+    L can be represented by an RE
+
+and:
+
+    L can be accepted by a DFA
+
+and:
+
+    L can be accepted by an NFA
+
+and:
+
+    L can be accepted by an ε-NFA.
+
+
+Central idea:
+
+        ┌───────────────────────┐
+        │   REGULAR LANGUAGE    │
+        └───────────────────────┘
+             /     |      \
+            /      |       \
+           v       v        v
+          DFA     NFA       RE
+           |
+           v
+         ε-NFA
+
+
+These representations have equivalent expressive power.
+
+
+══════════════════════════════════════════════════════════════════════
+3. WHY DO WE NEED CONVERSIONS?
+══════════════════════════════════════════════════════════════════════
+
+Different representations are useful for different tasks.
+
+REGULAR EXPRESSION:
+
+    Good for describing patterns.
+
+DFA:
+
+    Good for deterministic processing and implementation.
+
+NFA:
+
+    Often easier to construct.
+
+ε-NFA:
+
+    Very convenient for constructing an automaton from an RE.
+
+Therefore, in TOC we frequently convert between them.
+
+Example:
+
+    Problem gives RE
+             ↓
+       Need automaton
+             ↓
+          RE → ε-NFA
+             ↓
+          ε-NFA → DFA
+
+
+Another problem:
+
+    Problem gives DFA
+             ↓
+       Need regular expression
+             ↓
+          DFA → RE
+
+
+══════════════════════════════════════════════════════════════════════
+4. THE MAIN CONVERSION MAP
+══════════════════════════════════════════════════════════════════════
+
+                    ┌──────────────┐
+                    │     RE       │
+                    └──────┬───────┘
+                           │
+                           │ RE → ε-NFA
+                           v
+                    ┌──────────────┐
+                    │    ε-NFA     │
+                    └──────┬───────┘
+                           │
+                           │ ε-closure /
+                           │ subset construction
+                           v
+                    ┌──────────────┐
+                    │     DFA      │
+                    └──────┬───────┘
+                           │
+                           │ state elimination
+                           v
+                    ┌──────────────┐
+                    │      RE      │
+                    └──────────────┘
+
+
+Also:
+
+    NFA → DFA
+    ε-NFA → DFA
+    DFA → RE
+
+
+══════════════════════════════════════════════════════════════════════
+5. RE → ε-NFA
+══════════════════════════════════════════════════════════════════════
+
+This is one of the most important constructions.
+
+The standard approach is based on building small automata for
+each basic RE component and then combining them.
+
+The commonly taught construction is called:
+
+    THOMPSON'S CONSTRUCTION
+
+You do not need to memorize the name only.
+
+You need to understand the construction.
+
+
+──────────────────────────────────────────────────────────────────────
+5.1 BASIC SYMBOL
+──────────────────────────────────────────────────────────────────────
+
+Suppose:
+
+    RE = a
+
+We construct:
+
+        a
+    q0 ────> q1
+
+where:
+
+    q0 = start state
+    q1 = final state
+
+
+ASCII:
+
+        a
+    -->q0 ─────> q1*
+
+
+This accepts exactly:
+
+    {a}
+
+
+──────────────────────────────────────────────────────────────────────
+5.2 EMPTY STRING
+──────────────────────────────────────────────────────────────────────
+
+For:
+
+    RE = ε
+
+we can use an ε-transition:
+
+        ε
+    q0 ─────> q1
+
+
+ASCII:
+
+        ε
+    -->q0 ─────> q1*
+
+
+It accepts:
+
+    ε
+
+
+──────────────────────────────────────────────────────────────────────
+5.3 EMPTY LANGUAGE
+──────────────────────────────────────────────────────────────────────
+
+For:
+
+    RE = ∅
+
+we need an automaton accepting nothing.
+
+For example:
+
+    -->q0
+
+
+with no path to a final state.
+
+Therefore:
+
+    no string is accepted.
+
+
+══════════════════════════════════════════════════════════════════════
+6. UNION CONSTRUCTION
+══════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    R + S
+
+We need an automaton that can choose:
+
+    R OR S
+
+
+Create a new start state.
+
+Create a new final state.
+
+Use ε-transitions to enter either branch.
+
+
+ASCII:
+
+                         ε
+                    ┌──────────> R ──────────┐
+                    │                         │
+                    │                         │ ε
+                  -->qstart                 qfinal*
+                    │                         ^
+                    │                         │
+                    └──────────> S ──────────┘
+                         ε
+
+Meaning:
+
+    qstart
+       |
+       +----> R branch
+       |
+       +----> S branch
+
+If either branch accepts, the entire automaton accepts.
+
+
+Example:
+
+    R = 0
+    S = 1
+
+Then:
+
+    R + S = 0 + 1
+
+
+Automaton:
+
+                    ε        0
+                 ┌──────> q1 ───> q2
+                 │                    │ ε
+               -->q0                  v
+                 │                  q5*
+                 │                    ^
+                 │                    │ ε
+                 └──────> q3 ───> q4
+                    ε        1
+
+This accepts:
+
+    0
+    1
+
+
+══════════════════════════════════════════════════════════════════════
+7. CONCATENATION CONSTRUCTION
+══════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    RS
+
+We must first process R and then S.
+
+Connect the final state of R to the start state of S using
+an ε-transition.
+
+ASCII:
+
+    R                    S
+
+    -->[ R ]──ε──>[ S ]──> final
+
+
+Example:
+
+    R = 0
+    S = 1
+
+Then:
+
+    RS = 01
+
+
+Automaton:
+
+    -->q0 ──0──> q1 ──ε──> q2 ──1──> q3*
+
+It accepts:
+
+    01
+
+
+══════════════════════════════════════════════════════════════════════
+8. KLEENE STAR CONSTRUCTION
+══════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    R*
+
+means:
+
+    zero or more copies of R.
+
+We need to allow:
+
+    zero copies
+    one copy
+    two copies
+    three copies
+    ...
+
+
+Therefore we create:
+
+    new start
+    new final
+
+and ε-transitions that allow:
+
+    skipping R completely
+
+or:
+
+    entering R
+
+and after completing R:
+
+    repeat R
+
+ASCII:
+
+                     ε
+                 ┌──────────────┐
+                 │              v
+              -->qstart ─ε──> [ R ] ─ε──> qfinal*
+                 │              ^          ^
+                 │              │          │
+                 └──────ε───────┘          │
+                                          ε
+
+Conceptually:
+
+          ┌─────────────────────┐
+          │                     │
+          v                     │
+       start ──ε──> R ──ε───────┘
+          │
+          └────────ε────────> final
+
+
+This permits:
+
+    zero repetitions
+    one repetition
+    multiple repetitions
+
+
+Example:
+
+    R = 0
+
+Then:
+
+    R* = 0*
+
+and the resulting ε-NFA accepts:
+
+    ε
+    0
+    00
+    000
+    ...
+
+
+══════════════════════════════════════════════════════════════════════
+9. COMPLETE THOMPSON'S CONSTRUCTION IDEA
+══════════════════════════════════════════════════════════════════════
+
+For every regular expression:
+
+    BASIC:
+        a
+        ε
+        ∅
+
+    OPERATIONS:
+        R + S
+        RS
+        R*
+
+we recursively construct an ε-NFA.
+
+Therefore:
+
+    RE
+     ↓
+    Thompson construction
+     ↓
+    ε-NFA
+
+
+This proves an important direction:
+
+    Every language described by a regular expression
+    can be accepted by an ε-NFA.
+
+
+══════════════════════════════════════════════════════════════════════
+10. COMPLETE EXAMPLE — RE → ε-NFA
+══════════════════════════════════════════════════════════════════════
+
+Consider:
+
+    R = 0 + 1
+
+Step 1:
+
+    Build automaton for 0.
+
+        0
+    q1 ───> q2
+
+
+Step 2:
+
+    Build automaton for 1.
+
+        1
+    q3 ───> q4
+
+
+Step 3:
+
+    Create new start q0.
+
+Step 4:
+
+    Add ε-transitions:
+
+        q0 → q1
+        q0 → q3
+
+
+Step 5:
+
+    Create final q5.
+
+Step 6:
+
+    Add:
+
+        q2 → q5
+        q4 → q5
+
+
+Final structure:
+
+                    ε        0        ε
+                 ┌──────> q1 ───> q2 ─────┐
+                 │                         │
+               -->q0                      q5*
+                 │                         ^
+                 │                         │
+                 └──────> q3 ───> q4 ─────┘
+                    ε        1        ε
+
+
+It accepts:
+
+    0
+    1
+
+Therefore:
+
+    L(0+1) = {0,1}
+
+
+══════════════════════════════════════════════════════════════════════
+11. NFA → DFA
+══════════════════════════════════════════════════════════════════════
+
+An NFA may have:
+
+    multiple possible transitions
+
+A DFA must have:
+
+    exactly one transition for each state-symbol pair.
+
+Therefore we convert an NFA into a DFA using:
+
+    SUBSET CONSTRUCTION
+
+
+Key idea:
+
+    One DFA state represents a SET of NFA states.
+
+
+For example:
+
+    NFA states:
+
+        {q0,q1,q2}
+
+can become ONE DFA state:
+
+        A = {q0,q1,q2}
+
+
+This is the central idea.
+
+
+══════════════════════════════════════════════════════════════════════
+12. WHY SUBSET CONSTRUCTION?
+══════════════════════════════════════════════════════════════════════
+
+Suppose the NFA can be in:
+
+    q0 OR q1
+
+after reading some input.
+
+A DFA cannot represent:
+
+    "q0 OR q1"
+
+as multiple current states.
+
+Instead, we create one DFA state representing both:
+
+    {q0,q1}
+
+
+Therefore:
+
+    NFA states
+        ↓
+    sets of states
+        ↓
+    DFA states
+
+
+══════════════════════════════════════════════════════════════════════
+13. SIMPLE NFA → DFA EXAMPLE
+══════════════════════════════════════════════════════════════════════
+
+Suppose NFA:
+
+             0
+          ┌──────┐
+          │      v
+       -->q0 ──> q1*
+          |
+          | 0
+          v
+          q2
+
+There are two possible states after reading 0:
+
+    q1
+    q2
+
+Therefore the DFA can have:
+
+    {q1,q2}
+
+
+The DFA state represents:
+
+    "The NFA could currently be in q1 or q2."
+
+
+This is why it is called:
+
+    subset construction.
+
+
+══════════════════════════════════════════════════════════════════════
+14. SUBSET CONSTRUCTION PROCEDURE
+══════════════════════════════════════════════════════════════════════
+
+Given an NFA:
+
+STEP 1:
+    Start with the NFA start state.
+
+STEP 2:
+    Make it a set.
+
+    {q0}
+
+STEP 3:
+    For each input symbol, calculate all possible destination
+    states.
+
+STEP 4:
+    Each resulting set becomes a DFA state.
+
+STEP 5:
+    Continue until no new sets appear.
+
+STEP 6:
+    Mark a DFA state final if its set contains at least one
+    NFA final state.
+
+
+IMPORTANT:
+
+    If a DFA state is:
+
+        {q1,q2,q3}
+
+and q2 is an NFA final state,
+
+then:
+
+        {q1,q2,q3}
+
+is a DFA final state.
+
+
+══════════════════════════════════════════════════════════════════════
+15. ε-NFA → DFA
+══════════════════════════════════════════════════════════════════════
+
+When ε-transitions exist, we must also consider transitions
+that consume NO input.
+
+We use:
+
+    ε-CLOSURE
+
+
+ε-closure(q) means:
+
+    all states reachable from q using zero or more ε-transitions.
+
+"Zero or more" is important.
+
+Therefore:
+
+    q is always included in ε-closure(q).
+
+
+Example:
+
+        ε
+    q0 ───> q1 ───ε──> q2
+
+Then:
+
+    ε-closure(q0)
+       = {q0,q1,q2}
+
+
+because:
+
+    q0 → q1 → q2
+
+using only ε-transitions.
+
+
+══════════════════════════════════════════════════════════════════════
+16. ε-NFA → DFA PROCEDURE
+══════════════════════════════════════════════════════════════════════
+
+Use these steps:
+
+    1. Find ε-closure of the NFA start state.
+
+    2. This becomes the DFA start state.
+
+    3. For each DFA state and each input symbol:
+           a. Move using that symbol.
+           b. Take ε-closure of all resulting states.
+
+    4. The resulting set is a new DFA state.
+
+    5. Continue until all states are processed.
+
+    6. Any DFA state containing an ε-NFA final state
+       becomes a final state.
+
+
+Formula idea:
+
+    DFA transition:
+
+    δD(S,a) = ε-closure(move(S,a))
+
+
+where:
+
+    S = set of NFA states
+    a = input symbol
+
+
+══════════════════════════════════════════════════════════════════════
+17. DFA → REGULAR EXPRESSION
+══════════════════════════════════════════════════════════════════════
+
+Now we reverse the direction.
+
+We already know:
+
+    RE → ε-NFA → DFA
+
+But we also want:
+
+    DFA → RE
+
+
+There are multiple approaches.
+
+Important methods:
+
+    1. State elimination
+    2. Generalized finite automata (GNFA)
+    3. Arden's theorem
+
+
+In this chapter, the major method is:
+
+    STATE ELIMINATION
+
+
+══════════════════════════════════════════════════════════════════════
+18. WHAT IS STATE ELIMINATION?
+══════════════════════════════════════════════════════════════════════
+
+We gradually remove states from an automaton while replacing
+their paths with regular expressions.
+
+The goal:
+
+    DFA
+      ↓
+    eliminate states
+      ↓
+    generalized transitions labeled by RE
+      ↓
+    one start-to-final path
+      ↓
+    RE
+
+
+ASCII:
+
+    DFA
+     ↓
+    eliminate q1
+     ↓
+    eliminate q2
+     ↓
+    eliminate q3
+     ↓
+    RE
+
+
+══════════════════════════════════════════════════════════════════════
+19. SIMPLE STATE ELIMINATION EXAMPLE
+══════════════════════════════════════════════════════════════════════
+
+Consider:
+
+        0
+    -->q0 ─────> q1*
+        │         ^
+        └──0──────┘
+
+Suppose q0 loops on 0 and q0 → q1 on 1.
+
+A simpler example is:
+
+        0
+     ┌──────┐
+     │      │
+     v      │
+    -->q0 ──1──> q1*
+     
+This language is:
+
+    0*1
+
+because:
+
+    zero or more 0s
+    followed by 1.
+
+Therefore:
+
+    RE = 0*1
+
+
+State elimination essentially discovers this path structure.
+
+
+══════════════════════════════════════════════════════════════════════
+20. GENERAL STATE ELIMINATION IDEA
+══════════════════════════════════════════════════════════════════════
+
+Suppose we have:
+
+    i ──R1──> k
+    k ──R2──> k
+    k ──R3──> j
+
+Then a path from i to j through k is:
+
+    R1 R2* R3
+
+
+Why?
+
+    R1:
+        enter k
+
+    R2*:
+        loop around k zero or more times
+
+    R3:
+        leave k
+
+
+ASCII:
+
+       R1             R3
+    i ─────> k ───────────> j
+             ↑
+             │
+             └── R2 ──┘
+
+
+Equivalent direct edge:
+
+    i ── R1 R2* R3 ──> j
+
+
+This is the fundamental idea behind state elimination.
+
+
+══════════════════════════════════════════════════════════════════════
+21. GENERALIZED FINITE AUTOMATON — GNFA
+══════════════════════════════════════════════════════════════════════
+
+A GNFA is like a finite automaton whose edges may be labeled
+by regular expressions instead of single symbols.
+
+Ordinary DFA:
+
+    q0 ──0──> q1
+
+GNFA:
+
+    q0 ──(0+1)*──> q1
+
+
+This makes state elimination easier.
+
+
+Conceptually:
+
+    DFA
+     ↓
+    GNFA
+     ↓
+    eliminate states
+     ↓
+    single RE
+
+
+══════════════════════════════════════════════════════════════════════
+22. AUTOMATON → REGULAR EXPRESSION
+══════════════════════════════════════════════════════════════════════
+
+The overall process:
+
+    Automaton
+       ↓
+    Convert to suitable generalized form
+       ↓
+    Eliminate intermediate states
+       ↓
+    Combine path expressions
+       ↓
+    Final regular expression
+
+
+The final RE describes exactly the language accepted
+by the original automaton.
+
+
+══════════════════════════════════════════════════════════════════════
+23. KLEENE'S THEOREM
+══════════════════════════════════════════════════════════════════════
+
+This is one of the MOST IMPORTANT THEOREMS in this chapter.
+
+Statement:
+
+    A language is regular if and only if it can be described by
+    a regular expression.
+
+Equivalent form:
+
+    A language is regular
+       ⇔
+    it is accepted by a finite automaton
+       ⇔
+    it is described by a regular expression.
+
+
+More formally:
+
+    L is regular
+    iff
+    there exists a regular expression R such that:
+
+        L = L(R)
+
+
+Also:
+
+    L is regular
+    iff
+    some DFA accepts L.
+
+
+Therefore:
+
+          Regular Language
+           /           \
+          /             \
+         v               v
+        DFA              RE
+         ^
+         |
+        NFA
+
+
+══════════════════════════════════════════════════════════════════════
+24. WHY IS KLEENE'S THEOREM IMPORTANT?
+══════════════════════════════════════════════════════════════════════
+
+It connects two apparently different ideas:
+
+    AUTOMATA
+
+and:
+
+    REGULAR EXPRESSIONS
+
+
+Automata look like machines.
+
+Regular expressions look like mathematical formulas.
+
+Kleene's theorem tells us:
+
+    They describe the same class of languages.
+
+
+This is a foundational result of automata theory.
+
+
+══════════════════════════════════════════════════════════════════════
+25. TWO DIRECTIONS OF KLEENE'S THEOREM
+══════════════════════════════════════════════════════════════════════
+
+Kleene's theorem has two important directions.
+
+DIRECTION 1:
+
+    RE → Finite Automaton
+
+Given an RE:
+
+    construct an ε-NFA.
+
+Therefore:
+
+    Every language described by an RE is regular.
+
+
+DIRECTION 2:
+
+    Finite Automaton → RE
+
+Given a finite automaton:
+
+    use state elimination / equivalent method
+    to obtain an RE.
+
+Therefore:
+
+    Every language accepted by a finite automaton
+    can be described by an RE.
+
+
+Combining both:
+
+    RE ⇔ Finite Automaton
+
+
+══════════════════════════════════════════════════════════════════════
+26. IMPORTANT EQUIVALENCE CHAIN
+══════════════════════════════════════════════════════════════════════
+
+Memorize the CONCEPT, not merely the diagram:
+
+    REGULAR LANGUAGE
+
+        ⇕
+    Regular Expression
+
+        ⇕
+    ε-NFA
+
+        ⇕
+    NFA
+
+        ⇕
+    DFA
+
+        ⇕
+    Regular Grammar
+
+
+All of these characterize the class of:
+
+    REGULAR LANGUAGES.
+
+
+══════════════════════════════════════════════════════════════════════
+27. EXAMPLE OF COMPLETE EQUIVALENCE
+══════════════════════════════════════════════════════════════════════
+
+Consider:
+
+    R = 0*1
+
+
+REGULAR EXPRESSION:
+
+    0*1
+
+
+LANGUAGE:
+
+    {1,01,001,0001,...}
+
+
+ε-NFA:
+
+    -->q0
+       │
+       │ 0
+       ↺
+       │
+       │ ε/1 structure
+       v
+       q1*
+
+
+DFA can also be constructed:
+
+          0
+       ┌──────┐
+       │      │
+       v      │
+    -->q0 ──1──> q1*
+       │          │
+       │          │
+       └──────────┘
+       
+The exact dead-state transitions are added to make it a complete DFA.
+
+All representations recognize:
+
+    {0^n1 | n ≥ 0}
+
+
+══════════════════════════════════════════════════════════════════════
+28. IMPORTANT DIFFERENCE:
+    NFA CONSTRUCTION VS DFA CONSTRUCTION
+══════════════════════════════════════════════════════════════════════
+
+RE → ε-NFA:
+
+    Usually construction is direct and modular.
+
+NFA → DFA:
+
+    Uses subset construction.
+
+ε-NFA → DFA:
+
+    Uses ε-closure + subset construction.
+
+DFA → RE:
+
+    Uses state elimination or another equivalent method.
+
+
+TABLE:
+
+    ┌────────────────┬─────────────────────────────┐
+    │ Conversion     │ Main method                 │
+    ├────────────────┼─────────────────────────────┤
+    │ RE → ε-NFA     │ Thompson construction       │
+    │ NFA → DFA      │ Subset construction         │
+    │ ε-NFA → DFA    │ ε-closure + subset          │
+    │ DFA → RE       │ State elimination           │
+    └────────────────┴─────────────────────────────┘
+
+
+══════════════════════════════════════════════════════════════════════
+29. IMPORTANT PROPERTIES
+══════════════════════════════════════════════════════════════════════
+
+PROPERTY 1:
+
+    Every DFA can be converted to an equivalent RE.
+
+PROPERTY 2:
+
+    Every NFA can be converted to an equivalent DFA.
+
+PROPERTY 3:
+
+    Every ε-NFA can be converted to an equivalent DFA.
+
+PROPERTY 4:
+
+    Every RE can be converted to an equivalent ε-NFA.
+
+PROPERTY 5:
+
+    DFA, NFA and ε-NFA have the same expressive power.
+
+PROPERTY 6:
+
+    Regular expressions and finite automata describe exactly
+    the regular languages.
+
+
+══════════════════════════════════════════════════════════════════════
+30. IMPORTANT: EXPRESSIVE POWER VS NUMBER OF STATES
+══════════════════════════════════════════════════════════════════════
+
+DFA and NFA have the same expressive power.
+
+But they may have very different numbers of states.
+
+Example:
+
+    An NFA may need only 3 states.
+
+    Equivalent DFA may require more states.
+
+Therefore:
+
+    Same expressive power
+       ≠
+    Same number of states.
+
+
+Similarly:
+
+    Different REs may describe the same language.
+
+Example:
+
+    R1 = 0*
+
+    R2 = ε + 00*
+
+
+Both describe:
+
+    {ε,0,00,000,...}
+
+
+══════════════════════════════════════════════════════════════════════
+31. B.TECH EXAM PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+Important definitions:
+
+    ✓ Equivalent automata
+    ✓ Regular language
+    ✓ Thompson construction
+    ✓ Subset construction
+    ✓ ε-closure
+    ✓ GNFA
+    ✓ State elimination
+    ✓ Kleene's theorem
+
+
+Important long-answer questions:
+
+    1. Explain the equivalence between finite automata and
+       regular expressions.
+
+    2. Convert a given RE into an ε-NFA.
+
+    3. Convert a given NFA into a DFA using subset construction.
+
+    4. Convert a given ε-NFA into a DFA.
+
+    5. Convert a DFA into an equivalent regular expression.
+
+    6. Explain state elimination method.
+
+    7. State and explain Kleene's theorem.
+
+    8. Explain Thompson's construction with examples.
+
+
+══════════════════════════════════════════════════════════════════════
+32. GATE / COMPETITIVE EXAM PERSPECTIVE
+══════════════════════════════════════════════════════════════════════
+
+Focus especially on:
+
+    • Number of possible DFA states after NFA → DFA
+    • ε-closure
+    • Final-state determination
+    • Language equivalence
+    • Identifying equivalent REs
+    • RE interpretation
+    • DFA ↔ RE relationships
+    • State elimination
+    • Regular-language properties
+
+
+IMPORTANT FACT:
+
+If an NFA has n states, the equivalent DFA may have
+up to:
+
+    2^n
+
+states.
+
+This is an upper bound.
+
+It does NOT mean every NFA actually produces 2^n
+reachable DFA states.
+
+
+══════════════════════════════════════════════════════════════════════
+33. COMMON MISTAKES
+══════════════════════════════════════════════════════════════════════
+
+MISTAKE 1:
+
+    Thinking NFA is more powerful than DFA.
+
+Correct:
+
+    DFA and NFA have the same expressive power.
+
+
+MISTAKE 2:
+
+    Thinking every NFA state becomes exactly one DFA state.
+
+Wrong.
+
+A DFA state represents a SET of NFA states.
+
+
+MISTAKE 3:
+
+    Forgetting ε-closure when converting ε-NFA to DFA.
+
+
+MISTAKE 4:
+
+    Forgetting that a DFA state is final if its set contains
+    ANY NFA final state.
+
+
+MISTAKE 5:
+
+    Assuming equivalent machines must have the same number
+    of states.
+
+Wrong.
+
+
+MISTAKE 6:
+
+    Thinking RE → DFA is always a single direct construction.
+
+Usually the standard path is:
+
+    RE → ε-NFA → DFA.
+
+
+MISTAKE 7:
+
+    Confusing "same language" with "same structure".
+
+Equivalent means:
+
+    same accepted language.
+
+
+══════════════════════════════════════════════════════════════════════
+34. QUICK REVISION TABLE
+══════════════════════════════════════════════════════════════════════
+
+    ┌────────────────────────────┬─────────────────────────────┐
+    │ Concept                    │ Key idea                    │
+    ├────────────────────────────┼─────────────────────────────┤
+    │ Regular Language           │ Language recognized by FA   │
+    │ RE                         │ Describes regular language  │
+    │ RE → ε-NFA                 │ Thompson construction       │
+    │ NFA → DFA                  │ Subset construction         │
+    │ ε-NFA → DFA               │ ε-closure + subset          │
+    │ DFA → RE                   │ State elimination           │
+    │ GNFA                       │ Edges labeled by REs        │
+    │ Kleene's theorem           │ RE ⇔ finite automaton        │
+    └────────────────────────────┴─────────────────────────────┘
+
+
+══════════════════════════════════════════════════════════════════════
+35. PRACTICE QUESTIONS
+══════════════════════════════════════════════════════════════════════
+
+LEVEL 1 — BEGINNER
+
+Q1. What does it mean for two automata to be equivalent?
+
+Q2. What is a regular language?
+
+Q3. What is the relationship between a regular expression
+    and a regular language?
+
+Q4. Does DFA and NFA have the same expressive power?
+
+Q5. What is subset construction?
+
+Q6. What is ε-closure?
+
+
+LEVEL 2 — B.TECH BASIC
+
+Q7. Construct an ε-NFA for:
+
+        0+1
+
+Q8. Construct an ε-NFA for:
+
+        01
+
+Q9. Construct an ε-NFA for:
+
+        0*
+
+Q10. Convert a simple NFA into a DFA using subset construction.
+
+
+LEVEL 3 — UNIVERSITY EXAM
+
+Q11. Construct an ε-NFA for:
+
+        (0+1)*
+
+Q12. Convert an ε-NFA into a DFA.
+
+Q13. Explain Thompson's construction.
+
+Q14. Explain state elimination with a suitable example.
+
+Q15. State and explain Kleene's theorem.
+
+
+LEVEL 4 — GATE
+
+Q16. An NFA has 4 states. What is the maximum possible number
+     of states in the equivalent DFA?
+
+Q17. If a DFA state represents:
+
+        {q0,q2,q4}
+
+     and q4 is an accepting NFA state, is the DFA state accepting?
+     Explain.
+
+Q18. If:
+
+        R1 = 0*
+
+     and:
+
+        R2 = ε + 00*
+
+     are they equivalent?
+
+Q19. What is the maximum possible number of DFA states obtained
+     from an n-state NFA?
+
+Q20. Explain why DFA and NFA have equal expressive power despite
+     having different structures.
+
+
+══════════════════════════════════════════════════════════════════════
+36. ACTIVE RECALL
+══════════════════════════════════════════════════════════════════════
+
+Try answering WITHOUT looking back.
+
+Q1. What does "equivalent automata" mean?
+
+Q2. What is a regular language?
+
+Q3. What is Thompson's construction?
+
+Q4. How do we convert RE → ε-NFA?
+
+Q5. How do we convert NFA → DFA?
+
+Q6. What does one DFA state represent during subset construction?
+
+Q7. What is ε-closure?
+
+Q8. When does a DFA state become accepting during NFA → DFA?
+
+Q9. What is state elimination?
+
+Q10. What is a GNFA?
+
+Q11. State Kleene's theorem.
+
+Q12. Do DFA and NFA have the same expressive power?
+
+Q13. What is the maximum number of DFA states obtainable from
+     an n-state NFA?
+
+Q14. What is the difference between RE → ε-NFA and DFA → RE?
+
+Q15. Why are RE, DFA and NFA all connected to regular languages?
+
+
+══════════════════════════════════════════════════════════════════════
+37. CHAPTER 7 SUMMARY
+══════════════════════════════════════════════════════════════════════
+
+The central idea of this chapter is:
+
+    DIFFERENT REPRESENTATIONS
+              ↓
+    SAME REGULAR LANGUAGES
+
+
+Main equivalences:
+
+    RE ⇔ ε-NFA ⇔ NFA ⇔ DFA
+
+
+Important conversions:
+
+    RE → ε-NFA
+        = Thompson construction
+
+    NFA → DFA
+        = subset construction
+
+    ε-NFA → DFA
+        = ε-closure + subset construction
+
+    DFA → RE
+        = state elimination / GNFA
+
+
+Most important theorem:
+
+    KLEENE'S THEOREM
+
+    A language is regular iff it can be described by a
+    regular expression iff it can be accepted by a finite
+    automaton.
+
+
+The most important conceptual picture:
+
+                  ┌─────────────────┐
+                  │ REGULAR LANGUAGE│
+                  └────────┬────────┘
+                           /|\
+                          / | \
+                         /  |  \
+                        v   v   v
+                       DFA NFA  RE
+                        ^   ^
+                         \ /
+                       ε-NFA
+
+
+══════════════════════════════════════════════════════════════════════
+38. CHAPTER 7 COMPLETION STATUS
+══════════════════════════════════════════════════════════════════════
+
+CHAPTER 7 — EQUIVALENCE OF AUTOMATA AND REGULAR EXPRESSIONS
+
+    ✓ 7.1 Regular Language Equivalence
+    ✓ DFA and regular languages
+    ✓ NFA and regular languages
+    ✓ ε-NFA and regular languages
+    ✓ Regular expressions and regular languages
+
+    ✓ 7.2 Conversions
+    ✓ RE → ε-NFA
+    ✓ NFA → DFA
+    ✓ ε-NFA → DFA
+    ✓ DFA → RE
+    ✓ Automaton → RE
+    ✓ State elimination
+    ✓ GNFA
+
+    ✓ 7.3 Kleene's Theorem
+    ✓ Statement
+    ✓ Meaning
+    ✓ Proof idea
+    ✓ Importance
+
+
+══════════════════════════════════════════════════════════════════════
+NEXT PENDING TOPIC
+══════════════════════════════════════════════════════════════════════
+
+CHAPTER 8 — MINIMIZATION OF FINITE AUTOMATA
+
+NEXT TOPIC:
+
+    8.1 DFA MINIMIZATION
+
+We will start from absolute basics:
+
+    • Why do we minimize a DFA?
+    • What does "minimum DFA" mean?
+    • Equivalent states
+    • Distinguishable states
+    • Indistinguishable states
+    • Unreachable states
+    • Simple examples
+    • State merging
+    • Why the minimized DFA is equivalent
+    • B.Tech exam problems
+    • GATE-level concepts
+
+Type:
+
+    NEXT
+
+to begin Chapter 8, Topic 8.1.

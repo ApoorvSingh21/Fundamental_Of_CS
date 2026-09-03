@@ -1,0 +1,1186 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                 THEORY OF COMPUTATION — CHAPTER 20                 ║
+║                         HALTING PROBLEM                            ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 16 — HALTING PROBLEM
+
+Prerequisites already covered:
+✓ Turing Machines
+✓ TM computation
+✓ Decidability
+✓ Undecidability
+✓ Recognizers / Deciders
+✓ Reductions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER INTRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Halting Problem is one of the most important results in
+Theory of Computation.
+
+It asks a surprisingly simple question:
+
+    "Can we build a program that can look at ANY program and its input
+     and always determine whether that program will eventually stop?"
+
+The answer is:
+
+                         NO.
+
+There is no algorithm that can correctly determine, for every possible
+program and every possible input, whether the program will halt.
+
+This gives us a fundamental limitation of computation.
+
+In other words:
+
+    Some problems cannot be solved by any algorithm.
+
+This is called UNDECIDABILITY.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHAT DOES "HALT" MEAN?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before understanding the Halting Problem, we need to understand
+"halting".
+
+HALT = a machine stops its computation.
+
+A Turing Machine can have three possible behaviors:
+
+1. Accept and stop
+2. Reject and stop
+3. Continue forever
+
+Example:
+
+    Program A:
+
+        x = 1
+        print(x)
+        stop
+
+This program halts.
+
+Example:
+
+    Program B:
+
+        while(true):
+            print("Hello")
+
+This program never halts.
+
+So:
+
+    HALTING = computation eventually stops.
+
+    NON-HALTING = computation continues forever.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. SIMPLE REAL-WORLD ANALOGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Imagine a magical program called:
+
+                  HALT-CHECKER
+
+You give it:
+
+    Program + Input
+
+and it tells you:
+
+    "YES → program will eventually stop"
+
+or
+
+    "NO → program will run forever"
+
+For example:
+
+    Program:
+        print("Hello")
+        stop
+
+    Input:
+        none
+
+HALT-CHECKER says:
+
+                 YES
+
+
+Another program:
+
+    while(true):
+        print("Hello")
+
+HALT-CHECKER says:
+
+                 NO
+
+The Halting Problem asks:
+
+    Can such a perfect HALT-CHECKER exist?
+
+The answer is:
+
+                 NO.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. FORMAL DEFINITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Halting Problem is the problem of determining whether a given
+Turing Machine eventually halts on a given input.
+
+Formally, define:
+
+    HALT_TM = { <M,w> | M is a Turing Machine that halts on input w }
+
+Here:
+
+    M = a Turing Machine
+
+    w = input string
+
+    <M,w> = an encoding/description of machine M together with
+            input w
+
+Therefore:
+
+    <M,w> ∈ HALT_TM
+
+means:
+
+    "M halts when given w."
+
+And:
+
+    <M,w> ∉ HALT_TM
+
+means:
+
+    "M does not halt when given w."
+
+Important:
+
+    HALT_TM is UNDECIDABLE.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. WHAT IS <M,w>?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You may wonder:
+
+    "How can a Turing Machine itself be given as input?"
+
+A Turing Machine can be represented as a finite string.
+
+For example, its states, transitions, alphabet, etc. can be encoded
+using symbols.
+
+So we can represent:
+
+        Machine M
+
+as:
+
+        <M>
+
+Then we can combine it with input w:
+
+        <M,w>
+
+This combined representation can itself be processed by another
+Turing Machine.
+
+This idea is extremely important for understanding Universal
+Turing Machines and undecidability.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. THE HYPOTHETICAL HALTING DECIDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose, for contradiction, that a perfect decider exists.
+
+Call it:
+
+                         H
+
+H receives:
+
+                         <M,w>
+
+and determines whether M halts on w.
+
+ASCII representation:
+
+                ┌─────────────────────┐
+                │   HALTING DECIDER H │
+                └──────────┬──────────┘
+                           │
+                           │ <M,w>
+                           ▼
+                    ┌───────────────┐
+                    │ Does M halt   │
+                    │ on input w?   │
+                    └───────┬───────┘
+                            │
+                     ┌──────┴──────┐
+                     │             │
+                    YES            NO
+                     │             │
+                     ▼             ▼
+                  HALTS         LOOPS FOREVER
+
+If H existed, it would solve HALT_TM.
+
+But we are going to prove that such H cannot exist.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. WHY IS THE PROBLEM DIFFICULT?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The problem is not simply that programs can be complicated.
+
+The deeper problem is:
+
+    There is NO algorithm that works correctly for ALL programs.
+
+Some programs halt.
+
+Some programs loop forever.
+
+Some programs behave differently depending on their input.
+
+For example:
+
+    while(x > 0):
+        x = x - 1
+
+If x = 5:
+
+    5 → 4 → 3 → 2 → 1 → 0 → STOP
+
+But consider:
+
+    while(x != 0):
+        x = x + 1
+
+Depending on the starting value, this may continue forever.
+
+A finite program can therefore produce potentially infinite behavior.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. THE HALTING PROBLEM THEOREM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THEOREM:
+
+    The Halting Problem is undecidable.
+
+Equivalently:
+
+    HALT_TM is undecidable.
+
+Meaning:
+
+    No Turing Machine can decide HALT_TM for every possible
+    machine-input pair.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. WHAT DOES "UNDECIDABLE" MEAN?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A language is DECIDABLE if there exists a Turing Machine that:
+
+    • accepts every string in the language
+    • rejects every string not in the language
+    • HALTS on EVERY input
+
+An UNDECIDABLE language has no such decider.
+
+For HALT_TM:
+
+    Input: <M,w>
+
+A hypothetical decider would need to:
+
+    YES → M halts on w
+    NO  → M does not halt on w
+
+and must always halt itself.
+
+Such a machine cannot exist.
+
+Therefore:
+
+                         HALT_TM
+                            ↓
+                       UNDECIDABLE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. DIAGONALIZATION IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The proof of the Halting Problem uses a powerful idea called:
+
+                         DIAGONALIZATION
+
+The basic idea comes from showing that a supposedly universal
+solution can be used to construct a machine that contradicts it.
+
+The key trick is:
+
+    Build a machine that deliberately does the OPPOSITE of what
+    the supposed halting decider predicts.
+
+This creates a contradiction.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. THE CONTRADICTION MACHINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Assume that H exists.
+
+H(M,w) tells us:
+
+    YES → M halts on w
+    NO  → M does not halt on w
+
+Now construct another machine D.
+
+D takes a machine M as input.
+
+D does this:
+
+    1. Run H(M,M)
+    2. If H says "HALTS":
+           LOOP FOREVER
+    3. If H says "DOES NOT HALT":
+           HALT
+
+Notice what D does.
+
+It does the OPPOSITE of H's prediction.
+
+ASCII:
+
+                    Input M
+                       │
+                       ▼
+                ┌─────────────┐
+                │     H       │
+                │ H(M,M)      │
+                └──────┬──────┘
+                       │
+                 ┌─────┴─────┐
+                 │           │
+               HALTS       LOOPS
+                 │           │
+                 ▼           ▼
+             D loops      D halts
+
+D intentionally contradicts H.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. THE CRITICAL QUESTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Now give D itself as input:
+
+                         D(D)
+
+Ask:
+
+    What happens?
+
+There are only two possibilities.
+
+CASE 1:
+
+    H(D,D) says:
+
+              "D halts on D"
+
+But D is designed to do the opposite.
+
+Therefore D loops forever.
+
+Contradiction.
+
+CASE 2:
+
+    H(D,D) says:
+
+              "D does not halt on D"
+
+Again D is designed to do the opposite.
+
+Therefore D halts.
+
+Contradiction.
+
+So BOTH possibilities produce contradictions.
+
+Therefore:
+
+                         H CANNOT EXIST.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. COMPLETE PROOF STEP-BY-STEP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+We can write the proof in exam format.
+
+STEP 1:
+Assume that HALT_TM is decidable.
+
+Therefore there exists a decider H such that:
+
+    H(<M,w>) =
+        YES, if M halts on w
+        NO,  if M does not halt on w
+
+STEP 2:
+Construct machine D.
+
+D(M):
+
+    Run H(<M,M>)
+
+    If H says YES:
+        loop forever
+
+    If H says NO:
+        halt
+
+STEP 3:
+Run D on itself:
+
+                         D(D)
+
+STEP 4:
+Suppose H says:
+
+                         YES
+
+Then H predicts that D(D) halts.
+
+But D is designed to loop when H says YES.
+
+Therefore:
+
+                         D(D) does NOT halt.
+
+Contradiction.
+
+STEP 5:
+Suppose H says:
+
+                         NO
+
+Then H predicts that D(D) does not halt.
+
+But D is designed to halt when H says NO.
+
+Therefore:
+
+                         D(D) DOES halt.
+
+Contradiction.
+
+STEP 6:
+Both cases produce contradictions.
+
+Therefore our original assumption was false.
+
+Hence:
+
+                         H does not exist.
+
+Therefore:
+
+                         HALT_TM is UNDECIDABLE.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. ASCII VIEW OF THE ENTIRE PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    Assume H exists
+                         │
+                         ▼
+              ┌───────────────────┐
+              │  H(M,w)           │
+              │  Halting Decider  │
+              └─────────┬─────────┘
+                        │
+                        ▼
+                 Construct D(M)
+                        │
+                        ▼
+             ┌─────────────────────┐
+             │     Run H(M,M)      │
+             └──────────┬──────────┘
+                        │
+                 ┌──────┴───────┐
+                 │              │
+                YES             NO
+                 │              │
+                 ▼              ▼
+              LOOP            HALT
+                 │              │
+                 └──────┬───────┘
+                        │
+                        ▼
+                      D(D)
+                        │
+                ┌───────┴────────┐
+                │                │
+             H says YES       H says NO
+                │                │
+                ▼                ▼
+              D loops          D halts
+                │                │
+             CONTRADICTION    CONTRADICTION
+                │                │
+                └───────┬────────┘
+                        ▼
+                  H cannot exist
+                        │
+                        ▼
+             HALT_TM is undecidable
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. SELF-REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An important idea in this proof is SELF-REFERENCE.
+
+Self-reference means something refers to itself.
+
+Examples outside TOC:
+
+    "This sentence refers to itself."
+
+In the Halting Problem proof:
+
+                         D(D)
+
+means:
+
+    Machine D is being run using its own description as input.
+
+This allows the contradiction to be created.
+
+Self-reference is a powerful concept in computability theory.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. WHY DOES DIAGONALIZATION WORK?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The essential trick is:
+
+    "Whatever the supposed decider predicts,
+     construct behavior that does the opposite."
+
+If H predicts:
+
+    HALT
+
+D does:
+
+    LOOP
+
+If H predicts:
+
+    LOOP
+
+D does:
+
+    HALT
+
+Therefore H can never be correct for D(D).
+
+This means a perfect halting decider is impossible.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. HALTING PROBLEM VS ACCEPTANCE PROBLEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not confuse these.
+
+HALTING PROBLEM:
+
+    Will M eventually stop on w?
+
+Acceptance Problem:
+
+    Will M accept w?
+
+They are related but not identical.
+
+A machine can:
+
+    accept
+    reject
+    loop forever
+
+For acceptance:
+
+    M accepts w
+         ↓
+       YES
+
+    M rejects w
+         ↓
+        NO
+
+    M loops forever
+         ↓
+    It never gives an answer
+
+For halting:
+
+    M accepts → HALTS
+    M rejects → HALTS
+    M loops   → DOES NOT HALT
+
+Therefore:
+
+    HALTING asks whether computation eventually stops.
+
+    ACCEPTANCE asks whether the machine eventually accepts.
+
+Both lead to important undecidability results.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. HALTING PROBLEM VS DECIDABILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Remember:
+
+    Decidable problem
+        =
+    There exists an algorithm that always gives the correct answer
+    and always terminates.
+
+For HALT_TM:
+
+    No such algorithm exists.
+
+Therefore:
+
+    HALT_TM = UNDECIDABLE.
+
+This is one of the most important examples of an undecidable language.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. CAN WE RECOGNIZE THE HALTING PROBLEM?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Interesting point:
+
+HALT_TM is undecidable, but it is Turing-recognizable.
+
+Why?
+
+Given <M,w>, simulate M on w.
+
+    If M halts:
+        ACCEPT
+
+    If M never halts:
+        simulation continues forever
+
+Therefore:
+
+    If <M,w> ∈ HALT_TM
+        → eventually accept
+
+But if:
+
+    <M,w> ∉ HALT_TM
+        → may run forever
+
+So we have a recognizer, but not a decider.
+
+This gives:
+
+    HALT_TM is Turing-recognizable
+    HALT_TM is NOT decidable
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. IMPORTANT DISTINCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                 DECIDER vs RECOGNIZER
+
+DECIDER:
+
+    Always halts.
+
+    YES → accepts
+    NO  → rejects
+
+RECOGNIZER:
+
+    YES instances → eventually accepts
+
+    NO instances → may reject OR run forever
+
+Therefore:
+
+    Decider is stronger than merely having a recognizer.
+
+For HALT_TM:
+
+                  Recognizer ✓
+                  Decider    ✗
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. WHY THE HALTING PROBLEM MATTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Halting Problem proves that computation has fundamental limits.
+
+It tells us:
+
+    Not every well-defined computational problem has an algorithm.
+
+This is much deeper than:
+
+    "Some programs are too slow."
+
+There are two very different situations:
+
+1. COMPUTABLE BUT EXPENSIVE
+
+    An algorithm exists, but it may take a huge amount of time.
+
+2. UNCOMPUTABLE
+
+    No algorithm can solve the problem for all possible inputs.
+
+Example:
+
+    Sorting a billion numbers may be expensive.
+
+But sorting is computable.
+
+The Halting Problem is different:
+
+    There is no general algorithm that solves it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. PRACTICAL INTERPRETATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose you want to create:
+
+                  PERFECT BUG DETECTOR
+
+It receives ANY program and determines:
+
+    "Will this program ever get stuck in an infinite loop?"
+
+That would essentially solve the Halting Problem.
+
+Since the Halting Problem is undecidable:
+
+    A perfect general-purpose infinite-loop detector cannot exist.
+
+This does NOT mean practical tools cannot detect many loops.
+
+They can.
+
+It means:
+
+    No tool can correctly solve the problem for EVERY possible
+    program and input.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. COMMON MISUNDERSTANDING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WRONG:
+
+    "Computers are not powerful enough to solve the Halting Problem."
+
+CORRECT:
+
+    It is not a limitation of current hardware.
+
+    It is a mathematical limitation of computation itself.
+
+Even an infinitely fast computer following the standard computational
+model cannot have a universal correct halting decider.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. IMPORTANT TERMINOLOGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HALT
+    A computation eventually stops.
+
+NON-HALTING
+    A computation continues forever.
+
+HALTING PROBLEM
+    Determine whether a machine halts on a given input.
+
+HALT_TM
+    Language containing encodings <M,w> where M halts on w.
+
+DECIDABLE
+    There exists a decider that always halts and answers correctly.
+
+UNDECIDABLE
+    No such decider exists.
+
+DIAGONALIZATION
+    A technique used to construct a contradiction by considering
+    self-reference and opposite behavior.
+
+SELF-REFERENCE
+    A machine/object refers to itself.
+
+CONTRADICTION
+    An assumption leads to an impossible result.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. B.TECH EXAM PERSPECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VERY IMPORTANT:
+
+    ★ Definition of Halting Problem
+    ★ HALT_TM
+    ★ Statement of undecidability
+    ★ Proof using contradiction
+    ★ Diagonalization
+    ★ Self-reference
+    ★ Construction of D
+    ★ Why D(D) creates contradiction
+    ★ Decider vs recognizer
+    ★ Difference between halting and acceptance
+
+Typical university question:
+
+    "Prove that the Halting Problem is undecidable."
+
+Recommended answer structure:
+
+    1. Define HALT_TM.
+    2. Assume a halting decider H exists.
+    3. Construct D.
+    4. Run D on itself.
+    5. Analyze H(D,D) = YES.
+    6. Analyze H(D,D) = NO.
+    7. Show contradiction in both cases.
+    8. Conclude H cannot exist.
+    9. Therefore HALT_TM is undecidable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. GATE / COMPETITIVE EXAM POINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Remember these facts:
+
+    HALT_TM is undecidable.
+
+    HALT_TM is Turing-recognizable.
+
+    Complement of HALT_TM is NOT Turing-recognizable.
+
+    A decider must halt on every input.
+
+    A recognizer may loop forever.
+
+    Halting Problem is not merely computationally expensive.
+
+    It is fundamentally uncomputable.
+
+Important conceptual trap:
+
+    "If a machine does not halt, can a recognizer always reject?"
+
+Answer:
+
+    No.
+
+Because determining non-halting is precisely the difficult part.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. INTERVIEW QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1. What is the Halting Problem?
+
+Q2. Why is the Halting Problem undecidable?
+
+Q3. What is HALT_TM?
+
+Q4. What is diagonalization?
+
+Q5. Why is self-reference used?
+
+Q6. What is the purpose of machine D in the proof?
+
+Q7. What happens when D is run on itself?
+
+Q8. What is the difference between a recognizer and a decider?
+
+Q9. Can HALT_TM be recognized?
+
+Q10. Is the Halting Problem impossible because computers are slow?
+
+Correct idea:
+
+    No. It is impossible because no general algorithm exists.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. PRACTICE QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LEVEL 1 — BEGINNER
+
+Q1. Define the Halting Problem.
+
+Q2. What does it mean for a Turing Machine to halt?
+
+Q3. What is HALT_TM?
+
+Q4. What is an undecidable problem?
+
+Q5. What is the difference between halting and non-halting?
+
+LEVEL 2 — B.TECH BASIC
+
+Q6. Explain the Halting Problem with an example.
+
+Q7. Explain the role of the hypothetical machine H.
+
+Q8. Why is machine D constructed in the proof?
+
+Q9. Explain self-reference using D(D).
+
+Q10. Differentiate between a decider and a recognizer.
+
+LEVEL 3 — UNIVERSITY EXAM
+
+Q11. Prove that HALT_TM is undecidable.
+
+Q12. Explain the diagonalization argument used in the Halting Problem.
+
+Q13. Explain the contradiction produced by D(D).
+
+Q14. Explain why both possible outputs of H produce contradictions.
+
+LEVEL 4 — COMPETITIVE
+
+Q15. Is HALT_TM decidable? Justify.
+
+Q16. Is HALT_TM recognizable? Explain.
+
+Q17. Can the complement of HALT_TM be recognized?
+
+Q18. Why can't a universal infinite-loop detector exist?
+
+LEVEL 5 — GATE STYLE
+
+Q19. Consider a machine H that correctly predicts whether every
+     machine halts. Construct a machine that contradicts H.
+
+Q20. Which of the following is true?
+
+    A. HALT_TM is decidable.
+    B. HALT_TM is recognizable but undecidable.
+    C. HALT_TM is neither recognizable nor undecidable.
+    D. HALT_TM is regular.
+
+Q21. A recognizer for HALT_TM simulates M on w. What happens when M
+     never halts?
+
+Q22. Why does the existence of a decider for HALT_TM lead to a
+     contradiction?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. QUICK REVISION TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌──────────────────────────┬─────────────────────────────────────────┐
+│ Concept                  │ Key idea                               │
+├──────────────────────────┼─────────────────────────────────────────┤
+│ Halting                 │ Machine eventually stops                │
+│ HALT_TM                 │ Machines that halt on given input       │
+│ Decidable               │ Decider always halts                    │
+│ Undecidable             │ No always-halting decider exists        │
+│ Recognizable            │ YES cases can eventually be accepted    │
+│ Diagonalization         │ Construct opposite behavior             │
+│ Self-reference          │ D is run on D                           │
+│ Contradiction           │ H cannot correctly predict D(D)         │
+└──────────────────────────┴─────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. CHAPTER SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The central idea of this chapter is:
+
+                    NOT EVERYTHING IS COMPUTABLE.
+
+The Halting Problem asks:
+
+    "Given a machine M and input w, can we always determine whether
+     M eventually halts on w?"
+
+Answer:
+
+                         NO.
+
+Formally:
+
+    HALT_TM = { <M,w> | M halts on w }
+
+Result:
+
+    HALT_TM is UNDECIDABLE.
+
+Proof idea:
+
+    Assume a perfect halting decider H exists.
+
+                ↓
+
+    Construct D that does the opposite of H's prediction.
+
+                ↓
+
+    Run D on itself: D(D).
+
+                ↓
+
+    If H says HALT → D loops.
+
+    If H says LOOP → D halts.
+
+                ↓
+
+    Contradiction in both cases.
+
+                ↓
+
+    H cannot exist.
+
+                ↓
+
+                 HALT_TM is undecidable.
+
+Most important sentence to remember:
+
+    "There is no algorithm that can correctly determine for every
+     possible program and input whether the program will eventually
+     halt."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. ACTIVE RECALL — ANSWER WITHOUT LOOKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Try answering these yourself:
+
+Q1. What is the Halting Problem?
+
+Q2. What is HALT_TM?
+
+Q3. What is the difference between a decider and recognizer?
+
+Q4. Why do we assume the existence of H in the proof?
+
+Q5. What does D do when H says "HALT"?
+
+Q6. What does D do when H says "DOES NOT HALT"?
+
+Q7. Why is D(D) important?
+
+Q8. What is diagonalization?
+
+Q9. Why does the proof produce a contradiction?
+
+Q10. Is HALT_TM decidable or undecidable?
+
+Do not worry if these are difficult initially. The purpose is
+active recall.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. IMPORTANT CONNECTION WITH PREVIOUS CHAPTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You have now reached an important point in the TOC journey:
+
+    Turing Machines
+          ↓
+    Computation
+          ↓
+    Decidability
+          ↓
+    Undecidability
+          ↓
+    HALTING PROBLEM
+          ↓
+    Reductions
+          ↓
+    Advanced undecidability
+
+The Halting Problem becomes the foundation for proving many other
+problems undecidable.
+
+So this chapter is extremely important for the chapters that follow.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. PROGRESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PHASE 16 — HALTING PROBLEM
+
+✓ What is the Halting Problem?
+✓ Formal definition
+✓ HALT_TM
+✓ Halting vs non-halting
+✓ Hypothetical halting decider
+✓ Diagonalization idea
+✓ Contradiction method
+✓ Self-reference
+✓ Universal Turing Machine connection
+✓ Decider vs recognizer
+✓ Importance and implications
+✓ Exam preparation
+✓ Practice questions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+UPCOMING NEXT TOPIC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CHAPTER 21 — REDUCIBILITY
+
+NEXT TOPIC:
+
+    21.1 Reduction Fundamentals
+
+First topic:
+
+    "Why reductions are needed"
+
+We will begin from the basic idea of transforming one problem into
+another, and then formally develop mapping/many-one reductions.
+
+Type:
+
+                         NEXT
+
+to continue.

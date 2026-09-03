@@ -1,0 +1,2475 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                 THEORY OF COMPUTATION — CHAPTER 4                  ║
+║                    FINITE AUTOMATA FUNDAMENTALS                    ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 3 — FINITE AUTOMATA
+CHAPTER 4 — FINITE AUTOMATA FUNDAMENTALS
+
+Prerequisites already covered:
+    Chapter 1 → Introduction to Theory of Computation
+    Chapter 2 → Mathematical Foundations
+    Chapter 3 → Formal Languages
+
+This chapter is extremely important because it builds the foundation
+for DFA, NFA, regular expressions, regular languages, and minimization.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                         CHAPTER ROADMAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4.1  AUTOMATA
+     ├── What is an automaton?
+     ├── Why automata are needed
+     ├── Components of an automaton
+     ├── States
+     ├── Input
+     ├── Transitions
+     ├── Initial state
+     └── Final / accepting states
+
+4.2  FINITE-STATE MACHINES
+     ├── Finite-state machine concept
+     ├── State transition
+     ├── State diagrams
+     ├── Transition tables
+     └── Accepting computation
+
+4.3  DETERMINISTIC FINITE AUTOMATA — DFA
+     ├── DFA concept
+     ├── DFA definition
+     ├── Formal definition
+     ├── Five-tuple representation
+     ├── States
+     ├── Alphabet
+     ├── Transition function
+     ├── Start state
+     └── Final states
+
+4.4  DFA OPERATION
+     ├── Processing an input string
+     ├── Extended transition function
+     ├── Acceptance
+     ├── Rejection
+     └── Language accepted by DFA
+
+4.5  DFA CONSTRUCTION
+     ├── Designing DFA
+     ├── Pattern recognition
+     ├── Counting symbols
+     ├── Parity
+     ├── Prefix conditions
+     ├── Suffix conditions
+     ├── Substring conditions
+     ├── Divisibility problems
+     ├── Binary numbers
+     └── DFA design strategies
+
+4.6  DFA PROBLEMS
+     ├── Construct DFA from language description
+     ├── Trace a string through DFA
+     ├── Determine accepted language
+     ├── Determine whether a string is accepted
+     ├── Diagram → transition table
+     └── Transition table → diagram
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.1 WHAT IS AN AUTOMATON?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The word "automaton" means a machine that performs a computation
+automatically according to a predefined set of rules.
+
+In Theory of Computation, an automaton is an abstract mathematical
+machine used to process input and determine some result.
+
+IMPORTANT:
+
+An automaton is NOT necessarily a physical machine.
+
+It is a mathematical model of computation.
+
+For example, imagine a machine that reads:
+
+    101101
+
+one symbol at a time and decides:
+
+    ACCEPT
+or
+    REJECT
+
+The machine follows predefined rules while reading the input.
+
+
+SIMPLE IDEA:
+
+             Input
+               │
+               ▼
+        ┌─────────────┐
+        │   MACHINE   │
+        │             │
+        │ follows     │
+        │ fixed rules │
+        └──────┬──────┘
+               │
+          ┌────┴────┐
+          ▼         ▼
+       ACCEPT     REJECT
+
+
+FORMAL IDEA:
+
+An automaton consists of:
+    • states
+    • input symbols
+    • transitions
+    • an initial state
+    • sometimes accepting/final states
+
+Different automata have different computational capabilities.
+
+Examples:
+
+    Finite Automaton
+          ↓
+    Pushdown Automaton
+          ↓
+    Turing Machine
+
+As we move downward, the computational power generally increases.
+
+
+WHY DO WE NEED AUTOMATA?
+
+Suppose we want to recognize strings satisfying a particular rule.
+
+Example:
+
+    All binary strings ending in 1.
+
+Examples accepted:
+
+    1
+    01
+    101
+    1101
+
+Examples rejected:
+
+    0
+    10
+    110
+    1000
+
+Instead of manually checking every string, we can construct a machine
+that automatically checks the property.
+
+That machine is an automaton.
+
+
+REAL-WORLD ANALOGY:
+
+Consider an elevator.
+
+The elevator can be in different states:
+
+    Ground floor
+    First floor
+    Second floor
+    Third floor
+
+If someone presses a button, the elevator changes state.
+
+For example:
+
+    Ground + button 2 → Second floor
+    Second + button 1 → First floor
+
+The elevator therefore behaves according to:
+
+    CURRENT STATE + INPUT → NEXT STATE
+
+This is one of the most important ideas in automata theory.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.1.1 STATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A STATE represents the current situation or condition of the machine.
+
+Think:
+
+    "What does the machine currently know?"
+
+Example:
+
+Suppose we are designing a machine that recognizes binary strings
+ending in 1.
+
+We only need to remember whether the most recently read symbol is:
+
+    0
+or
+    1
+
+Therefore we can use two states:
+
+    q0 = last symbol is 0
+    q1 = last symbol is 1
+
+
+ASCII:
+
+             0
+        ┌───────────┐
+        │           ▼
+      ┌────┐      ┌────┐
+      │ q0 │      │ q1 │
+      └────┘      └────┘
+        ▲           │
+        └─────0─────┘
+
+The exact transitions will be developed later.
+
+
+IMPORTANT:
+
+A state does NOT necessarily represent a physical location.
+
+It represents information relevant to the computation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.1.2 INPUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+INPUT is the information supplied to the automaton.
+
+Example:
+
+    10101
+
+Here the input contains five symbols.
+
+If the alphabet is:
+
+    Σ = {0,1}
+
+then every input string must consist of 0s and 1s.
+
+The machine reads the input according to its transition rules.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.1.3 TRANSITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A TRANSITION describes how the machine moves from one state to
+another after reading an input symbol.
+
+General idea:
+
+    Current state + input symbol
+                    ↓
+              transition
+                    ↓
+               next state
+
+
+Example:
+
+    q0 --1--> q1
+
+Meaning:
+
+"If the machine is currently in q0 and reads 1, it moves to q1."
+
+
+ASCII:
+
+       1
+    ┌───────►
+  ┌────┐   ┌────┐
+  │ q0 │   │ q1 │
+  └────┘   └────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.1.4 INITIAL / START STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The START STATE is the state where the machine begins before reading
+the input.
+
+It is normally represented using an arrow that comes from nowhere.
+
+Example:
+
+             input
+               ↓
+             ┌────┐
+       ─────►│ q0 │
+             └────┘
+
+The arrow:
+
+    ─────► q0
+
+means q0 is the starting state.
+
+
+IMPORTANT:
+
+A finite automaton has exactly ONE start state.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.1.5 FINAL / ACCEPTING STATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A FINAL STATE, also called an ACCEPTING STATE, is a state designated
+as accepting.
+
+It is usually drawn using a double circle.
+
+Example:
+
+       ┌─────┐
+       │ q1  │
+       └─────┘
+      ╔═══════╗
+      ║       ║
+      ╚═══════╝
+
+In standard notation:
+
+    q1* or a double circle
+
+means q1 is accepting.
+
+If the machine finishes reading the complete input while being in an
+accepting state, the input is ACCEPTED.
+
+If it finishes in a non-accepting state, the input is REJECTED.
+
+
+IMPORTANT:
+
+Acceptance depends on the state AFTER THE ENTIRE INPUT HAS BEEN READ.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.2 FINITE-STATE MACHINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A FINITE-STATE MACHINE (FSM) is a computational model having a finite
+number of states.
+
+"Finite" means:
+
+    The number of states is limited.
+
+Example:
+
+    q0
+    q1
+    q2
+    q3
+
+There are only four states.
+
+
+WHY "FINITE"?
+
+Because the machine has only a finite amount of state information.
+
+It cannot have infinitely many separate states.
+
+
+GENERAL MODEL:
+
+                     INPUT
+                       │
+                       ▼
+               ┌──────────────┐
+               │ FINITE-STATE │
+               │    MACHINE   │
+               └──────┬───────┘
+                      │
+                      ▼
+                 NEXT STATE
+
+
+A finite-state machine repeatedly performs:
+
+    Read input
+       ↓
+    Determine transition
+       ↓
+    Move to next state
+       ↓
+    Read next input
+       ↓
+    Repeat
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.2.1 STATE TRANSITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    q0 --0--> q1
+    q1 --1--> q2
+
+If the machine starts in q0 and receives:
+
+    01
+
+then:
+
+    Start at q0
+       │
+       │ read 0
+       ▼
+      q1
+       │
+       │ read 1
+       ▼
+      q2
+
+So the computation is:
+
+    q0 → q1 → q2
+
+
+GENERAL FORM:
+
+    q_current --input--> q_next
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.2.2 STATE DIAGRAM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A STATE DIAGRAM is a graphical representation of an automaton.
+
+It contains:
+
+    • circles → states
+    • arrows → transitions
+    • incoming arrow → start state
+    • double circles → accepting states
+    • labels → input symbols
+
+
+Example:
+
+             0
+          ┌───────┐
+          │       │
+          ▼       │
+       ──►q0──────┘
+          │
+          │1
+          ▼
+         ((q1))
+
+Here:
+
+    q0 = start state
+    q1 = final state
+    0 = loop on q0
+    1 = transition from q0 to q1
+
+
+A more complete example:
+
+                 0
+              ┌──────┐
+              │      │
+              ▼      │
+        ───► (q0) ───┘
+               │
+               │ 1
+               ▼
+             ((q1))
+               ▲
+               │
+               │ 1
+               └──────
+               
+This diagram says that after reading 1, the machine enters q1.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.2.3 TRANSITION TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A transition table represents the same information in tabular form.
+
+Example:
+
+    States = {q0, q1}
+    Alphabet = {0,1}
+
+Suppose:
+
+    q0 on 0 → q0
+    q0 on 1 → q1
+    q1 on 0 → q0
+    q1 on 1 → q1
+
+Transition table:
+
+    ┌───────┬───────┬───────┐
+    │ State │   0   │   1   │
+    ├───────┼───────┼───────┤
+    │  q0   │  q0   │  q1   │
+    │  q1   │  q0   │  q1   │
+    └───────┴───────┴───────┘
+
+Interpretation:
+
+Row = current state
+Column = input symbol
+Cell = next state
+
+
+For example:
+
+    δ(q0,1) = q1
+
+
+means:
+
+"When the machine is in q0 and reads 1, it goes to q1."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.2.4 ACCEPTING COMPUTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A computation is the sequence of states visited while processing
+an input.
+
+Example:
+
+Input:
+
+    101
+
+Suppose:
+
+    q0 --1--> q1
+    q1 --0--> q0
+    q0 --1--> q1
+
+Then:
+
+    q0 → q1 → q0 → q1
+
+If q1 is final:
+
+    ACCEPT
+
+
+If the final state after processing the complete input is q0 and q0
+is not final:
+
+    REJECT
+
+
+VERY IMPORTANT:
+
+We do NOT decide acceptance just because the machine visits a final
+state somewhere in the middle.
+
+The machine must finish in a final state AFTER READING THE ENTIRE INPUT.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.3 DETERMINISTIC FINITE AUTOMATON — DFA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DFA stands for:
+
+    D = Deterministic
+    F = Finite
+    A = Automaton
+
+
+Before understanding DFA, understand "deterministic."
+
+
+DETERMINISTIC means:
+
+For every current state and every input symbol, there is EXACTLY ONE
+possible next state.
+
+
+In other words:
+
+    Current state + input
+                 ↓
+           ONE next state
+
+
+Example:
+
+    q0 --0--> q1
+
+If q0 receives 0, there is no choice.
+
+It MUST go to q1.
+
+
+Compare:
+
+    q0 --0--> q1
+    q0 --0--> q2
+
+This would NOT be a valid DFA transition because there are two
+possible destinations for the same state and same input symbol.
+
+
+Therefore:
+
+    DFA = no choice
+          exactly one transition for each input symbol
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.3.1 FORMAL DFA DEFINITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A DFA is formally represented using a FIVE-TUPLE:
+
+                 DFA = (Q, Σ, δ, q₀, F)
+
+
+The symbols mean:
+
+    Q  = finite set of states
+
+    Σ  = input alphabet
+
+    δ  = transition function
+
+    q₀ = starting state
+
+    F  = set of accepting/final states
+
+
+Let's understand each one carefully.
+
+
+1. Q — SET OF STATES
+
+Q contains all states of the DFA.
+
+Example:
+
+    Q = {q0, q1}
+
+
+2. Σ — INPUT ALPHABET
+
+Σ contains all symbols that the DFA can read.
+
+Example:
+
+    Σ = {0,1}
+
+
+3. δ — TRANSITION FUNCTION
+
+δ tells us where the DFA moves.
+
+For a DFA:
+
+    δ : Q × Σ → Q
+
+
+In simple words:
+
+    Take:
+        one state
+        +
+        one input symbol
+
+    and produce:
+        exactly one next state.
+
+
+4. q₀ — START STATE
+
+q₀ is the state where computation begins.
+
+    q₀ ∈ Q
+
+
+5. F — FINAL STATES
+
+F is the set of accepting states.
+
+    F ⊆ Q
+
+
+Therefore:
+
+    DFA = (Q, Σ, δ, q₀, F)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.3.2 COMPLETE DFA EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Let's construct a DFA over:
+
+    Σ = {0,1}
+
+that accepts strings ending in 1.
+
+
+States:
+
+    q0 = last symbol is 0 OR no symbol has been read yet
+    q1 = last symbol is 1
+
+
+Start:
+
+    q0
+
+
+Final:
+
+    q1
+
+
+Transitions:
+
+    q0 on 0 → q0
+    q0 on 1 → q1
+    q1 on 0 → q0
+    q1 on 1 → q1
+
+
+Transition table:
+
+    ┌───────┬───────┬───────┐
+    │       │   0   │   1   │
+    ├───────┼───────┼───────┤
+    │ →q0   │  q0   │  q1   │
+    │  q1*  │  q0   │  q1   │
+    └───────┴───────┴───────┘
+
+
+ASCII state diagram:
+
+                       0
+                    ┌───────┐
+                    │       │
+                    ▼       │
+                 ┌────┐     │
+            ────►│ q0 │─────┘
+                 └────┘
+                   │
+                   │ 1
+                   ▼
+                ╔══════╗
+                ║ q1   ║
+                ╚══════╝
+                  ▲  │
+                  │  │1
+                  └──┘
+                    
+
+Now test:
+
+    Input = 101
+
+Start:
+
+    q0
+
+Read 1:
+
+    q0 --1--> q1
+
+Read 0:
+
+    q1 --0--> q0
+
+Read 1:
+
+    q0 --1--> q1
+
+
+Final state:
+
+    q1
+
+q1 is accepting.
+
+Therefore:
+
+    101 ACCEPTED.
+
+
+Another input:
+
+    100
+
+q0 --1--> q1
+q1 --0--> q0
+q0 --0--> q0
+
+Final state:
+
+    q0
+
+q0 is not accepting.
+
+Therefore:
+
+    100 REJECTED.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.3.3 DFA CONDITIONS — VERY IMPORTANT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For a DFA:
+
+    1. There must be a finite number of states.
+
+    2. There must be exactly one start state.
+
+    3. Every input symbol must belong to Σ.
+
+    4. For every state q and every symbol a:
+           exactly one transition exists.
+
+    5. ε-transitions are NOT allowed.
+
+    6. Multiple transitions for the same
+       state + same input are NOT allowed.
+
+    7. There may be zero, one, or many final states.
+
+    8. A final state does not have to have outgoing transitions
+       to another state; however, for a complete DFA, transitions
+       must still be defined for every input symbol.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.4 DFA OPERATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Now we understand how to construct a DFA.
+
+Next question:
+
+    HOW DOES A DFA PROCESS A STRING?
+
+
+Suppose:
+
+    DFA = (Q, Σ, δ, q₀, F)
+
+and input:
+
+    w = a₁a₂a₃...aₙ
+
+
+The DFA starts at:
+
+    q₀
+
+Then it reads one symbol at a time.
+
+Process:
+
+    q₀
+     │
+     │ a₁
+     ▼
+    q₁
+     │
+     │ a₂
+     ▼
+    q₂
+     │
+     │ a₃
+     ▼
+    q₃
+     │
+     ...
+     ▼
+    qₙ
+
+
+If:
+
+    qₙ ∈ F
+
+then:
+
+    ACCEPT
+
+
+Otherwise:
+
+    REJECT
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.4.1 EXAMPLE OF STRING PROCESSING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use our DFA for:
+
+    strings ending in 1.
+
+Input:
+
+    1101
+
+
+Start:
+
+    q0
+
+Read first 1:
+
+    q0 → q1
+
+Read second 1:
+
+    q1 → q1
+
+Read 0:
+
+    q1 → q0
+
+Read 1:
+
+    q0 → q1
+
+
+Therefore:
+
+    q0 → q1 → q1 → q0 → q1
+
+Final state:
+
+    q1
+
+q1 is final.
+
+Therefore:
+
+    1101 is ACCEPTED.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.4.2 EXTENDED TRANSITION FUNCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The normal transition function handles ONE symbol:
+
+    δ(q, a)
+
+where:
+
+    q = current state
+    a = one input symbol
+
+
+But an entire string may contain many symbols.
+
+For example:
+
+    10110
+
+
+We therefore need a function that processes an entire string.
+
+This is called the:
+
+    EXTENDED TRANSITION FUNCTION
+
+
+It is usually written:
+
+    δ*(q, w)
+
+where:
+
+    q = starting state
+    w = complete input string
+
+
+The star in δ* here means that the transition function has been
+extended from single symbols to strings.
+
+IMPORTANT:
+
+    δ(q,a)  → processes ONE symbol
+
+    δ*(q,w) → processes an ENTIRE string
+
+
+Recursive definition:
+
+    δ*(q, ε) = q
+
+Meaning:
+
+If the input string is empty, the machine remains in the same state.
+
+
+For a string xa:
+
+    δ*(q, xa)
+        =
+    δ(δ*(q,x), a)
+
+
+In simple words:
+
+    Process x first,
+    then process a.
+
+
+Example:
+
+    δ*(q0, 101)
+
+means:
+
+    Start at q0
+    process 1
+    process 0
+    process 1
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.4.3 ACCEPTANCE OF A STRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A DFA accepts a string w if:
+
+    δ*(q₀, w) ∈ F
+
+
+Read this in words:
+
+"The extended transition from the start state using the complete
+string w ends in a final state."
+
+
+Example:
+
+    q₀ = q0
+    w  = 101
+    F  = {q1}
+
+Suppose:
+
+    δ*(q0,101) = q1
+
+Since:
+
+    q1 ∈ F
+
+the string is accepted.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.4.4 REJECTION OF A STRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A string w is rejected if:
+
+    δ*(q₀,w) ∉ F
+
+
+Example:
+
+    δ*(q0,100) = q0
+
+and:
+
+    F = {q1}
+
+Since:
+
+    q0 ∉ F
+
+therefore:
+
+    100 is rejected.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.4.5 LANGUAGE ACCEPTED BY A DFA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A DFA does not accept only one string.
+
+It can accept a whole SET of strings.
+
+That set is called the language accepted by the DFA.
+
+If:
+
+    M = (Q, Σ, δ, q₀, F)
+
+then:
+
+    L(M) = { w ∈ Σ* | δ*(q₀,w) ∈ F }
+
+
+In simple language:
+
+    L(M) =
+    all strings that can be formed from Σ
+    and cause M to finish in an accepting state.
+
+
+Example:
+
+Suppose a DFA accepts binary strings ending in 1.
+
+Then:
+
+    L(M) =
+    {1, 01, 11, 101, 111, 1001, ...}
+
+
+Notice:
+
+    L(M) is a LANGUAGE.
+
+The DFA is the MACHINE.
+
+Therefore:
+
+    MACHINE → recognizes → LANGUAGE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.5 DFA CONSTRUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DFA construction is one of the most important practical skills in TOC.
+
+The basic strategy is:
+
+    STEP 1 → Understand the language condition
+    STEP 2 → Identify what information must be remembered
+    STEP 3 → Create states representing that information
+    STEP 4 → Decide transitions
+    STEP 5 → Select start state
+    STEP 6 → Select final states
+    STEP 7 → Draw diagram
+    STEP 8 → Make transition table
+    STEP 9 → Test strings
+
+
+KEY IDEA:
+
+A DFA state represents the information that the machine needs to
+remember about the input read so far.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.5.1 DFA FOR SIMPLE PATTERN RECOGNITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem:
+
+Construct a DFA over {0,1} that accepts strings ending in 1.
+
+
+We already solved this.
+
+Required memory:
+
+    "What was the last symbol?"
+
+Therefore:
+
+    q0 = last symbol 0 / initial
+    q1 = last symbol 1
+
+
+Diagram:
+
+                   0
+                ┌───────┐
+                │       │
+                ▼       │
+             ┌────┐     │
+       ─────►│ q0 │─────┘
+             └────┘
+               │
+               │1
+               ▼
+             ((q1))
+               ▲
+               │
+               └──1───
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.5.2 DFA FOR COUNTING SYMBOLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem:
+
+Construct a DFA over {0,1} accepting strings containing at least one 1.
+
+What must the machine remember?
+
+Only:
+
+    Have we seen a 1 yet?
+
+Therefore:
+
+    q0 = no 1 has been seen
+    q1 = at least one 1 has been seen
+
+
+Start:
+
+    q0
+
+Final:
+
+    q1
+
+
+Transitions:
+
+    q0 on 0 → q0
+    q0 on 1 → q1
+    q1 on 0 → q1
+    q1 on 1 → q1
+
+
+Diagram:
+
+                    0
+                 ┌──────┐
+                 │      │
+                 ▼      │
+            ──► q0 ──1──► ((q1))
+                 │          ▲
+                 │          │
+                 └──────────┘
+                     0,1
+
+
+Examples:
+
+    ε       → reject
+    0       → reject
+    000     → reject
+    1       → accept
+    00100   → accept
+    000101  → accept
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.5.3 DFA FOR PARITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"Parity" means whether a number is:
+
+    even
+or
+    odd.
+
+
+Problem:
+
+Construct a DFA over {0,1} accepting strings containing an EVEN number
+of 1s.
+
+
+We only need to remember:
+
+    Is the number of 1s currently even or odd?
+
+
+States:
+
+    qE = even number of 1s
+    qO = odd number of 1s
+
+
+Initially:
+
+    zero 1s have been read.
+
+Zero is even.
+
+Therefore:
+
+    qE = start
+
+
+Reading 1 changes parity:
+
+    even → odd
+    odd  → even
+
+
+Reading 0 does not change parity:
+
+    even → even
+    odd  → odd
+
+
+Transition table:
+
+    ┌───────┬───────┬───────┐
+    │       │   0   │   1   │
+    ├───────┼───────┼───────┤
+    │ →qE*  │  qE   │  qO   │
+    │  qO   │  qO   │  qE   │
+    └───────┴───────┴───────┘
+
+
+Diagram:
+
+                  0
+              ┌───────┐
+              │       │
+              ▼       │
+            ((qE))    │
+              │        │
+              │1       │
+              ▼        │
+              qO ──────┘
+               ▲
+               │
+               └──0───
+               
+               qO --1--> qE
+
+
+Examples:
+
+    ε       → even → ACCEPT
+    1       → odd  → REJECT
+    11      → even → ACCEPT
+    101     → two 1s → ACCEPT
+    111     → three 1s → REJECT
+
+
+IMPORTANT GATE IDEA:
+
+Parity problems usually require only TWO states:
+
+    EVEN
+    ODD
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.5.4 DFA FOR PREFIX CONDITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A PREFIX is the beginning portion of a string.
+
+Example:
+
+    String = 10110
+
+Prefixes include:
+
+    ε
+    1
+    10
+    101
+    1011
+    10110
+
+
+Problem:
+
+Accept strings that BEGIN with 1.
+
+We need to know whether:
+
+    first symbol = 1
+
+
+States:
+
+    q0 = no input yet
+    q1 = first symbol was 1
+    qdead = first symbol was 0
+
+
+Start:
+
+    q0
+
+Final:
+
+    q1
+
+
+Once the first symbol is read, the condition is determined.
+
+If first symbol is 0:
+
+    reject forever.
+
+
+Diagram:
+
+                 1
+             ┌────────► ((q1))
+             │             │
+             │             │0,1
+             │             ▼
+           ──►q0          ((q1))
+
+                 0
+                 │
+                 ▼
+               qdead
+                ↺ 0,1
+
+
+qdead is called a DEAD/SINK state.
+
+It is a non-accepting state from which acceptance is impossible.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.5.5 DFA FOR SUFFIX CONDITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A SUFFIX is the ending portion of a string.
+
+Problem:
+
+Accept binary strings ending in 01.
+
+The machine needs to remember enough information about the recent
+symbols to determine whether the final two symbols are 01.
+
+States can represent:
+
+    q0 = nothing useful / last symbol is not 0
+    q1 = last symbol is 0
+    q2 = last two symbols are 01
+
+
+q2 is accepting.
+
+
+The key idea:
+
+For suffix problems, the DFA often remembers the relevant recent
+symbols.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.5.6 DFA FOR SUBSTRING CONDITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A SUBSTRING is a consecutive sequence occurring inside a string.
+
+Problem:
+
+Accept strings containing:
+
+    101
+
+
+We need to remember how much of "101" has already been matched.
+
+States:
+
+    q0 = nothing matched
+    q1 = matched "1"
+    q2 = matched "10"
+    q3 = matched "101"
+
+
+q3 = accepting.
+
+
+Conceptual diagram:
+
+    q0 --1--> q1 --0--> q2 --1--> ((q3))
+     │         │         │
+     │         │         │
+     └─ other ─┴─ other ─┴─ appropriate fallback
+       
+Once q3 is reached, the string has already contained 101.
+
+Therefore q3 can remain accepting.
+
+
+IMPORTANT DESIGN IDEA:
+
+For substring recognition:
+
+    State = "How much of the target pattern have I matched so far?"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.5.7 DFA FOR DIVISIBILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A famous DFA problem is checking divisibility of a binary number.
+
+For example:
+
+    Construct a DFA accepting binary numbers divisible by 2.
+
+
+In binary, a number is divisible by 2 exactly when its last bit is 0.
+
+Therefore the DFA can simply track the last bit.
+
+States:
+
+    q0 = last bit 0
+    q1 = last bit 1
+
+
+Accept:
+
+    q0
+
+
+This is a useful example because DFA can recognize certain numerical
+properties by storing a small amount of information.
+
+
+For divisibility by larger numbers, states can represent remainders.
+
+For divisibility by k:
+
+    states often correspond to:
+        remainder 0
+        remainder 1
+        ...
+        remainder k-1
+
+
+This is an important competitive-exam technique.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.5.8 DFA FOR BINARY NUMBERS — IMPORTANT IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose we want to recognize binary numbers divisible by 3.
+
+We can use states:
+
+    q0 = remainder 0
+    q1 = remainder 1
+    q2 = remainder 2
+
+
+Start:
+
+    q0
+
+Accept:
+
+    q0
+
+
+When a new binary digit b is appended, the new remainder is:
+
+    new remainder = (2 × old remainder + b) mod 3
+
+
+Therefore:
+
+    From q0:
+        0 → q0
+        1 → q1
+
+    From q1:
+        0 → q2
+        1 → q0
+
+    From q2:
+        0 → q1
+        1 → q2
+
+
+Transition table:
+
+    ┌───────┬───────┬───────┐
+    │       │   0   │   1   │
+    ├───────┼───────┼───────┤
+    │ →q0*  │  q0   │  q1   │
+    │  q1   │  q2   │  q0   │
+    │  q2   │  q1   │  q2   │
+    └───────┴───────┴───────┘
+
+
+This technique is extremely important for GATE.
+
+Remember:
+
+    DFA for divisibility by k
+    → think in terms of remainders modulo k.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.5.9 DFA DESIGN STRATEGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When you see a DFA construction question, follow this checklist:
+
+    STEP 1:
+    Read the language carefully.
+
+    STEP 2:
+    Ask:
+        "What information must I remember?"
+
+    STEP 3:
+    Create states representing those situations.
+
+    STEP 4:
+    Determine the start state.
+
+    STEP 5:
+    Determine accepting states.
+
+    STEP 6:
+    Define EVERY transition.
+
+    STEP 7:
+    Check whether a dead state is needed.
+
+    STEP 8:
+    Draw the diagram.
+
+    STEP 9:
+    Create the transition table.
+
+    STEP 10:
+    Test accepted strings.
+
+    STEP 11:
+    Test rejected strings.
+
+
+VERY IMPORTANT:
+
+Do NOT randomly create states.
+
+Each state should have a clear meaning.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4.6 IMPORTANT DFA PROBLEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PROBLEM TYPE 1:
+Construct a DFA from a language description.
+
+Example:
+
+    L = { w ∈ {0,1}* | w ends in 0 }
+
+Think:
+
+    Need to remember last symbol.
+
+States:
+
+    q0 = last symbol 1 / initial
+    q1 = last symbol 0
+
+Accept:
+
+    q1
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM TYPE 2:
+Trace a string through a DFA.
+
+Given:
+
+    Input = 10101
+
+Write every transition:
+
+    q0
+     │1
+     ▼
+    q1
+     │0
+     ▼
+    q0
+     │1
+     ▼
+    q1
+     │0
+     ▼
+    q0
+     │1
+     ▼
+    q1
+
+Then inspect the final state.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM TYPE 3:
+Determine whether a string is accepted.
+
+Method:
+
+    1. Start at q0.
+    2. Read the string from left to right.
+    3. Follow exactly one transition for every symbol.
+    4. After the last symbol, stop.
+    5. Check whether current state ∈ F.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM TYPE 4:
+Determine the language accepted by a DFA.
+
+Suppose a DFA has:
+
+    q0 = start
+    q1 = final
+
+and transitions:
+
+    q0 --0--> q0
+    q0 --1--> q1
+    q1 --0--> q0
+    q1 --1--> q1
+
+
+Observe:
+
+    q1 is reached whenever the latest symbol is 1.
+
+Therefore:
+
+    L(M) =
+    all binary strings ending in 1.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM TYPE 5:
+Convert transition table to state diagram.
+
+Given:
+
+    ┌───────┬───────┬───────┐
+    │       │   0   │   1   │
+    ├───────┼───────┼───────┤
+    │ →q0   │  q0   │  q1   │
+    │  q1*  │  q0   │  q1   │
+    └───────┴───────┴───────┘
+
+Draw:
+
+                       0
+                    ┌──────┐
+                    │      │
+                    ▼      │
+               ───►q0 ──1──► ((q1))
+                   ▲          │
+                   │          │
+                   └────0─────┘
+
+Also:
+
+    q1 --1--> q1
+
+so q1 has a loop on 1.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM TYPE 6:
+Convert diagram to transition table.
+
+For every state:
+
+    read each symbol
+    ↓
+    find destination
+    ↓
+    enter destination in table
+
+
+Never leave a transition undefined when the question asks for a
+complete DFA.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                VERY IMPORTANT TERMINOLOGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AUTOMATON
+    An abstract mathematical machine that processes input according
+    to specified rules.
+
+STATE
+    A condition/situation representing the machine's current status.
+
+INPUT
+    Data supplied to the machine.
+
+ALPHABET
+    A finite set of allowed input symbols.
+
+TRANSITION
+    Movement from one state to another based on input.
+
+START STATE
+    The state where computation begins.
+
+FINAL STATE
+    A state designated as accepting.
+
+ACCEPT
+    The input satisfies the language condition.
+
+REJECT
+    The input does not satisfy the language condition.
+
+DFA
+    Deterministic Finite Automaton.
+
+DETERMINISTIC
+    Exactly one next state exists for each state-symbol pair.
+
+TRANSITION FUNCTION
+    A function specifying the next state.
+
+EXTENDED TRANSITION FUNCTION
+    A function that processes an entire string rather than one symbol.
+
+DEAD/SINK STATE
+    A state from which acceptance cannot be reached.
+
+LANGUAGE ACCEPTED BY DFA
+    The set of all strings accepted by the DFA.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                 IMPORTANT NOTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DFA:
+
+    M = (Q, Σ, δ, q₀, F)
+
+where:
+
+    Q  = set of states
+    Σ  = input alphabet
+    δ  = transition function
+    q₀ = start state
+    F  = set of final states
+
+
+Transition:
+
+    δ(q,a) = q'
+
+means:
+
+    From q, reading a takes the machine to q'.
+
+
+Extended transition:
+
+    δ*(q,w)
+
+means:
+
+    Start at q and process the entire string w.
+
+
+Acceptance:
+
+    δ*(q₀,w) ∈ F
+
+
+Language:
+
+    L(M) = {w ∈ Σ* | δ*(q₀,w) ∈ F}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                     IMPORTANT DISTINCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. STATE vs INPUT
+
+State:
+    Current condition of machine.
+
+Input:
+    Symbol/string being processed.
+
+
+2. START STATE vs FINAL STATE
+
+Start state:
+    Where computation begins.
+
+Final state:
+    Determines acceptance after all input is processed.
+
+
+3. TRANSITION vs EXTENDED TRANSITION
+
+δ:
+    One symbol.
+
+δ*:
+    Entire string.
+
+
+4. ACCEPTING STATE vs ACCEPTED STRING
+
+Accepting state:
+    A state marked as final.
+
+Accepted string:
+    A complete input whose processing ends in a final state.
+
+
+5. DFA vs PHYSICAL MACHINE
+
+DFA:
+    Mathematical abstraction.
+
+Physical machine:
+    Real hardware/software system.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    COMMON BEGINNER MISTAKES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MISTAKE 1:
+Thinking a final state means the machine must stop immediately.
+
+CORRECT:
+The machine can leave a final state.
+Acceptance depends on where it is AFTER THE ENTIRE INPUT.
+
+
+MISTAKE 2:
+Thinking every state must be final.
+
+CORRECT:
+Only states in F are accepting.
+
+
+MISTAKE 3:
+Forgetting the start state.
+
+CORRECT:
+A DFA always has one start state.
+
+
+MISTAKE 4:
+Using two transitions for the same state and input.
+
+Example:
+
+    q0 --0--> q1
+    q0 --0--> q2
+
+This violates determinism.
+
+
+MISTAKE 5:
+Thinking DFA can use ε-transitions.
+
+CORRECT:
+DFA does not allow ε-transitions.
+
+
+MISTAKE 6:
+Checking only the last transition.
+
+CORRECT:
+The complete input must be processed.
+
+
+MISTAKE 7:
+Confusing empty string ε with no transition.
+
+ε means:
+    a string of length zero.
+
+It does NOT mean:
+    "there is no transition."
+
+
+MISTAKE 8:
+Creating states without knowing what they represent.
+
+Better:
+    Give every state a meaningful interpretation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    B.TECH EXAM PERSPECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VERY IMPORTANT QUESTIONS:
+
+1. Define finite automaton.
+
+2. Define DFA formally.
+
+3. Explain the five components of a DFA.
+
+4. Explain transition function.
+
+5. Explain extended transition function.
+
+6. Differentiate δ and δ*.
+
+7. Explain acceptance and rejection.
+
+8. Construct DFA for strings ending in 1.
+
+9. Construct DFA for strings containing at least one 1.
+
+10. Construct DFA for even number of 1s.
+
+11. Construct DFA for strings beginning with 1.
+
+12. Trace a given string through a DFA.
+
+13. Determine the language accepted by a given DFA.
+
+14. Convert a transition table into a state diagram.
+
+15. Convert a state diagram into a transition table.
+
+16. Construct DFA for binary numbers divisible by a given number.
+
+
+LONG-ANSWER STYLE:
+
+"Define DFA formally. Explain each component and construct a DFA
+accepting all strings over {0,1} containing an even number of 1s."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    GATE / COMPETITIVE PERSPECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GATE frequently tests:
+
+    • Number of states
+    • Accepted strings
+    • Transition functions
+    • Extended transition functions
+    • DFA construction
+    • Equivalent DFA behavior
+    • Counting/parity
+    • Divisibility
+    • Dead states
+    • Reachability
+    • Language recognized by an automaton
+
+
+HIGH-VALUE TECHNIQUES:
+
+    EVEN/ODD
+        → use parity states
+
+    DIVISIBILITY BY k
+        → think in terms of remainders modulo k
+
+    CONTAINS PATTERN
+        → track how much of the pattern is matched
+
+    ENDS WITH PATTERN
+        → remember relevant suffix information
+
+    BEGINS WITH PATTERN
+        → track the prefix and use dead states when necessary
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    INTERVIEW PERSPECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q: What is a DFA?
+
+Answer:
+
+A DFA is a finite-state computational model in which for every
+state and every input symbol, exactly one next state is defined.
+
+
+Q: Why is it called deterministic?
+
+Because there is exactly one possible next state for every
+current-state/input-symbol pair.
+
+
+Q: What is the difference between δ and δ*?
+
+δ processes one input symbol.
+
+δ* processes an entire input string.
+
+
+Q: What does a DFA recognize?
+
+A DFA recognizes a regular language.
+
+
+Q: Can a DFA have multiple final states?
+
+Yes.
+
+
+Q: Can a DFA have multiple start states?
+
+No.
+
+
+Q: Can a DFA have zero final states?
+
+Yes.
+
+Then its accepted language is:
+
+    ∅
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                         PRACTICE SET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LEVEL 1 — ABSOLUTE BEGINNER
+
+Q1. What is an automaton?
+
+Q2. What is a state?
+
+Q3. What is an input alphabet?
+
+Q4. What is a transition?
+
+Q5. What is a start state?
+
+Q6. What is an accepting state?
+
+Q7. What does deterministic mean?
+
+Q8. What does DFA stand for?
+
+
+LEVEL 2 — BASIC
+
+Q9. Write the five-tuple representation of a DFA.
+
+Q10. Explain each component of:
+
+        M = (Q, Σ, δ, q₀, F)
+
+Q11. What is the difference between δ and δ*?
+
+Q12. What is a dead state?
+
+Q13. Can a DFA have more than one final state?
+
+Q14. Can a DFA have more than one start state?
+
+
+LEVEL 3 — B.TECH
+
+Q15. Construct a DFA over {0,1} accepting strings ending in 0.
+
+Q16. Construct a DFA accepting strings containing at least one 1.
+
+Q17. Construct a DFA accepting strings containing an even number
+    of 1s.
+
+Q18. Construct a DFA accepting strings containing an odd number
+    of 0s.
+
+Q19. Construct a DFA accepting strings beginning with 10.
+
+Q20. Construct a DFA accepting strings ending with 01.
+
+
+LEVEL 4 — PROBLEM SOLVING
+
+Q21. Given a DFA and input 101101, trace the complete computation.
+
+Q22. Given a DFA, determine its accepted language.
+
+Q23. Given a transition table, draw the state diagram.
+
+Q24. Given a state diagram, construct its transition table.
+
+Q25. Construct a DFA for binary numbers divisible by 2.
+
+Q26. Construct a DFA for binary numbers divisible by 3.
+
+
+LEVEL 5 — GATE STYLE
+
+Q27. If a DFA has n states, what is the maximum number of
+    transitions in a complete DFA over an alphabet of size k?
+
+Q28. How many final-state subsets are possible for an n-state DFA?
+
+Q29. If F = ∅, what language does the DFA accept?
+
+Q30. If every state is final, what language does a complete DFA
+    accept over alphabet Σ?
+
+Q31. Explain why a DFA cannot have two different transitions
+    labeled with the same symbol from the same state.
+
+Q32. Construct a DFA for binary strings whose numerical value
+    is divisible by 3.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                     ACTIVE RECALL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Try answering WITHOUT looking above.
+
+1. What is an automaton?
+
+2. What is a state?
+
+3. What is a transition?
+
+4. What is a start state?
+
+5. What is a final state?
+
+6. What does DFA stand for?
+
+7. Why is a DFA deterministic?
+
+8. Write the five-tuple representation of a DFA.
+
+9. What does Q represent?
+
+10. What does Σ represent?
+
+11. What does δ represent?
+
+12. What does q₀ represent?
+
+13. What does F represent?
+
+14. What is δ(q,a)?
+
+15. What is δ*(q,w)?
+
+16. When is a string accepted?
+
+17. What is a dead state?
+
+18. Why are ε-transitions not allowed in DFA?
+
+19. What information should a DFA state represent?
+
+20. How can DFA states be used to solve divisibility problems?
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                         CHAPTER SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An AUTOMATON is an abstract mathematical machine.
+
+A FINITE AUTOMATON has a finite number of states.
+
+A STATE represents the current situation/information of the machine.
+
+INPUT is processed symbol by symbol.
+
+A TRANSITION tells the machine where to move.
+
+The START STATE is where computation begins.
+
+A FINAL STATE determines acceptance.
+
+A DFA is represented as:
+
+    M = (Q, Σ, δ, q₀, F)
+
+where:
+
+    Q  = states
+    Σ  = alphabet
+    δ  = transition function
+    q₀ = start state
+    F  = final states
+
+
+DFA RULE:
+
+    For every state q
+    and every input symbol a,
+
+    exactly ONE next state must exist.
+
+
+Transition:
+
+    δ(q,a)
+
+
+Extended transition:
+
+    δ*(q,w)
+
+
+Acceptance:
+
+    δ*(q₀,w) ∈ F
+
+
+Accepted language:
+
+    L(M) = {w ∈ Σ* | δ*(q₀,w) ∈ F}
+
+
+CORE IDEA:
+
+    INPUT
+      ↓
+    CURRENT STATE
+      ↓
+    TRANSITION
+      ↓
+    NEXT STATE
+      ↓
+    ...
+      ↓
+    FINAL STATE
+      ↓
+    ACCEPT / REJECT
+
+
+The most important DFA construction principle is:
+
+    "A state should represent the information that the machine
+     needs to remember about the input seen so far."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                 CHAPTER 4 COMPLETION STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4.1 Automata
+    ✓ What is an automaton?
+    ✓ Why automata are needed
+    ✓ States
+    ✓ Input
+    ✓ Transitions
+    ✓ Initial state
+    ✓ Final states
+
+4.2 Finite-State Machines
+    ✓ FSM concept
+    ✓ State transitions
+    ✓ State diagrams
+    ✓ Transition tables
+    ✓ Accepting computation
+
+4.3 DFA
+    ✓ DFA concept
+    ✓ Formal definition
+    ✓ Five-tuple
+    ✓ States
+    ✓ Alphabet
+    ✓ Transition function
+    ✓ Start state
+    ✓ Final states
+
+4.4 DFA Operation
+    ✓ Processing input
+    ✓ Extended transition function
+    ✓ Acceptance
+    ✓ Rejection
+    ✓ Accepted language
+
+4.5 DFA Construction
+    ✓ Basic construction strategy
+    ✓ Pattern recognition
+    ✓ Counting
+    ✓ Parity
+    ✓ Prefix
+    ✓ Suffix
+    ✓ Substring
+    ✓ Divisibility
+    ✓ Binary numbers
+    ✓ Design strategies
+
+4.6 DFA Problems
+    ✓ Construction
+    ✓ String tracing
+    ✓ Language identification
+    ✓ Acceptance testing
+    ✓ Diagram ↔ table
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                  UPCOMING NEXT TOPIC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NEXT TOPIC:
+
+    CHAPTER 5 — NONDETERMINISTIC FINITE AUTOMATA
+
+    Topic 5.1 — NFA Concept
+
+We will begin with:
+
+    "What does NONDETERMINISTIC mean?"
+
+and first build the intuition needed to understand NFA before giving
+its formal definition.
+
+When you type:
+
+    NEXT
+
+we will move ONLY to the next pending topic.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

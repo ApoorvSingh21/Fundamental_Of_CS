@@ -1,0 +1,1557 @@
+============================================================
+THEORY OF COMPUTATION — CHAPTER 19
+DECIDABLE AND UNDECIDABLE PROBLEMS
+============================================================
+
+PHASE 15 — DECIDABILITY
+
+CHAPTER 19 TOPICS
+-----------------
+
+19.1 DECIDABILITY
+    • Decidable language
+    • Decider
+    • Recognizer
+    • Recursive language
+    • Recursively enumerable language
+    • Difference between Decider and Recognizer
+
+19.2 IMPORTANT DECIDABLE PROBLEMS
+    • DFA Acceptance
+    • DFA Emptiness
+    • DFA Equivalence
+    • DFA Finiteness
+    • CFG Membership
+    • CFG Emptiness
+
+19.3 IMPORTANT UNDECIDABLE PROBLEMS
+    • Halting Problem
+    • Acceptance Problem
+    • Post Correspondence Problem
+    • Modified PCP
+    • CFG Equivalence
+    • CFG Ambiguity
+    • TM Equivalence
+
+------------------------------------------------------------
+19.1 DECIDABILITY
+------------------------------------------------------------
+
+1. WHAT IS A "PROBLEM"?
+
+Before understanding decidability, we need to understand
+what a computational problem is.
+
+A problem asks a machine to determine something.
+
+Example:
+
+    Input:  "10101"
+    Question: Does this string contain an even number of 1s?
+
+Possible answers:
+
+    YES
+    NO
+
+In TOC, many computational problems can be represented as
+LANGUAGES.
+
+For example:
+
+    L = { w | w contains an even number of 1s }
+
+The problem becomes:
+
+    Given w,
+    determine whether w ∈ L.
+
+This gives us a very important idea:
+
+        COMPUTATIONAL PROBLEM
+                 |
+                 v
+             LANGUAGE
+                 |
+                 v
+        Given an input string
+                 |
+                 v
+          YES or NO answer
+
+
+------------------------------------------------------------
+2. WHAT DOES "DECIDABLE" MEAN?
+------------------------------------------------------------
+
+Simple definition:
+
+A problem is DECIDABLE if there exists an algorithm/machine
+that can always give the correct answer and eventually STOP.
+
+There are two requirements:
+
+    1. Correct answer
+    2. Guaranteed termination
+
+That second requirement is extremely important.
+
+A machine that sometimes runs forever is NOT a decider.
+
+
+Formal definition:
+
+A language L is DECIDABLE if there exists a Turing Machine M
+such that:
+
+    • If w ∈ L, M accepts w.
+    • If w ∉ L, M rejects w.
+    • M halts on EVERY input.
+
+Therefore:
+
+              Input w
+                 |
+                 v
+          +--------------+
+          | Turing       |
+          | Machine M    |
+          +--------------+
+             /        \
+          YES           NO
+          |              |
+       ACCEPT          REJECT
+          \              /
+           \            /
+              HALTS
+
+
+The machine ALWAYS stops.
+
+
+------------------------------------------------------------
+3. DECIDER
+------------------------------------------------------------
+
+A DECIDER is a Turing Machine that halts on every input.
+
+For language L:
+
+             w
+             |
+             v
+        +----------+
+        |  DECIDER  |
+        |     M     |
+        +----------+
+          /        \
+         /          \
+      ACCEPT       REJECT
+       w ∈ L        w ∉ L
+
+Both paths eventually terminate.
+
+Therefore:
+
+    DECIDER = Turing Machine that ALWAYS HALTS.
+
+
+------------------------------------------------------------
+4. EXAMPLE OF A DECIDABLE LANGUAGE
+------------------------------------------------------------
+
+Consider:
+
+    L = { w ∈ {0,1}* | w contains an even number of 1s }
+
+Example strings:
+
+    ε       → YES
+    0       → YES
+    1       → NO
+    11      → YES
+    101     → YES
+    111     → NO
+
+We can construct a DFA:
+
+                  1
+             +----------+
+             |          |
+             v          |
+        --> q_even ----+
+          |       ^
+        0 |       | 0
+          |       |
+          v       |
+        q_odd ----+
+             1
+
+More clearly:
+
+        --> [EVEN]*
+             |   ^
+           1 |   | 1
+             v   |
+            [ODD]
+
+             0 loops on both states
+
+EVEN = even number of 1s
+ODD  = odd number of 1s
+
+Since a DFA always finishes processing a finite input,
+membership in this language is decidable.
+
+Therefore:
+
+    Every regular language is decidable.
+
+
+------------------------------------------------------------
+5. RECURSIVE LANGUAGE
+------------------------------------------------------------
+
+In TOC, a language is called RECURSIVE if there exists a
+Turing Machine that decides it.
+
+Therefore:
+
+    RECURSIVE LANGUAGE
+          =
+    DECIDABLE LANGUAGE
+
+These are two names for essentially the same class.
+
+So:
+
+    L is decidable
+          ⇕
+    L is recursive
+          ⇕
+    There exists a TM that halts on every input.
+
+
+------------------------------------------------------------
+6. RECOGNIZER
+------------------------------------------------------------
+
+Now we introduce an extremely important distinction.
+
+A RECOGNIZER is a Turing Machine that recognizes a language.
+
+For input w:
+
+    If w ∈ L:
+        Machine MUST eventually accept.
+
+    If w ∉ L:
+        Machine may reject
+        OR
+        Machine may run forever.
+
+This is the major difference between a recognizer and a
+decider.
+
+Diagram:
+
+                 Input w
+                    |
+                    v
+              +-----------+
+              | Recognizer|
+              |     M     |
+              +-----------+
+                /       \
+               /         \
+          w ∈ L           w ∉ L
+             |               |
+             v               v
+          ACCEPT        REJECT or LOOP
+             |               |
+          HALTS          MAY NOT HALT
+
+
+------------------------------------------------------------
+7. DECIDER VS RECOGNIZER
+------------------------------------------------------------
+
+DECIDER:
+
+    w ∈ L     → ACCEPT
+    w ∉ L     → REJECT
+    ALWAYS HALTS
+
+RECOGNIZER:
+
+    w ∈ L     → ACCEPT
+    w ∉ L     → REJECT or LOOP
+    MAY NOT HALT
+
+
+                 DECIDER
+                    |
+                    v
+            +----------------+
+            | Always halts   |
+            +----------------+
+                    |
+                    v
+               RECOGNIZER
+                    |
+                    v
+            +----------------+
+            | May loop on     |
+            | non-members     |
+            +----------------+
+
+
+Important:
+
+    Every decider is a recognizer.
+
+But:
+
+    Not every recognizer is a decider.
+
+
+------------------------------------------------------------
+8. RECURSIVELY ENUMERABLE LANGUAGE
+------------------------------------------------------------
+
+A language is called RECURSIVELY ENUMERABLE (RE) if some
+Turing Machine recognizes it.
+
+Therefore:
+
+    RE language
+       =
+    Turing-recognizable language
+
+So:
+
+    Recursive ⊆ Recursively Enumerable
+
+Every recursive language is RE.
+
+But not every RE language is recursive.
+
+
+------------------------------------------------------------
+9. IMPORTANT RELATIONSHIP
+------------------------------------------------------------
+
+We have:
+
+       RECURSIVE
+           |
+           | subset
+           v
+    RECURSIVELY ENUMERABLE
+           |
+           v
+       Turing-
+     recognizable
+
+
+More formally:
+
+    Recursive ⊆ RE
+
+There are languages that are:
+
+    RE but NOT Recursive.
+
+Those languages are undecidable.
+
+
+------------------------------------------------------------
+10. THE MOST IMPORTANT TABLE
+------------------------------------------------------------
+
++----------------------+----------------------+----------------+
+| Property             | Decider              | Recognizer     |
++----------------------+----------------------+----------------+
+| Accept members       | YES                  | YES            |
+| Reject non-members   | YES                  | Maybe          |
+| Can loop forever?    | NO                   | YES            |
+| Halts on every input?| YES                  | NO guarantee   |
+| Language class       | Recursive            | RE             |
++----------------------+----------------------+----------------+
+
+
+------------------------------------------------------------
+19.2 IMPORTANT DECIDABLE PROBLEMS
+------------------------------------------------------------
+
+We now study several important problems that are decidable.
+
+
+============================================================
+A. DFA ACCEPTANCE PROBLEM
+============================================================
+
+Problem:
+
+Given:
+
+    • A DFA M
+    • An input string w
+
+Question:
+
+    Does M accept w?
+
+Notation often used:
+
+    A_DFA = { <B,w> | B is a DFA that accepts w }
+
+Example:
+
+    DFA accepts strings ending in 1.
+
+Input:
+
+    101
+
+Process:
+
+    Start
+      |
+      v
+    read 1
+      |
+      v
+    read 0
+      |
+      v
+    read 1
+      |
+      v
+    final state?
+
+If yes:
+
+    ACCEPT
+
+Otherwise:
+
+    REJECT
+
+
+Why is it decidable?
+
+A DFA has a finite number of states and the input string
+has finite length.
+
+Therefore we can simply simulate the DFA.
+
+Algorithm:
+
+    1. Start at the DFA's start state.
+    2. Read the first symbol.
+    3. Follow the corresponding transition.
+    4. Continue until the input ends.
+    5. Check whether the final state is accepting.
+
+The process always terminates.
+
+Therefore:
+
+    DFA ACCEPTANCE is DECIDABLE.
+
+
+============================================================
+B. DFA EMPTINESS PROBLEM
+============================================================
+
+Question:
+
+    Does a DFA accept at least one string?
+
+In other words:
+
+    Is L(M) = ∅ ?
+
+Example:
+
+              --> q0 ----0----> q1
+
+Suppose q1 is not reachable from the start state and is the
+only final state.
+
+Then no input can reach the final state.
+
+Therefore:
+
+    L(M) = ∅
+
+The language is empty.
+
+
+How do we decide this?
+
+Use graph reachability.
+
+Start from the initial state.
+
+Check:
+
+    Can we reach ANY final state?
+
+
+Diagram:
+
+             start
+               |
+               v
+              q0
+             /  \
+            v    v
+           q1    q2*
+                  ^
+                  |
+             final state
+
+Since q2 is reachable:
+
+    L(M) ≠ ∅
+
+
+If NO final state is reachable:
+
+    L(M) = ∅
+
+
+Therefore:
+
+    DFA EMPTINESS is DECIDABLE.
+
+
+============================================================
+C. DFA EQUIVALENCE PROBLEM
+============================================================
+
+Question:
+
+Given two DFAs M1 and M2, do they recognize the same
+language?
+
+That means:
+
+    L(M1) = L(M2) ?
+
+
+Example:
+
+    M1 accepts strings with even number of 1s.
+
+    M2 accepts strings whose number of 1s is divisible by 2.
+
+These describe the same language.
+
+Therefore:
+
+    L(M1) = L(M2)
+
+
+One method:
+
+Construct a DFA that finds strings on which the two machines
+disagree.
+
+Conceptually:
+
+              M1
+             /  \
+            /    \
+         accepts rejects
+            \      /
+             \    /
+              M2
+
+If there exists a string accepted by one DFA and rejected by
+the other, they are not equivalent.
+
+We can construct a product DFA representing disagreement.
+
+Then test whether that DFA's language is empty.
+
+If empty:
+
+    M1 ≡ M2
+
+Otherwise:
+
+    M1 ≠ M2
+
+
+Therefore:
+
+    DFA EQUIVALENCE is DECIDABLE.
+
+
+============================================================
+D. DFA FINITENESS PROBLEM
+============================================================
+
+Question:
+
+Does a DFA accept a FINITE number of strings?
+
+Example:
+
+    L = {0, 1, 00, 01}
+
+This is finite.
+
+But:
+
+    L = {0, 00, 000, 0000, ...}
+
+is infinite.
+
+
+How can we detect infinity?
+
+A DFA accepts infinitely many strings if there is a useful
+cycle that:
+
+    1. Can be reached from the start state, and
+    2. Can reach a final state.
+
+Diagram:
+
+        start
+          |
+          v
+         q0
+          |
+          v
+         q1 <----+
+          |      |
+          |      |
+          +------+
+             cycle
+               |
+               v
+              q2*
+             final
+
+
+Because we can loop through q1 arbitrarily many times:
+
+    q0 → q1 → q2
+    q0 → q1 → q1 → q2
+    q0 → q1 → q1 → q1 → q2
+    ...
+
+There are infinitely many accepted strings.
+
+Therefore, DFA finiteness is decidable.
+
+
+============================================================
+E. CFG MEMBERSHIP PROBLEM
+============================================================
+
+Question:
+
+Given:
+
+    • A Context-Free Grammar G
+    • A string w
+
+Does:
+
+    G generate w?
+
+In notation:
+
+    w ∈ L(G) ?
+
+
+Example:
+
+    S → aSb
+    S → ε
+
+This grammar generates:
+
+    ε
+    ab
+    aabb
+    aaabbb
+    ...
+
+
+Question:
+
+    Is "aabb" generated by G?
+
+Answer:
+
+    YES
+
+
+A parsing algorithm can determine whether a string belongs
+to a CFL.
+
+One famous algorithm is the:
+
+    CYK algorithm
+
+under appropriate grammar conditions such as CNF.
+
+The important point for now:
+
+    CFG MEMBERSHIP is DECIDABLE.
+
+
+Important distinction:
+
+    Membership ≠ Equivalence
+
+Membership asks:
+
+    "Does this ONE string belong to this grammar's language?"
+
+Equivalence asks:
+
+    "Do TWO grammars generate exactly the same language?"
+
+These have very different decidability properties.
+
+
+============================================================
+F. CFG EMPTINESS PROBLEM
+============================================================
+
+Question:
+
+    Does a CFG generate at least one string?
+
+In other words:
+
+    Is L(G) = ∅ ?
+
+
+Example:
+
+    S → AB
+    A → a
+    B → b
+
+Then:
+
+    S ⇒ AB ⇒ ab
+
+Therefore:
+
+    L(G) ≠ ∅
+
+
+A CFG emptiness algorithm checks whether the start symbol
+can eventually generate terminal strings.
+
+Therefore:
+
+    CFG EMPTINESS is DECIDABLE.
+
+
+------------------------------------------------------------
+19.3 IMPORTANT UNDECIDABLE PROBLEMS
+------------------------------------------------------------
+
+Now we reach one of the most important ideas in TOC:
+
+    NOT EVERY COMPUTATIONAL PROBLEM CAN BE SOLVED
+    BY AN ALGORITHM THAT ALWAYS HALTS.
+
+
+============================================================
+1. UNDECIDABLE PROBLEM
+============================================================
+
+A problem is UNDECIDABLE if there is no Turing Machine that
+can correctly answer every instance and halt on every input.
+
+In simple words:
+
+    No algorithm exists that solves every possible case
+    while always terminating.
+
+
+Diagram:
+
+             Problem
+                |
+                v
+          Is there a TM
+          that always
+          gives YES/NO
+          and halts?
+             /    \
+           YES     NO
+            |       |
+       Decidable  Undecidable
+
+
+------------------------------------------------------------
+2. HALTING PROBLEM
+------------------------------------------------------------
+
+The Halting Problem asks:
+
+    Given a Turing Machine M and input w,
+
+    will M eventually halt on w?
+
+Formally:
+
+    HALT_TM =
+    { <M,w> | M halts on input w }
+
+
+The shocking result is:
+
+    HALT_TM is UNDECIDABLE.
+
+
+That means:
+
+There is no universal algorithm that can take ANY program
+and ANY input and always determine whether that program will
+eventually stop.
+
+
+Example:
+
+    Program A:
+        print("Hello")
+        stop
+
+Clearly halts.
+
+But consider:
+
+    Program B:
+        while(true):
+            continue
+
+Clearly does not halt.
+
+The difficult part is creating a universal procedure that
+correctly handles EVERY possible program.
+
+Such a procedure does not exist.
+
+
+The proof is studied in:
+
+    CHAPTER 20 — HALTING PROBLEM
+
+
+------------------------------------------------------------
+3. ACCEPTANCE PROBLEM
+------------------------------------------------------------
+
+The TM Acceptance Problem asks:
+
+    Given a Turing Machine M and input w,
+
+    does M ACCEPT w?
+
+
+Language:
+
+    A_TM =
+    { <M,w> | M accepts w }
+
+
+Important:
+
+    A_TM is UNDECIDABLE.
+
+
+Notice the difference:
+
+HALTING:
+
+    Does M halt?
+
+ACCEPTANCE:
+
+    Does M accept?
+
+A machine may:
+
+    ACCEPT
+    REJECT
+    LOOP FOREVER
+
+
+The acceptance problem asks specifically whether it accepts.
+
+
+------------------------------------------------------------
+4. POST CORRESPONDENCE PROBLEM — PCP
+------------------------------------------------------------
+
+PCP is a famous undecidable problem.
+
+You are given pairs of strings:
+
+    (x1, y1)
+    (x2, y2)
+    ...
+    (xn, yn)
+
+
+You must determine whether there exists a sequence of
+indices:
+
+    i1, i2, ..., ik
+
+such that:
+
+    xi1 xi2 ... xik
+        =
+    yi1 yi2 ... yik
+
+
+Example:
+
+    (a, ab)
+    (ba, a)
+
+We try different combinations of tiles.
+
+The question is whether some sequence produces identical
+top and bottom strings.
+
+
+Visual representation:
+
+       TOP       BOTTOM
+
+       a         ab
+       ba        a
+
+Can we select tiles so that:
+
+       TOP    =    BOTTOM ?
+
+The general PCP is:
+
+    UNDECIDABLE.
+
+
+PCP is extremely important because it is frequently used as
+a starting point for proving other problems undecidable.
+
+
+------------------------------------------------------------
+5. MODIFIED PCP
+------------------------------------------------------------
+
+Modified PCP (MPCP) is a variation of PCP.
+
+The major difference is that the first tile is required to
+be used first.
+
+PCP:
+
+    Any tile may be chosen first.
+
+MPCP:
+
+    A specific first tile must be chosen first.
+
+
+Despite this restriction:
+
+    MPCP is still UNDECIDABLE.
+
+
+MPCP is also frequently used in reduction proofs.
+
+
+------------------------------------------------------------
+6. CFG EQUIVALENCE
+------------------------------------------------------------
+
+Question:
+
+Given two CFGs G1 and G2:
+
+    Is:
+
+        L(G1) = L(G2) ?
+
+The answer in general is:
+
+    UNDECIDABLE.
+
+
+This is a very important exam distinction.
+
+Compare:
+
+    CFG Membership      → DECIDABLE
+
+    CFG Emptiness       → DECIDABLE
+
+    CFG Equivalence     → UNDECIDABLE
+
+
+------------------------------------------------------------
+7. CFG AMBIGUITY
+------------------------------------------------------------
+
+A grammar is ambiguous if at least one string in its language
+has more than one distinct parse tree.
+
+Example idea:
+
+    E → E + E
+    E → E * E
+    E → id
+
+
+Consider:
+
+    id + id * id
+
+There can be different structural interpretations if the
+grammar does not enforce precedence.
+
+
+The general problem:
+
+    "Is a given CFG ambiguous?"
+
+is UNDECIDABLE.
+
+
+This does NOT mean that every individual grammar's ambiguity
+cannot be investigated.
+
+It means there is no general algorithm that takes every CFG
+and always correctly decides whether it is ambiguous.
+
+
+------------------------------------------------------------
+8. TM EQUIVALENCE
+------------------------------------------------------------
+
+Question:
+
+Given two Turing Machines M1 and M2:
+
+    Is:
+
+        L(M1) = L(M2) ?
+
+In general:
+
+    TM EQUIVALENCE is UNDECIDABLE.
+
+
+This is another important distinction:
+
+    DFA equivalence  → decidable
+
+    TM equivalence   → undecidable
+
+
+The computational power of Turing Machines introduces many
+problems for which no always-halting algorithm exists.
+
+
+============================================================
+DECIDABLE VS UNDECIDABLE — BIG PICTURE
+============================================================
+
++--------------------------------+----------------+
+| Problem                        | Status         |
++--------------------------------+----------------+
+| DFA Acceptance                 | DECIDABLE      |
+| DFA Emptiness                  | DECIDABLE      |
+| DFA Equivalence                | DECIDABLE      |
+| DFA Finiteness                 | DECIDABLE      |
+| CFG Membership                 | DECIDABLE      |
+| CFG Emptiness                  | DECIDABLE      |
+| TM Acceptance                  | UNDECIDABLE    |
+| TM Halting                     | UNDECIDABLE    |
+| PCP                            | UNDECIDABLE    |
+| Modified PCP                   | UNDECIDABLE    |
+| CFG Equivalence                | UNDECIDABLE    |
+| CFG Ambiguity                  | UNDECIDABLE    |
+| TM Equivalence                 | UNDECIDABLE    |
++--------------------------------+----------------+
+
+
+============================================================
+VERY IMPORTANT CONCEPTUAL DISTINCTION
+============================================================
+
+Do not confuse these three questions:
+
+1. MEMBERSHIP
+
+   "Does this particular string belong to the language?"
+
+2. EQUIVALENCE
+
+   "Do these two machines/grammars describe exactly
+    the same language?"
+
+3. HALTING
+
+   "Will this machine eventually stop?"
+
+
+For example:
+
+    DFA Membership       → Decidable
+    CFG Membership       → Decidable
+    TM Membership        → Undecidable
+
+And:
+
+    DFA Equivalence      → Decidable
+    CFG Equivalence      → Undecidable
+    TM Equivalence       → Undecidable
+
+
+============================================================
+DECIDABLE / RE / UNDECIDABLE RELATIONSHIP
+============================================================
+
+A useful mental picture:
+
+             ALL LANGUAGES
+                  |
+                  v
+       +----------------------+
+       | RECURSIVELY          |
+       | ENUMERABLE           |
+       |                      |
+       |   +--------------+   |
+       |   | RECURSIVE    |   |
+       |   | / DECIDABLE  |   |
+       |   +--------------+   |
+       |                      |
+       +----------------------+
+
+Every recursive language is RE.
+
+But some RE languages are not recursive.
+
+Those are:
+
+    RE but NOT Recursive
+
+
+There are also languages that are not even RE.
+
+
+============================================================
+B.TECH EXAM IMPORTANT DEFINITIONS
+============================================================
+
+1. DECIDABLE LANGUAGE
+
+A language L is decidable if there exists a Turing Machine
+that accepts every string in L, rejects every string not in L,
+and halts on every input.
+
+
+2. DECIDER
+
+A Turing Machine that halts on every input and correctly
+accepts or rejects it.
+
+
+3. RECURSIVE LANGUAGE
+
+A language for which a decider exists.
+
+
+4. RECOGNIZER
+
+A Turing Machine that accepts every member of a language,
+but may loop forever on non-members.
+
+
+5. RECURSIVELY ENUMERABLE LANGUAGE
+
+A language recognized by some Turing Machine.
+
+
+6. UNDECIDABLE LANGUAGE
+
+A language for which no Turing Machine can decide membership
+while halting on every input.
+
+
+============================================================
+COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+"Recognizer always halts."
+
+WRONG.
+
+A recognizer may loop forever.
+
+------------------------------------------------------------
+
+MISTAKE 2:
+
+"Undecidable means impossible to recognize."
+
+WRONG.
+
+Some undecidable languages are recognizable.
+
+Example:
+
+    A_TM
+
+is recognizable but undecidable.
+
+------------------------------------------------------------
+
+MISTAKE 3:
+
+"Every problem involving CFG is undecidable."
+
+WRONG.
+
+For example:
+
+    CFG Membership → Decidable
+    CFG Emptiness  → Decidable
+
+But:
+
+    CFG Equivalence → Undecidable
+    CFG Ambiguity   → Undecidable
+
+------------------------------------------------------------
+
+MISTAKE 4:
+
+"Every TM problem is undecidable."
+
+WRONG.
+
+There are many decidable TM problems.
+
+The important point is that certain general TM problems,
+such as HALT_TM and A_TM, are undecidable.
+
+------------------------------------------------------------
+
+MISTAKE 5:
+
+"Decidable and recursive are different classes."
+
+For standard TOC terminology:
+
+    Recursive = Decidable
+
+
+============================================================
+GATE / COMPETITIVE EXAM POINTS
+============================================================
+
+Remember these high-value facts:
+
+    DFA acceptance          → Decidable
+
+    DFA emptiness           → Decidable
+
+    DFA equivalence         → Decidable
+
+    DFA finiteness          → Decidable
+
+    CFG membership          → Decidable
+
+    CFG emptiness           → Decidable
+
+    TM acceptance           → Undecidable
+
+    TM halting              → Undecidable
+
+    PCP                     → Undecidable
+
+    MPCP                    → Undecidable
+
+    CFG equivalence         → Undecidable
+
+    CFG ambiguity           → Undecidable
+
+    TM equivalence          → Undecidable
+
+
+Most important relationship:
+
+    Recursive ⊆ RE
+
+and:
+
+    Recursive = Decidable
+
+
+============================================================
+INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is a decidable language?
+
+Q2. What is a decider?
+
+Q3. What is the difference between a decider and a
+    recognizer?
+
+Q4. Is every decidable language recognizable?
+
+Q5. Is every recognizable language decidable?
+
+Q6. What is a recursive language?
+
+Q7. What is a recursively enumerable language?
+
+Q8. Is DFA acceptance decidable?
+
+Q9. Is CFG membership decidable?
+
+Q10. Is CFG equivalence decidable?
+
+Q11. What is the Halting Problem?
+
+Q12. Why is the Halting Problem important?
+
+Q13. What is PCP?
+
+Q14. What is the difference between PCP and MPCP?
+
+Q15. Give examples of decidable and undecidable problems.
+
+
+============================================================
+PRACTICE QUESTIONS
+============================================================
+
+LEVEL 1 — BEGINNER
+------------------
+
+Q1. Define a decidable language.
+
+Q2. What is a decider?
+
+Q3. What is a recognizer?
+
+Q4. True or False:
+
+    Every decider is a recognizer.
+
+Q5. True or False:
+
+    Every recognizer is a decider.
+
+
+LEVEL 2 — B.TECH BASIC
+----------------------
+
+Q6. Explain recursive and recursively enumerable languages.
+
+Q7. Differentiate between a decider and recognizer.
+
+Q8. Explain DFA acceptance and why it is decidable.
+
+Q9. Explain DFA emptiness.
+
+Q10. Explain CFG membership.
+
+
+LEVEL 3 — UNIVERSITY EXAM
+-------------------------
+
+Q11. Explain decidability with a suitable example.
+
+Q12. Explain the DFA equivalence problem.
+
+Q13. Explain the DFA finiteness problem.
+
+Q14. Explain the difference between CFG membership and
+     CFG equivalence.
+
+Q15. Write short notes on PCP and MPCP.
+
+
+LEVEL 4 — COMPETITIVE
+---------------------
+
+Q16. Classify the following:
+
+    A. DFA acceptance
+    B. DFA equivalence
+    C. CFG membership
+    D. CFG ambiguity
+    E. TM acceptance
+    F. PCP
+
+Q17. Which of the following are decidable?
+
+    A. DFA emptiness
+    B. CFG membership
+    C. TM halting
+    D. DFA equivalence
+
+
+LEVEL 5 — CONCEPTUAL
+--------------------
+
+Q18. Suppose a language L is decidable.
+     Is L necessarily recognizable?
+
+Q19. Suppose L is recognizable.
+     Is L necessarily decidable?
+
+Q20. A Turing Machine recognizes L but loops on some
+     strings not in L. Can L still be decidable?
+
+Think carefully before answering.
+
+
+============================================================
+SHORT ACTIVE RECALL
+============================================================
+
+Do NOT look back at the lesson if possible.
+
+Q1. What is a decidable language?
+
+Q2. What is the defining property of a decider?
+
+Q3. What can a recognizer do on a non-member?
+
+Q4. What is another name for a recursive language?
+
+Q5. What is another name for a recursively enumerable
+    language?
+
+Q6. Is every recursive language RE?
+
+Q7. Is DFA acceptance decidable?
+
+Q8. Is CFG membership decidable?
+
+Q9. Is CFG equivalence decidable?
+
+Q10. Is the Halting Problem decidable?
+
+Q11. What is PCP?
+
+Q12. What is the major difference between PCP and MPCP?
+
+
+============================================================
+CHAPTER 19 SUMMARY
+============================================================
+
+The central question of this chapter is:
+
+    "Can a computer always solve this problem and STOP?"
+
+
+If YES:
+
+    DECIDABLE
+
+    ↳ Decider exists
+    ↳ Recursive language
+
+
+If a machine can recognize members but may run forever
+on non-members:
+
+    RECOGNIZABLE / RECURSIVELY ENUMERABLE
+
+
+If NO algorithm can always correctly answer and halt:
+
+    UNDECIDABLE
+
+
+Core relationship:
+
+    DECIDABLE
+       =
+    RECURSIVE
+       ⊆
+    RECURSIVELY ENUMERABLE
+       =
+    Turing-Recognizable
+
+
+Important decidable problems:
+
+    DFA Acceptance
+    DFA Emptiness
+    DFA Equivalence
+    DFA Finiteness
+    CFG Membership
+    CFG Emptiness
+
+
+Important undecidable problems:
+
+    TM Acceptance
+    Halting Problem
+    PCP
+    Modified PCP
+    CFG Equivalence
+    CFG Ambiguity
+    TM Equivalence
+
+
+============================================================
+UPCOMING NEXT TOPIC
+============================================================
+
+CHAPTER 20 — HALTING PROBLEM
+
+Next topic:
+
+    "What is the Halting Problem?"
+
+We will learn:
+
+    • What the Halting Problem asks
+    • Formal definition
+    • Why it is difficult
+    • Halting Problem intuition
+    • Diagonalization idea
+    • Contradiction-based proof
+    • Self-reference
+    • Universal Turing Machine
+    • Why HALT_TM is undecidable
+    • B.Tech exam questions
+    • GATE-level questions
+
+IMPORTANT:
+
+We will NOT start Chapter 20 until you type:
+
+    NEXT
+
+============================================================
+END OF CHAPTER 19
+============================================================

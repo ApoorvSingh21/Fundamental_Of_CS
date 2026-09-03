@@ -1,0 +1,1838 @@
+============================================================
+THEORY OF COMPUTATION — CHAPTER 27
+COMPLEXITY CLASSES
+============================================================
+
+PHASE 23 — NP-COMPLETENESS
+
+CHAPTER 27:
+P, NP, NP-HARD, AND NP-COMPLETE
+
+============================================================
+1. CHAPTER INTRODUCTION
+============================================================
+
+In earlier chapters, we mainly asked:
+
+    "Can a problem be solved by a computer?"
+
+That is a question of COMPUTABILITY.
+
+Now we ask a different question:
+
+    "How efficiently can the problem be solved?"
+
+For example:
+
+    Problem A can be solved in 1 second.
+
+    Problem B can be solved, but may require
+    10^100 years for a sufficiently large input.
+
+Both problems may be computable, but they are very different
+from the point of view of efficiency.
+
+This chapter introduces:
+
+    P
+    NP
+    NP-Hard
+    NP-Complete
+
+These are among the most important concepts in theoretical
+computer science and are extremely important for:
+
+    • B.Tech examinations
+    • GATE
+    • Competitive examinations
+    • Algorithms
+    • Optimization
+    • Computer science interviews
+
+
+============================================================
+2. WHY DO WE STUDY COMPLEXITY CLASSES?
+============================================================
+
+Suppose we have two algorithms for the same problem.
+
+Algorithm A:
+
+    Input size n
+        |
+        v
+    n^2 operations
+
+Algorithm B:
+
+    Input size n
+        |
+        v
+    2^n operations
+
+For n = 10:
+
+    n^2 = 100
+
+    2^n = 1024
+
+Not too bad.
+
+But for n = 100:
+
+    n^2 = 10,000
+
+    2^n ≈ 1.27 × 10^30
+
+The second algorithm becomes practically impossible.
+
+Therefore, simply saying:
+
+    "The problem is solvable"
+
+is not enough.
+
+We also want to know:
+
+    "How much computational resource is required?"
+
+This leads to COMPLEXITY THEORY.
+
+
+============================================================
+3. WHAT IS COMPUTATIONAL COMPLEXITY?
+============================================================
+
+Simple definition:
+
+Computational complexity studies the resources required
+to solve computational problems.
+
+The two major resources are:
+
+    1. TIME
+    2. SPACE
+
+------------------------------------------------------------
+TIME COMPLEXITY
+------------------------------------------------------------
+
+Time complexity measures approximately how the number of
+computational steps grows as input size increases.
+
+Example:
+
+    T(n) = n
+
+means approximately linear growth.
+
+    T(n) = n^2
+
+means quadratic growth.
+
+    T(n) = 2^n
+
+means exponential growth.
+
+------------------------------------------------------------
+SPACE COMPLEXITY
+------------------------------------------------------------
+
+Space complexity measures how much memory/storage is needed
+as input size increases.
+
+------------------------------------------------------------
+IMPORTANT
+------------------------------------------------------------
+
+Complexity is generally expressed as a function of:
+
+    n = input size
+
+
+============================================================
+4. INPUT SIZE
+============================================================
+
+Before discussing complexity, we need to understand
+INPUT SIZE.
+
+Suppose an algorithm receives:
+
+    101101
+
+The input contains 6 bits.
+
+Therefore:
+
+    n = 6
+
+For an array:
+
+    [10, 20, 30, 40, 50]
+
+we have:
+
+    n = 5
+
+For a graph, input size may involve the number of vertices
+and edges.
+
+So "input size" depends on the problem.
+
+
+============================================================
+5. POLYNOMIAL TIME
+============================================================
+
+A problem is said to have polynomial-time complexity if
+its running time can be bounded by:
+
+    O(n^k)
+
+where k is a constant.
+
+Examples:
+
+    O(n)
+    O(n^2)
+    O(n^3)
+    O(n^5)
+    O(n^100)
+
+All of these are polynomial.
+
+Examples of non-polynomial functions:
+
+    O(2^n)
+    O(3^n)
+    O(n!)
+    
+These grow much faster.
+
+------------------------------------------------------------
+IMPORTANT
+------------------------------------------------------------
+
+Polynomial does NOT mean "small".
+
+For example:
+
+    n^100
+
+is technically polynomial.
+
+But it may be impractical for large n.
+
+In theoretical computer science, polynomial time is
+important because it represents a broad class of problems
+considered efficiently solvable.
+
+
+============================================================
+6. EXPONENTIAL TIME
+============================================================
+
+An exponential-time algorithm commonly has complexity such as:
+
+    O(2^n)
+
+or
+
+    O(3^n)
+
+Example:
+
+    n = 10
+
+    2^10 = 1024
+
+    n = 20
+
+    2^20 = 1,048,576
+
+    n = 50
+
+    2^50 ≈ 1.12 × 10^15
+
+The growth is extremely fast.
+
+------------------------------------------------------------
+GENERAL COMPARISON
+------------------------------------------------------------
+
+For large n:
+
+    log n
+       <
+    n
+       <
+    n^2
+       <
+    n^3
+       <
+    2^n
+       <
+    n!
+
+
+============================================================
+7. CLASS P
+============================================================
+
+P stands for:
+
+    POLYNOMIAL TIME
+
+Simple definition:
+
+P is the class of decision problems that can be solved by
+a deterministic algorithm in polynomial time.
+
+Formal idea:
+
+    P = problems solvable in polynomial time
+        by a deterministic Turing machine.
+
+------------------------------------------------------------
+WHAT IS A DECISION PROBLEM?
+------------------------------------------------------------
+
+A decision problem is a problem whose answer is:
+
+    YES
+or
+    NO
+
+Example:
+
+    "Is 17 a prime number?"
+
+Answer:
+
+    YES
+
+Example:
+
+    "Is 20 a prime number?"
+
+Answer:
+
+    NO
+
+Complexity classes such as P and NP are usually defined
+using decision problems.
+
+
+============================================================
+8. SIMPLE IDEA OF P
+============================================================
+
+Suppose a problem can be solved in:
+
+    O(n)
+    O(n^2)
+    O(n^3)
+
+Then it belongs to P, assuming the algorithm is a
+deterministic polynomial-time algorithm.
+
+ASCII representation:
+
+                    DECISION PROBLEMS
+                           |
+                           v
+                    +-------------+
+                    | Polynomial  |
+                    | time        |
+                    +-------------+
+                           |
+                           v
+                           P
+
+
+============================================================
+9. EXAMPLES OF PROBLEMS IN P
+============================================================
+
+Examples include:
+
+    • Searching in a sorted array
+    • Sorting
+    • Graph connectivity
+    • Shortest path
+    • Minimum spanning tree
+    • Checking whether a number is prime
+      using polynomial-time algorithms
+    • Many basic graph problems
+
+Example:
+
+    Is there a path from vertex A to vertex B?
+
+This can be solved efficiently using:
+
+    BFS
+or
+    DFS
+
+Their running time is polynomial in the graph size.
+
+
+============================================================
+10. CLASS NP
+============================================================
+
+NP is one of the most misunderstood terms in computer
+science.
+
+NP does NOT simply mean:
+
+    "Not Polynomial"
+
+This is a very important point.
+
+NP is commonly understood as:
+
+    Nondeterministic Polynomial time
+
+More practically:
+
+    NP is the class of decision problems for which a proposed
+    solution (certificate) can be verified in polynomial time
+    by a deterministic algorithm.
+
+This is the easiest definition for beginners.
+
+
+============================================================
+11. CERTIFICATE / SOLUTION
+============================================================
+
+A certificate is a proposed solution that can be checked
+efficiently.
+
+Example:
+
+Suppose the problem is:
+
+    "Does this graph contain a clique of size 5?"
+
+Someone gives us 5 vertices:
+
+    {A, B, C, D, E}
+
+We can check whether every pair among them has an edge.
+
+If checking takes polynomial time, then the certificate
+can be verified efficiently.
+
+The important point is:
+
+    Finding the solution may be difficult.
+
+    Checking a given solution may be easy.
+
+
+============================================================
+12. REAL-WORLD ANALOGY FOR NP
+============================================================
+
+Imagine a huge maze.
+
+Question:
+
+    "Is there a path from START to EXIT?"
+
+Finding the path may take a very long time.
+
+But suppose someone gives you a path:
+
+    START
+      |
+      v
+      A
+      |
+      v
+      C
+      |
+      v
+      F
+      |
+      v
+     EXIT
+
+You can quickly check:
+
+    Is each movement valid?
+    Does the path actually reach EXIT?
+
+If yes, the proposed solution can be verified efficiently.
+
+
+============================================================
+13. P VS NP — BASIC INTUITION
+============================================================
+
+P:
+
+    We can SOLVE the problem efficiently.
+
+NP:
+
+    We can VERIFY a proposed solution efficiently.
+
+Conceptually:
+
+        P
+        |
+        | solve efficiently
+        v
+    +---------+
+    | Problem |
+    +---------+
+
+
+        NP
+
+    +-------------+
+    | Given a     |
+    | certificate |
+    +-------------+
+           |
+           v
+    Verify efficiently
+
+
+============================================================
+14. WHY P IS A SUBSET OF NP
+============================================================
+
+This is one of the most important facts:
+
+    P ⊆ NP
+
+Why?
+
+Suppose a problem can already be solved in polynomial time.
+
+Then obviously we can also verify its answer in polynomial
+time.
+
+Therefore:
+
+    Every problem in P is also in NP.
+
+ASCII diagram:
+
+             NP
+    +----------------------+
+    |                      |
+    |      +--------+      |
+    |      |   P    |      |
+    |      +--------+      |
+    |                      |
+    +----------------------+
+
+
+============================================================
+15. THE P VS NP QUESTION
+============================================================
+
+The famous question is:
+
+    Is P = NP?
+
+We know:
+
+    P ⊆ NP
+
+But we do NOT currently know whether:
+
+    P = NP
+
+or
+
+    P ≠ NP
+
+The general belief among researchers is:
+
+    P ≠ NP
+
+but this has not been proved.
+
+This is one of the most famous open problems in theoretical
+computer science.
+
+
+============================================================
+16. CLASS NP-HARD
+============================================================
+
+Now we introduce NP-HARD.
+
+Simple idea:
+
+A problem is NP-Hard if it is at least as hard as every
+problem in NP, in the sense that every NP problem can be
+polynomially reduced to it.
+
+Important:
+
+    NP-Hard does NOT mean the problem must belong to NP.
+
+This is a major exam point.
+
+An NP-Hard problem may be:
+
+    • in NP
+    • outside NP
+    • even undecidable in some broader settings
+
+
+============================================================
+17. NP-COMPLETE
+============================================================
+
+A problem is NP-Complete if:
+
+    1. It belongs to NP
+    AND
+    2. It is NP-Hard
+
+Therefore:
+
+    NP-Complete = NP + NP-Hard
+
+Formally:
+
+    Problem ∈ NP-Complete
+
+if:
+
+    Problem ∈ NP
+
+and
+
+    Problem is NP-Hard.
+
+
+============================================================
+18. MOST IMPORTANT RELATIONSHIP
+============================================================
+
+Remember:
+
+                NP-HARD
+        +----------------------+
+        |                      |
+        |   +--------------+   |
+        |   | NP-COMPLETE  |   |
+        |   |              |   |
+        |   |   +------+   |   |
+        |   |   |  NP  |   |   |
+        |   |   +------+   |   |
+        |   +--------------+   |
+        |                      |
+        +----------------------+
+
+Conceptually:
+
+    NP-Complete problems are inside NP-Hard.
+
+But:
+
+    NP-Hard contains problems that may not be in NP.
+
+
+============================================================
+19. P, NP, NP-HARD, NP-COMPLETE
+============================================================
+
+A useful conceptual picture is:
+
+                     NP-HARD
+        +--------------------------------+
+        |                                |
+        |       NP-COMPLETE              |
+        |      +----------------+        |
+        |      |       NP       |        |
+        |      |    +-------+   |        |
+        |      |    |   P   |   |        |
+        |      |    +-------+   |        |
+        |      +----------------+        |
+        |                                |
+        |      Other NP-Hard problems    |
+        |                                |
+        +--------------------------------+
+
+WARNING:
+
+The exact geometric relationship between P, NP and NP-Hard
+should not be interpreted as a proven physical diagram.
+
+The guaranteed relationships are:
+
+    P ⊆ NP
+
+    NP-Complete ⊆ NP
+
+    NP-Complete ⊆ NP-Hard
+
+
+============================================================
+20. IMPORTANT DEFINITIONS
+============================================================
+
+P:
+
+    Problems solvable in polynomial time by a deterministic
+    Turing machine.
+
+NP:
+
+    Problems whose YES solutions can be verified in
+    polynomial time by a deterministic Turing machine.
+
+NP-Hard:
+
+    Problems to which every problem in NP can be reduced
+    in polynomial time.
+
+NP-Complete:
+
+    Problems that are both NP and NP-Hard.
+
+
+============================================================
+21. EXAMPLE — SAT
+============================================================
+
+SAT means:
+
+    Boolean Satisfiability Problem.
+
+Given a Boolean formula, determine whether there exists an
+assignment of TRUE/FALSE values that makes the formula TRUE.
+
+Example:
+
+    (x OR y) AND (NOT x OR z)
+
+Question:
+
+    Is there an assignment to x, y and z that makes the
+    complete expression TRUE?
+
+The answer is YES if such an assignment exists.
+
+SAT is NP-Complete.
+
+This is historically extremely important because of the
+Cook-Levin theorem.
+
+
+============================================================
+22. EXAMPLE — 3-SAT
+============================================================
+
+3-SAT is a restricted form of SAT where each clause contains
+three literals.
+
+Example:
+
+    (x OR y OR z)
+    AND
+    (NOT x OR y OR w)
+    AND
+    (x OR NOT z OR w)
+
+Question:
+
+    Is there an assignment that satisfies every clause?
+
+3-SAT is NP-Complete.
+
+
+============================================================
+23. CLIQUE PROBLEM
+============================================================
+
+Given a graph and an integer k:
+
+    "Does the graph contain a clique of size k?"
+
+A clique is a set of vertices where every pair is connected.
+
+Example:
+
+        A ----- B
+         \     /
+          \   /
+            C
+
+A, B and C form a clique of size 3.
+
+If we ask:
+
+    "Does this graph contain a clique of size 3?"
+
+the answer is YES.
+
+
+============================================================
+24. VERTEX COVER
+============================================================
+
+A vertex cover is a set of vertices such that every edge
+of the graph touches at least one selected vertex.
+
+Example:
+
+        A -------- B
+         \        /
+          \      /
+             C
+
+Suppose we choose:
+
+    {A, B}
+
+Then every edge has at least one endpoint among A and B.
+
+The decision version asks:
+
+    "Does a vertex cover of size ≤ k exist?"
+
+Vertex Cover is NP-Complete.
+
+
+============================================================
+25. HAMILTONIAN CYCLE
+============================================================
+
+A Hamiltonian cycle is a cycle that visits every vertex
+exactly once and returns to the starting vertex.
+
+Example:
+
+             A
+           /   \
+          B     D
+           \   /
+             C
+
+A possible Hamiltonian cycle:
+
+    A → B → C → D → A
+
+The decision problem:
+
+    "Does this graph contain a Hamiltonian cycle?"
+
+is NP-Complete.
+
+
+============================================================
+26. SUBSET SUM
+============================================================
+
+Given a collection of numbers and a target value:
+
+    "Is there a subset whose sum equals the target?"
+
+Example:
+
+    Set = {3, 5, 7, 10}
+
+    Target = 15
+
+Choose:
+
+    5 + 10 = 15
+
+Therefore:
+
+    YES
+
+The decision version of Subset Sum is NP-Complete.
+
+
+============================================================
+27. TRAVELING SALESMAN PROBLEM
+============================================================
+
+TSP asks for a shortest route visiting each city exactly
+once and returning to the starting city.
+
+The optimization version asks:
+
+    "What is the minimum possible tour length?"
+
+The decision version asks:
+
+    "Is there a tour of length ≤ k?"
+
+This distinction is important.
+
+The decision version of TSP is NP-Complete.
+
+The optimization version is NP-Hard.
+
+
+============================================================
+28. NP-HARD VS NP-COMPLETE
+============================================================
+
+This distinction is extremely important.
+
+------------------------------------------------------------
+NP-COMPLETE
+------------------------------------------------------------
+
+Must satisfy:
+
+    1. In NP
+    2. NP-Hard
+
+------------------------------------------------------------
+NP-HARD
+------------------------------------------------------------
+
+Must satisfy:
+
+    At least as hard as every NP problem.
+
+It does NOT necessarily need to be in NP.
+
+------------------------------------------------------------
+TABLE
+------------------------------------------------------------
+
+                     NP        NP-Hard       NP-Complete
+
+Must be in NP?        YES          NO             YES
+
+Must be NP-Hard?      NO           YES            YES
+
+Can be outside NP?    NO           YES            NO
+
+
+============================================================
+29. P VS NP VS NP-HARD VS NP-COMPLETE
+============================================================
+
++----------------+-------------------------------------------+
+| Class          | Meaning                                   |
++----------------+-------------------------------------------+
+| P              | Solvable in polynomial time               |
+| NP             | Verifiable in polynomial time             |
+| NP-Hard        | At least as hard as every NP problem      |
+| NP-Complete     | Both NP and NP-Hard                        |
++----------------+-------------------------------------------+
+
+
+============================================================
+30. IMPORTANT EXAMPLE CLASSIFICATION
+============================================================
+
+Typical examples:
+
+    Shortest Path
+        → P
+
+    Graph Connectivity
+        → P
+
+    SAT
+        → NP-Complete
+
+    3-SAT
+        → NP-Complete
+
+    Clique
+        → NP-Complete
+
+    Vertex Cover
+        → NP-Complete
+
+    Hamiltonian Cycle
+        → NP-Complete
+
+    Subset Sum
+        → NP-Complete
+
+    TSP decision version
+        → NP-Complete
+
+    TSP optimization version
+        → NP-Hard
+
+
+============================================================
+31. WHY NP-COMPLETE PROBLEMS ARE IMPORTANT
+============================================================
+
+Suppose we find a polynomial-time algorithm for ONE
+NP-Complete problem.
+
+Then:
+
+    Every problem in NP can be solved in polynomial time.
+
+Therefore:
+
+    P = NP
+
+This is an extremely important result.
+
+For example, if we discovered a polynomial-time algorithm
+for SAT:
+
+    SAT ∈ P
+
+Since SAT is NP-Complete:
+
+    Every NP problem can be reduced to SAT.
+
+Therefore:
+
+    NP ⊆ P
+
+We already know:
+
+    P ⊆ NP
+
+So:
+
+    P = NP
+
+
+============================================================
+32. WHAT IF P ≠ NP?
+============================================================
+
+If:
+
+    P ≠ NP
+
+then no NP-Complete problem has a polynomial-time algorithm.
+
+Therefore:
+
+    NP-Complete problems are genuinely harder than
+    polynomial-time problems.
+
+
+============================================================
+33. POLYNOMIAL-TIME VERIFICATION
+============================================================
+
+Suppose we have a problem:
+
+    "Does a graph contain a clique of size 5?"
+
+Someone gives us:
+
+    A, B, C, D, E
+
+We can verify:
+
+    A connected to B?
+    A connected to C?
+    A connected to D?
+    A connected to E?
+    B connected to C?
+    ...
+
+There are only a polynomial number of pairs.
+
+Therefore the certificate can be checked efficiently.
+
+
+============================================================
+34. NONDETERMINISTIC VIEW OF NP
+============================================================
+
+The formal definition of NP is based on a
+NONDETERMINISTIC TURING MACHINE.
+
+Conceptually:
+
+                 Input
+                   |
+                   v
+          +----------------+
+          | Nondeterministic|
+          | computation     |
+          +----------------+
+              /   |   \
+             /    |    \
+            v     v     v
+          path1 path2 path3
+             \    |    /
+              \   |   /
+               YES?
+
+If at least one computation path accepts, the input
+is accepted.
+
+This is why NP is called:
+
+    Nondeterministic Polynomial Time.
+
+
+============================================================
+35. VERY IMPORTANT: NP DOES NOT MEAN "NOT POLYNOMIAL"
+============================================================
+
+Wrong:
+
+    NP = Not Polynomial
+
+Correct:
+
+    NP = Nondeterministic Polynomial Time
+
+This is one of the most common student mistakes.
+
+
+============================================================
+36. DECISION VS OPTIMIZATION PROBLEMS
+============================================================
+
+Complexity theory often uses decision versions.
+
+Optimization:
+
+    "What is the shortest possible TSP tour?"
+
+Decision:
+
+    "Is there a TSP tour of length ≤ k?"
+
+Decision:
+
+    YES / NO
+
+This makes formal complexity classification easier.
+
+
+============================================================
+37. CERTIFICATE CONCEPT
+============================================================
+
+Suppose:
+
+    Input = graph G
+
+Problem:
+
+    Does G contain a Hamiltonian cycle?
+
+Certificate:
+
+    A proposed cycle
+
+Verifier checks:
+
+    • Every vertex appears
+    • No vertex appears more than required
+    • Consecutive vertices have edges
+    • Last vertex connects to first
+
+If all checks can be performed in polynomial time:
+
+    Problem ∈ NP
+
+
+============================================================
+38. HOW TO SHOW A PROBLEM IS NP-COMPLETE
+============================================================
+
+This is one of the most important problem-solving procedures.
+
+To prove a problem X is NP-Complete:
+
+STEP 1:
+    Show X ∈ NP.
+
+STEP 2:
+    Take a problem Y already known to be NP-Complete.
+
+STEP 3:
+    Reduce Y to X.
+
+    Y ≤p X
+
+STEP 4:
+    Show the reduction takes polynomial time.
+
+STEP 5:
+    Conclude:
+
+    X is NP-Hard.
+
+Since:
+
+    X ∈ NP
+
+and:
+
+    X is NP-Hard
+
+therefore:
+
+    X is NP-Complete.
+
+
+============================================================
+39. IMPORTANT REDUCTION DIRECTION
+============================================================
+
+Suppose:
+
+    A is already known to be NP-Hard.
+
+You want to prove:
+
+    B is NP-Hard.
+
+You generally need:
+
+    A ≤p B
+
+NOT:
+
+    B ≤p A
+
+Why?
+
+Because the reduction shows that if B were easy,
+then A would also become easy.
+
+ASCII:
+
+    A
+    |
+    | polynomial reduction
+    v
+    B
+
+Therefore:
+
+    A ≤p B
+
+means B is at least as hard as A.
+
+------------------------------------------------------------
+MEMORIZE:
+
+    Known hard problem
+          |
+          v
+    New problem
+
+    A ≤p B
+
+
+============================================================
+40. COMMON REDUCTION MISTAKE
+============================================================
+
+Suppose:
+
+    A is known NP-Complete.
+
+You want to prove B is NP-Hard.
+
+Correct:
+
+    A ≤p B
+
+Incorrect for this purpose:
+
+    B ≤p A
+
+The second statement only tells us that B is no harder
+than A in the reduction sense.
+
+
+============================================================
+41. COOK-LEVIN THEOREM
+============================================================
+
+The Cook-Levin theorem states:
+
+    SAT is NP-Complete.
+
+This was the first problem proven to be NP-Complete.
+
+Its importance is enormous.
+
+Once SAT was shown NP-Complete, many other problems could
+be shown NP-Complete by polynomial-time reductions from SAT
+or from other known NP-Complete problems.
+
+
+============================================================
+42. NP-COMPLETE PROBLEM CHAIN
+============================================================
+
+A typical reduction chain may look like:
+
+    SAT
+     |
+     v
+    3-SAT
+     |
+     v
+    CLIQUE
+     |
+     v
+    VERTEX COVER
+     |
+     v
+    OTHER NP-COMPLETE PROBLEMS
+
+The exact reduction must be mathematically established;
+the diagram represents the general idea of reductions.
+
+
+============================================================
+43. IMPORTANT THEORETICAL RELATIONSHIPS
+============================================================
+
+Guaranteed:
+
+    P ⊆ NP
+
+Also:
+
+    NP-Complete ⊆ NP
+
+and:
+
+    NP-Complete ⊆ NP-Hard
+
+If:
+
+    P = NP
+
+then:
+
+    P = NP = NP-Complete
+
+in terms of the relevant decision problems/classes,
+because every NP problem would have a polynomial-time
+algorithm.
+
+If:
+
+    P ≠ NP
+
+then:
+
+    P is a proper subset of NP.
+
+
+============================================================
+44. P VS NP — REAL-WORLD ANALOGY
+============================================================
+
+Imagine a Sudoku puzzle.
+
+Finding a solution may be difficult.
+
+But if somebody gives you a completed Sudoku grid,
+checking whether it is valid is comparatively easy.
+
+Therefore:
+
+    FINDING
+       ↓
+    potentially difficult
+
+    VERIFYING
+       ↓
+    polynomial-time
+
+
+============================================================
+45. IMPORTANT CAUTION ABOUT THE ANALOGY
+============================================================
+
+The Sudoku analogy is useful for intuition, but it is not
+the formal definition of NP.
+
+The formal concept involves:
+
+    • decision problems
+    • certificates
+    • polynomial-time verification
+    • nondeterministic polynomial-time computation
+
+
+============================================================
+46. B.TECH EXAM PERSPECTIVE
+============================================================
+
+You should be able to write:
+
+1. Define P.
+
+2. Define NP.
+
+3. Explain polynomial-time verification.
+
+4. Explain NP-Hard.
+
+5. Explain NP-Complete.
+
+6. Prove:
+
+       P ⊆ NP
+
+7. Explain:
+
+       P = NP?
+
+8. Differentiate:
+
+       P vs NP
+
+9. Differentiate:
+
+       NP-Hard vs NP-Complete
+
+10. Explain polynomial-time reduction.
+
+11. List important NP-Complete problems.
+
+12. Explain the importance of Cook-Levin theorem.
+
+
+============================================================
+47. IMPORTANT EXAM DEFINITIONS
+============================================================
+
+P:
+
+    Class of decision problems solvable by a deterministic
+    Turing machine in polynomial time.
+
+NP:
+
+    Class of decision problems whose YES instances have
+    certificates verifiable in polynomial time by a
+    deterministic Turing machine.
+
+NP-Hard:
+
+    A problem H is NP-Hard if every problem in NP can be
+    polynomially reduced to H.
+
+NP-Complete:
+
+    A problem is NP-Complete if it is both in NP and
+    NP-Hard.
+
+
+============================================================
+48. GATE-IMPORTANT FACTS
+============================================================
+
+Remember these:
+
+    P ⊆ NP
+
+    NP-Complete ⊆ NP
+
+    NP-Complete ⊆ NP-Hard
+
+    P = NP is an OPEN PROBLEM.
+
+    NP-Hard problems need not be in NP.
+
+    NP-Complete problems MUST be in NP.
+
+    SAT is NP-Complete.
+
+    3-SAT is NP-Complete.
+
+    CLIQUE is NP-Complete.
+
+    Vertex Cover is NP-Complete.
+
+    Hamiltonian Cycle is NP-Complete.
+
+    Subset Sum is NP-Complete.
+
+    TSP decision version is NP-Complete.
+
+    TSP optimization version is NP-Hard.
+
+
+============================================================
+49. COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    NP means Not Polynomial.
+
+CORRECT:
+
+    NP means Nondeterministic Polynomial Time.
+
+
+MISTAKE 2:
+
+    Every NP problem is NP-Complete.
+
+CORRECT:
+
+    NP-Complete is a special subset of NP.
+
+
+MISTAKE 3:
+
+    Every NP-Hard problem is in NP.
+
+CORRECT:
+
+    NP-Hard problems need not belong to NP.
+
+
+MISTAKE 4:
+
+    P and NP are known to be different.
+
+CORRECT:
+
+    P vs NP is unresolved.
+
+
+MISTAKE 5:
+
+    NP means solutions are easy to find.
+
+CORRECT:
+
+    NP means solutions can be verified in polynomial time.
+
+
+MISTAKE 6:
+
+    To prove B is NP-Hard, reduce B to known hard problem A.
+
+Usually incorrect.
+
+Correct direction:
+
+    A ≤p B
+
+
+============================================================
+50. QUICK COMPARISON TABLE
+============================================================
+
++-------------+---------------------------------------------+
+| Class       | Main idea                                   |
++-------------+---------------------------------------------+
+| P           | Easy to solve in polynomial time            |
+| NP          | Easy to verify in polynomial time           |
+| NP-Hard     | At least as hard as every NP problem        |
+| NP-Complete | Both NP and NP-Hard                         |
++-------------+---------------------------------------------+
+
+
+============================================================
+51. CHAPTER SUMMARY
+============================================================
+
+Computability asks:
+
+    "Can the problem be solved?"
+
+Complexity asks:
+
+    "How efficiently can it be solved?"
+
+Polynomial time:
+
+    O(n^k)
+
+P:
+
+    Polynomial-time solvable decision problems.
+
+NP:
+
+    Polynomial-time verifiable decision problems.
+
+NP-Hard:
+
+    At least as hard as every problem in NP.
+
+NP-Complete:
+
+    Problems that are both:
+
+        NP
+        +
+        NP-Hard
+
+Most important relationship:
+
+    P ⊆ NP
+
+Famous question:
+
+    P = NP ?
+
+Current status:
+
+    UNKNOWN.
+
+Important NP-Complete problems:
+
+    • SAT
+    • 3-SAT
+    • CLIQUE
+    • Vertex Cover
+    • Hamiltonian Cycle
+    • Subset Sum
+    • TSP decision problem
+
+
+============================================================
+52. ACTIVE RECALL — DO NOT LOOK UP THE ANSWERS
+============================================================
+
+Q1. What does P stand for?
+
+Q2. What does NP stand for?
+
+Q3. Does NP mean "Not Polynomial"?
+
+Q4. What is a decision problem?
+
+Q5. What is polynomial time?
+
+Q6. What is a certificate?
+
+Q7. What is the main difference between P and NP?
+
+Q8. Why is P ⊆ NP?
+
+Q9. What is NP-Hard?
+
+Q10. What is NP-Complete?
+
+Q11. Does every NP-Hard problem belong to NP?
+
+Q12. Does every NP-Complete problem belong to NP?
+
+Q13. What is the current status of P vs NP?
+
+Q14. What is the correct direction when reducing a known
+     NP-Hard problem A to a new problem B?
+
+Q15. What does Cook-Levin theorem establish?
+
+Q16. Is the optimization version of TSP the same complexity
+     classification as its decision version?
+
+============================================================
+53. PRACTICE QUESTIONS
+============================================================
+
+LEVEL 1 — BEGINNER
+
+1. Define P.
+
+2. Define NP.
+
+3. What is polynomial time?
+
+4. What is a certificate?
+
+5. What is NP-Hard?
+
+6. What is NP-Complete?
+
+7. Why is P ⊆ NP?
+
+
+LEVEL 2 — B.TECH BASIC
+
+8. Differentiate P and NP.
+
+9. Differentiate NP-Hard and NP-Complete.
+
+10. Explain the significance of polynomial-time verification.
+
+11. Explain why an NP-Complete problem must belong to NP.
+
+12. Explain the P vs NP problem.
+
+
+LEVEL 3 — UNIVERSITY EXAM
+
+13. Explain P, NP, NP-Hard and NP-Complete with suitable
+    examples.
+
+14. Explain polynomial-time reduction.
+
+15. Explain how to prove a problem is NP-Complete.
+
+16. Explain Cook-Levin theorem.
+
+17. Discuss the relationship between P, NP and NP-Complete.
+
+
+LEVEL 4 — COMPETITIVE
+
+18. If A ∈ P and B ≤p A, what can you conclude about B?
+
+19. If A is NP-Complete and A ≤p B, what does this tell
+    us about B?
+
+20. Can an NP-Hard problem be outside NP?
+
+21. Can an NP-Complete problem be outside NP?
+
+22. If any NP-Complete problem is shown to belong to P,
+    what follows?
+
+
+============================================================
+54. MINI MCQs
+============================================================
+
+MCQ 1:
+
+Which statement is definitely true?
+
+A. P = NP
+B. P ⊆ NP
+C. NP ⊆ P
+D. NP = NP-Hard
+
+Answer yourself first.
+
+------------------------------------------------------------
+
+MCQ 2:
+
+Which is NOT required for a problem to be NP-Complete?
+
+A. It belongs to NP
+B. It is NP-Hard
+C. Polynomial-time verification
+D. It must be outside NP
+
+------------------------------------------------------------
+
+MCQ 3:
+
+Which is a famous NP-Complete problem?
+
+A. Graph connectivity
+B. SAT
+C. BFS
+D. DFS
+
+------------------------------------------------------------
+
+MCQ 4:
+
+Which statement is correct?
+
+A. Every NP-Hard problem is in NP.
+B. Every NP-Complete problem is NP-Hard.
+C. Every problem in NP is NP-Complete.
+D. P and NP are known to be unequal.
+
+------------------------------------------------------------
+
+MCQ 5:
+
+To prove B is NP-Hard using known NP-Hard problem A,
+the usual reduction direction is:
+
+A. B ≤p A
+B. A ≤p B
+C. A = B
+D. B = P
+
+
+============================================================
+55. ONE-MINUTE REVISION
+============================================================
+
+Remember:
+
+                P
+                |
+                | subset
+                v
+                NP
+
+NP-Complete:
+
+    = NP + NP-Hard
+
+NP-Hard:
+
+    May be outside NP.
+
+Most important equation:
+
+    P ⊆ NP
+
+Most famous open question:
+
+    P = NP ?
+
+Most important NP-Complete problem:
+
+    SAT
+
+Most important proof technique:
+
+    Polynomial-time reduction
+
+
+============================================================
+56. UPCOMING NEXT TOPIC
+============================================================
+
+NEXT TOPIC:
+
+    CHAPTER 28 — NP-COMPLETENESS AND REDUCTIONS
+
+We will study:
+
+    • Polynomial-time reduction
+    • Reduction notation
+    • NP-hardness
+    • NP-completeness proofs
+    • Proving a problem belongs to NP
+    • Proving NP-hardness
+    • Proving NP-completeness
+    • Cook-Levin theorem in greater detail
+    • SAT
+    • 3-SAT reductions
+    • Classic NP-Complete problems
+    • Step-by-step NP-Complete proof problems
+
+STOP HERE.
+
+Type:
+
+    NEXT
+
+to begin CHAPTER 28.
+============================================================

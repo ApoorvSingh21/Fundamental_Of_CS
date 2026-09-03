@@ -1,0 +1,2330 @@
+====================================================================
+              THEORY OF COMPUTATION — CHAPTER 22
+                 TURING-RECOGNIZABLE LANGUAGES
+====================================================================
+
+PHASE 18 — RECURSIVELY ENUMERABLE LANGUAGES
+
+CHAPTER 22 TOPICS
+
+22.1 Turing-recognizable language
+     • Meaning of recognition
+     • Turing recognizer
+     • Formal definition
+     • Examples
+
+22.2 Turing-decidable language
+     • Decider
+     • Recognizer vs decider
+     • Recursive language
+
+22.3 Recursively enumerable language
+     • Definition
+     • Relationship with recognizable languages
+     • Relationship with decidable languages
+
+22.4 Relationship between language classes
+     • Decidable
+     • Turing-recognizable
+     • Undecidable recognizable languages
+
+22.5 Recognizer vs Decider
+
+22.6 Complement properties
+
+22.7 Closure properties
+
+22.8 Enumeration
+     • Enumerator
+     • Enumeration process
+     • Recognizer ↔ Enumerator relationship
+
+
+====================================================================
+1. CHAPTER INTRODUCTION
+====================================================================
+
+In the previous chapters, we studied:
+
+    • Turing Machines
+    • Computation
+    • Decidability
+    • Undecidability
+    • Halting Problem
+    • Reductions
+
+We learned something very important:
+
+    Some problems can be solved by a Turing Machine.
+
+But not every such machine necessarily HALTS on every input.
+
+This gives us an important distinction:
+
+             Turing Machine
+                  |
+          +-------+-------+
+          |               |
+          v               v
+      Always halts      May loop forever
+          |               |
+          v               v
+       DECIDER         RECOGNIZER
+
+This chapter is about the second category.
+
+The central question is:
+
+    "What does it mean for a Turing Machine to
+     recognize a language?"
+
+====================================================================
+2. WHY DO WE NEED TURING-RECOGNIZABLE LANGUAGES?
+====================================================================
+
+Suppose a Turing Machine receives an input w.
+
+There are three possible behaviors:
+
+    1. It accepts w.
+    2. It rejects w.
+    3. It runs forever.
+
+For a DECIDER:
+
+    It must always halt.
+
+Therefore:
+
+    ACCEPT
+       OR
+    REJECT
+
+No infinite loop is allowed.
+
+For a RECOGNIZER:
+
+    If w belongs to the language:
+        it must eventually ACCEPT.
+
+    If w does not belong to the language:
+        it may REJECT
+        OR
+        it may run forever.
+
+This difference is fundamental.
+
+
+====================================================================
+3. WHAT DOES "RECOGNIZE" MEAN?
+====================================================================
+
+Simple definition:
+
+A Turing Machine recognizes a language if it accepts every
+string that belongs to the language.
+
+For strings that do NOT belong to the language, the machine
+does not have to halt.
+
+It may:
+
+    • reject
+    OR
+    • run forever.
+
+In simple words:
+
+    "Recognition guarantees acceptance of YES cases,
+     but does not guarantee termination of NO cases."
+
+
+====================================================================
+4. REAL-WORLD ANALOGY
+====================================================================
+
+Imagine a security system checking whether a person is authorized.
+
+Suppose:
+
+    Authorized person → system says YES.
+
+But for an unauthorized person, the system might:
+
+    • say NO
+    OR
+    • keep checking forever.
+
+Such a system can recognize authorized people,
+but it is not a proper decider because it does not
+guarantee an answer for everyone.
+
+This is similar to a Turing recognizer.
+
+
+====================================================================
+5. FORMAL DEFINITION OF TURING RECOGNIZER
+====================================================================
+
+Let L be a language.
+
+A Turing Machine M recognizes L if:
+
+    For every string w:
+
+        If w ∈ L,
+        then M accepts w.
+
+For:
+
+        w ∉ L
+
+M may:
+
+        reject w
+        OR
+        loop forever.
+
+Therefore:
+
+    L(M) = { w | M accepts w }
+
+is the language recognized by M.
+
+
+====================================================================
+6. IMPORTANT SYMBOLIC REPRESENTATION
+====================================================================
+
+A language L is Turing-recognizable if:
+
+    ∃ Turing Machine M such that
+
+        L = L(M)
+
+where:
+
+    L(M)
+    
+means:
+
+    the set of all strings accepted by M.
+
+
+In other words:
+
+    w ∈ L
+
+if and only if
+
+    M accepts w.
+
+
+====================================================================
+7. ASCII DIAGRAM — TURING RECOGNIZER
+====================================================================
+
+                 Input w
+                    |
+                    v
+          +-------------------+
+          |  Turing Machine M |
+          +-------------------+
+                    |
+              +-----+-----+
+              |           |
+              v           v
+           ACCEPT       REJECT
+              |
+              |
+        if w ∈ L
+
+But for w ∉ L:
+
+                 Input w
+                    |
+                    v
+          +-------------------+
+          |  Turing Machine M |
+          +-------------------+
+                    |
+                    v
+              +-----------+
+              |           |
+              v           v
+           REJECT       LOOP
+                         FOREVER
+
+The machine is allowed to loop forever on
+a string outside the language.
+
+
+====================================================================
+8. TURING RECOGNIZER VS DECIDER
+====================================================================
+
+This is one of the MOST IMPORTANT distinctions in TOC.
+
+------------------------------------------------------------
+TURING RECOGNIZER
+------------------------------------------------------------
+
+For w ∈ L:
+
+    MUST accept.
+
+For w ∉ L:
+
+    May reject
+    OR
+    may loop forever.
+
+------------------------------------------------------------
+DECIDER
+------------------------------------------------------------
+
+For w ∈ L:
+
+    MUST accept.
+
+For w ∉ L:
+
+    MUST reject.
+
+And:
+
+    MUST HALT on every input.
+
+
+====================================================================
+9. COMPARISON TABLE
+====================================================================
+
++----------------------+----------------------+----------------------+
+| Property             | Recognizer           | Decider              |
++----------------------+----------------------+----------------------+
+| Accept YES input     | Yes                  | Yes                  |
+| Reject NO input      | Maybe                | Yes                  |
+| Can loop forever?    | Yes                  | No                   |
+| Halts on all inputs? | No                   | Yes                  |
+| Recognizes language? | Yes                  | Yes                  |
+| Decides language?    | Not necessarily      | Yes                  |
++----------------------+----------------------+----------------------+
+
+Remember:
+
+    Every decider is a recognizer.
+
+But:
+
+    Not every recognizer is a decider.
+
+
+====================================================================
+10. SIMPLE EXAMPLE OF A DECIDER
+====================================================================
+
+Consider:
+
+    L = { strings containing at least one '1' }
+
+Alphabet:
+
+    Σ = {0,1}
+
+A machine can scan the string.
+
+If it sees:
+
+    1
+
+accept.
+
+If it reaches the end without seeing 1:
+
+    reject.
+
+Example:
+
+    00101
+
+contains 1:
+
+    ACCEPT
+
+Example:
+
+    0000
+
+contains no 1:
+
+    REJECT
+
+The machine always finishes.
+
+Therefore it is a DECIDER.
+
+
+====================================================================
+11. SIMPLE EXAMPLE OF A RECOGNIZER
+====================================================================
+
+Consider a hypothetical language L.
+
+Suppose M behaves as follows:
+
+    If input belongs to L:
+        ACCEPT.
+
+    Otherwise:
+        LOOP FOREVER.
+
+Then M recognizes L.
+
+Why?
+
+Because every valid member eventually gets accepted.
+
+But M is NOT a decider.
+
+Why?
+
+Because for non-members it may never halt.
+
+
+====================================================================
+12. IMPORTANT EXAMPLE:
+    HALTING-RELATED LANGUAGE
+====================================================================
+
+Consider:
+
+    HALT_TM =
+    { <M,w> | M halts on input w }
+
+We know:
+
+    HALT_TM is undecidable.
+
+But it is Turing-recognizable.
+
+Why?
+
+Construct a machine R:
+
+    On input <M,w>:
+
+        Simulate M on w.
+
+        If M halts:
+            ACCEPT.
+
+        If M never halts:
+            continue simulation forever.
+
+
+====================================================================
+13. ASCII DIAGRAM FOR HALT_TM RECOGNIZER
+====================================================================
+
+              Input <M,w>
+                   |
+                   v
+          +------------------+
+          | Simulate M on w  |
+          +------------------+
+                   |
+             +-----+------+
+             |            |
+             v            v
+          M halts       M loops
+             |            |
+             v            v
+          ACCEPT       LOOP FOREVER
+
+
+Therefore:
+
+    HALT_TM is recognizable.
+
+But:
+
+    HALT_TM is NOT decidable.
+
+This is an extremely important example.
+
+
+====================================================================
+14. WHY HALT_TM IS NOT DECIDABLE
+====================================================================
+
+Suppose there were a decider H for:
+
+    HALT_TM.
+
+Then H would always answer:
+
+    YES → M halts on w
+
+or:
+
+    NO → M does not halt on w
+
+But the Halting Problem has been proven undecidable.
+
+Therefore:
+
+    No such decider exists.
+
+So:
+
+    HALT_TM is recognizable
+    but undecidable.
+
+
+====================================================================
+15. IMPORTANT IDEA:
+    RECOGNIZABLE DOES NOT MEAN DECIDABLE
+====================================================================
+
+This distinction is critical.
+
+We can have:
+
+    A language that is:
+
+        Turing-recognizable
+        BUT
+        undecidable.
+
+Example:
+
+    HALT_TM
+
+Therefore:
+
+    Recognizable ≠ Decidable
+
+
+But:
+
+    Decidable ⟹ Recognizable
+
+
+====================================================================
+16. RECURSIVELY ENUMERABLE LANGUAGE
+====================================================================
+
+Another name for a Turing-recognizable language is:
+
+    RECURSIVELY ENUMERABLE LANGUAGE
+
+Usually abbreviated as:
+
+    RE language
+
+or:
+
+    RE / r.e. language.
+
+Historically, "recursively enumerable" is a standard
+term in computability theory.
+
+Therefore:
+
+    Turing-recognizable language
+            =
+    Recursively enumerable language
+
+
+====================================================================
+17. FORMAL DEFINITION OF RECURSIVELY ENUMERABLE
+====================================================================
+
+A language L is recursively enumerable if there exists
+a Turing Machine M such that:
+
+    L = L(M)
+
+where M accepts every string in L.
+
+For strings outside L:
+
+    M may reject
+    OR
+    M may run forever.
+
+Therefore:
+
+    RE
+    =
+    Turing-recognizable.
+
+
+====================================================================
+18. RECURSIVE LANGUAGE
+====================================================================
+
+Another important term is:
+
+    Recursive language.
+
+In computability theory:
+
+    Recursive language
+        =
+    Decidable language.
+
+Therefore:
+
+    Recursive
+        =
+    Decidable.
+
+
+A language L is recursive if there exists a Turing Machine
+that decides L.
+
+That means:
+
+    Every input eventually gets:
+
+        ACCEPT
+        OR
+        REJECT.
+
+
+====================================================================
+19. TERMINOLOGY MAP
+====================================================================
+
+These terms can be confusing.
+
+Remember:
+
+    Recursive
+       =
+    Decidable
+
+
+and:
+
+    Recursively Enumerable
+       =
+    Turing-recognizable
+
+
+So:
+
+    Recursive ⊂ Recursively Enumerable
+
+meaning:
+
+    Every recursive language is RE,
+
+but:
+
+    Some RE languages are not recursive.
+
+
+====================================================================
+20. BIG PICTURE
+====================================================================
+
+The relationship can be visualized as:
+
+        +--------------------------------------+
+        |       TURING-RECOGNIZABLE            |
+        |                                      |
+        |    +----------------------------+    |
+        |    |       DECIDABLE            |    |
+        |    |                            |    |
+        |    |  Recursive Languages       |    |
+        |    |                            |    |
+        |    +----------------------------+    |
+        |                                      |
+        |   RE but undecidable languages       |
+        |                                      |
+        +--------------------------------------+
+
+
+Therefore:
+
+    DECIDABLE
+        ⊂
+    TURING-RECOGNIZABLE
+
+
+====================================================================
+21. EXAMPLE OF A LANGUAGE IN EACH CLASS
+====================================================================
+
+CLASS 1:
+
+    Decidable
+
+Example:
+
+    L = { strings containing 1 }
+
+A machine can always determine the answer.
+
+------------------------------------------------------------
+
+CLASS 2:
+
+    Recognizable but undecidable
+
+Example:
+
+    HALT_TM
+
+A machine can recognize halting instances,
+but no machine can decide all instances.
+
+------------------------------------------------------------
+
+CLASS 3:
+
+    Not even recognizable
+
+There are languages that no Turing Machine can recognize.
+
+Such languages are beyond the capabilities of
+Turing recognition.
+
+
+====================================================================
+22. WHY ARE SOME LANGUAGES NOT RECOGNIZABLE?
+====================================================================
+
+There are more languages than there are Turing Machines.
+
+This is based on a counting argument involving
+infinite sets.
+
+The set of all possible languages over an alphabet is
+uncountably infinite.
+
+But the set of all Turing Machines is countably infinite.
+
+Therefore:
+
+    There are languages for which no Turing Machine
+    can even be a recognizer.
+
+This is a deeper computability result.
+
+For now, remember:
+
+    Not every language is Turing-recognizable.
+
+
+====================================================================
+23. DECIDABLE LANGUAGES ARE RECOGNIZABLE
+====================================================================
+
+Suppose L is decidable.
+
+Therefore there is a decider D.
+
+A decider:
+
+    accepts members
+    rejects non-members
+    halts on every input.
+
+Can D also recognize L?
+
+YES.
+
+Because a recognizer only requires:
+
+    members → eventually accept.
+
+D does that.
+
+Therefore:
+
+    Every decidable language is recognizable.
+
+
+====================================================================
+24. PROOF IDEA
+====================================================================
+
+Suppose:
+
+    L is decidable.
+
+Then there exists decider D.
+
+Construct recognizer R:
+
+    R = D
+
+Since D accepts every string in L:
+
+    R accepts every string in L.
+
+Therefore:
+
+    L is recognizable.
+
+Hence:
+
+    Decidable ⊆ Recognizable.
+
+
+====================================================================
+25. CAN EVERY RECOGNIZABLE LANGUAGE BE DECIDED?
+====================================================================
+
+NO.
+
+This is the most important point.
+
+Counterexample:
+
+    HALT_TM
+
+We know:
+
+    HALT_TM is recognizable.
+
+But:
+
+    HALT_TM is undecidable.
+
+Therefore:
+
+    Recognizable ⊄ Decidable.
+
+
+====================================================================
+26. RECOGNIZER FOR A LANGUAGE
+====================================================================
+
+Suppose:
+
+    L = {0^n1^n | n ≥ 0}
+
+This language is actually decidable.
+
+A recognizer could:
+
+    1. Check whether the input has the form 0*1*.
+    2. Count the number of 0s.
+    3. Count the number of 1s.
+    4. Accept if counts are equal.
+    5. Otherwise reject.
+
+Since it always finishes:
+
+    It is a decider.
+
+And because every decider is a recognizer:
+
+    It is also a recognizer.
+
+
+====================================================================
+27. RECOGNIZER COMPUTATION
+====================================================================
+
+For a recognizer M and input w:
+
+Case 1:
+
+    w ∈ L
+
+Then:
+
+    M MUST eventually accept.
+
+Case 2:
+
+    w ∉ L
+
+Then:
+
+    M may reject.
+
+OR:
+
+    M may loop forever.
+
+
+Diagram:
+
+                    Input w
+                       |
+                       v
+                +-------------+
+                | Recognizer M |
+                +-------------+
+                       |
+              +--------+--------+
+              |                 |
+              v                 v
+          w ∈ L             w ∉ L
+              |                 |
+              v                 |
+           ACCEPT          +----+----+
+                            |         |
+                            v         v
+                         REJECT     LOOP
+
+
+====================================================================
+28. DECIDER COMPUTATION
+====================================================================
+
+For a decider D:
+
+                    Input w
+                       |
+                       v
+                 +----------+
+                 | Decider D|
+                 +----------+
+                       |
+              +--------+--------+
+              |                 |
+              v                 v
+          w ∈ L             w ∉ L
+              |                 |
+              v                 v
+           ACCEPT             REJECT
+
+There is NO infinite branch.
+
+
+====================================================================
+29. RECOGNIZER VS DECIDER — EASY MEMORY TRICK
+====================================================================
+
+Think:
+
+    RECOGNIZER:
+
+        "If YES, I promise to eventually say YES."
+
+        "If NO, I may get stuck."
+
+------------------------------------------------------------
+
+    DECIDER:
+
+        "I promise to always give you an answer."
+
+
+This is a very useful mental model.
+
+
+====================================================================
+30. COMPLEMENT OF A LANGUAGE
+====================================================================
+
+For a language L over alphabet Σ:
+
+    Complement(L)
+
+contains every string that is NOT in L.
+
+Mathematically:
+
+    L̅ = Σ* - L
+
+Example:
+
+    Σ = {0,1}
+
+If:
+
+    L = strings ending in 1,
+
+then:
+
+    L̅ = strings not ending in 1.
+
+
+====================================================================
+31. COMPLEMENT AND DECIDABILITY
+====================================================================
+
+If L is decidable, then:
+
+    L̅ is also decidable.
+
+Why?
+
+Take the decider for L.
+
+Swap the answers:
+
+    ACCEPT → REJECT
+
+    REJECT → ACCEPT
+
+
+ASCII:
+
+             Decider for L
+                   |
+          +--------+--------+
+          |                 |
+        ACCEPT            REJECT
+          |                 |
+          v                 v
+        REJECT            ACCEPT
+
+This gives a decider for L̅.
+
+
+====================================================================
+32. COMPLEMENT OF RECOGNIZABLE LANGUAGES
+====================================================================
+
+This is more subtle.
+
+If L is recognizable:
+
+    L may be recognized.
+
+But:
+
+    L̅ is NOT necessarily recognizable.
+
+Example:
+
+    HALT_TM is recognizable.
+
+But its complement:
+
+    NOT-HALT_TM
+
+is NOT recognizable.
+
+Why?
+
+If both L and L̅ were recognizable,
+we could run their recognizers in parallel
+and obtain a decider.
+
+That would make HALT_TM decidable.
+
+But HALT_TM is undecidable.
+
+Therefore its complement cannot be recognizable.
+
+
+====================================================================
+33. DOVETAILING / PARALLEL SIMULATION IDEA
+====================================================================
+
+Suppose both L and L̅ are recognizable.
+
+Let:
+
+    R1 = recognizer for L
+
+    R2 = recognizer for L̅
+
+Given input w:
+
+Run both machines in parallel.
+
+For example:
+
+    Step 1:
+        Run R1 for one step.
+        Run R2 for one step.
+
+    Step 2:
+        Run R1 for another step.
+        Run R2 for another step.
+
+    Step 3:
+        Continue...
+
+
+Because every string belongs either to:
+
+    L
+
+or:
+
+    L̅
+
+one of the recognizers must eventually accept.
+
+Therefore we can decide L.
+
+
+====================================================================
+34. IMPORTANT THEOREM
+====================================================================
+
+THEOREM:
+
+A language L is decidable if and only if:
+
+    L is recognizable
+    AND
+    L̅ is recognizable.
+
+
+In symbolic form:
+
+    L is decidable
+
+    ⇔
+
+    L ∈ RE
+    and
+    L̅ ∈ RE
+
+
+This is one of the most important results
+in computability theory.
+
+
+====================================================================
+35. PROOF — FORWARD DIRECTION
+====================================================================
+
+Suppose:
+
+    L is decidable.
+
+Then there exists a decider D.
+
+Since D always halts:
+
+    D can recognize L.
+
+Now construct a machine for L̅:
+
+    Run D.
+
+    If D accepts:
+        reject.
+
+    If D rejects:
+        accept.
+
+Therefore L̅ is also decidable,
+and hence recognizable.
+
+So:
+
+    L decidable
+    ⇒
+    L recognizable and L̅ recognizable.
+
+
+====================================================================
+36. PROOF — REVERSE DIRECTION
+====================================================================
+
+Suppose:
+
+    L is recognizable.
+
+Let:
+
+    R1 = recognizer for L.
+
+And suppose:
+
+    L̅ is recognizable.
+
+Let:
+
+    R2 = recognizer for L̅.
+
+Given input w:
+
+    Run R1 and R2 in parallel.
+
+Eventually:
+
+    If w ∈ L:
+        R1 accepts.
+
+    If w ∈ L̅:
+        R2 accepts.
+
+Therefore one of them must eventually accept.
+
+We can then halt and return the appropriate answer.
+
+Thus:
+
+    L is decidable.
+
+
+====================================================================
+37. VERY IMPORTANT RELATIONSHIP
+====================================================================
+
+Remember this diagram:
+
+                 RECURSIVELY
+                 ENUMERABLE
+                     /\
+                    /  \
+                   /    \
+                  /      \
+                 v        v
+        L recognizable    L̅ recognizable
+                 \        /
+                  \      /
+                   \    /
+                    \  /
+                     \/
+                  DECIDABLE
+
+
+More precisely:
+
+    L decidable
+        ⇔
+    L and L̅ both recognizable.
+
+
+====================================================================
+38. CLOSURE PROPERTIES OF RECOGNIZABLE LANGUAGES
+====================================================================
+
+Turing-recognizable languages are closed under
+several operations.
+
+Important ones include:
+
+    • Union
+    • Intersection
+    • Concatenation
+    • Kleene star
+
+We will understand the main ideas.
+
+
+====================================================================
+39. CLOSURE UNDER UNION
+====================================================================
+
+Suppose:
+
+    L1 and L2 are recognizable.
+
+We want to recognize:
+
+    L1 ∪ L2
+
+Meaning:
+
+    w belongs to L1
+    OR
+    w belongs to L2.
+
+
+Use:
+
+    R1 = recognizer for L1
+
+    R2 = recognizer for L2
+
+
+Run both recognizers in parallel.
+
+If either accepts:
+
+    ACCEPT.
+
+
+ASCII:
+
+             w
+             |
+       +-----+-----+
+       |           |
+       v           v
+      R1           R2
+       |           |
+       |           |
+       +-----+-----+
+             |
+       either accepts
+             |
+             v
+           ACCEPT
+
+
+====================================================================
+40. WHY PARALLEL SIMULATION IS NECESSARY
+====================================================================
+
+Suppose we run R1 completely first.
+
+If R1 loops forever:
+
+    We never get to R2.
+
+That is a problem.
+
+So instead we simulate them alternately:
+
+    R1: step 1
+    R2: step 1
+
+    R1: step 2
+    R2: step 2
+
+    R1: step 3
+    R2: step 3
+
+    ...
+
+This technique is called:
+
+    Dovetailing / parallel simulation.
+
+
+====================================================================
+41. CLOSURE UNDER INTERSECTION
+====================================================================
+
+Suppose:
+
+    L1 and L2 are recognizable.
+
+We want:
+
+    L1 ∩ L2
+
+A string belongs to the intersection only if:
+
+    w ∈ L1
+
+AND
+
+    w ∈ L2.
+
+
+Run both recognizers in parallel.
+
+Accept only when:
+
+    R1 accepts
+    AND
+    R2 accepts.
+
+
+ASCII:
+
+               w
+               |
+        +------+------+
+        |             |
+        v             v
+       R1             R2
+        |             |
+     ACCEPT         ACCEPT
+        \             /
+         \           /
+          +---------+
+               |
+             ACCEPT
+
+
+If one machine loops forever,
+the combined recognizer may also wait forever.
+
+That is allowed for a recognizer.
+
+
+====================================================================
+42. CLOSURE UNDER CONCATENATION
+====================================================================
+
+Suppose:
+
+    L1 and L2 are recognizable.
+
+We want:
+
+    L1L2
+
+A string w belongs to L1L2 if it can be split as:
+
+    w = xy
+
+where:
+
+    x ∈ L1
+
+and:
+
+    y ∈ L2.
+
+
+A recognizer can try all possible splits:
+
+    w = xy
+
+For every possible split:
+
+    x | y
+
+run:
+
+    R1 on x
+
+    R2 on y
+
+in parallel.
+
+If a valid split is found:
+
+    ACCEPT.
+
+
+====================================================================
+43. CLOSURE UNDER KLEENE STAR
+====================================================================
+
+If L is recognizable, then:
+
+    L*
+
+is also recognizable.
+
+Recall:
+
+    L*
+
+means zero or more concatenations of strings from L.
+
+A recognizer can consider possible decompositions of the
+input into pieces and simulate the recognizer for L
+on the pieces.
+
+This is conceptually more complicated than union,
+but the result is:
+
+    RE languages are closed under Kleene star.
+
+
+====================================================================
+44. IMPORTANT CAUTION
+====================================================================
+
+Do not confuse:
+
+    Closure properties of RE languages
+
+with:
+
+    Closure properties of decidable languages.
+
+Both classes have many closure properties,
+but the proof techniques can differ.
+
+Also remember:
+
+    RE languages are NOT closed under complement.
+
+This is extremely important.
+
+
+====================================================================
+45. ENUMERATION
+====================================================================
+
+Now we introduce another way to understand
+recursively enumerable languages.
+
+Instead of asking:
+
+    "Can a machine recognize this language?"
+
+we can ask:
+
+    "Can a machine list all strings belonging to this language?"
+
+
+This leads to:
+
+    ENUMERATOR.
+
+
+====================================================================
+46. WHAT IS AN ENUMERATOR?
+====================================================================
+
+Simple definition:
+
+An enumerator is a Turing Machine that prints strings
+belonging to a language, one after another.
+
+For example, suppose:
+
+    L = {a, aa, aaa, aaaa, ...}
+
+An enumerator could print:
+
+    a
+    aa
+    aaa
+    aaaa
+    aaaaa
+    ...
+
+
+====================================================================
+47. ASCII DIAGRAM OF ENUMERATOR
+====================================================================
+
+             +----------------+
+             |   Enumerator   |
+             +----------------+
+                     |
+                     v
+                 print "a"
+                     |
+                     v
+                print "aa"
+                     |
+                     v
+               print "aaa"
+                     |
+                     v
+              print "aaaa"
+                     |
+                    ...
+
+The machine keeps generating strings
+belonging to the language.
+
+
+====================================================================
+48. IMPORTANT POINT ABOUT ENUMERATION
+====================================================================
+
+An enumerator does not necessarily halt.
+
+It may continue forever because the language may be infinite.
+
+For:
+
+    L = {a, aa, aaa, ...}
+
+there is no final string.
+
+So the enumerator can continue forever:
+
+    a
+    aa
+    aaa
+    ...
+    forever.
+
+
+====================================================================
+49. ENUMERATOR AND RECURSIVELY ENUMERABLE LANGUAGES
+====================================================================
+
+A major theorem states:
+
+    A language is Turing-recognizable
+    if and only if
+    some enumerator enumerates it.
+
+
+Symbolically:
+
+    L is recognizable
+
+    ⇔
+
+    L has an enumerator.
+
+
+This gives two equivalent ways of describing
+recursively enumerable languages.
+
+
+====================================================================
+50. RECOGNIZER → ENUMERATOR
+====================================================================
+
+Suppose:
+
+    R
+
+is a recognizer for L.
+
+We want to construct an enumerator.
+
+Idea:
+
+    List all possible strings:
+
+        w1, w2, w3, ...
+
+Then simulate R on these strings in a dovetailed way.
+
+For example:
+
+    Round 1:
+        Run R(w1) for one step.
+
+    Round 2:
+        Run R(w1) for one step.
+        Run R(w2) for one step.
+
+    Round 3:
+        Run R(w1) for one step.
+        Run R(w2) for one step.
+        Run R(w3) for one step.
+
+    ...
+
+Whenever a simulation accepts:
+
+    print that string.
+
+
+====================================================================
+51. WHY DOVETAILING IS REQUIRED
+====================================================================
+
+Suppose:
+
+    R(w1) loops forever.
+
+If we run R(w1) completely before trying w2:
+
+    We get stuck.
+
+Therefore we must interleave computations.
+
+ASCII:
+
+    R(w1):  1 2 3 4 5 ...
+    R(w2):    1 2 3 4 5 ...
+    R(w3):      1 2 3 4 5 ...
+    R(w4):        1 2 3 4 ...
+
+This ensures that every input gets simulated eventually.
+
+
+====================================================================
+52. ENUMERATOR → RECOGNIZER
+====================================================================
+
+Suppose we have an enumerator E for L.
+
+We want a recognizer R.
+
+Given input w:
+
+    Run the enumerator.
+
+    Compare every printed string with w.
+
+    If the enumerator prints w:
+
+        ACCEPT.
+
+
+If:
+
+    w ∈ L
+
+then the enumerator will eventually print w.
+
+Therefore R eventually accepts.
+
+If:
+
+    w ∉ L
+
+the enumerator never prints w.
+
+Therefore R may run forever.
+
+Exactly what a recognizer is allowed to do.
+
+
+====================================================================
+53. ASCII DIAGRAM
+====================================================================
+
+Input w
+   |
+   v
++----------------+
+|   Enumerator E |
++----------------+
+        |
+        v
+   print strings
+        |
+        v
+Compare each with w
+        |
+   +----+----+
+   |         |
+   v         v
+match     no match
+   |         |
+   v         |
+ ACCEPT    continue
+
+
+Therefore:
+
+    Enumerator ⇔ Recognizer.
+
+
+====================================================================
+54. IMPORTANT RELATIONSHIPS — COMPLETE PICTURE
+====================================================================
+
+The most important relationships from this chapter are:
+
+    DECIDABLE
+       |
+       | subset
+       v
+    RECOGNIZABLE
+       =
+    RECURSIVELY ENUMERABLE
+
+
+But:
+
+    RECOGNIZABLE
+    does NOT imply
+    DECIDABLE.
+
+
+And:
+
+    L is decidable
+
+    iff
+
+    L and L̅ are both recognizable.
+
+
+Also:
+
+    Recognizable
+       ⇔
+    Has an enumerator.
+
+
+====================================================================
+55. MASTER DIAGRAM
+====================================================================
+
+                 ALL LANGUAGES
+                       |
+       +---------------+----------------+
+       |                                |
+       v                                v
+  RECOGNIZABLE                    NOT RECOGNIZABLE
+       |
+       |
+       +----------------------+
+       |                      |
+       v                      v
+   DECIDABLE          RE but UNDECIDABLE
+   / RECURSIVE
+       |
+       |
+       v
+  Every decider is
+  a recognizer
+
+
+Example:
+
+    DECIDABLE:
+        DFA acceptance
+
+    RE but UNDECIDABLE:
+        HALT_TM
+
+    NOT RECOGNIZABLE:
+        complement(HALT_TM)
+
+
+====================================================================
+56. HIGHLY IMPORTANT EXAMPLE SET
+====================================================================
+
+Remember these three:
+
+------------------------------------------------------------
+
+1. A_TM
+
+    { <M,w> | M accepts w }
+
+    Recognizable: YES
+    Decidable: NO
+
+------------------------------------------------------------
+
+2. HALT_TM
+
+    { <M,w> | M halts on w }
+
+    Recognizable: YES
+    Decidable: NO
+
+------------------------------------------------------------
+
+3. complement(HALT_TM)
+
+    { <M,w> | M does NOT halt on w }
+
+    Recognizable: NO
+    Decidable: NO
+
+These three examples are extremely useful for understanding
+the hierarchy.
+
+
+====================================================================
+57. WHY complement(HALT_TM) IS NOT RECOGNIZABLE
+====================================================================
+
+Suppose, for contradiction, that:
+
+    complement(HALT_TM)
+
+were recognizable.
+
+We already know:
+
+    HALT_TM
+
+is recognizable.
+
+Therefore both:
+
+    HALT_TM
+
+and:
+
+    complement(HALT_TM)
+
+would be recognizable.
+
+From the theorem:
+
+    L and L̅ recognizable
+        ⇒
+    L decidable.
+
+Therefore:
+
+    HALT_TM would be decidable.
+
+But:
+
+    HALT_TM is undecidable.
+
+Contradiction.
+
+Therefore:
+
+    complement(HALT_TM) is not recognizable.
+
+
+====================================================================
+58. B.TECH EXAM PERSPECTIVE
+====================================================================
+
+VERY IMPORTANT DEFINITIONS:
+
+    • Turing-recognizable language
+    • Turing recognizer
+    • Decider
+    • Recursive language
+    • Recursively enumerable language
+    • Enumerator
+
+VERY IMPORTANT DIFFERENCES:
+
+    • Recognizer vs Decider
+    • Recursive vs Recursively Enumerable
+    • RE vs non-RE
+
+VERY IMPORTANT THEOREMS:
+
+    • Every decidable language is recognizable.
+    • L is decidable iff L and L̅ are recognizable.
+    • L is recognizable iff it has an enumerator.
+
+VERY IMPORTANT EXAMPLES:
+
+    • A_TM
+    • HALT_TM
+    • complement(HALT_TM)
+
+
+====================================================================
+59. GATE / COMPETITIVE EXAM PERSPECTIVE
+====================================================================
+
+Memorize the following logical relationships:
+
+    Decidable
+        ⇒
+    Recognizable
+
+BUT:
+
+    Recognizable
+        ⇏
+    Decidable
+
+
+And:
+
+    L recognizable
+    +
+    L̅ recognizable
+
+    ⇒
+
+    L decidable.
+
+
+Therefore:
+
+    If L is undecidable
+    and L is recognizable,
+
+    then L̅ cannot be recognizable.
+
+
+This is a common conceptual question.
+
+
+====================================================================
+60. INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is a Turing-recognizable language?
+
+Q2. What is the difference between a recognizer and a decider?
+
+Q3. Can a recognizer loop forever?
+
+Q4. Can a decider loop forever?
+
+Q5. Is every decidable language recognizable?
+
+Q6. Is every recognizable language decidable?
+
+Q7. Give an example of a recognizable but undecidable language.
+
+Q8. What is a recursively enumerable language?
+
+Q9. What is an enumerator?
+
+Q10. What is the relationship between recognizers and enumerators?
+
+
+====================================================================
+61. PRACTICE QUESTIONS — LEVEL 1
+====================================================================
+
+Q1. Define a Turing-recognizable language.
+
+Q2. What is a recognizer?
+
+Q3. What is a decider?
+
+Q4. Can a recognizer loop forever?
+
+Q5. Can a decider loop forever?
+
+Q6. Define recursively enumerable language.
+
+Q7. What is a recursive language?
+
+Q8. Give one example of a recognizable but undecidable language.
+
+Q9. What is an enumerator?
+
+Q10. What does L(M) mean?
+
+
+====================================================================
+62. PRACTICE QUESTIONS — LEVEL 2
+====================================================================
+
+Q11. Explain why every decidable language is recognizable.
+
+Q12. Explain why every recursive language is recursively enumerable.
+
+Q13. Explain the difference between:
+
+        Recursive
+        Recursively Enumerable
+
+Q14. Is HALT_TM recognizable? Explain.
+
+Q15. Is HALT_TM decidable? Explain.
+
+Q16. Is complement(HALT_TM) recognizable? Explain.
+
+Q17. Explain why recognizable languages are not closed
+     under complement.
+
+Q18. State and explain:
+
+        L is decidable
+        iff
+        L and L̅ are recognizable.
+
+
+====================================================================
+63. PRACTICE QUESTIONS — LEVEL 3
+====================================================================
+
+Q19. Prove that if both L and L̅ are recognizable,
+     then L is decidable.
+
+Q20. Construct a recognizer for HALT_TM.
+
+Q21. Explain how a recognizer can be converted into an
+     enumerator.
+
+Q22. Explain how an enumerator can be converted into
+     a recognizer.
+
+Q23. Explain dovetailing and why it is required.
+
+Q24. Are recognizable languages closed under union?
+     Explain.
+
+Q25. Are recognizable languages closed under intersection?
+     Explain.
+
+Q26. Are recognizable languages closed under complement?
+     Explain.
+
+
+====================================================================
+64. GATE-STYLE CONCEPTUAL QUESTIONS
+====================================================================
+
+Q27. Which statement is correct?
+
+    A. Every recognizable language is decidable.
+    B. Every decidable language is recognizable.
+    C. No decidable language is recognizable.
+    D. Recognizable and decidable are identical.
+
+Answer later — try yourself first.
+
+------------------------------------------------------------
+
+Q28. If L and complement(L) are both recognizable,
+     then L is:
+
+    A. Undecidable
+    B. Decidable
+    C. Not recognizable
+    D. None of these
+
+------------------------------------------------------------
+
+Q29. HALT_TM is:
+
+    A. Decidable but not recognizable
+    B. Recognizable but undecidable
+    C. Neither recognizable nor decidable
+    D. Regular
+
+------------------------------------------------------------
+
+Q30. A recognizer is different from a decider because:
+
+    A. A recognizer cannot accept.
+    B. A recognizer may loop forever.
+    C. A decider may loop forever.
+    D. A recognizer cannot reject.
+
+
+====================================================================
+65. COMMON MISTAKES
+====================================================================
+
+MISTAKE 1:
+
+    "Recognizable means decidable."
+
+WRONG.
+
+Correct:
+
+    Decidable ⇒ Recognizable.
+
+But:
+
+    Recognizable ⇏ Decidable.
+
+
+------------------------------------------------------------
+
+MISTAKE 2:
+
+    "A recognizer must halt."
+
+WRONG.
+
+A recognizer may loop forever on non-members.
+
+
+------------------------------------------------------------
+
+MISTAKE 3:
+
+    "Recursive and recursively enumerable mean the same thing."
+
+WRONG.
+
+    Recursive = Decidable
+
+    Recursively Enumerable = Recognizable
+
+
+------------------------------------------------------------
+
+MISTAKE 4:
+
+    "If L is recognizable, L̅ must be recognizable."
+
+WRONG.
+
+This is not generally true.
+
+
+------------------------------------------------------------
+
+MISTAKE 5:
+
+    "HALT_TM is not recognizable because it is undecidable."
+
+WRONG.
+
+HALT_TM is:
+
+    Recognizable
+    but
+    Undecidable.
+
+
+====================================================================
+66. CHAPTER 22 QUICK SUMMARY
+====================================================================
+
+TURING-RECOGNIZABLE:
+
+    A language is recognizable if a Turing Machine
+    accepts every string belonging to it.
+
+For non-members:
+
+    reject OR loop forever.
+
+
+DECIDABLE:
+
+    A language is decidable if a Turing Machine
+    halts on every input and gives the correct answer.
+
+
+RELATIONSHIP:
+
+    Decidable ⊂ Recognizable
+
+
+TERMINOLOGY:
+
+    Recursive = Decidable
+
+    Recursively Enumerable = Turing-recognizable
+
+
+IMPORTANT EXAMPLE:
+
+    HALT_TM
+
+        Recognizable = YES
+        Decidable = NO
+
+
+IMPORTANT THEOREM:
+
+    L decidable
+
+    ⇔
+
+    L recognizable AND L̅ recognizable
+
+
+ENUMERATOR:
+
+    A machine that lists the strings of a language.
+
+
+IMPORTANT THEOREM:
+
+    L recognizable
+
+    ⇔
+
+    L has an enumerator.
+
+
+====================================================================
+67. CHAPTER 22 MASTER MEMORY MAP
+====================================================================
+
+                    LANGUAGE L
+                        |
+              +---------+---------+
+              |                   |
+              v                   v
+          DECIDER              RECOGNIZER
+              |                   |
+              v                   v
+          ALWAYS HALTS        MAY LOOP
+              |                   |
+              v                   v
+         RECURSIVE          RECURSIVELY
+                            ENUMERABLE
+                                 |
+                                 |
+                         HAS ENUMERATOR
+
+
+Important implication:
+
+    DECIDABLE
+        ↓
+    RECOGNIZABLE
+
+But NOT:
+
+    RECOGNIZABLE
+        ↓
+    DECIDABLE
+
+
+For complement:
+
+    L recognizable
+    +
+    L̅ recognizable
+        ↓
+    L decidable
+
+
+====================================================================
+68. CHAPTER 22 EXAM CHECKLIST
+====================================================================
+
+Before considering this chapter mastered, you should be able to:
+
+    [ ] Define Turing-recognizable language.
+    [ ] Define Turing recognizer.
+    [ ] Define Turing-decidable language.
+    [ ] Explain recognizer vs decider.
+    [ ] Explain recursive language.
+    [ ] Explain recursively enumerable language.
+    [ ] Explain the relationship between them.
+    [ ] Explain HALT_TM as a recognizable language.
+    [ ] Explain why HALT_TM is undecidable.
+    [ ] Explain complement(HALT_TM).
+    [ ] State the complement theorem.
+    [ ] Explain closure properties.
+    [ ] Define enumerator.
+    [ ] Explain recognizer → enumerator.
+    [ ] Explain enumerator → recognizer.
+    [ ] Understand dovetailing.
+    [ ] Solve basic GATE-style questions.
+
+
+====================================================================
+69. CONNECTION TO THE NEXT CHAPTER
+====================================================================
+
+We have now completed:
+
+    CHAPTER 22
+    TURING-RECOGNIZABLE LANGUAGES
+
+We learned:
+
+    Turing Recognizer
+          ↓
+    Recognizable Language
+          =
+    Recursively Enumerable Language
+
+and:
+
+    Decidable Language
+          ⊂
+    Recognizable Language
+
+
+The next major step is to understand how all these
+computational models and language classes fit together.
+
+====================================================================
+UPCOMING NEXT TOPIC — ONLY ONE
+====================================================================
+
+CHAPTER 23 — CHOMSKY HIERARCHY
+
+First topic:
+
+    TYPE-3 / REGULAR LANGUAGES
+
+We will start from the basics:
+
+    • What is the Chomsky hierarchy?
+    • Why do we classify languages?
+    • What is Type-3?
+    • What is a regular grammar?
+    • Relationship between regular grammar and finite automata
+    • Regular languages
+    • Simple examples
+    • ASCII hierarchy diagrams
+    • Formal definitions
+    • Exam perspective
+
+
+====================================================================
+END OF CHAPTER 22
+====================================================================
+
+STOP.
+
+Do NOT move to Chapter 23 until you type:
+
+    NEXT
