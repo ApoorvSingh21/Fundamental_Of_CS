@@ -1,0 +1,2585 @@
+CHAPTER 32 — SECONDARY STORAGE
+
+============================================================
+CHAPTER 32 — SECONDARY STORAGE
+============================================================
+
+LEVEL:
+B.Tech 1st Year → Intermediate → Advanced Foundation
+
+PREREQUISITES:
+Chapter 16 — Memory Fundamentals
+Chapter 17 — Memory Hierarchy
+Chapter 19 — Main Memory
+Chapter 31 — Advanced Memory Systems
+
+GOAL:
+Understand secondary storage, magnetic disks, HDDs, SSDs,
+NAND flash, storage performance, storage interfaces,
+and HDD vs SSD.
+
+============================================================
+32.1 WHAT IS SECONDARY STORAGE?
+============================================================
+
+Secondary storage is non-volatile storage used to store data
+and programs permanently.
+
+Examples:
+
+    • HDD
+    • SSD
+    • USB flash drive
+    • Memory card
+    • Optical disk
+
+"Non-volatile" means:
+
+    Data remains stored even when power is turned OFF.
+
+
+PRIMARY MEMORY:
+
+    Registers
+    Cache
+    RAM
+
+    Usually faster
+    Usually smaller
+    RAM is volatile
+
+
+SECONDARY STORAGE:
+
+    HDD
+    SSD
+    etc.
+
+    Usually slower than RAM
+    Much larger
+    Non-volatile
+
+
+============================================================
+32.2 MEMORY HIERARCHY POSITION
+============================================================
+
+A simplified hierarchy:
+
+    Fastest
+       ↓
+    Registers
+       ↓
+    L1 Cache
+       ↓
+    L2 Cache
+       ↓
+    L3 Cache
+       ↓
+    RAM
+       ↓
+    SSD
+       ↓
+    HDD
+       ↓
+    Slowest
+
+
+Generally:
+
+    As we move downward:
+
+    Capacity ↑
+    Cost per bit ↓
+    Access speed ↓
+
+
+============================================================
+32.3 WHY SECONDARY STORAGE?
+============================================================
+
+RAM cannot be used as the only storage because:
+
+    1. RAM is volatile.
+    2. RAM is relatively expensive per bit.
+    3. RAM capacity is limited compared with storage.
+    4. Programs and files need persistent storage.
+
+
+Therefore:
+
+    Secondary storage
+          ↓
+    Permanent data
+
+
+Examples of stored information:
+
+    • Operating system
+    • Applications
+    • Documents
+    • Videos
+    • Photos
+    • Databases
+    • Games
+
+
+============================================================
+32.4 PRIMARY VS SECONDARY STORAGE
+============================================================
+
++------------------+------------------------------+
+| Primary Memory   | Secondary Storage            |
++------------------+------------------------------+
+| Usually volatile | Non-volatile                 |
+| Faster           | Usually slower than RAM     |
+| Smaller          | Much larger                  |
+| More expensive   | Lower cost per bit          |
+| CPU-accessible   | Persistent storage          |
+| RAM/cache        | HDD/SSD                      |
++------------------+------------------------------+
+
+
+============================================================
+32.5 TYPES OF SECONDARY STORAGE
+============================================================
+
+Major categories:
+
+    1. Magnetic storage
+    2. Solid-state storage
+    3. Optical storage
+
+
+MAGNETIC:
+
+    HDD
+
+
+SOLID-STATE:
+
+    SSD
+    USB flash drives
+    Memory cards
+
+
+OPTICAL:
+
+    CD
+    DVD
+    Blu-ray
+
+
+This chapter focuses mainly on:
+
+    HDD
+    SSD
+
+
+============================================================
+32.6 MAGNETIC DISK
+============================================================
+
+A magnetic disk stores information using magnetic states on
+a rotating disk surface.
+
+
+Traditional HDD:
+
+              Spindle
+                |
+        +-------+-------+
+       /                 \
+      /    Disk platter   \
+     |                     |
+      \                   /
+       \_________________/
+
+
+A hard disk normally contains:
+
+    • Platters
+    • Spindle
+    • Read/write heads
+    • Actuator arm
+    • Tracks
+    • Sectors
+    • Cylinders
+
+
+============================================================
+32.7 HDD STRUCTURE
+============================================================
+
+Simplified:
+
+             Read/Write Head
+                    ↓
+                  [HEAD]
+                    |
+                    |
+              Actuator Arm
+                    |
+                    ↓
+           +----------------+
+          /                  \
+         /     Platter        \
+        |                      |
+         \                    /
+          \__________________/
+                   |
+                 Spindle
+
+
+Multiple platters can exist inside an HDD.
+
+
+============================================================
+32.8 PLATTERS
+============================================================
+
+A platter is a circular disk surface on which magnetic data
+is stored.
+
+
+An HDD can contain multiple platters:
+
+          Platter 1
+          ----------
+          Platter 2
+          ----------
+          Platter 3
+          ----------
+          Platter 4
+          ----------
+
+
+Each platter may have magnetic recording surfaces.
+
+
+============================================================
+32.9 SPINDLE
+============================================================
+
+The spindle rotates the platters.
+
+
+Example rotational speeds include:
+
+    5400 RPM
+    7200 RPM
+    10000 RPM
+    etc.
+
+
+RPM:
+
+    Revolutions Per Minute
+
+
+Higher rotational speed can reduce rotational latency and
+increase potential performance, although actual performance
+depends on many other factors.
+
+
+============================================================
+32.10 TRACKS
+============================================================
+
+A track is a circular path on a disk surface where data can
+be stored.
+
+
+Conceptually:
+
+             +----------------+
+          +----------------------+
+        +--------------------------+
+       |       Track               |
+       |   +------------------+    |
+       |   |     Track        |    |
+       |   |   +----------+   |    |
+       |   |   |  Track   |   |    |
+       |   |   +----------+   |    |
+       |   +------------------+    |
+        +--------------------------+
+          +----------------------+
+             +----------------+
+
+
+Tracks are concentric circles.
+
+
+============================================================
+32.11 SECTORS
+============================================================
+
+A sector is a subdivision of a track.
+
+
+Conceptually:
+
+                    Track
+                +-----------+
+              / |     |     \
+             /  |     |      \
+            |---+-----+-------|
+            |   |     |       |
+             \  |     |      /
+              \ |     |     /
+                +-----------+
+
+
+A track is divided into sectors.
+
+
+Historically, 512 bytes per sector was common.
+
+Modern disks commonly use:
+
+    4096-byte physical sectors
+
+often referred to as:
+
+    4Kn
+
+
+There are also devices using 512-byte logical sectors with
+larger physical sectors.
+
+
+============================================================
+32.12 CYLINDER
+============================================================
+
+A cylinder is the collection of tracks at the same radial
+position across multiple platter surfaces.
+
+
+Imagine several platters:
+
+    Platter 1:  ── Track X
+    Platter 2:  ── Track X
+    Platter 3:  ── Track X
+    Platter 4:  ── Track X
+
+
+Together these corresponding tracks form a:
+
+    CYLINDER
+
+
+============================================================
+32.13 READ/WRITE HEAD
+============================================================
+
+The read/write head accesses magnetic information on the
+platter surface.
+
+
+The actuator moves the head to the required track.
+
+
+Conceptually:
+
+    Actuator
+       |
+       ↓
+    Head ─────────→ Track
+
+
+The head does not normally move directly from sector to
+sector by itself.
+
+The actuator positions the head over the appropriate track.
+
+
+============================================================
+32.14 ACTUATOR ARM
+============================================================
+
+The actuator arm moves the read/write heads across the
+platter surfaces.
+
+
+Concept:
+
+              Head
+               ↓
+    ---------------------- Track
+              /
+             /
+            /
+        Actuator
+
+
+Moving the head to another track causes:
+
+    SEEK
+
+
+============================================================
+32.15 DISK ACCESS PROCESS
+============================================================
+
+Suppose the CPU requests data from an HDD.
+
+
+General sequence:
+
+    1. OS/storage controller receives request
+    2. Disk determines target location
+    3. Head moves to target track
+    4. Wait for desired sector to rotate under head
+    5. Transfer data
+
+
+Important components:
+
+    Seek time
+    +
+    Rotational latency
+    +
+    Transfer time
+
+
+============================================================
+32.16 SEEK TIME
+============================================================
+
+Seek time is the time required to move the disk head to the
+required track.
+
+
+Example:
+
+    Current track = 100
+
+    Required track = 500
+
+
+The head must move:
+
+    100 → 500
+
+
+The time required is the:
+
+    SEEK TIME
+
+
+Shorter seek time:
+
+    Better performance
+
+
+============================================================
+32.17 ROTATIONAL LATENCY
+============================================================
+
+After the head reaches the correct track, the desired sector
+may not be directly under the head.
+
+
+The platter must rotate until the desired sector arrives.
+
+
+This waiting time is:
+
+    ROTATIONAL LATENCY
+
+
+Diagram:
+
+    Head
+     ↓
+     X
+    / \
+   |   |  ← platter rotating
+    \_/
+
+
+============================================================
+32.18 AVERAGE ROTATIONAL LATENCY
+============================================================
+
+If the disk rotates uniformly and requests are random, the
+average rotational latency is approximately half a revolution.
+
+
+Formula:
+
+    Average rotational latency
+    =
+    1 / (2 × rotational frequency)
+
+
+For RPM:
+
+    Average rotational latency
+    =
+    30 / RPM seconds
+
+
+For 7200 RPM:
+
+    Average rotational latency
+    =
+    30 / 7200
+    seconds
+
+    = 0.0041667 seconds
+
+    = 4.1667 ms
+
+
+So:
+
+    Average rotational latency ≈ 4.17 ms
+
+
+============================================================
+32.19 TRANSFER TIME
+============================================================
+
+Transfer time is the time required to actually transfer
+the requested data after positioning is complete.
+
+
+Depends on:
+
+    • Amount of data
+    • Transfer rate
+
+
+Formula:
+
+    Transfer time
+    =
+    Data size / Transfer rate
+
+
+Example:
+
+    Data = 10 MB
+
+    Transfer rate = 100 MB/s
+
+
+    Transfer time
+    =
+    10 / 100
+
+    = 0.1 s
+
+    = 100 ms
+
+
+============================================================
+32.20 DISK ACCESS TIME
+============================================================
+
+Simplified disk access time:
+
+    Disk access time
+    ≈
+    Seek time
+    +
+    Rotational latency
+    +
+    Transfer time
+
+
+Sometimes additional components are included, such as:
+
+    • Controller overhead
+    • Queueing delay
+
+
+So a more realistic model can be:
+
+    Total response time
+    =
+    Queueing delay
+    +
+    Seek
+    +
+    Rotation
+    +
+    Transfer
+    +
+    Controller overhead
+
+
+============================================================
+32.21 DISK ACCESS EXAMPLE
+============================================================
+
+Given:
+
+    Average seek time = 8 ms
+
+    Average rotational latency = 4 ms
+
+    Transfer time = 2 ms
+
+
+Then:
+
+    Access time
+    =
+    8 + 4 + 2
+
+    = 14 ms
+
+
+ANSWER:
+
+    14 ms
+
+
+============================================================
+32.22 ROTATIONAL SPEED AND LATENCY
+============================================================
+
+Suppose:
+
+    Disk A = 5400 RPM
+
+    Disk B = 7200 RPM
+
+
+Average rotational latency:
+
+    5400 RPM:
+
+    30 / 5400
+    = 5.56 ms
+
+
+    7200 RPM:
+
+    30 / 7200
+    = 4.17 ms
+
+
+Therefore:
+
+    7200 RPM → lower average rotational latency
+
+
+============================================================
+32.23 HDD DATA ORGANISATION
+============================================================
+
+Simplified hierarchy:
+
+    Disk
+      ↓
+    Platter
+      ↓
+    Surface
+      ↓
+    Track
+      ↓
+    Sector
+      ↓
+    Data
+
+
+Important terms:
+
+    Track
+    Sector
+    Cylinder
+    Platter
+    Head
+
+
+============================================================
+32.24 HDD ADVANTAGES
+============================================================
+
+HDD advantages:
+
+    • Large capacity
+    • Low cost per GB/TB
+    • Mature technology
+    • Suitable for bulk storage
+    • Good for archival/storage applications
+
+
+============================================================
+32.25 HDD DISADVANTAGES
+============================================================
+
+HDD disadvantages:
+
+    • Mechanical components
+    • Higher access latency
+    • Lower random I/O performance than SSD
+    • Noise
+    • Vibration
+    • Higher mechanical sensitivity
+    • Mechanical wear
+
+
+============================================================
+32.26 SOLID-STATE DRIVE
+============================================================
+
+SSD = Solid-State Drive
+
+
+Unlike HDD, SSD has:
+
+    NO spinning platters
+    NO mechanical read/write head
+
+
+Instead it uses:
+
+    FLASH MEMORY
+
+
+Conceptually:
+
+    CPU
+     |
+    Storage Controller
+     |
+    NAND Flash
+    +----+----+----+
+    |    |    |    |
+   NAND NAND NAND NAND
+
+
+============================================================
+32.27 SSD BASIC STRUCTURE
+============================================================
+
+Simplified SSD:
+
+    +-------------------------+
+    |      SSD Controller     |
+    +------------+------------+
+                 |
+       +---------+---------+
+       |         |         |
+     NAND      NAND      NAND
+     Flash     Flash     Flash
+       |         |         |
+      Data      Data      Data
+
+
+Main components:
+
+    • NAND flash memory
+    • Controller
+    • Firmware
+    • DRAM/cache in some designs
+    • Interface
+
+
+============================================================
+32.28 NAND FLASH
+============================================================
+
+NAND flash is a non-volatile semiconductor memory technology.
+
+
+It stores data electrically.
+
+
+Important properties:
+
+    • Non-volatile
+    • No moving mechanical parts
+    • High density
+    • Fast random access compared with HDD
+    • Limited write/erase endurance
+
+
+============================================================
+32.29 FLASH MEMORY ORGANISATION
+============================================================
+
+A simplified hierarchy:
+
+    SSD
+     ↓
+    NAND package
+     ↓
+    Die
+     ↓
+    Plane
+     ↓
+    Block
+     ↓
+    Page
+
+
+Important:
+
+    PAGE → basic read/program unit
+
+    BLOCK → basic erase unit
+
+
+This difference is extremely important.
+
+
+============================================================
+32.30 PAGE
+============================================================
+
+A NAND flash page is a unit that can generally be read or
+programmed together.
+
+
+For example:
+
+    Page 0
+    Page 1
+    Page 2
+    Page 3
+    ...
+
+
+Data is written/programmed in pages.
+
+
+============================================================
+32.31 BLOCK
+============================================================
+
+A NAND block contains multiple pages.
+
+
+Example:
+
+    Block
+    +----------------+
+    | Page 0         |
+    | Page 1         |
+    | Page 2         |
+    | Page 3         |
+    | ...            |
+    | Page N         |
+    +----------------+
+
+
+NAND flash generally erases data at the block level.
+
+
+Therefore:
+
+    Read → Page level
+    Program → Page level
+    Erase → Block level
+
+
+============================================================
+32.32 WHY NAND NEEDS ERASURE
+============================================================
+
+Flash memory cannot simply overwrite arbitrary old data in
+the same way as RAM.
+
+
+A simplified process:
+
+    Old data
+       ↓
+    Mark/relocate
+       ↓
+    Erase block
+       ↓
+    Program new data
+
+
+This contributes to SSD write-management complexity.
+
+
+============================================================
+32.33 FLASH ENDURANCE
+============================================================
+
+NAND cells can withstand only a finite number of program/erase
+cycles.
+
+
+Therefore SSD controllers use techniques such as:
+
+    • Wear leveling
+    • Garbage collection
+    • Over-provisioning
+    • Error correction
+
+
+============================================================
+32.34 WEAR LEVELING
+============================================================
+
+Wear leveling distributes writes across flash cells so that
+some cells are not worn out much faster than others.
+
+
+Without wear leveling:
+
+    Cell A:
+    ████████████████████  Heavy use
+
+
+    Cell B:
+    ██
+
+
+With wear leveling:
+
+    Cell A:
+    ███████
+
+
+    Cell B:
+    ███████
+
+
+    Cell C:
+    ███████
+
+
+The goal is to distribute wear.
+
+
+============================================================
+32.35 GARBAGE COLLECTION
+============================================================
+
+SSD garbage collection reclaims flash blocks containing
+invalid/stale pages.
+
+
+Concept:
+
+    Block contains:
+
+    Valid page
+    Invalid page
+    Valid page
+    Invalid page
+
+
+Controller:
+
+    1. Copies valid pages elsewhere.
+    2. Erases the old block.
+    3. Makes the block available again.
+
+
+This is:
+
+    GARBAGE COLLECTION
+
+
+============================================================
+32.36 TRIM
+============================================================
+
+TRIM is a command by which the operating system can tell the
+SSD which logical blocks are no longer needed.
+
+
+Example:
+
+    User deletes a large file.
+
+
+The OS can inform the SSD:
+
+    "These logical blocks are no longer required."
+
+
+The SSD can then manage those blocks more efficiently during
+future garbage collection.
+
+
+Important:
+
+    Delete from OS ≠ physically erase flash immediately.
+
+
+============================================================
+32.37 OVER-PROVISIONING
+============================================================
+
+SSDs may contain more physical flash capacity than the amount
+exposed to the user.
+
+
+Example concept:
+
+    Physical NAND:
+        1 TB+
+
+    User-visible capacity:
+        Lower than total physical capacity
+
+
+Extra space can help with:
+
+    • Wear leveling
+    • Garbage collection
+    • Performance
+    • Replacement of worn blocks
+
+
+============================================================
+32.38 SSD CONTROLLER
+============================================================
+
+The SSD controller is responsible for many operations:
+
+    • Mapping logical addresses to physical flash locations
+    • Error correction
+    • Wear leveling
+    • Garbage collection
+    • Bad-block management
+    • Queue management
+    • Interface communication
+
+
+============================================================
+32.39 FLASH TRANSLATION LAYER
+============================================================
+
+FTL = Flash Translation Layer
+
+
+The FTL maps:
+
+    Logical Block Address (LBA)
+
+to:
+
+    Physical NAND location
+
+
+Conceptually:
+
+    OS
+     |
+    LBA 1000
+     |
+    FTL
+     |
+    Physical NAND location
+
+
+This mapping is necessary because flash has different
+program/erase constraints from ordinary block storage.
+
+
+============================================================
+32.40 SSD READ OPERATION
+============================================================
+
+Simplified:
+
+    CPU/OS
+       ↓
+    Storage interface
+       ↓
+    SSD controller
+       ↓
+    FTL
+       ↓
+    NAND page
+       ↓
+    Data returned
+
+
+============================================================
+32.41 SSD WRITE OPERATION
+============================================================
+
+Simplified:
+
+    CPU/OS
+       ↓
+    SSD controller
+       ↓
+    FTL
+       ↓
+    Find suitable NAND location
+       ↓
+    Program page
+       ↓
+    Update mapping
+
+
+Additional background operations may occur:
+
+    • Garbage collection
+    • Wear leveling
+    • ECC
+
+
+============================================================
+32.42 SSD ADVANTAGES
+============================================================
+
+SSD advantages:
+
+    • No moving parts
+    • Low random-access latency
+    • High IOPS
+    • Low noise
+    • Lower mechanical sensitivity
+    • Lower access latency than HDD
+    • Generally lower power usage in many workloads
+
+
+============================================================
+32.43 SSD DISADVANTAGES
+============================================================
+
+SSD disadvantages:
+
+    • Higher cost per GB than HDD in many markets
+    • Flash endurance is finite
+    • Write performance can vary
+    • Garbage collection can affect performance
+    • Data recovery can be complex
+    • Controller failure can make data inaccessible
+
+
+============================================================
+32.44 HDD VS SSD
+============================================================
+
++----------------------+----------------------------+
+| HDD                  | SSD                        |
++----------------------+----------------------------+
+| Magnetic storage    | NAND flash storage        |
+| Mechanical          | Solid-state               |
+| Rotating platters   | No rotating platters      |
+| Moving heads        | No moving heads           |
+| Higher latency      | Lower latency             |
+| Lower random IOPS   | Higher random IOPS        |
+| Usually cheaper/GB  | Usually costlier/GB       |
+| Mechanical noise    | Silent operation          |
+| Sensitive to shock  | Generally more shock      |
+|                      | resistant                 |
++----------------------+----------------------------+
+
+
+============================================================
+32.45 IOPS
+============================================================
+
+IOPS = Input/Output Operations Per Second
+
+
+It measures how many I/O operations a storage device can
+perform per second under specified conditions.
+
+
+SSDs generally provide much higher random IOPS than HDDs.
+
+
+Example:
+
+    HDD:
+        Hundreds of random IOPS (workload-dependent)
+
+
+    SSD:
+        Thousands or much more
+
+
+Actual values depend on:
+
+    • Device
+    • Queue depth
+    • Block size
+    • Read/write mix
+    • Interface
+    • Workload
+
+
+============================================================
+32.46 LATENCY OF HDD VS SSD
+============================================================
+
+HDD:
+
+    Mechanical movement
+        ↓
+    Seek
+        ↓
+    Rotation
+        ↓
+    Data transfer
+
+
+SSD:
+
+    Electronic access
+        ↓
+    Controller
+        ↓
+    NAND access
+
+
+Therefore:
+
+    SSD random-access latency
+    << HDD random-access latency
+
+
+in typical workloads.
+
+
+============================================================
+32.47 STORAGE CAPACITY
+============================================================
+
+Storage capacity can be expressed using:
+
+    KB
+    MB
+    GB
+    TB
+    PB
+
+
+In storage marketing, decimal units are commonly used:
+
+    1 GB = 10^9 bytes
+
+    1 TB = 10^12 bytes
+
+
+Computing contexts may also use binary units:
+
+    1 GiB = 2^30 bytes
+
+    1 TiB = 2^40 bytes
+
+
+Do not confuse:
+
+    GB with GiB
+
+    TB with TiB
+
+
+============================================================
+32.48 SATA
+============================================================
+
+SATA = Serial ATA
+
+
+It is a storage interface commonly associated with:
+
+    • HDDs
+    • SATA SSDs
+
+
+A SATA SSD may be much faster than an HDD but is limited by
+the SATA interface compared with modern PCIe-based SSDs.
+
+
+============================================================
+32.49 SATA SSD
+============================================================
+
+Conceptually:
+
+    CPU
+     |
+    PCIe/Chipset
+     |
+    SATA Controller
+     |
+    SATA Cable
+     |
+    SATA SSD
+
+
+SATA SSDs often use the 2.5-inch drive form factor, although
+other physical implementations exist.
+
+
+============================================================
+32.50 PCI EXPRESS
+============================================================
+
+PCIe = Peripheral Component Interconnect Express
+
+
+PCIe is a high-speed serial interconnect used for many devices,
+including high-performance storage.
+
+
+Modern NVMe SSDs commonly communicate through PCIe.
+
+
+Concept:
+
+    CPU/Platform
+         |
+        PCIe
+         |
+      NVMe SSD
+
+
+============================================================
+32.51 NVMe
+============================================================
+
+NVMe = Non-Volatile Memory Express
+
+
+NVMe is a storage protocol/interface architecture designed
+for non-volatile memory devices, especially SSDs, and commonly
+used over PCIe.
+
+
+NVMe was designed to take advantage of SSD characteristics.
+
+
+Compared with legacy storage protocols, NVMe supports:
+
+    • Large numbers of queues
+    • Many commands per queue
+    • Efficient parallelism
+    • Lower protocol overhead
+
+
+============================================================
+32.52 NVMe QUEUES
+============================================================
+
+Traditional storage protocols were designed around
+characteristics of older storage technologies.
+
+
+NVMe supports many queues:
+
+        Queue 0
+        Queue 1
+        Queue 2
+        ...
+        Queue N
+
+
+This is useful for multicore processors because different
+CPU cores can submit I/O efficiently.
+
+
+============================================================
+32.53 SATA SSD VS NVMe SSD
+============================================================
+
++----------------------+----------------------------+
+| SATA SSD            | NVMe SSD                   |
++----------------------+----------------------------+
+| SATA interface      | Usually PCIe               |
+| SATA protocol       | NVMe protocol              |
+| Lower interface     | Much higher interface     |
+| bandwidth ceiling   | bandwidth potential       |
+| Good performance    | Higher performance         |
+| Common in older/    | Common in modern high-    |
+| broad systems       | performance systems       |
++----------------------+----------------------------+
+
+
+Important:
+
+    NVMe is NOT simply "a faster type of NAND."
+
+
+NAND is the underlying storage technology.
+
+NVMe is a protocol/interface architecture.
+
+
+============================================================
+32.54 PCIe LANES
+============================================================
+
+PCIe can use multiple lanes.
+
+Conceptually:
+
+    x1
+    x2
+    x4
+    x8
+    x16
+
+
+More lanes can provide greater aggregate bandwidth, depending
+on the PCIe generation and system implementation.
+
+
+Many consumer NVMe SSDs commonly use:
+
+    PCIe x4
+
+
+============================================================
+32.55 STORAGE CONTROLLER PATH
+============================================================
+
+A modern system can look like:
+
+    Application
+         ↓
+    Operating System
+         ↓
+    File System
+         ↓
+    Storage Driver
+         ↓
+    PCIe / SATA
+         ↓
+    SSD Controller
+         ↓
+    NAND Flash
+
+
+This demonstrates that storage performance is affected by
+more than the storage medium alone.
+
+
+============================================================
+32.56 STORAGE PERFORMANCE FACTORS
+============================================================
+
+Storage performance depends on:
+
+    • Latency
+    • Bandwidth
+    • IOPS
+    • Queue depth
+    • Block size
+    • Read/write ratio
+    • Interface
+    • Controller
+    • Cache
+    • Workload
+    • File system
+    • Operating system
+
+
+============================================================
+32.57 SEQUENTIAL VS RANDOM ACCESS
+============================================================
+
+SEQUENTIAL ACCESS:
+
+    Data is accessed in nearby/ordered blocks.
+
+Example:
+
+    Block 1
+    Block 2
+    Block 3
+    Block 4
+    Block 5
+
+
+RANDOM ACCESS:
+
+    Requests may be scattered.
+
+Example:
+
+    Block 100
+    Block 7
+    Block 5000
+    Block 42
+
+
+HDDs suffer significantly more from random access because of
+mechanical positioning.
+
+
+============================================================
+32.58 SEQUENTIAL PERFORMANCE
+============================================================
+
+Sequential workloads can achieve high throughput because
+large contiguous data transfers reduce overhead.
+
+
+Examples:
+
+    • Large file copy
+    • Video streaming
+    • Backup
+
+
+Both HDD and SSD can perform well sequentially, but SSDs often
+provide substantially higher throughput depending on the
+device/interface.
+
+
+============================================================
+32.59 RANDOM PERFORMANCE
+============================================================
+
+Random workloads involve many small, scattered accesses.
+
+
+Examples:
+
+    • Database workloads
+    • OS metadata
+    • Application loading
+    • Many small files
+
+
+SSDs generally have a major advantage here because they do not
+need mechanical seek and rotational positioning.
+
+
+============================================================
+32.60 STORAGE RELIABILITY
+============================================================
+
+Important reliability concepts:
+
+    HDD:
+
+        Mechanical failure
+        Head/platter problems
+        Motor failure
+
+
+    SSD:
+
+        NAND wear
+        Controller failure
+        Firmware failure
+        Flash cell degradation
+
+
+Therefore:
+
+    BACKUPS ARE ESSENTIAL
+
+Neither HDD nor SSD should be considered a substitute for
+backup strategy.
+
+
+============================================================
+32.61 SSD ENDURANCE
+============================================================
+
+SSD endurance is often described using metrics such as:
+
+    TBW = Terabytes Written
+
+
+Example concept:
+
+    TBW = 600 TB
+
+
+This indicates a specified amount of host writes associated
+with the manufacturer's endurance rating under its stated
+conditions.
+
+
+Another concept:
+
+    DWPD = Drive Writes Per Day
+
+
+DWPD describes how many full-drive writes per day are rated
+over a specified warranty period.
+
+
+============================================================
+32.62 ERROR CORRECTION
+============================================================
+
+NAND flash is subject to bit errors.
+
+
+SSDs therefore use:
+
+    ECC = Error-Correcting Code
+
+
+The controller detects and corrects certain errors.
+
+
+Modern flash systems use sophisticated error-correction
+mechanisms because NAND density has increased.
+
+
+============================================================
+32.63 BAD BLOCK MANAGEMENT
+============================================================
+
+Flash memory may contain blocks that are unusable or become
+unreliable.
+
+
+The SSD controller can:
+
+    • Detect bad blocks
+    • Avoid using them
+    • Replace them using spare capacity
+
+
+This helps maintain reliability.
+
+
+============================================================
+32.64 WRITE AMPLIFICATION
+============================================================
+
+Write Amplification Factor (WAF) compares the amount of data
+actually written to flash with the amount of data written by
+the host.
+
+
+Conceptually:
+
+    WAF
+    =
+    NAND writes / Host writes
+
+
+If:
+
+    Host writes = 10 GB
+
+    NAND writes = 15 GB
+
+
+Then:
+
+    WAF = 15 / 10
+
+        = 1.5
+
+
+Lower write amplification is generally desirable.
+
+
+============================================================
+32.65 WHY WRITE AMPLIFICATION HAPPENS
+============================================================
+
+Causes can include:
+
+    • Garbage collection
+    • Small writes
+    • Flash block erase constraints
+    • Data movement
+    • Mapping management
+
+
+Therefore the SSD may internally write more data than the host
+requested.
+
+
+============================================================
+32.66 SSD PERFORMANCE OVER TIME
+============================================================
+
+SSD performance can depend on:
+
+    • Amount of free space
+    • SLC cache behavior
+    • Garbage collection
+    • Temperature
+    • Workload
+    • NAND type
+    • Controller
+
+
+A drive can show:
+
+    High burst performance
+
+but lower:
+
+    Sustained write performance
+
+
+after its temporary cache is exhausted.
+
+
+============================================================
+32.67 SLC CACHE CONCEPT
+============================================================
+
+Some SSDs use a portion of NAND in a faster operating mode as
+a write cache.
+
+
+Concept:
+
+    Host
+      ↓
+    Fast cache
+      ↓
+    NAND storage
+
+
+For short writes:
+
+    Very high performance
+
+
+For long sustained writes:
+
+    Performance may decrease after cache is exhausted.
+
+
+============================================================
+32.68 FORM FACTORS
+============================================================
+
+Common storage form factors include:
+
+    HDD:
+
+        • 3.5-inch
+        • 2.5-inch
+
+
+    SSD:
+
+        • 2.5-inch SATA
+        • M.2
+        • U.2/U.3
+        • Other enterprise form factors
+
+
+IMPORTANT:
+
+    Form factor ≠ protocol
+
+
+For example:
+
+    M.2 is a physical form factor.
+
+    NVMe is a protocol commonly used with M.2 PCIe SSDs.
+
+
+============================================================
+32.69 M.2 VS NVMe
+============================================================
+
+M.2:
+
+    Physical/form-factor specification.
+
+
+NVMe:
+
+    Storage protocol.
+
+
+Therefore:
+
+    M.2 ≠ automatically NVMe
+
+
+An M.2 device can use different interfaces/protocols depending
+on the implementation, including SATA or PCIe/NVMe.
+
+
+============================================================
+32.70 STORAGE ACCESS TIME COMPARISON
+============================================================
+
+HDD:
+
+    Seek
+      +
+    Rotation
+      +
+    Transfer
+
+
+SSD:
+
+    Controller processing
+      +
+    Flash access
+      +
+    Data transfer
+
+
+The mechanical terms:
+
+    Seek time
+    Rotational latency
+
+are specifically associated with rotating disks such as HDDs.
+
+
+============================================================
+32.71 B.TECH NUMERICAL — HDD ACCESS TIME
+============================================================
+
+Given:
+
+    Average seek time = 6 ms
+
+    Rotation speed = 7200 RPM
+
+    Transfer time = 1 ms
+
+
+Average rotational latency:
+
+    = 30 / 7200 seconds
+
+    = 0.0041667 s
+
+    = 4.1667 ms
+
+
+Total:
+
+    = 6 + 4.1667 + 1
+
+    = 11.1667 ms
+
+
+ANSWER:
+
+    ≈ 11.17 ms
+
+
+============================================================
+32.72 B.TECH NUMERICAL — TRANSFER TIME
+============================================================
+
+Given:
+
+    Data size = 100 MB
+
+    Transfer rate = 200 MB/s
+
+
+Transfer time:
+
+    = Data / Rate
+
+    = 100 / 200
+
+    = 0.5 seconds
+
+
+ANSWER:
+
+    500 ms
+
+
+============================================================
+32.73 B.TECH NUMERICAL — ROTATIONAL LATENCY
+============================================================
+
+Given:
+
+    RPM = 10,000
+
+
+Average rotational latency:
+
+    = 30 / 10000 seconds
+
+    = 0.003 seconds
+
+    = 3 ms
+
+
+ANSWER:
+
+    3 ms
+
+
+============================================================
+32.74 B.TECH NUMERICAL — WRITE AMPLIFICATION
+============================================================
+
+Host writes:
+
+    200 GB
+
+
+NAND writes:
+
+    260 GB
+
+
+WAF:
+
+    = 260 / 200
+
+    = 1.3
+
+
+ANSWER:
+
+    WAF = 1.3
+
+
+============================================================
+32.75 COMPETITIVE EXAM MCQs
+============================================================
+
+Q1. Which storage device contains rotating platters?
+
+    A. SSD
+    B. HDD
+    C. DRAM
+    D. SRAM
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q2. Which HDD component moves the read/write head?
+
+    A. Spindle
+    B. Actuator
+    C. Sector
+    D. Controller cache
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q3. A track is:
+
+    A. A circular path on a disk surface
+    B. A memory chip
+    C. A CPU register
+    D. A NAND controller
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q4. A sector is:
+
+    A. A subdivision of a track
+    B. A CPU instruction
+    C. A cache level
+    D. A register
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q5. Average rotational latency at 7200 RPM is approximately:
+
+    A. 0.42 ms
+    B. 4.17 ms
+    C. 41.7 ms
+    D. 417 ms
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q6. Which component of HDD access time is caused by moving
+the head to the desired track?
+
+    A. Transfer time
+    B. Seek time
+    C. Rotational latency
+    D. Queue depth
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q7. Which storage technology uses NAND flash?
+
+    A. HDD
+    B. SSD
+    C. Magnetic tape only
+    D. CPU register
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q8. In NAND flash, the erase operation generally occurs at:
+
+    A. Bit level
+    B. Byte level
+    C. Page level
+    D. Block level
+
+ANSWER:
+    D
+
+
+------------------------------------------------------------
+
+Q9. In NAND flash, programming commonly occurs at:
+
+    A. Page level
+    B. Block level
+    C. Entire SSD level
+    D. Track level
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q10. Which technique distributes writes across flash cells?
+
+    A. Wear leveling
+    B. Branch prediction
+    C. Paging
+    D. Disk seeking
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q11. TRIM allows:
+
+    A. CPU to increase clock speed
+    B. OS to inform SSD about blocks no longer needed
+    C. HDD to rotate faster
+    D. RAM to become non-volatile
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q12. NVMe is primarily associated with:
+
+    A. Magnetic tape
+    B. High-performance non-volatile storage
+    C. CPU registers
+    D. DRAM refresh
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q13. NVMe commonly operates over:
+
+    A. PCIe
+    B. VGA
+    C. PS/2
+    D. IDE only
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q14. Which generally provides better random I/O performance?
+
+    A. HDD
+    B. SSD
+    C. Magnetic tape
+    D. Optical disk
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q15. Which is a physical form factor?
+
+    A. NVMe
+    B. M.2
+    C. SATA protocol
+    D. NAND
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q16. Which is a storage protocol?
+
+    A. M.2
+    B. NVMe
+    C. 2.5-inch
+    D. 3.5-inch
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q17. FTL in SSDs is responsible for:
+
+    A. CPU scheduling
+    B. Logical-to-physical flash mapping
+    C. Disk rotation
+    D. Branch prediction
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q18. TBW is related to:
+
+    A. SSD endurance
+    B. CPU clock frequency
+    C. RAM latency
+    D. HDD rotational speed
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q19. Write amplification means:
+
+    A. NAND writes can exceed host writes
+    B. CPU clock doubles
+    C. RAM becomes larger
+    D. HDD rotates twice as fast
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q20. Which is NOT normally a component of HDD access time?
+
+    A. Seek time
+    B. Rotational latency
+    C. Transfer time
+    D. Page fault handling
+
+ANSWER:
+    D
+
+
+============================================================
+32.76 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    "SSD has no controller."
+
+CORRECT:
+
+    SSDs have controllers responsible for flash management.
+
+
+------------------------------------------------------------
+
+MISTAKE 2:
+
+    "NVMe is a type of NAND."
+
+CORRECT:
+
+    NAND is flash memory technology.
+    NVMe is a storage protocol/interface architecture.
+
+
+------------------------------------------------------------
+
+MISTAKE 3:
+
+    "M.2 means NVMe."
+
+CORRECT:
+
+    M.2 is a form factor.
+    M.2 devices can use different interfaces/protocols.
+
+
+------------------------------------------------------------
+
+MISTAKE 4:
+
+    "Seek time exists in SSD."
+
+CORRECT:
+
+    Mechanical seek time is an HDD concept.
+
+
+------------------------------------------------------------
+
+MISTAKE 5:
+
+    "SSD data is never moved internally."
+
+CORRECT:
+
+    SSDs can move data internally during garbage collection,
+    wear leveling, and other management operations.
+
+
+------------------------------------------------------------
+
+MISTAKE 6:
+
+    "Deleting a file immediately erases NAND cells."
+
+CORRECT:
+
+    The OS can issue TRIM; physical reclamation happens under
+    SSD controller management.
+
+
+------------------------------------------------------------
+
+MISTAKE 7:
+
+    "More RPM always means proportionally faster HDD."
+
+CORRECT:
+
+    RPM affects rotational latency, but total performance also
+    depends on seek time, areal density, transfer rate,
+    controller behavior, workload, and other factors.
+
+
+============================================================
+32.77 HIGH-VALUE EXAM FORMULAS
+============================================================
+
+Average rotational latency:
+
+    = 30 / RPM seconds
+
+
+Transfer time:
+
+    = Data size / Transfer rate
+
+
+Simplified HDD access time:
+
+    = Seek time
+      + Rotational latency
+      + Transfer time
+
+
+Write Amplification Factor:
+
+    WAF
+    =
+    NAND writes / Host writes
+
+
+Average memory/storage latency:
+
+    Depends on:
+    Hit/miss behavior
+    + device latency
+    + transfer time
+    + queueing
+
+
+============================================================
+32.78 QUICK REVISION
+============================================================
+
+SECONDARY STORAGE:
+
+    Non-volatile persistent storage.
+
+
+HDD:
+
+    Magnetic + mechanical storage.
+
+
+PLATTER:
+
+    Circular magnetic disk surface.
+
+
+TRACK:
+
+    Circular path on platter.
+
+
+SECTOR:
+
+    Subdivision of a track.
+
+
+CYLINDER:
+
+    Corresponding tracks across platter surfaces.
+
+
+SEEK TIME:
+
+    Time to move head to target track.
+
+
+ROTATIONAL LATENCY:
+
+    Waiting for target sector to rotate under head.
+
+
+TRANSFER TIME:
+
+    Time to transfer requested data.
+
+
+SSD:
+
+    Solid-state storage using flash memory.
+
+
+NAND:
+
+    Non-volatile flash memory technology.
+
+
+PAGE:
+
+    Typical NAND program/read unit.
+
+
+BLOCK:
+
+    Typical NAND erase unit.
+
+
+FTL:
+
+    Maps logical addresses to physical flash locations.
+
+
+WEAR LEVELING:
+
+    Distributes writes to reduce uneven flash wear.
+
+
+GARBAGE COLLECTION:
+
+    Reclaims blocks containing invalid pages.
+
+
+TRIM:
+
+    OS informs SSD that certain logical blocks are no longer
+    needed.
+
+
+TBW:
+
+    Terabytes Written; an endurance-related metric.
+
+
+WAF:
+
+    NAND writes / Host writes.
+
+
+SATA:
+
+    Storage interface/protocol family.
+
+
+PCIe:
+
+    High-speed interconnect.
+
+
+NVMe:
+
+    Storage protocol designed for non-volatile memory,
+    commonly over PCIe.
+
+
+M.2:
+
+    Physical form factor.
+
+
+============================================================
+32.79 COMPLETE STORAGE MAP
+============================================================
+
+                    SECONDARY STORAGE
+                           |
+             +-------------+-------------+
+             |                           |
+          MAGNETIC                   SOLID STATE
+             |                           |
+            HDD                         SSD
+             |                           |
+      +------+------+             +------+------+
+      |      |      |             |      |      |
+   Platter Track Sector         NAND  Controller FTL
+      |                           |
+   Spindle                      Page
+      |                           |
+   Actuator                     Block
+      |
+   Read/Write Head
+      |
+   Seek + Rotation
+      |
+   Transfer
+
+
+============================================================
+32.80 HDD ACCESS FLOW
+============================================================
+
+Request
+   ↓
+Find target track
+   ↓
+SEEK
+   ↓
+Wait for target sector
+   ↓
+ROTATIONAL LATENCY
+   ↓
+Transfer data
+   ↓
+TRANSFER TIME
+   ↓
+Complete
+
+
+============================================================
+32.81 SSD ACCESS FLOW
+============================================================
+
+Request
+   ↓
+Storage Interface
+   ↓
+SSD Controller
+   ↓
+FTL
+   ↓
+NAND Flash
+   ↓
+Read/Program
+   ↓
+Return data
+
+
+Background operations:
+
+    Wear leveling
+    Garbage collection
+    Error correction
+    Bad-block management
+
+
+============================================================
+32.82 FINAL TAKEAWAY
+============================================================
+
+The two major storage technologies are:
+
+    HDD:
+        Magnetic
+        Mechanical
+        Cheap per capacity
+        High mechanical latency
+
+
+    SSD:
+        NAND flash
+        Electronic
+        Low latency
+        High random performance
+        Requires sophisticated flash management
+
+
+The most important HDD formula is:
+
+    Access Time
+    =
+    Seek Time
+    +
+    Rotational Latency
+    +
+    Transfer Time
+
+
+The most important NAND concept is:
+
+    READ/PROGRAM → PAGE
+
+    ERASE → BLOCK
+
+
+The most important SSD-management concepts are:
+
+    FTL
+    Wear Leveling
+    Garbage Collection
+    TRIM
+    ECC
+    Over-Provisioning
+
+
+The most important interface concepts are:
+
+    SATA → common storage interface
+
+    PCIe → high-speed interconnect
+
+    NVMe → modern storage protocol, commonly over PCIe
+
+    M.2 → physical form factor
+
+
+============================================================
+CHAPTER 32 COMPLETE
+============================================================

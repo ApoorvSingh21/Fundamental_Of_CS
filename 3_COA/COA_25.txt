@@ -1,0 +1,1983 @@
+CHAPTER 25 — INSTRUCTION PIPELINING
+
+============================================================
+CHAPTER 25 — INSTRUCTION PIPELINING
+============================================================
+
+LEVEL:
+B.Tech 1st Year
+
+STARTING LEVEL:
+Absolute Beginner
+
+GOAL:
+Understand how CPUs execute multiple instructions in an
+overlapped manner using pipelining, calculate pipeline
+performance, and understand basic pipeline hazards.
+
+============================================================
+
+
+------------------------------------------------------------
+25.1 WHAT IS INSTRUCTION PIPELINING?
+------------------------------------------------------------
+
+Instruction pipelining is a CPU technique in which the
+execution of multiple instructions is overlapped.
+
+Instead of completely finishing one instruction before
+starting the next instruction, the CPU divides instruction
+execution into stages.
+
+Different instructions can occupy different stages at the
+same time.
+
+Simple idea:
+
+WITHOUT PIPELINING:
+
+    Instruction 1 → Complete
+    Instruction 2 → Complete
+    Instruction 3 → Complete
+    Instruction 4 → Complete
+
+WITH PIPELINING:
+
+    Instruction 1 → Stage 1 → Stage 2 → Stage 3 → Stage 4
+    Instruction 2           → Stage 1 → Stage 2 → Stage 3 → Stage 4
+    Instruction 3                     → Stage 1 → Stage 2 → Stage 3 → Stage 4
+
+
+Therefore:
+
+    Pipelining increases instruction throughput.
+
+============================================================
+
+
+------------------------------------------------------------
+25.2 REAL-WORLD ANALOGY
+------------------------------------------------------------
+
+Imagine a washing process with 4 stages:
+
+    1. Wash
+    2. Dry
+    3. Iron
+    4. Fold
+
+
+WITHOUT PIPELINING:
+
+    Shirt 1:
+        Wash → Dry → Iron → Fold
+
+    Shirt 2:
+        Wash → Dry → Iron → Fold
+
+    Shirt 3:
+        Wash → Dry → Iron → Fold
+
+
+WITH PIPELINING:
+
+    Time →   1      2      3      4      5      6
+
+    Shirt 1  Wash   Dry    Iron   Fold
+    Shirt 2         Wash   Dry    Iron   Fold
+    Shirt 3                Wash   Dry    Iron   Fold
+
+
+While Shirt 1 is drying:
+
+    Shirt 2 can be washing.
+
+
+Similarly, a pipelined CPU can work on different
+instructions simultaneously.
+
+
+------------------------------------------------------------
+25.3 IMPORTANT IDEA
+------------------------------------------------------------
+
+Pipelining does NOT normally make an individual instruction
+finish instantly.
+
+Instead, it allows more instructions to be completed per
+unit of time.
+
+Therefore:
+
+    Pipelining mainly improves:
+
+        THROUGHPUT
+
+not necessarily:
+
+        LATENCY of one instruction
+
+
+------------------------------------------------------------
+25.4 LATENCY VS THROUGHPUT
+------------------------------------------------------------
+
+LATENCY:
+
+    Time required for one instruction to complete.
+
+
+THROUGHPUT:
+
+    Number of instructions completed per unit time.
+
+
+Example:
+
+    A pipeline may take 5 clock cycles for one instruction
+    to pass through all stages.
+
+But after the pipeline becomes full:
+
+    approximately one instruction may complete every clock
+    cycle.
+
+
+Therefore:
+
+    Latency ≠ Throughput
+
+
+------------------------------------------------------------
+25.5 WHY DO WE NEED PIPELINING?
+------------------------------------------------------------
+
+Without pipelining:
+
+    CPU hardware may remain idle during parts of
+    instruction execution.
+
+Example:
+
+    During instruction fetch:
+        ALU may not be doing useful work.
+
+    During ALU execution:
+        Instruction-fetch hardware may be idle.
+
+
+Pipelining allows these hardware resources to work on
+different instructions simultaneously.
+
+
+------------------------------------------------------------
+25.6 BASIC INSTRUCTION PIPELINE
+------------------------------------------------------------
+
+A common simplified 5-stage pipeline is:
+
+    IF → ID → EX → MEM → WB
+
+
+Where:
+
+    IF  = Instruction Fetch
+    ID  = Instruction Decode
+    EX  = Execute
+    MEM = Memory Access
+    WB  = Write Back
+
+
+Diagram:
+
+    +----+----+----+-----+----+
+    | IF | ID | EX | MEM | WB |
+    +----+----+----+-----+----+
+
+
+------------------------------------------------------------
+25.7 STAGE 1 — INSTRUCTION FETCH (IF)
+------------------------------------------------------------
+
+The CPU fetches the instruction from memory.
+
+Main activities:
+
+    • PC provides instruction address.
+    • Memory is accessed.
+    • Instruction is obtained.
+    • PC is updated.
+
+
+Simplified:
+
+    PC
+     |
+     ↓
+    Instruction Memory
+     |
+     ↓
+    Instruction
+
+
+Example:
+
+    PC = 1000
+
+    Memory[1000] = ADD R1, R2, R3
+
+The CPU fetches:
+
+    ADD R1, R2, R3
+
+
+------------------------------------------------------------
+25.8 STAGE 2 — INSTRUCTION DECODE (ID)
+------------------------------------------------------------
+
+The CPU determines what the instruction means.
+
+Activities:
+
+    • Decode opcode
+    • Identify registers
+    • Read operands
+    • Generate control information
+
+
+Example:
+
+    ADD R3, R1, R2
+
+
+Decode determines:
+
+    Operation:
+        ADD
+
+    Source registers:
+        R1, R2
+
+    Destination:
+        R3
+
+
+------------------------------------------------------------
+25.9 STAGE 3 — EXECUTE (EX)
+------------------------------------------------------------
+
+The required operation is performed.
+
+For arithmetic:
+
+    ALU performs the calculation.
+
+
+Example:
+
+    R1 = 10
+    R2 = 20
+
+    ADD R3, R1, R2
+
+    ALU:
+
+        10 + 20 = 30
+
+
+Result:
+
+    30
+
+
+For branch instructions, the branch condition/address
+may also be evaluated during this stage.
+
+
+------------------------------------------------------------
+25.10 STAGE 4 — MEMORY ACCESS (MEM)
+------------------------------------------------------------
+
+This stage is mainly required for memory instructions.
+
+LOAD:
+
+    Read data from memory.
+
+
+STORE:
+
+    Write data to memory.
+
+
+For a simple ADD instruction, this stage may not perform
+a major memory operation.
+
+
+Example:
+
+    LOAD R1, [1000]
+
+    MEM stage:
+
+        R1 ← Memory[1000]
+
+
+------------------------------------------------------------
+25.11 STAGE 5 — WRITE BACK (WB)
+------------------------------------------------------------
+
+The result is written back to the destination register.
+
+Example:
+
+    ADD R3, R1, R2
+
+After ALU:
+
+    Result = 30
+
+WB:
+
+    R3 ← 30
+
+
+------------------------------------------------------------
+25.12 COMPLETE 5-STAGE PIPELINE
+------------------------------------------------------------
+
+The complete flow:
+
+    Instruction
+         |
+         ↓
+       IF
+    Fetch instruction
+         |
+         ↓
+       ID
+    Decode instruction
+         |
+         ↓
+       EX
+    Execute operation
+         |
+         ↓
+       MEM
+    Access memory
+         |
+         ↓
+       WB
+    Write result
+         |
+         ↓
+      Complete
+
+
+------------------------------------------------------------
+25.13 PIPELINE TIMING
+------------------------------------------------------------
+
+Suppose there are 3 instructions:
+
+    I1
+    I2
+    I3
+
+
+Five pipeline stages:
+
+    IF ID EX MEM WB
+
+
+Timing:
+
+    Cycle →   1    2    3    4    5    6    7
+
+    I1        IF   ID   EX   MEM  WB
+    I2             IF   ID   EX   MEM  WB
+    I3                  IF   ID   EX   MEM  WB
+
+
+Notice:
+
+    Cycle 3:
+
+        I1 → EX
+        I2 → ID
+        I3 → IF
+
+
+Three instructions are being processed simultaneously.
+
+
+------------------------------------------------------------
+25.14 PIPELINE FILLING
+------------------------------------------------------------
+
+At the beginning, the pipeline is empty.
+
+Cycle 1:
+
+    I1 → IF
+
+Cycle 2:
+
+    I1 → ID
+    I2 → IF
+
+Cycle 3:
+
+    I1 → EX
+    I2 → ID
+    I3 → IF
+
+
+The pipeline becomes full gradually.
+
+This process is called:
+
+    PIPELINE FILLING
+
+
+------------------------------------------------------------
+25.15 PIPELINE DRAINING
+------------------------------------------------------------
+
+After the last instruction enters the pipeline, the
+remaining stages must still be completed.
+
+Example:
+
+    I1
+    I2
+    I3
+
+
+After I3 enters:
+
+    I1 may still be in WB.
+    I2 may still be in MEM.
+    I3 may still be in EX.
+
+
+The pipeline gradually becomes empty.
+
+This is called:
+
+    PIPELINE DRAINING
+
+
+------------------------------------------------------------
+25.16 NON-PIPELINED EXECUTION
+------------------------------------------------------------
+
+Suppose:
+
+    Number of stages = 5
+
+    Each stage = 1 clock cycle
+
+For 4 instructions:
+
+    Each instruction requires:
+
+        5 cycles
+
+
+Total:
+
+    4 × 5 = 20 cycles
+
+
+Without pipelining:
+
+    20 cycles
+
+
+------------------------------------------------------------
+25.17 PIPELINED EXECUTION
+------------------------------------------------------------
+
+For:
+
+    k = 5 stages
+    n = 4 instructions
+
+
+Ideal pipeline cycles:
+
+    k + (n - 1)
+
+
+Therefore:
+
+    5 + (4 - 1)
+
+    = 8 cycles
+
+
+So:
+
+    Non-pipelined = 20 cycles
+
+    Pipelined = 8 cycles
+
+
+Ideal speedup:
+
+    20 / 8
+
+    = 2.5
+
+
+------------------------------------------------------------
+25.18 GENERAL PIPELINE TIME FORMULA
+------------------------------------------------------------
+
+For:
+
+    k = number of pipeline stages
+
+    n = number of instructions
+
+If each stage takes one clock cycle:
+
+    Pipeline cycles:
+
+        T = k + n - 1
+
+
+This is one of the MOST IMPORTANT formulas.
+
+
+------------------------------------------------------------
+25.19 PIPELINE SPEEDUP
+------------------------------------------------------------
+
+Speedup is:
+
+    Speedup
+      =
+    Non-pipelined execution time
+    --------------------------------
+    Pipelined execution time
+
+
+For ideal equal stages:
+
+    Speedup
+      =
+    n × k
+    --------
+    k + n - 1
+
+
+For a very large number of instructions:
+
+    n → ∞
+
+Then:
+
+    Speedup → k
+
+
+Therefore:
+
+    Maximum ideal speedup ≈ number of pipeline stages.
+
+
+------------------------------------------------------------
+25.20 EXAMPLE — PIPELINE SPEEDUP
+------------------------------------------------------------
+
+Given:
+
+    Number of stages = 4
+
+    Number of instructions = 10
+
+    Each stage = 1 cycle
+
+
+Without pipeline:
+
+    10 × 4 = 40 cycles
+
+
+With pipeline:
+
+    4 + 10 - 1
+    = 13 cycles
+
+
+Speedup:
+
+    40 / 13
+    ≈ 3.08
+
+
+Therefore:
+
+    Speedup ≈ 3.08
+
+
+------------------------------------------------------------
+25.21 PIPELINE THROUGHPUT
+------------------------------------------------------------
+
+Throughput means:
+
+    Number of completed instructions
+    per unit time.
+
+
+After the pipeline is full, ideally:
+
+    1 instruction / clock cycle
+
+
+If clock cycle = 1 ns:
+
+    Throughput ≈ 1 instruction/ns
+
+
+Equivalent:
+
+    1 billion instructions/second
+
+    = 1 G instruction/s
+
+under the simplified ideal assumption.
+
+
+------------------------------------------------------------
+25.22 PIPELINE EFFICIENCY
+------------------------------------------------------------
+
+Pipeline efficiency indicates how effectively pipeline stages
+are being utilised.
+
+For an ideal simple pipeline:
+
+    Efficiency:
+
+        E = Speedup / Number of stages
+
+
+Example:
+
+    Speedup = 3.08
+    Stages = 4
+
+    E = 3.08 / 4
+
+      = 0.77
+
+      = 77%
+
+
+For a perfectly full ideal pipeline:
+
+    Efficiency approaches 100%.
+
+
+------------------------------------------------------------
+25.23 UNEQUAL PIPELINE STAGES
+------------------------------------------------------------
+
+Real pipeline stages may not take exactly the same amount
+of time.
+
+Suppose:
+
+    IF  = 2 ns
+    ID  = 3 ns
+    EX  = 4 ns
+    MEM = 2 ns
+    WB  = 1 ns
+
+
+The pipeline clock period must generally accommodate the
+slowest stage, plus pipeline-register overhead.
+
+Ignoring overhead:
+
+    Clock period = maximum stage time
+
+                  = 4 ns
+
+
+Therefore:
+
+    Pipeline clock = 4 ns
+
+
+IMPORTANT:
+
+    The slowest stage determines the basic pipeline clock
+    period in a simple synchronous pipeline.
+
+
+------------------------------------------------------------
+25.24 PIPELINE REGISTER
+------------------------------------------------------------
+
+Pipeline registers separate adjacent pipeline stages.
+
+Example:
+
+    IF
+     |
+    [Pipeline Register]
+     |
+    ID
+     |
+    [Pipeline Register]
+     |
+    EX
+     |
+    [Pipeline Register]
+     |
+    MEM
+     |
+    [Pipeline Register]
+     |
+    WB
+
+
+They store intermediate information between stages.
+
+
+------------------------------------------------------------
+25.25 WHY PIPELINE REGISTERS ARE REQUIRED
+------------------------------------------------------------
+
+Suppose instruction I1 is in EX while instruction I2 is in ID.
+
+Their intermediate data must be kept separately.
+
+Pipeline registers preserve:
+
+    • Data
+    • Control information
+    • Intermediate results
+    • Instruction-related information
+
+
+Therefore, pipeline registers allow different instructions
+to occupy different stages simultaneously.
+
+
+------------------------------------------------------------
+25.26 IDEAL PIPELINE ASSUMPTIONS
+------------------------------------------------------------
+
+Many numerical problems assume:
+
+    • Equal stage durations
+    • No pipeline hazards
+    • No stalls
+    • No branch penalties
+    • No cache misses
+    • One instruction enters per cycle
+    • Pipeline registers have no extra delay
+
+
+These assumptions create:
+
+    IDEAL PIPELINE
+
+
+Real processors are more complicated.
+
+
+------------------------------------------------------------
+25.27 PIPELINE HAZARD
+------------------------------------------------------------
+
+A pipeline hazard is a situation that prevents the next
+instruction from executing in its intended pipeline cycle.
+
+Hazards can cause:
+
+    • Stalls
+    • Delays
+    • Incorrect execution if not handled
+
+
+Three major categories:
+
+    1. Structural hazards
+    2. Data hazards
+    3. Control hazards
+
+
+MEMORY TRICK:
+
+    S-D-C
+
+    Structural
+    Data
+    Control
+
+
+------------------------------------------------------------
+25.28 STRUCTURAL HAZARD
+------------------------------------------------------------
+
+A structural hazard occurs when two or more instructions
+need the same hardware resource at the same time.
+
+Example:
+
+    Suppose instruction fetch and data access use the same
+    single memory.
+
+At one cycle:
+
+    I1 wants:
+        Data memory access
+
+    I2 wants:
+        Instruction fetch
+
+But only one memory access can occur.
+
+CONFLICT:
+
+    I1 ──→ Memory ←── I2
+
+
+Therefore:
+
+    Structural hazard
+
+
+------------------------------------------------------------
+25.29 STRUCTURAL HAZARD EXAMPLE
+------------------------------------------------------------
+
+Consider:
+
+    I1 = LOAD R1, [100]
+    I2 = ADD R2, R3, R4
+
+
+Suppose:
+
+    I1 is in MEM
+
+while:
+
+    I2 needs IF
+
+
+If the system has only one shared memory:
+
+    I1 → Memory
+    I2 → Same Memory
+
+
+Both need the same resource.
+
+Solution possibilities:
+
+    • Stall pipeline
+    • Use separate instruction/data memories
+    • Add additional hardware resources
+
+
+------------------------------------------------------------
+25.30 DATA HAZARD
+------------------------------------------------------------
+
+A data hazard occurs when instructions depend on data
+produced or modified by another instruction.
+
+Example:
+
+    I1:
+        R1 = R2 + R3
+
+    I2:
+        R4 = R1 + R5
+
+
+I2 needs R1.
+
+But I1 may not have written R1 yet.
+
+
+Therefore:
+
+    I2 depends on I1.
+
+
+------------------------------------------------------------
+25.31 DATA HAZARD TIMELINE
+------------------------------------------------------------
+
+Example:
+
+    I1: ADD R1, R2, R3
+    I2: SUB R4, R1, R5
+
+
+Pipeline:
+
+    Cycle →   1    2    3    4    5
+
+    I1        IF   ID   EX   MEM  WB
+    I2             IF   ID   EX   MEM
+
+
+I2 needs R1 during its execution.
+
+But I1 writes R1 only in WB.
+
+Therefore, a dependency exists.
+
+
+------------------------------------------------------------
+25.32 DATA FORWARDING
+------------------------------------------------------------
+
+Forwarding is a technique that sends a result directly from
+a later pipeline stage to an earlier stage that needs it,
+instead of waiting for normal register write-back.
+
+Example:
+
+    I1:
+        ADD R1, R2, R3
+
+    I2:
+        SUB R4, R1, R5
+
+
+Instead of:
+
+    ALU → Register R1 → later read
+
+the result can be forwarded:
+
+    ALU result
+        |
+        +────────→ ALU input of I2
+
+
+This can reduce stalls.
+
+
+------------------------------------------------------------
+25.33 STALLING
+------------------------------------------------------------
+
+A stall means temporarily stopping progress of an instruction
+or pipeline stage.
+
+Example:
+
+    I1 produces R1.
+    I2 needs R1.
+
+If forwarding cannot solve the dependency:
+
+    Pipeline inserts a delay.
+
+
+A stall is sometimes represented as:
+
+    NOP
+
+or:
+
+    bubble
+
+
+------------------------------------------------------------
+25.34 PIPELINE BUBBLE
+------------------------------------------------------------
+
+A bubble is an empty slot inserted into the pipeline.
+
+Example:
+
+    Cycle →   1    2    3    4    5    6
+
+    I1        IF   ID   EX   MEM  WB
+    I2             IF   ID   --   EX   MEM  WB
+                              ↑
+                            Bubble
+
+
+The bubble represents lost pipeline capacity.
+
+
+------------------------------------------------------------
+25.35 CONTROL HAZARD
+------------------------------------------------------------
+
+A control hazard occurs because the CPU does not immediately
+know which instruction should be fetched after a branch or
+jump.
+
+Example:
+
+    BEQ R1, R2, TARGET
+
+
+The CPU must determine:
+
+    Is the branch taken?
+
+If taken:
+
+    Next instruction = TARGET
+
+If not taken:
+
+    Next instruction = sequential instruction
+
+
+Until the decision is known, instruction fetching may be
+uncertain.
+
+
+------------------------------------------------------------
+25.36 BRANCH PROBLEM
+------------------------------------------------------------
+
+Suppose:
+
+    I1 = BEQ R1, R2, TARGET
+
+    I2 = ADD R3, R4, R5
+
+    I3 = SUB R6, R7, R8
+
+
+The CPU may fetch I2 and I3 before knowing whether the branch
+is taken.
+
+If branch is taken:
+
+    I2 and I3 may be wrong-path instructions.
+
+
+The CPU may need to discard them.
+
+
+This is called:
+
+    PIPELINE FLUSHING
+
+
+------------------------------------------------------------
+25.37 PIPELINE FLUSH
+------------------------------------------------------------
+
+Flushing removes incorrect instructions from the pipeline.
+
+Example:
+
+    Branch taken.
+
+    Wrong instructions:
+        I2
+        I3
+
+are discarded.
+
+Then:
+
+    TARGET instruction
+
+is fetched.
+
+
+Branch penalty may result in lost cycles.
+
+
+------------------------------------------------------------
+25.38 BRANCH PREDICTION
+------------------------------------------------------------
+
+Branch prediction attempts to predict the outcome of a
+branch before the actual result is known.
+
+Possible predictions:
+
+    Branch taken
+
+or:
+
+    Branch not taken
+
+
+If prediction is correct:
+
+    Pipeline continues efficiently.
+
+
+If prediction is wrong:
+
+    Wrong-path instructions are discarded.
+
+    Pipeline is flushed.
+
+    Penalty occurs.
+
+
+------------------------------------------------------------
+25.39 STATIC BRANCH PREDICTION
+------------------------------------------------------------
+
+Static prediction uses a fixed rule.
+
+Examples:
+
+    • Always predict taken.
+    • Always predict not taken.
+    • Use instruction direction/type.
+
+
+The prediction does not adapt dynamically based on runtime
+history.
+
+
+------------------------------------------------------------
+25.40 DYNAMIC BRANCH PREDICTION
+------------------------------------------------------------
+
+Dynamic branch prediction uses information from previous
+branch behaviour.
+
+Example:
+
+    If a branch was taken many times previously,
+    predict that it will be taken again.
+
+
+Modern processors use sophisticated dynamic predictors.
+
+
+------------------------------------------------------------
+25.41 HAZARD SUMMARY
+------------------------------------------------------------
+
+STRUCTURAL HAZARD:
+
+    Hardware resource conflict.
+
+
+DATA HAZARD:
+
+    Data dependency between instructions.
+
+
+CONTROL HAZARD:
+
+    Uncertainty caused by branches/jumps.
+
+
+Memory trick:
+
+    STRUCTURAL
+        = "Can hardware handle both?"
+
+    DATA
+        = "Does one instruction need another's result?"
+
+    CONTROL
+        = "Which instruction comes next?"
+
+
+------------------------------------------------------------
+25.42 PIPELINE HAZARD SOLUTIONS
+------------------------------------------------------------
+
+STRUCTURAL HAZARD:
+
+    • Add hardware resources
+    • Separate instruction/data memories
+    • Stall
+
+
+DATA HAZARD:
+
+    • Forwarding
+    • Stalling
+    • Compiler scheduling
+
+
+CONTROL HAZARD:
+
+    • Branch prediction
+    • Delayed branching
+    • Pipeline flushing
+    • Early branch resolution
+
+
+------------------------------------------------------------
+25.43 PIPELINE SPEEDUP — NUMERICAL PROBLEM 1
+------------------------------------------------------------
+
+Given:
+
+    5 pipeline stages
+
+    20 instructions
+
+    Each stage = 1 cycle
+
+
+WITHOUT PIPELINE:
+
+    20 × 5
+
+    = 100 cycles
+
+
+WITH PIPELINE:
+
+    k + n - 1
+
+    = 5 + 20 - 1
+
+    = 24 cycles
+
+
+Speedup:
+
+    100 / 24
+
+    = 4.167
+
+
+Answer:
+
+    ≈ 4.17 times
+
+
+------------------------------------------------------------
+25.44 PIPELINE NUMERICAL PROBLEM 2
+------------------------------------------------------------
+
+Given:
+
+    k = 6 stages
+    n = 100 instructions
+
+
+Without pipeline:
+
+    100 × 6
+    = 600 cycles
+
+
+With pipeline:
+
+    6 + 100 - 1
+    = 105 cycles
+
+
+Speedup:
+
+    600 / 105
+
+    ≈ 5.714
+
+
+Ideal maximum:
+
+    6×
+
+
+Actual for 100 instructions:
+
+    ≈ 5.714×
+
+
+------------------------------------------------------------
+25.45 PIPELINE NUMERICAL PROBLEM 3
+------------------------------------------------------------
+
+Given:
+
+    4 stages
+    8 instructions
+
+
+Without pipeline:
+
+    4 × 8
+    = 32 cycles
+
+
+With pipeline:
+
+    4 + 8 - 1
+
+    = 11 cycles
+
+
+Speedup:
+
+    32 / 11
+
+    ≈ 2.91
+
+
+------------------------------------------------------------
+25.46 PIPELINE WITH STALLS
+------------------------------------------------------------
+
+Suppose:
+
+    Ideal pipeline cycles = 20
+
+    Pipeline stalls = 3 cycles
+
+
+Then:
+
+    Actual cycles:
+
+        20 + 3
+
+        = 23 cycles
+
+
+Speedup decreases because stalls reduce pipeline efficiency.
+
+
+------------------------------------------------------------
+25.47 PIPELINE EFFICIENCY EXAMPLE
+------------------------------------------------------------
+
+Suppose:
+
+    Pipeline stages = 5
+
+    Speedup = 4
+
+
+Efficiency:
+
+    E = Speedup / Number of stages
+
+    E = 4 / 5
+
+      = 0.8
+
+      = 80%
+
+
+------------------------------------------------------------
+25.48 PIPELINE THROUGHPUT EXAMPLE
+------------------------------------------------------------
+
+Suppose:
+
+    Pipeline clock period = 2 ns
+
+After the pipeline is full:
+
+    1 instruction / 2 ns
+
+
+Therefore:
+
+    Throughput
+        = 0.5 instruction/ns
+
+
+Since:
+
+    1 ns = 10^-9 sec
+
+
+Throughput:
+
+    0.5 × 10^9
+
+    = 5 × 10^8 instructions/sec
+
+
+------------------------------------------------------------
+25.49 PIPELINE VS NON-PIPELINE
+------------------------------------------------------------
+
++----------------------+--------------------------+
+| Non-pipelined       | Pipelined                |
++----------------------+--------------------------+
+| One instruction     | Multiple instructions    |
+| processed at a time | overlap                  |
++----------------------+--------------------------+
+| Lower throughput    | Higher throughput        |
++----------------------+--------------------------+
+| Simpler design      | More complex design      |
++----------------------+--------------------------+
+| Less hazard         | Hazards possible         |
+| handling            |                          |
++----------------------+--------------------------+
+
+
+------------------------------------------------------------
+25.50 IMPORTANT DISTINCTION
+------------------------------------------------------------
+
+PIPELINING:
+
+    Multiple instructions overlap in different stages.
+
+
+MULTIPROCESSING:
+
+    Multiple processors/cores execute work.
+
+
+SUPERSCALAR:
+
+    Multiple instructions may be issued/executed per cycle
+    using multiple execution resources.
+
+
+These are different concepts.
+
+
+------------------------------------------------------------
+25.51 PIPELINING VS PARALLELISM
+------------------------------------------------------------
+
+Pipelining is a form of temporal overlap.
+
+Example:
+
+    I1 → EX
+    I2 → ID
+    I3 → IF
+
+at the same time.
+
+
+The instructions are not necessarily executing their ALU
+operations simultaneously.
+
+Different stages are operating simultaneously.
+
+
+------------------------------------------------------------
+25.52 PIPELINE STAGE BALANCING
+------------------------------------------------------------
+
+For good performance, pipeline stages should have relatively
+balanced delays.
+
+Bad design:
+
+    Stage 1 = 1 ns
+    Stage 2 = 1 ns
+    Stage 3 = 8 ns
+    Stage 4 = 1 ns
+    Stage 5 = 1 ns
+
+
+Clock period ≈ 8 ns.
+
+Most stages finish early and wait for Stage 3.
+
+Therefore:
+
+    Slowest stage limits the clock.
+
+
+------------------------------------------------------------
+25.53 PIPELINE OVERHEAD
+------------------------------------------------------------
+
+Pipeline registers introduce hardware overhead.
+
+They may add:
+
+    • Storage
+    • Clocking complexity
+    • Delay
+    • Power consumption
+
+
+Therefore, making a pipeline deeper does not always give
+unlimited performance improvement.
+
+
+------------------------------------------------------------
+25.54 DEEP PIPELINE
+------------------------------------------------------------
+
+A deep pipeline divides instruction execution into many
+smaller stages.
+
+Advantages:
+
+    • Potentially higher clock frequency
+    • More work can be overlapped
+
+
+Disadvantages:
+
+    • More pipeline registers
+    • More complex hazard handling
+    • Larger branch penalties
+    • More expensive misprediction recovery
+
+
+------------------------------------------------------------
+25.55 PIPELINE PERFORMANCE FACTORS
+------------------------------------------------------------
+
+Performance depends on:
+
+    • Number of stages
+    • Stage delay
+    • Pipeline register overhead
+    • Instruction dependencies
+    • Branch frequency
+    • Branch prediction accuracy
+    • Cache misses
+    • Structural conflicts
+    • Forwarding availability
+    • Number of stalls
+
+
+------------------------------------------------------------
+25.56 IMPORTANT FORMULAS
+------------------------------------------------------------
+
+1. IDEAL PIPELINE CYCLES:
+
+    T_pipeline = k + n - 1
+
+
+where:
+
+    k = number of stages
+    n = number of instructions
+
+
+2. NON-PIPELINED CYCLES:
+
+    T_nonpipe = n × k
+
+
+when each stage requires one cycle.
+
+
+3. IDEAL SPEEDUP:
+
+    Speedup
+      =
+    nk
+    ------
+    k+n-1
+
+
+4. EFFICIENCY:
+
+    Efficiency
+      =
+    Speedup / k
+
+
+5. CLOCK PERIOD:
+
+    T = 1/f
+
+
+6. IDEAL THROUGHPUT:
+
+    Approximately:
+
+        1 instruction / clock cycle
+
+after the pipeline is full.
+
+
+------------------------------------------------------------
+25.57 COMMON EXAM TRAPS
+------------------------------------------------------------
+
+TRAP 1:
+
+    "Pipelining reduces the execution time of every
+     individual instruction."
+
+FALSE.
+
+It primarily improves throughput.
+
+
+TRAP 2:
+
+    "A 5-stage pipeline always gives 5× speedup."
+
+FALSE.
+
+5× is an ideal upper limit for a large number of
+instructions under simplified assumptions.
+
+
+TRAP 3:
+
+    "Pipeline cycles = n × k."
+
+FALSE for an ideal pipeline.
+
+It is:
+
+    k + n - 1
+
+
+TRAP 4:
+
+    "Branches cause data hazards."
+
+FALSE.
+
+Branches primarily create control hazards.
+
+
+TRAP 5:
+
+    "Using forwarding completely eliminates all data hazards."
+
+FALSE.
+
+Some dependencies, such as certain load-use situations,
+may still require stalls.
+
+
+TRAP 6:
+
+    "Pipeline stages must all perform exactly the same work."
+
+FALSE.
+
+They should ideally have balanced timing, but their functions
+can differ.
+
+
+------------------------------------------------------------
+25.58 B.TECH QUESTIONS
+------------------------------------------------------------
+
+Q1. Define instruction pipelining.
+
+Q2. Explain the need for pipelining.
+
+Q3. Explain the five stages of an instruction pipeline.
+
+Q4. Differentiate latency and throughput.
+
+Q5. Draw and explain a 5-stage pipeline.
+
+Q6. Explain pipeline filling and draining.
+
+Q7. Derive the ideal pipeline cycle formula.
+
+Q8. Calculate pipeline speedup.
+
+Q9. Explain pipeline efficiency.
+
+Q10. What is a structural hazard?
+
+Q11. What is a data hazard?
+
+Q12. What is a control hazard?
+
+Q13. Explain data forwarding.
+
+Q14. What is a pipeline stall?
+
+Q15. What is a pipeline bubble?
+
+Q16. Explain branch penalty.
+
+Q17. Explain pipeline flushing.
+
+Q18. Explain static and dynamic branch prediction.
+
+Q19. Compare pipelined and non-pipelined processors.
+
+Q20. Explain the effect of pipeline hazards on performance.
+
+
+------------------------------------------------------------
+25.59 COMPETITIVE-EXAM QUESTIONS
+------------------------------------------------------------
+
+QUESTION TYPE 1:
+
+A processor has 5 pipeline stages and executes 100
+instructions. Assuming ideal conditions, how many cycles
+are required?
+
+Answer:
+
+    5 + 100 - 1
+    = 104 cycles.
+
+
+QUESTION TYPE 2:
+
+A 4-stage pipeline executes 20 instructions. Find ideal
+speedup.
+
+Non-pipeline:
+
+    20 × 4 = 80
+
+
+Pipeline:
+
+    4 + 20 - 1 = 23
+
+
+Speedup:
+
+    80/23
+    ≈ 3.48
+
+
+QUESTION TYPE 3:
+
+Which hazard occurs when two instructions require the same
+hardware resource?
+
+Answer:
+
+    Structural hazard.
+
+
+QUESTION TYPE 4:
+
+Which technique reduces many RAW data hazards?
+
+Answer:
+
+    Forwarding.
+
+
+QUESTION TYPE 5:
+
+Which hazard is primarily associated with branches?
+
+Answer:
+
+    Control hazard.
+
+
+QUESTION TYPE 6:
+
+For k pipeline stages and n instructions, ideal cycles are:
+
+    Answer:
+
+        k + n - 1
+
+
+QUESTION TYPE 7:
+
+What is the ideal maximum speedup for a k-stage pipeline?
+
+    Answer:
+
+        Approximately k.
+
+
+------------------------------------------------------------
+25.60 MASTER CONCEPT MAP
+------------------------------------------------------------
+
+                    INSTRUCTION PIPELINING
+                             |
+             +---------------+---------------+
+             |               |               |
+             ↓               ↓               ↓
+          STAGES          PERFORMANCE       HAZARDS
+             |               |               |
+       +-----+-----+     +----+----+     +---+---+---+
+       |     |     |     |         |     |   |   |
+      IF    ID    EX    Speedup  Throughput |   |   |
+       |     |     |                       |   |   |
+      MEM   WB     |                Structural Data Control
+                   |
+                 ALU
+
+
+Pipeline:
+
+    IF → ID → EX → MEM → WB
+
+
+Performance:
+
+    Throughput ↑
+
+
+Hazards:
+
+    Structural
+    Data
+    Control
+
+
+Solutions:
+
+    Structural → More resources / Stall
+
+    Data → Forwarding / Stall / Scheduling
+
+    Control → Prediction / Flush / Early resolution
+
+
+============================================================
+25.61 ONE-PAGE REVISION
+============================================================
+
+PIPELINING
+    ↓
+Overlap instruction execution stages.
+
+5-STAGE PIPELINE
+    ↓
+IF → ID → EX → MEM → WB
+
+IF
+    ↓
+Fetch instruction.
+
+ID
+    ↓
+Decode + operand read.
+
+EX
+    ↓
+ALU/execute operation.
+
+MEM
+    ↓
+Memory access.
+
+WB
+    ↓
+Write result.
+
+IDEAL CYCLES
+    ↓
+k + n - 1
+
+NON-PIPELINED
+    ↓
+k × n
+
+SPEEDUP
+    ↓
+Non-pipeline time / Pipeline time
+
+MAX IDEAL SPEEDUP
+    ↓
+≈ k
+
+THROUGHPUT
+    ↓
+Instructions completed per unit time.
+
+HAZARDS
+    ↓
+Structural + Data + Control
+
+STRUCTURAL
+    ↓
+Resource conflict.
+
+DATA
+    ↓
+Instruction dependency.
+
+CONTROL
+    ↓
+Branch/jump uncertainty.
+
+FORWARDING
+    ↓
+Send result directly to dependent instruction.
+
+STALL
+    ↓
+Temporarily delay pipeline.
+
+BUBBLE
+    ↓
+Empty pipeline slot.
+
+FLUSH
+    ↓
+Remove wrong-path instructions.
+
+BRANCH PREDICTION
+    ↓
+Predict branch outcome.
+
+
+============================================================
+25.62 FINAL MASTER IDEA
+============================================================
+
+Imagine a CPU as a five-person production line:
+
+    Person 1 → Fetches
+    Person 2 → Decodes
+    Person 3 → Executes
+    Person 4 → Accesses memory
+    Person 5 → Writes result
+
+
+Instruction 1:
+
+    Person 1 → Person 2 → Person 3 → Person 4 → Person 5
+
+
+While Instruction 1 is with Person 3:
+
+    Instruction 2 can be with Person 2.
+
+While Instruction 2 is with Person 2:
+
+    Instruction 3 can be with Person 1.
+
+
+That is the central idea of instruction pipelining.
+
+
+The most important concepts to remember are:
+
+    1. Pipeline stages
+    2. Pipeline timing
+    3. Pipeline speedup
+    4. Throughput
+    5. Pipeline efficiency
+    6. Structural hazards
+    7. Data hazards
+    8. Control hazards
+    9. Forwarding
+    10. Stalling
+    11. Pipeline bubbles
+    12. Branch prediction
+    13. Pipeline flushing
+
+
+============================================================
+CHAPTER 25 COMPLETE
+============================================================

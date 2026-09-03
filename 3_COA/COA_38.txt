@@ -1,0 +1,2276 @@
+CHAPTER 38 — RISC-V ARCHITECTURE BASICS
+
+============================================================
+CHAPTER 38 — RISC-V ARCHITECTURE BASICS
+============================================================
+
+LEVEL:
+B.Tech 1st Year → Foundation → Intermediate → Advanced
+→ Exam Ready → Interview Ready
+
+GOAL:
+Understand RISC-V as a modern open Instruction Set Architecture
+(ISA), including its registers, instruction formats, instruction
+types, addressing, assembly programming, datapath and pipeline.
+
+
+============================================================
+38.1 WHAT IS RISC-V?
+============================================================
+
+RISC-V is an open standard Instruction Set Architecture (ISA).
+
+ISA = Instruction Set Architecture
+
+It defines the rules that software and hardware agree upon.
+
+It specifies things such as:
+
+    • Instructions
+    • Registers
+    • Data types
+    • Instruction formats
+    • Memory access rules
+    • Addressing behavior
+    • Privileged architecture
+
+IMPORTANT:
+
+    RISC-V is an ISA, NOT a specific CPU.
+
+Different companies and designers can build different processors
+that implement RISC-V.
+
+
+============================================================
+38.2 WHY STUDY RISC-V?
+============================================================
+
+RISC-V is useful for learning COA because its instruction set
+has a relatively clean and regular design.
+
+Advantages:
+
+    • Open standard ISA
+    • Simple instruction formats
+    • Load/store architecture
+    • Large register set
+    • Useful for teaching CPU design
+    • Used in embedded systems and research
+    • Extensible architecture
+
+
+============================================================
+38.3 RISC-V AND RISC
+============================================================
+
+RISC = Reduced Instruction Set Computer
+
+RISC philosophy generally emphasizes:
+
+    • Simple instructions
+    • Regular instruction formats
+    • Register-based operations
+    • Load/store design
+    • Efficient pipelining
+
+
+RISC-V follows the RISC design philosophy.
+
+
+============================================================
+38.4 RISC-V ISA STRUCTURE
+============================================================
+
+RISC-V is modular.
+
+A basic integer ISA can be extended with additional features.
+
+Examples:
+
+    RV32I
+    RV64I
+    RV128I
+    M
+    A
+    F
+    D
+    C
+    V
+
+
+The letters represent different ISA extensions.
+
+
+============================================================
+38.5 RISC-V NAMING
+============================================================
+
+Example:
+
+    RV32I
+
+
+Means:
+
+    RV  = RISC-V
+    32  = 32-bit base integer architecture
+    I   = Base integer instruction set
+
+
+Example:
+
+    RV64IMAFDC
+
+
+Means:
+
+    RV64
+    + I
+    + M
+    + A
+    + F
+    + D
+    + C
+
+
+The exact supported extensions depend on the processor.
+
+
+============================================================
+38.6 BASE INTEGER ISA
+============================================================
+
+The base integer instruction set is:
+
+    I
+
+
+Common base variants:
+
+    RV32I
+    RV64I
+
+
+RV32:
+
+    General integer registers are 32 bits wide.
+
+
+RV64:
+
+    General integer registers are 64 bits wide.
+
+
+============================================================
+38.7 RISC-V REGISTERS
+============================================================
+
+RISC-V provides 32 integer registers.
+
+They are conventionally named:
+
+    x0
+    x1
+    x2
+    ...
+    x31
+
+
+For RV32:
+
+    Each integer register = 32 bits
+
+
+For RV64:
+
+    Each integer register = 64 bits
+
+
+============================================================
+38.8 REGISTER x0
+============================================================
+
+x0 is the zero register.
+
+It always contains:
+
+    0
+
+
+Reading x0:
+
+    always gives 0
+
+
+Writing x0:
+
+    has no effect
+
+
+Example:
+
+    ADD x5, x0, x6
+
+
+Conceptually:
+
+    x5 = 0 + x6
+
+Therefore:
+
+    x5 = x6
+
+
+============================================================
+38.9 RISC-V REGISTER ABI NAMES
+============================================================
+
+Registers have both hardware names and conventional ABI names.
+
++-------+--------+------------------------------+
+| Reg   | ABI    | Common role                  |
++-------+--------+------------------------------+
+| x0    | zero   | Constant zero               |
+| x1    | ra     | Return address              |
+| x2    | sp     | Stack pointer               |
+| x3    | gp     | Global pointer              |
+| x4    | tp     | Thread pointer              |
+| x5    | t0     | Temporary                   |
+| x6    | t1     | Temporary                   |
+| x7    | t2     | Temporary                   |
+| x8    | s0/fp  | Saved / frame pointer       |
+| x9    | s1     | Saved register              |
+| x10   | a0     | Argument / return value     |
+| x11   | a1     | Argument / return value     |
+| x12   | a2     | Argument                   |
+| x13   | a3     | Argument                   |
+| x14   | a4     | Argument                   |
+| x15   | a5     | Argument                   |
+| x16   | a6     | Argument                   |
+| x17   | a7     | Argument                   |
+| x18-x27| s2-s11| Saved registers             |
+| x28   | t3     | Temporary                   |
+| x29   | t4     | Temporary                   |
+| x30   | t5     | Temporary                   |
+| x31   | t6     | Temporary                   |
++-------+--------+------------------------------+
+
+
+IMPORTANT:
+
+    ABI names are conventions.
+
+    x10 and a0 refer to the SAME physical register.
+
+
+============================================================
+38.10 REGISTER CATEGORIES
+============================================================
+
+RISC-V integer registers are commonly grouped as:
+
+    zero registers
+    return-address register
+    stack pointer
+    argument registers
+    temporary registers
+    saved registers
+
+
+Important examples:
+
+    zero → x0
+    ra   → x1
+    sp   → x2
+    a0   → x10
+    a1   → x11
+
+
+============================================================
+38.11 PROGRAM COUNTER
+============================================================
+
+PC = Program Counter
+
+
+The PC identifies the current instruction execution location.
+
+Conceptually:
+
+              PC
+               |
+               ↓
+       Instruction Memory
+               |
+               ↓
+         Instruction
+               |
+               ↓
+             CPU
+
+
+Normally, the PC moves to the next instruction.
+
+A branch or jump can change the normal sequence.
+
+
+============================================================
+38.12 LOAD/STORE ARCHITECTURE
+============================================================
+
+RISC-V uses a load/store architecture.
+
+Arithmetic instructions generally operate on registers.
+
+Memory is accessed explicitly through:
+
+    LOAD
+    STORE
+
+
+Example:
+
+    LW x5, 0(x6)
+
+
+Means conceptually:
+
+    x5 = Memory[x6 + 0]
+
+
+Example:
+
+    SW x5, 0(x6)
+
+
+Means:
+
+    Memory[x6 + 0] = x5
+
+
+============================================================
+38.13 RISC-V INSTRUCTION TYPES
+============================================================
+
+The major RISC-V instruction formats are:
+
+    R-type
+    I-type
+    S-type
+    B-type
+    U-type
+    J-type
+
+
+Each format organizes instruction bits differently.
+
+
+============================================================
+38.14 R-TYPE INSTRUCTION
+============================================================
+
+R-type is commonly used for register-register operations.
+
+Example:
+
+    ADD x5, x6, x7
+
+
+Concept:
+
+    x5 = x6 + x7
+
+
+R-type contains fields:
+
+    +--------+-----+-----+--------+-----+---------+
+    | funct7 | rs2 | rs1 | funct3 | rd  | opcode |
+    +--------+-----+-----+--------+-----+---------+
+
+
+Typical fields:
+
+    opcode
+    rd
+    funct3
+    rs1
+    rs2
+    funct7
+
+
+============================================================
+38.15 R-TYPE FIELD SIZES
+============================================================
+
+RISC-V base instructions are commonly 32 bits long.
+
+R-type:
+
+    funct7  = 7 bits
+    rs2     = 5 bits
+    rs1     = 5 bits
+    funct3  = 3 bits
+    rd      = 5 bits
+    opcode  = 7 bits
+
+Total:
+
+    7 + 5 + 5 + 3 + 5 + 7
+    = 32 bits
+
+
+============================================================
+38.16 R-TYPE EXAMPLE
+============================================================
+
+Instruction:
+
+    ADD x5, x6, x7
+
+
+Interpretation:
+
+    rs1 = x6
+    rs2 = x7
+    rd  = x5
+
+
+Operation:
+
+    x5 = x6 + x7
+
+
+Data flow:
+
+    x6 ──────┐
+             ↓
+            ALU ───→ x5
+             ↑
+    x7 ──────┘
+
+
+============================================================
+38.17 I-TYPE INSTRUCTION
+============================================================
+
+I-type is used for several instruction categories.
+
+Examples:
+
+    ADDI
+    LW
+    JALR
+
+
+General format:
+
+    +------------+-----+-----+--------+---------+
+    | immediate  | rs1 |funct3|  rd    | opcode |
+    +------------+-----+-----+--------+---------+
+
+
+The immediate field is generally 12 bits for these standard
+32-bit instruction encodings.
+
+
+============================================================
+38.18 I-TYPE EXAMPLE — ADDI
+============================================================
+
+    ADDI x5, x6, 10
+
+
+Means:
+
+    x5 = x6 + 10
+
+
+Here:
+
+    rs1 = x6
+    rd  = x5
+    immediate = 10
+
+
+No second register is required.
+
+
+============================================================
+38.19 I-TYPE EXAMPLE — LOAD
+============================================================
+
+    LW x5, 8(x6)
+
+
+Conceptually:
+
+    Address = x6 + 8
+
+    x5 = Memory[Address]
+
+
+This is also an I-type instruction.
+
+
+============================================================
+38.20 S-TYPE INSTRUCTION
+============================================================
+
+S-type is used for store instructions.
+
+Example:
+
+    SW x5, 8(x6)
+
+
+Conceptually:
+
+    Memory[x6 + 8] = x5
+
+
+S-type divides the immediate across two instruction fields.
+
+
+Concept:
+
+    +---------+-----+-----+--------+---------+--------+
+    | imm[11:5]| rs2| rs1| funct3 | imm[4:0]| opcode |
+    +---------+-----+-----+--------+---------+--------+
+
+
+============================================================
+38.21 S-TYPE EXAMPLE
+============================================================
+
+    SW x5, 12(x6)
+
+
+Means:
+
+    Address = x6 + 12
+
+    Memory[Address] = x5
+
+
+Source data:
+
+    x5
+
+
+Base address:
+
+    x6
+
+
+Offset:
+
+    12
+
+
+============================================================
+38.22 B-TYPE INSTRUCTION
+============================================================
+
+B-type is used for conditional branches.
+
+Examples:
+
+    BEQ
+    BNE
+    BLT
+    BGE
+
+
+Example:
+
+    BEQ x5, x6, LABEL
+
+
+Meaning:
+
+    IF x5 == x6
+        branch to LABEL
+
+
+============================================================
+38.23 B-TYPE CONCEPT
+============================================================
+
+B-type contains:
+
+    branch immediate
+    rs1
+    rs2
+    funct3
+    opcode
+
+
+Conceptual structure:
+
+    +----------+-----+-----+--------+-----------+---------+
+    | immediate| rs2 | rs1 | funct3 | immediate | opcode |
+    +----------+-----+-----+--------+-----------+---------+
+
+
+The branch offset is encoded in multiple pieces of the
+instruction.
+
+
+============================================================
+38.24 BRANCH CALCULATION
+============================================================
+
+For a branch:
+
+    BEQ x5, x6, LABEL
+
+
+CPU conceptually:
+
+    Compare x5 and x6
+             |
+        +----+----+
+        |         |
+      equal    not equal
+        |         |
+        ↓         ↓
+      target    PC+4
+
+
+The exact target calculation uses the encoded branch
+immediate and the current PC according to the ISA.
+
+
+============================================================
+38.25 U-TYPE INSTRUCTION
+============================================================
+
+U-type instructions provide a large upper immediate field.
+
+Main examples:
+
+    LUI
+    AUIPC
+
+
+Format:
+
+    +----------------------+-----+---------+
+    |       immediate      |  rd | opcode |
+    +----------------------+-----+---------+
+
+
+Immediate:
+
+    20 bits
+
+
+============================================================
+38.26 LUI
+============================================================
+
+LUI:
+
+    Load Upper Immediate
+
+
+Example:
+
+    LUI x5, 0x12345
+
+
+Conceptually, it places the immediate in the upper portion
+of the destination register, with the lower portion cleared.
+
+For RV32:
+
+    x5 = 0x12345000
+
+
+The exact interpretation for RV64 follows the RISC-V
+instruction definition and sign/width rules.
+
+
+============================================================
+38.27 AUIPC
+============================================================
+
+AUIPC:
+
+    Add Upper Immediate to PC
+
+
+Conceptually:
+
+    rd = PC + (immediate << 12)
+
+
+It is useful for PC-relative address calculations.
+
+
+============================================================
+38.28 J-TYPE INSTRUCTION
+============================================================
+
+J-type is used by JAL.
+
+Example:
+
+    JAL x1, LABEL
+
+
+Meaning:
+
+    Save return address in x1
+    Jump to LABEL
+
+
+Format conceptually:
+
+    +-------------------------+-----+---------+
+    |        immediate        |  rd | opcode |
+    +-------------------------+-----+---------+
+
+
+============================================================
+38.29 JAL
+============================================================
+
+JAL:
+
+    Jump And Link
+
+
+Operation conceptually:
+
+    rd = address of instruction after JAL
+    PC = PC + jump_offset
+
+
+Example:
+
+    JAL ra, FUNCTION
+
+
+Then:
+
+    ra = return address
+    PC = FUNCTION
+
+
+============================================================
+38.30 JALR
+============================================================
+
+JALR:
+
+    Jump And Link Register
+
+
+Conceptually:
+
+    rd = return address
+    PC = rs1 + immediate
+
+
+Example:
+
+    JALR ra, 0(t0)
+
+
+Useful for:
+
+    • Function calls through registers
+    • Returns
+    • Indirect jumps
+
+
+============================================================
+38.31 SIX RISC-V FORMATS
+============================================================
+
+R-TYPE:
+
+    Register → Register operation
+
+
+I-TYPE:
+
+    Immediate / Load / JALR
+
+
+S-TYPE:
+
+    Store
+
+
+B-TYPE:
+
+    Conditional branch
+
+
+U-TYPE:
+
+    Upper immediate
+
+
+J-TYPE:
+
+    Jump
+
+
+============================================================
+38.32 INSTRUCTION FORMAT SUMMARY
+============================================================
+
++---------+-----------------------------+
+| Format  | Main purpose                |
++---------+-----------------------------+
+| R-type  | Register operations         |
+| I-type  | Immediate, loads, JALR      |
+| S-type  | Stores                      |
+| B-type  | Conditional branches        |
+| U-type  | Upper immediate             |
+| J-type  | Unconditional jump / JAL    |
++---------+-----------------------------+
+
+
+============================================================
+38.33 OPCODE
+============================================================
+
+Opcode identifies the broad operation category.
+
+It tells the decoder what type of instruction it is dealing
+with.
+
+
+Concept:
+
+    Instruction
+         |
+         ↓
+      Opcode
+         |
+         ↓
+    Instruction
+      decoder
+         |
+         ↓
+    Control signals
+
+
+============================================================
+38.34 FUNCT3 AND FUNCT7
+============================================================
+
+Opcode alone may not completely specify an operation.
+
+Additional fields can distinguish instructions.
+
+Important fields:
+
+    funct3
+    funct7
+
+
+Example:
+
+    ADD
+    SUB
+
+
+can share major opcode information while other function fields
+distinguish their exact operation.
+
+
+============================================================
+38.35 REGISTER ADDRESS FIELD
+============================================================
+
+RISC-V has 32 integer registers.
+
+To identify one of 32 registers:
+
+    2^5 = 32
+
+
+Therefore:
+
+    Register field = 5 bits
+
+
+This applies to fields such as:
+
+    rs1
+    rs2
+    rd
+
+
+============================================================
+38.36 IMMEDIATE VALUES
+============================================================
+
+An immediate is a constant encoded directly in an instruction.
+
+Example:
+
+    ADDI x5, x6, 25
+
+
+Here:
+
+    25 = immediate
+
+
+Benefits:
+
+    • No extra memory access for the constant
+    • Simple constant operations
+
+
+But the immediate has a limited bit width.
+
+
+============================================================
+38.37 SIGN EXTENSION
+============================================================
+
+Signed immediate values may need to be expanded to the
+processor's register width.
+
+Example concept:
+
+    8-bit value:
+
+    11111011
+
+
+If interpreted as signed two's complement:
+
+    -5
+
+
+Sign extension to 32 bits:
+
+    11111111 11111111 11111111 11111011
+
+
+The sign bit is replicated.
+
+
+============================================================
+38.38 RISC-V ADDRESSING
+============================================================
+
+RISC-V commonly uses base + offset addressing for memory
+operations.
+
+Example:
+
+    LW x5, 12(x6)
+
+
+Address:
+
+    Effective Address = x6 + 12
+
+
+Then:
+
+    x5 = Memory[Effective Address]
+
+
+============================================================
+38.39 EFFECTIVE ADDRESS
+============================================================
+
+Effective Address (EA):
+
+    EA = Base Register + Offset
+
+
+Example:
+
+    x6 = 1000
+    offset = 20
+
+
+Instruction:
+
+    LW x5, 20(x6)
+
+
+Then:
+
+    EA = 1000 + 20
+       = 1020
+
+
+Therefore:
+
+    x5 = Memory[1020]
+
+
+============================================================
+38.40 ARRAY ACCESS
+============================================================
+
+Suppose an integer array begins at address 1000.
+
+If each integer is 4 bytes:
+
+    A[0] → 1000
+    A[1] → 1004
+    A[2] → 1008
+    A[3] → 1012
+
+
+To access A[2]:
+
+    Address = Base + 2 × 4
+            = 1000 + 8
+            = 1008
+
+
+Assembly concept:
+
+    LW x5, 8(x6)
+
+
+where:
+
+    x6 = 1000
+
+
+============================================================
+38.41 RISC-V MEMORY ALIGNMENT
+============================================================
+
+Memory accesses have size requirements and alignment rules.
+
+Examples:
+
+    Byte  = 1 byte
+    Half  = 2 bytes
+    Word  = 4 bytes
+    Doubleword = 8 bytes in RV64 contexts
+
+
+Common instructions include:
+
+    LB
+    LH
+    LW
+    LD
+
+and corresponding stores such as:
+
+    SB
+    SH
+    SW
+    SD
+
+
+Exact availability depends on the base ISA width and
+extensions.
+
+
+============================================================
+38.42 BASIC RISC-V ASSEMBLY
+============================================================
+
+Example:
+
+    ADDI x5, x0, 10
+    ADDI x6, x0, 20
+    ADD  x7, x5, x6
+
+
+Step 1:
+
+    x5 = 10
+
+
+Step 2:
+
+    x6 = 20
+
+
+Step 3:
+
+    x7 = x5 + x6
+       = 30
+
+
+Final:
+
+    x7 = 30
+
+
+============================================================
+38.43 RISC-V PROGRAM — SUBTRACTION
+============================================================
+
+    ADDI x5, x0, 50
+    ADDI x6, x0, 20
+    SUB  x7, x5, x6
+
+
+Result:
+
+    x7 = 30
+
+
+============================================================
+38.44 RISC-V PROGRAM — MEMORY
+============================================================
+
+Assume:
+
+    x5 = address of A
+    x6 = address of B
+    x7 = address of RESULT
+
+
+Then:
+
+    LW  x8, 0(x5)
+    LW  x9, 0(x6)
+    ADD x10, x8, x9
+    SW  x10, 0(x7)
+
+
+Data flow:
+
+    A ──→ x8 ──┐
+               ↓
+              ALU ──→ x10 ──→ RESULT
+               ↑
+    B ──→ x9 ──┘
+
+
+============================================================
+38.45 RISC-V CONDITIONAL BRANCH
+============================================================
+
+Example:
+
+    BEQ x5, x6, EQUAL
+
+
+If:
+
+    x5 == x6
+
+then:
+
+    PC → EQUAL
+
+
+Otherwise:
+
+    PC → next instruction
+
+
+============================================================
+38.46 RISC-V LOOP
+============================================================
+
+Goal:
+
+    Sum numbers from 1 to 5.
+
+
+    ADDI t0, zero, 0
+    ADDI t1, zero, 1
+    ADDI t2, zero, 6
+
+LOOP:
+    ADD  t0, t0, t1
+    ADDI t1, t1, 1
+    BLT  t1, t2, LOOP
+
+
+Result:
+
+    t0 = 15
+
+
+Here:
+
+    t0 = sum
+    t1 = counter
+    t2 = limit
+
+
+============================================================
+38.47 RISC-V FUNCTION
+============================================================
+
+Function:
+
+    int add(int a, int b)
+    {
+        return a + b;
+    }
+
+
+Conceptual RISC-V:
+
+    add:
+        ADD a0, a0, a1
+        RET
+
+
+Arguments:
+
+    a0 = a
+    a1 = b
+
+
+Result:
+
+    a0 = a + b
+
+
+============================================================
+38.48 RISC-V FUNCTION CALL
+============================================================
+
+Caller concept:
+
+    ADDI a0, zero, 10
+    ADDI a1, zero, 20
+    JAL  ra, add
+
+
+Function:
+
+    add:
+        ADD a0, a0, a1
+        RET
+
+
+Result:
+
+    a0 = 30
+
+
+============================================================
+38.49 RISC-V DATAPATH
+============================================================
+
+A simple RISC-V CPU datapath can be represented as:
+
+                 +----------------+
+                 | Instruction    |
+                 | Memory         |
+                 +-------+--------+
+                         |
+                         ↓
+                   +-----------+
+                   | Instruction|
+                   |  Decode   |
+                   +-----+-----+
+                         |
+             +-----------+-----------+
+             |                       |
+             ↓                       ↓
+       Register File               Immediate
+             |                       |
+             +-----------+-----------+
+                         |
+                         ↓
+                       ALU
+                         |
+              +----------+----------+
+              |                     |
+              ↓                     ↓
+          Data Memory          Register File
+              |
+              ↓
+            Result
+
+
+============================================================
+38.50 REGISTER FILE IN DATAPATH
+============================================================
+
+Register file generally provides:
+
+    Read register 1
+    Read register 2
+    Write register
+
+
+Example:
+
+    ADD x5, x6, x7
+
+
+Register file:
+
+    Read x6
+    Read x7
+       ↓
+      ALU
+       ↓
+    Write x5
+
+
+============================================================
+38.51 ALU OPERATIONS
+============================================================
+
+The ALU may perform:
+
+    ADD
+    SUB
+    AND
+    OR
+    XOR
+    SHIFT
+    COMPARISON
+
+
+Example:
+
+    SUB x5, x6, x7
+
+
+The control unit tells the ALU which operation to perform.
+
+
+============================================================
+38.52 CONTROL UNIT
+============================================================
+
+The control unit decodes the instruction and generates control
+signals.
+
+Concept:
+
+    Instruction
+         |
+         ↓
+    Instruction
+      Decoder
+         |
+         ↓
+    Control Signals
+         |
+    +----+----+----+
+    |         |    |
+    ↓         ↓    ↓
+   ALU      Memory RegFile
+
+
+============================================================
+38.53 RISC-V LOAD DATAPATH
+============================================================
+
+Instruction:
+
+    LW x5, 0(x6)
+
+
+Flow:
+
+    x6
+     |
+     ↓
+    ALU
+     |
+     ↓
+    Memory Address
+     |
+     ↓
+    Data Memory
+     |
+     ↓
+    x5
+
+
+============================================================
+38.54 RISC-V STORE DATAPATH
+============================================================
+
+Instruction:
+
+    SW x5, 0(x6)
+
+
+Flow:
+
+    x6 ──→ ALU ──→ Memory Address
+                       |
+                       ↓
+                    Memory
+                       ↑
+                       |
+                      x5
+
+
+============================================================
+38.55 RISC-V BRANCH DATAPATH
+============================================================
+
+Instruction:
+
+    BEQ x5, x6, LABEL
+
+
+Flow:
+
+    x5 ──┐
+         ├──→ Comparator ──→ Branch decision
+    x6 ──┘
+
+
+If equal:
+
+    PC → branch target
+
+
+Otherwise:
+
+    PC → next instruction
+
+
+============================================================
+38.56 SINGLE-CYCLE CPU CONCEPT
+============================================================
+
+In a simple single-cycle processor:
+
+    One instruction completes in one clock cycle.
+
+
+Concept:
+
+       Fetch
+         ↓
+       Decode
+         ↓
+     Register Read
+         ↓
+       Execute
+         ↓
+     Memory Access
+         ↓
+      Write Back
+
+
+This is useful for learning datapath design.
+
+
+============================================================
+38.57 MULTI-CYCLE CPU CONCEPT
+============================================================
+
+An instruction can be divided across multiple cycles.
+
+Example:
+
+    Cycle 1 → Fetch
+    Cycle 2 → Decode
+    Cycle 3 → Execute
+    Cycle 4 → Memory
+    Cycle 5 → Write Back
+
+
+Different instructions may require different numbers of cycles.
+
+
+============================================================
+38.58 RISC-V PIPELINE
+============================================================
+
+A classic teaching pipeline has five stages:
+
+    IF
+    ID
+    EX
+    MEM
+    WB
+
+
+IF:
+
+    Instruction Fetch
+
+
+ID:
+
+    Instruction Decode / Register Read
+
+
+EX:
+
+    Execute / Address Calculation
+
+
+MEM:
+
+    Memory Access
+
+
+WB:
+
+    Write Back
+
+
+============================================================
+38.59 FIVE-STAGE PIPELINE
+============================================================
+
+          +----+----+----+-----+----+
+          | IF | ID | EX | MEM | WB |
+          +----+----+----+-----+----+
+
+Instruction moves through stages.
+
+
+Multiple instructions can occupy different stages
+simultaneously.
+
+
+============================================================
+38.60 PIPELINE EXAMPLE
+============================================================
+
+Instruction 1:
+
+    ADD x5, x6, x7
+
+Instruction 2:
+
+    SUB x8, x9, x10
+
+Pipeline concept:
+
+    Cycle 1:
+        I1 → IF
+
+    Cycle 2:
+        I1 → ID
+        I2 → IF
+
+    Cycle 3:
+        I1 → EX
+        I2 → ID
+
+    Cycle 4:
+        I1 → MEM
+        I2 → EX
+
+    Cycle 5:
+        I1 → WB
+        I2 → MEM
+
+
+This increases instruction throughput.
+
+
+============================================================
+38.61 PIPELINE HAZARDS
+============================================================
+
+Pipeline hazards can prevent ideal execution.
+
+Three major categories:
+
+    1. Structural hazards
+    2. Data hazards
+    3. Control hazards
+
+
+============================================================
+38.62 DATA HAZARD EXAMPLE
+============================================================
+
+    ADD x5, x6, x7
+    SUB x8, x5, x9
+
+
+Second instruction needs x5 produced by the first.
+
+
+Problem:
+
+    First instruction has not yet written x5
+    when second instruction may need it.
+
+
+Solutions may include:
+
+    • Forwarding
+    • Stalling
+
+
+============================================================
+38.63 CONTROL HAZARD
+============================================================
+
+Example:
+
+    BEQ x5, x6, LABEL
+
+
+The CPU may not immediately know which instruction should
+come next.
+
+
+Possible solutions:
+
+    • Branch prediction
+    • Pipeline stall
+    • Pipeline flush
+
+
+============================================================
+38.64 RISC-V AND COA
+============================================================
+
+RISC-V connects many COA topics:
+
+    ISA
+      ↓
+    Instruction format
+      ↓
+    Control unit
+      ↓
+    Register file
+      ↓
+    ALU
+      ↓
+    Datapath
+      ↓
+    Memory
+      ↓
+    Pipeline
+
+
+Therefore, studying RISC-V helps connect theory to actual
+processor design.
+
+
+============================================================
+38.65 IMPORTANT NUMERICAL CONCEPTS
+============================================================
+
+QUESTION 1:
+
+How many bits are required to identify one of 32 registers?
+
+    2^n = 32
+
+    n = 5
+
+ANSWER:
+
+    5 bits
+
+
+------------------------------------------------------------
+
+QUESTION 2:
+
+If a register contains:
+
+    x6 = 1000
+
+and instruction is:
+
+    LW x5, 20(x6)
+
+Effective address:
+
+    EA = 1000 + 20
+       = 1020
+
+
+ANSWER:
+
+    1020
+
+
+------------------------------------------------------------
+
+QUESTION 3:
+
+Suppose:
+
+    x6 = 10
+    x7 = 20
+
+Instruction:
+
+    ADD x5, x6, x7
+
+
+Result:
+
+    x5 = 30
+
+
+------------------------------------------------------------
+
+QUESTION 4:
+
+Suppose:
+
+    x5 = 50
+    x6 = 20
+
+Instruction:
+
+    SUB x7, x5, x6
+
+
+Result:
+
+    x7 = 30
+
+
+============================================================
+38.66 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    "RISC-V is a CPU."
+
+FALSE.
+
+RISC-V is an ISA.
+
+
+------------------------------------------------------------
+
+MISTAKE 2:
+
+    "RISC-V has only one processor implementation."
+
+FALSE.
+
+Many processors can implement RISC-V.
+
+
+------------------------------------------------------------
+
+MISTAKE 3:
+
+    "x0 can store arbitrary values."
+
+FALSE.
+
+x0 always reads as zero.
+
+
+------------------------------------------------------------
+
+MISTAKE 4:
+
+    "All RISC-V instructions have exactly the same format."
+
+FALSE.
+
+RISC-V uses multiple instruction formats.
+
+
+------------------------------------------------------------
+
+MISTAKE 5:
+
+    "S-type means arithmetic instruction."
+
+FALSE.
+
+S-type is primarily used for stores.
+
+
+------------------------------------------------------------
+
+MISTAKE 6:
+
+    "B-type is used for ordinary data transfer."
+
+FALSE.
+
+B-type is used for conditional branches.
+
+
+------------------------------------------------------------
+
+MISTAKE 7:
+
+    "JAL only jumps."
+
+Incomplete.
+
+JAL also records a link/return address in rd.
+
+
+------------------------------------------------------------
+
+MISTAKE 8:
+
+    "Registers and memory are identical."
+
+FALSE.
+
+Registers are inside the CPU and are much smaller and faster.
+
+
+------------------------------------------------------------
+
+MISTAKE 9:
+
+    "LOAD and STORE perform the same operation."
+
+FALSE.
+
+LOAD:
+
+    Memory → Register
+
+STORE:
+
+    Register → Memory
+
+
+============================================================
+38.67 B.TECH IMPORTANT QUESTIONS
+============================================================
+
+Q1. What is RISC-V?
+
+Q2. Explain why RISC-V is called an open ISA.
+
+Q3. Explain the RISC-V register organization.
+
+Q4. What is the purpose of x0?
+
+Q5. Explain the RISC-V instruction formats.
+
+Q6. Explain R-type instructions.
+
+Q7. Explain I-type instructions.
+
+Q8. Explain S-type instructions.
+
+Q9. Explain B-type instructions.
+
+Q10. Explain U-type instructions.
+
+Q11. Explain J-type instructions.
+
+Q12. Explain the difference between JAL and JALR.
+
+Q13. Explain RISC-V load/store architecture.
+
+Q14. Explain effective address calculation.
+
+Q15. Explain the RISC-V datapath.
+
+Q16. Explain how a RISC-V load instruction works.
+
+Q17. Explain how a RISC-V store instruction works.
+
+Q18. Explain RISC-V function calls.
+
+Q19. Explain the RISC-V five-stage pipeline.
+
+Q20. Explain pipeline hazards in RISC-V.
+
+
+============================================================
+38.68 COMPETITIVE EXAM MCQs
+============================================================
+
+Q1. RISC-V is primarily a:
+
+    A. Programming language
+    B. CPU manufacturer
+    C. Instruction Set Architecture
+    D. Compiler
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q2. How many integer registers are provided in the standard
+RISC-V integer register set?
+
+    A. 8
+    B. 16
+    C. 32
+    D. 64
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q3. How many bits are required to identify one of 32 registers?
+
+    A. 3
+    B. 4
+    C. 5
+    D. 6
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q4. Which register always reads as zero?
+
+    A. x1
+    B. x2
+    C. x5
+    D. x0
+
+ANSWER:
+    D
+
+
+------------------------------------------------------------
+
+Q5. Which format is primarily used for register-register
+arithmetic operations?
+
+    A. R-type
+    B. S-type
+    C. B-type
+    D. J-type
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q6. Which format is primarily used for store instructions?
+
+    A. R-type
+    B. I-type
+    C. S-type
+    D. U-type
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q7. Which format is used for conditional branch instructions?
+
+    A. B-type
+    B. J-type
+    C. R-type
+    D. U-type
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q8. Which instruction performs a register-immediate addition?
+
+    A. ADD
+    B. ADDI
+    C. SW
+    D. BEQ
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q9. What does LW generally perform?
+
+    A. Register → Memory
+    B. Memory → Register
+    C. Register → Register only
+    D. Branch
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q10. What does SW generally perform?
+
+    A. Memory → Register
+    B. Register → Memory
+    C. Register → ALU only
+    D. Branch
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q11. Which instruction is used for conditional equality
+branching?
+
+    A. ADD
+    B. BEQ
+    C. LW
+    D. LUI
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q12. JAL stands for:
+
+    A. Jump And Link
+    B. Jump Address Load
+    C. Joint Arithmetic Logic
+    D. Jump ALU
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q13. Which instruction adds an upper immediate to the PC?
+
+    A. LUI
+    B. AUIPC
+    C. LW
+    D. SW
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q14. Which register is conventionally called the stack pointer?
+
+    A. x1
+    B. x2
+    C. x5
+    D. x10
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q15. Which register is conventionally the return-address
+register?
+
+    A. x0
+    B. x1
+    C. x2
+    D. x31
+
+ANSWER:
+    B
+
+
+============================================================
+38.69 QUICK REVISION
+============================================================
+
+RISC-V:
+
+    Open standard ISA
+
+
+RISC:
+
+    Reduced Instruction Set Computer
+
+
+INTEGER REGISTERS:
+
+    32
+
+
+x0:
+
+    Always zero
+
+
+x1 / ra:
+
+    Return address
+
+
+x2 / sp:
+
+    Stack pointer
+
+
+a0-a7:
+
+    Argument / return-value convention
+
+
+MAIN FORMATS:
+
+    R
+    I
+    S
+    B
+    U
+    J
+
+
+R-TYPE:
+
+    Register-register
+
+
+I-TYPE:
+
+    Immediate / loads / JALR
+
+
+S-TYPE:
+
+    Store
+
+
+B-TYPE:
+
+    Conditional branch
+
+
+U-TYPE:
+
+    Upper immediate
+
+
+J-TYPE:
+
+    Jump
+
+
+LOAD:
+
+    Memory → Register
+
+
+STORE:
+
+    Register → Memory
+
+
+JAL:
+
+    Jump + save link
+
+
+JALR:
+
+    Register-based jump + save link
+
+
+EFFECTIVE ADDRESS:
+
+    Base + Offset
+
+
+PIPELINE:
+
+    IF → ID → EX → MEM → WB
+
+
+============================================================
+38.70 MASTER CONCEPT MAP
+============================================================
+
+                    RISC-V
+                      |
+                      ↓
+                     ISA
+                      |
+        +-------------+-------------+
+        |             |             |
+    Registers    Instructions     Memory
+        |             |             |
+        |       +-----+-----+       |
+        |       |     |     |       |
+        |       R     I     S       |
+        |       B     U     J       |
+        |             |             |
+        +-------------+-------------+
+                      |
+                      ↓
+                   DATAPATH
+                      |
+        +-------------+-------------+
+        |             |             |
+    Register File   ALU        Data Memory
+        |             |             |
+        +-------------+-------------+
+                      |
+                      ↓
+                  CONTROL UNIT
+                      |
+                      ↓
+                   PIPELINE
+                      |
+          +-----------+-----------+
+          |           |           |
+         IF          ID          EX
+                      |
+                     MEM
+                      |
+                      WB
+
+
+============================================================
+38.71 FINAL LEARNING OUTCOME
+============================================================
+
+After Chapter 38, you should understand:
+
+    ✓ What RISC-V is
+    ✓ Difference between ISA and CPU
+    ✓ RISC philosophy
+    ✓ RISC-V register organization
+    ✓ x0, ra, sp and argument registers
+    ✓ Load/store architecture
+    ✓ R-type
+    ✓ I-type
+    ✓ S-type
+    ✓ B-type
+    ✓ U-type
+    ✓ J-type
+    ✓ Opcode
+    ✓ funct3
+    ✓ funct7
+    ✓ Immediate values
+    ✓ Effective address calculation
+    ✓ RISC-V assembly
+    ✓ Function calls
+    ✓ RISC-V datapath
+    ✓ RISC-V pipeline
+    ✓ Pipeline hazards
+
+
+============================================================
+CHAPTER 38 COMPLETE
+============================================================

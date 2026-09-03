@@ -1,0 +1,1888 @@
+CHAPTER 28 — CISC ARCHITECTURE
+
+============================================================
+CHAPTER 28 — CISC ARCHITECTURE
+============================================================
+
+LEVEL:
+B.Tech 1st Year → Intermediate → Advanced Foundation
+
+PREREQUISITE:
+Chapter 10 — Machine Instructions
+Chapter 11 — Addressing Modes
+Chapter 12 — Instruction Execution
+Chapter 13 — Control Unit
+Chapter 27 — RISC Architecture
+
+GOAL:
+Understand CISC architecture, its characteristics,
+instruction complexity, variable-length instructions,
+addressing modes, microprogrammed control, x86,
+advantages, limitations, and RISC vs CISC.
+
+============================================================
+
+
+------------------------------------------------------------
+28.1 WHAT IS CISC?
+------------------------------------------------------------
+
+CISC stands for:
+
+    Complex Instruction Set Computer
+
+
+CISC is a processor/ISA design philosophy in which the
+instruction set can contain relatively complex instructions
+capable of performing multi-step operations.
+
+
+Basic idea:
+
+    One instruction
+          ↓
+    More work
+          ↓
+    Fewer instructions may be needed
+
+
+Conceptually:
+
+    Complex instruction
+          ↓
+    Decode
+          ↓
+    Multiple internal operations
+          ↓
+    Result
+
+
+IMPORTANT:
+
+    CISC does NOT simply mean "bad" or "slow".
+
+Modern CISC processors can be extremely fast.
+
+
+============================================================
+28.2 WHY WAS CISC DEVELOPED?
+============================================================
+
+Historically, computer systems faced constraints such as:
+
+    • Expensive memory
+    • Limited memory capacity
+    • Slow memory
+    • Limited compiler technology
+    • Desire for compact programs
+    • Desire to reduce the number of instructions in programs
+
+
+Therefore, designers developed instructions that could
+perform more work.
+
+
+Example concept:
+
+Instead of:
+
+    LOAD R1, A
+    ADD R1, B
+    STORE A, R1
+
+
+a complex instruction might perform a memory-based arithmetic
+operation in one machine instruction.
+
+
+The exact capability depends on the ISA.
+
+
+============================================================
+28.3 REAL-WORLD ANALOGY
+============================================================
+
+Imagine two tools.
+
+TOOL A:
+
+    Performs one simple operation very quickly.
+
+TOOL B:
+
+    Performs several related operations using one command.
+
+
+CISC is more like Tool B.
+
+
+Example concept:
+
+    "Read data → perform operation → write result"
+
+
+in one architectural instruction.
+
+
+RISC generally separates these operations more explicitly.
+
+
+============================================================
+28.4 BASIC CISC IDEA
+============================================================
+
+CISC tries to provide:
+
+    • Rich instruction sets
+    • Complex instructions
+    • Multiple addressing modes
+    • Compact machine code
+    • Instructions that can perform multiple operations
+
+
+Conceptually:
+
+    CISC instruction
+          ↓
+    Complex decoding
+          ↓
+    Multiple internal operations
+          ↓
+    Result
+
+
+============================================================
+28.5 CHARACTERISTICS OF CISC
+============================================================
+
+Major characteristics traditionally associated with CISC:
+
+    1. Large instruction set
+    2. Complex instructions
+    3. Many addressing modes
+    4. Variable-length instructions
+    5. Instructions may access memory
+    6. Complex instruction formats
+    7. Complex decoding
+    8. Microprogrammed control historically common
+    9. Compact machine code
+    10. Fewer instructions may be required for a task
+
+
+IMPORTANT:
+
+    These are traditional characteristics.
+
+Modern processors do not always fit perfectly into this
+simple classification.
+
+
+============================================================
+28.6 CHARACTERISTIC 1 — LARGE INSTRUCTION SET
+------------------------------------------------------------
+
+CISC processors traditionally provide many instructions.
+
+
+These may include:
+
+    • Arithmetic
+    • Logical
+    • Data movement
+    • String operations
+    • Procedure-related operations
+    • Bit manipulation
+    • Control-flow operations
+    • Memory-based operations
+
+
+The objective is to provide instructions for many useful
+operations.
+
+
+============================================================
+28.7 CHARACTERISTIC 2 — COMPLEX INSTRUCTIONS
+------------------------------------------------------------
+
+A complex instruction can perform multiple internal steps.
+
+
+Conceptual example:
+
+    COMPLEX_OPERATION A, B
+
+
+Internally:
+
+    Fetch operands
+       ↓
+    Perform calculation
+       ↓
+    Possibly access memory
+       ↓
+    Store result
+
+
+Therefore:
+
+    One architectural instruction
+
+can correspond to:
+
+    Multiple internal operations.
+
+
+============================================================
+28.8 EXAMPLE OF COMPLEX OPERATION
+------------------------------------------------------------
+
+Consider:
+
+    C = A + B
+
+
+A traditional load/store approach might use:
+
+    LOAD R1, A
+    LOAD R2, B
+    ADD R3, R1, R2
+    STORE C, R3
+
+
+A CISC ISA may provide instructions that allow an arithmetic
+operation involving a memory operand.
+
+
+The exact syntax and capability depend on the ISA.
+
+
+Therefore:
+
+    CISC can potentially reduce instruction count.
+
+
+============================================================
+28.9 CHARACTERISTIC 3 — MANY ADDRESSING MODES
+------------------------------------------------------------
+
+CISC architectures traditionally provide many addressing modes.
+
+
+Examples include:
+
+    Immediate
+    Register
+    Direct
+    Register indirect
+    Base
+    Indexed
+    Base + index
+    Relative
+    Auto-increment
+    Auto-decrement
+
+
+Some architectures may provide even more specialised modes.
+
+
+Purpose:
+
+    Make it easier to express different data-access patterns
+    directly in machine instructions.
+
+
+============================================================
+28.10 ADDRESSING MODE EXAMPLE
+------------------------------------------------------------
+
+Suppose:
+
+    Base register = R1
+    Index register = R2
+    Displacement = 20
+
+
+A complex addressing mode could conceptually calculate:
+
+    Effective Address
+       =
+    R1 + R2 + 20
+
+
+Then:
+
+    Memory[R1 + R2 + 20]
+
+
+can be accessed by one instruction.
+
+
+This provides flexibility.
+
+
+============================================================
+28.11 CHARACTERISTIC 4 — VARIABLE-LENGTH INSTRUCTIONS
+------------------------------------------------------------
+
+Many traditional CISC ISAs use variable-length instructions.
+
+
+For example, an instruction might be:
+
+    1 byte
+    2 bytes
+    3 bytes
+    4 bytes
+    ...
+    depending on the instruction
+
+
+This allows compact encoding of different operations.
+
+
+However:
+
+    Variable length makes instruction fetching and decoding
+    more complicated.
+
+
+============================================================
+28.12 FIXED VS VARIABLE LENGTH
+------------------------------------------------------------
+
+RISC:
+
+    Often fixed/regular instruction lengths
+
+
+CISC:
+
+    Traditionally variable-length instructions
+
+
+Example:
+
+    RISC:
+        32 bits
+        32 bits
+        32 bits
+        32 bits
+
+
+    CISC:
+        1–many bytes
+        depending on instruction
+
+
+Advantage of variable length:
+
+    Potentially better code density.
+
+
+Disadvantage:
+
+    More complicated fetch/decode hardware.
+
+
+============================================================
+28.13 CHARACTERISTIC 5 — MEMORY OPERANDS
+------------------------------------------------------------
+
+Traditional CISC instructions may allow operations directly
+on memory operands.
+
+
+Conceptual example:
+
+    ADD Memory_A, R1
+
+
+Meaning:
+
+    Memory_A ← Memory_A + R1
+
+
+A pure load/store RISC architecture would generally require:
+
+    LOAD
+    ADD
+    STORE
+
+
+This is an important traditional difference.
+
+
+============================================================
+28.14 CHARACTERISTIC 6 — COMPLEX INSTRUCTION FORMATS
+------------------------------------------------------------
+
+A CISC instruction may contain fields for:
+
+    Opcode
+    Registers
+    Immediate values
+    Memory addressing information
+    Displacement
+    Prefixes
+    Other control information
+
+
+Conceptually:
+
+    +--------+------+-------+-----------+
+    | Opcode | Reg  | Mode  | Address   |
+    +--------+------+-------+-----------+
+
+
+The exact format varies by ISA.
+
+
+============================================================
+28.15 CHARACTERISTIC 7 — COMPLEX DECODING
+------------------------------------------------------------
+
+Because instructions may have:
+
+    • Different lengths
+    • Different formats
+    • Different addressing modes
+    • Different operand types
+
+
+the instruction decoder may be more complicated.
+
+
+Conceptual flow:
+
+    Instruction bytes
+          ↓
+    Identify instruction boundaries
+          ↓
+    Decode opcode
+          ↓
+    Decode addressing mode
+          ↓
+    Determine operands
+          ↓
+    Generate internal operations
+
+
+============================================================
+28.16 CHARACTERISTIC 8 — MICROPROGRAMMED CONTROL
+------------------------------------------------------------
+
+Historically, CISC processors commonly used
+microprogrammed control.
+
+
+A complex instruction could be broken into a sequence of
+microinstructions.
+
+
+Example:
+
+    CISC instruction
+          ↓
+    Microinstruction 1
+          ↓
+    Microinstruction 2
+          ↓
+    Microinstruction 3
+          ↓
+    Microinstruction 4
+          ↓
+    Result
+
+
+Microprogrammed control will be studied in detail in
+Chapter 13.
+
+
+============================================================
+28.17 MICRO-OPERATIONS
+------------------------------------------------------------
+
+A complex machine instruction can internally be implemented
+using smaller micro-operations.
+
+
+Example:
+
+    LOAD + ADD operation
+
+
+could internally involve:
+
+    MAR ← address
+    Memory Read
+    MDR ← Memory data
+    ALU ← MDR + Register
+    Result ← ALU output
+
+
+The exact sequence depends on the processor.
+
+
+Therefore:
+
+    Complex ISA instruction
+          ↓
+    Multiple internal micro-operations
+
+
+============================================================
+28.18 CISC AND MICROCODE
+------------------------------------------------------------
+
+Microcode is a layer of low-level control information used
+in some processors to implement architectural instructions.
+
+
+Conceptually:
+
+    Machine instruction
+            ↓
+        Decoder
+            ↓
+        Microcode
+            ↓
+    Control signals
+            ↓
+    Datapath operations
+
+
+Historically this was strongly associated with CISC.
+
+
+Modern processors may use internal micro-operations and
+different control techniques, so the old RISC/CISC distinction
+is not absolute.
+
+
+============================================================
+28.19 CISC INSTRUCTION EXECUTION
+------------------------------------------------------------
+
+General flow:
+
+    Program
+      ↓
+    Instruction Fetch
+      ↓
+    Complex Decode
+      ↓
+    Determine operands
+      ↓
+    Generate internal operations
+      ↓
+    Execute
+      ↓
+    Memory access if required
+      ↓
+    Write result
+      ↓
+    Next instruction
+
+
+============================================================
+28.20 CISC EXAMPLE — CONCEPTUAL
+------------------------------------------------------------
+
+Suppose:
+
+    Memory[A] = 10
+    Memory[B] = 20
+
+
+We want:
+
+    Memory[C] = Memory[A] + Memory[B]
+
+
+A traditional load/store sequence:
+
+    LOAD R1, A
+    LOAD R2, B
+    ADD R3, R1, R2
+    STORE C, R3
+
+
+A richer CISC ISA may provide instructions that combine some
+of these operations.
+
+
+The exact number of instructions depends on the ISA.
+
+
+IMPORTANT:
+
+    Do not assume every CISC processor can perform every
+    possible multi-memory operation in one instruction.
+
+
+============================================================
+28.21 CODE DENSITY
+------------------------------------------------------------
+
+Code density means:
+
+    How much program functionality can be represented in a
+    given amount of memory?
+
+
+CISC can achieve good code density because:
+
+    One instruction can sometimes perform more work.
+
+
+Therefore:
+
+    Program size ↓
+
+
+Potential benefits:
+
+    • Less memory required
+    • Better instruction-cache utilisation
+    • Less instruction fetch traffic
+
+
+But the relationship is workload-dependent.
+
+
+============================================================
+28.22 CISC AND MEMORY
+------------------------------------------------------------
+
+Historically, memory was expensive and slow.
+
+
+CISC could reduce the number of instructions required.
+
+
+For example:
+
+    RISC-style:
+
+        LOAD
+        LOAD
+        ADD
+        STORE
+
+
+CISC may express some operations more compactly.
+
+
+Therefore:
+
+    Fewer architectural instructions
+          ↓
+    Potentially smaller program
+          ↓
+    Better code density
+
+
+============================================================
+28.23 ADVANTAGES OF CISC
+------------------------------------------------------------
+
+1. COMPACT CODE
+
+    Complex instructions can reduce instruction count.
+
+
+2. FEWER INSTRUCTIONS
+
+    A task may require fewer architectural instructions.
+
+
+3. RICH ADDRESSING MODES
+
+    Many ways to access data.
+
+
+4. POWERFUL INSTRUCTIONS
+
+    One instruction can perform several operations.
+
+
+5. GOOD CODE DENSITY
+
+    Useful when memory/storage bandwidth is important.
+
+
+6. BACKWARD COMPATIBILITY
+
+    Long-lived ISAs such as x86 can maintain compatibility
+    across generations.
+
+
+============================================================
+28.24 LIMITATIONS OF CISC
+------------------------------------------------------------
+
+1. COMPLEX HARDWARE
+
+    Complex instructions require sophisticated hardware.
+
+
+2. COMPLEX DECODING
+
+    Variable-length and multiple instruction formats make
+    decoding harder.
+
+
+3. PIPELINE COMPLEXITY
+
+    Irregular instruction behaviour can complicate pipeline
+    design.
+
+
+4. MORE COMPLEX CONTROL
+
+    Historically microprogrammed control was used for
+    complex instruction execution.
+
+
+5. VARIABLE EXECUTION COMPLEXITY
+
+    Different instructions can require different amounts of
+    work.
+
+
+6. HARDER IMPLEMENTATION
+
+    Designing and verifying a rich ISA can be difficult.
+
+
+============================================================
+28.25 CISC AND PIPELINING
+------------------------------------------------------------
+
+CISC does NOT mean:
+
+    "Cannot be pipelined."
+
+
+Modern CISC processors are heavily pipelined.
+
+
+However, variable-length and complex instructions can make
+front-end processing more difficult.
+
+
+Conceptually:
+
+    Instruction bytes
+          ↓
+    Predecode
+          ↓
+    Decode
+          ↓
+    Internal operations
+          ↓
+    Execute
+
+
+Modern processors use sophisticated hardware to overcome
+these difficulties.
+
+
+============================================================
+28.26 CISC AND MODERN PROCESSORS
+------------------------------------------------------------
+
+A very important modern concept:
+
+
+Modern CISC processors may translate complex architectural
+instructions into simpler internal operations.
+
+
+For example:
+
+    x86 instruction
+          ↓
+    Decoder
+          ↓
+    Internal micro-operations
+          ↓
+    Scheduler
+          ↓
+    Execution units
+
+
+These internal operations can behave somewhat like a
+RISC-style instruction stream.
+
+
+Therefore:
+
+    External ISA = CISC-like
+
+    Internal execution = may be more RISC-like
+
+
+============================================================
+28.27 x86 AS A CISC ISA
+------------------------------------------------------------
+
+x86 is the most important example of a CISC ISA for
+understanding modern computers.
+
+
+The x86 family includes architectures historically associated
+with processors such as:
+
+    8086
+    80386
+    Pentium family
+    Modern Intel x86 processors
+    AMD x86-64 processors
+
+
+Modern x86 implementations are highly advanced.
+
+
+============================================================
+28.28 x86 CHARACTERISTICS
+------------------------------------------------------------
+
+Important traditional x86 characteristics:
+
+    • Large instruction set
+    • Variable-length instructions
+    • Many addressing possibilities
+    • Complex instruction encodings
+    • Strong backward compatibility
+    • Memory operands supported by many instructions
+
+
+Modern x86 processors additionally use:
+
+    • Pipelining
+    • Superscalar execution
+    • Out-of-order execution
+    • Register renaming
+    • Branch prediction
+    • Speculative execution
+    • Micro-operations
+
+
+============================================================
+28.29 x86 INSTRUCTION LENGTH
+------------------------------------------------------------
+
+One important characteristic of x86:
+
+    Instructions are variable length.
+
+
+An instruction can contain:
+
+    • Prefixes
+    • Opcode
+    • ModR/M information
+    • SIB information
+    • Displacement
+    • Immediate data
+
+
+Therefore, determining where one instruction ends and the
+next begins is a non-trivial task.
+
+
+============================================================
+28.30 x86-64
+------------------------------------------------------------
+
+Modern x86 processors commonly support:
+
+    x86-64
+
+
+x86-64 provides:
+
+    • 64-bit general-purpose registers
+    • 64-bit integer operations
+    • Large virtual address capabilities
+    • Compatibility with older x86 software
+
+
+Important:
+
+    x86-64 is still part of the x86 ISA family.
+
+
+============================================================
+28.31 x86 MICRO-OPERATIONS
+------------------------------------------------------------
+
+A modern x86 processor can conceptually perform:
+
+    x86 instruction
+          ↓
+    Decode
+          ↓
+    μops
+          ↓
+    Scheduling
+          ↓
+    Execution units
+          ↓
+    Retirement
+
+
+"μop" means:
+
+    micro-operation
+
+
+This allows complex architectural instructions to be broken
+into smaller internal operations.
+
+
+============================================================
+28.32 CISC VS RISC — CORE COMPARISON
+------------------------------------------------------------
+
++----------------------+-----------------------------+
+| RISC                 | CISC                        |
++----------------------+-----------------------------+
+| Reduced/simple ISA  | Rich/complex ISA            |
++----------------------+-----------------------------+
+| Load/store model    | Memory operands may be      |
+|                     | supported                   |
++----------------------+-----------------------------+
+| Usually simpler     | Often more complex          |
+| addressing modes    | addressing modes            |
++----------------------+-----------------------------+
+| Often regular/fixed | Often variable-length       |
+| formats             | instructions                |
++----------------------+-----------------------------+
+| Simpler decoding    | More complex decoding       |
++----------------------+-----------------------------+
+| More instructions   | Fewer instructions may be   |
+| may be required     | needed                      |
++----------------------+-----------------------------+
+| Compiler plays a    | Rich instructions can       |
+| strong role          | express more work directly  |
++----------------------+-----------------------------+
+| Example: RISC-V     | Example: x86                |
++----------------------+-----------------------------+
+
+
+============================================================
+28.33 RISC VS CISC — INSTRUCTION COUNT
+------------------------------------------------------------
+
+Suppose a task requires:
+
+    4 simple operations
+
+
+RISC might require:
+
+    I1
+    I2
+    I3
+    I4
+
+
+CISC might represent some of the work using:
+
+    I1
+    I2
+
+
+Therefore:
+
+    RISC:
+        More instructions
+
+
+    CISC:
+        Potentially fewer instructions
+
+
+But remember:
+
+    Performance depends on:
+
+    Instruction Count
+    × CPI
+    × Clock Cycle Time
+
+
+So fewer instructions does NOT automatically mean faster.
+
+
+============================================================
+28.34 RISC VS CISC — HARDWARE
+------------------------------------------------------------
+
+Traditional RISC:
+
+    Simpler instruction control
+        ↓
+    Simpler decode
+        ↓
+    Easier pipeline
+
+
+Traditional CISC:
+
+    Complex instructions
+        ↓
+    Complex decode/control
+        ↓
+    More implementation complexity
+
+
+Modern processors blur this distinction.
+
+
+============================================================
+28.35 RISC VS CISC — MEMORY ACCESS
+------------------------------------------------------------
+
+Traditional RISC:
+
+    LOAD → memory → register
+
+    COMPUTE → registers
+
+    STORE → register → memory
+
+
+Traditional CISC:
+
+    Some instructions may directly operate on memory operands.
+
+
+This is one of the most important conceptual differences.
+
+
+============================================================
+28.36 RISC VS CISC — CODE SIZE
+------------------------------------------------------------
+
+RISC:
+
+    Simple instructions
+        ↓
+    More instructions may be required
+        ↓
+    Potentially larger code
+
+
+CISC:
+
+    Complex instructions
+        ↓
+    Fewer instructions may be required
+        ↓
+    Potentially smaller code
+
+
+But modern compressed instruction extensions can make RISC
+code highly compact too.
+
+
+============================================================
+28.37 RISC VS CISC — ADDRESSING MODES
+------------------------------------------------------------
+
+Traditional RISC:
+
+    Fewer/simple addressing modes
+
+
+Traditional CISC:
+
+    Many/richer addressing modes
+
+
+Example CISC-style conceptual address:
+
+    Base + Index + Scale + Displacement
+
+
+This can provide flexible data access.
+
+
+============================================================
+28.38 RISC VS CISC — CONTROL UNIT
+------------------------------------------------------------
+
+Traditional RISC:
+
+    Hardwired control is commonly associated with simple
+    instruction execution.
+
+
+Traditional CISC:
+
+    Microprogrammed control is historically common.
+
+
+However:
+
+    Modern implementations can use much more complicated
+    combinations of hardware control, decoding, microcode,
+    and internal scheduling.
+
+
+============================================================
+28.39 RISC VS CISC — PIPELINING
+------------------------------------------------------------
+
+RISC:
+
+    Regular instructions
+         ↓
+    Easier pipeline design
+
+
+CISC:
+
+    Complex/variable instructions
+         ↓
+    More complicated front-end
+         ↓
+    Sophisticated decoding required
+
+
+Modern x86 processors nevertheless use deep pipelines and
+high-performance execution.
+
+
+============================================================
+28.40 RISC VS CISC — COMPILER
+------------------------------------------------------------
+
+RISC:
+
+    Compiler has significant responsibility for:
+
+    • Register allocation
+    • Instruction scheduling
+    • Efficient use of simple instructions
+
+
+CISC:
+
+    ISA provides more functionality directly in instructions.
+
+
+However:
+
+    Modern compilers optimise both RISC and CISC code
+    extensively.
+
+
+============================================================
+28.41 WHY CISC REMAINS IMPORTANT
+------------------------------------------------------------
+
+CISC remains important because of:
+
+    • Existing software ecosystem
+    • Backward compatibility
+    • High code density
+    • Powerful instruction set
+    • Mature hardware/software ecosystem
+
+
+The x86 ecosystem is one of the strongest examples.
+
+
+============================================================
+28.42 HISTORICAL RISC VS CISC DEBATE
+------------------------------------------------------------
+
+Historically, designers debated:
+
+    "Should hardware perform more work?"
+
+versus:
+
+    "Should software/compiler use simple instructions?"
+
+
+CISC approach:
+
+    Put more functionality into instructions.
+
+
+RISC approach:
+
+    Keep instructions simpler and rely more on compiler
+    optimisation and efficient hardware.
+
+
+Modern processors have combined ideas from both approaches.
+
+
+============================================================
+28.43 MODERN VIEW OF RISC VS CISC
+------------------------------------------------------------
+
+The old simplified model:
+
+    RISC = simple hardware
+    CISC = complex hardware
+
+
+is no longer sufficient.
+
+
+Modern reality:
+
+    RISC ISA
+        ↓
+    Can have very complex hardware.
+
+
+    CISC ISA
+        ↓
+    Can translate instructions into simple internal μops.
+
+
+Therefore:
+
+    ISA complexity
+        ≠
+    Microarchitecture complexity
+
+
+This is a VERY IMPORTANT interview concept.
+
+
+============================================================
+28.44 ISA VS MICROARCHITECTURE
+------------------------------------------------------------
+
+ISA:
+
+    The interface visible to software.
+
+
+It defines:
+
+    • Instructions
+    • Registers
+    • Data types
+    • Addressing behaviour
+    • Memory model
+    • Exceptions
+
+
+Microarchitecture:
+
+    The internal implementation of the ISA.
+
+
+It includes:
+
+    • Pipelines
+    • Execution units
+    • Caches
+    • Branch predictors
+    • Schedulers
+    • Register renaming
+    • Internal buses
+
+
+Therefore:
+
+    Same ISA
+        ↓
+    Different microarchitectures
+
+
+Example:
+
+    x86 ISA
+       ↓
+    Intel implementation
+
+    x86 ISA
+       ↓
+    AMD implementation
+
+
+Both can execute x86 software.
+
+
+============================================================
+28.45 CISC AND SUPERSCALAR EXECUTION
+------------------------------------------------------------
+
+Modern CISC processors can execute multiple internal
+operations per cycle.
+
+
+Conceptually:
+
+    Instruction stream
+          ↓
+       Decode
+          ↓
+      μops
+      / | \
+     /  |  \
+   ALU FPU Branch
+     \  |  /
+      Results
+
+
+This is called:
+
+    Superscalar execution
+
+
+This topic is covered in more detail later.
+
+
+============================================================
+28.46 CISC AND OUT-OF-ORDER EXECUTION
+------------------------------------------------------------
+
+Modern CISC processors may execute internal operations
+out of program order when dependencies permit.
+
+
+Example:
+
+    I1 → dependent
+    I2 → independent
+    I3 → independent
+
+
+The processor may execute:
+
+    I2
+    I3
+
+before:
+
+    I1
+
+
+while still preserving the correct architectural result.
+
+
+This is called:
+
+    Out-of-order execution
+
+
+============================================================
+28.47 CISC AND REGISTER RENAMING
+------------------------------------------------------------
+
+Modern processors may use physical registers internally.
+
+
+Architectural register:
+
+    RAX
+
+
+may be mapped internally to:
+
+    Physical Register P17
+
+
+This helps eliminate certain false dependencies.
+
+
+This technique is:
+
+    Register renaming
+
+
+It is common in high-performance processors, including
+modern x86 implementations.
+
+
+============================================================
+28.48 CISC AND BRANCH PREDICTION
+------------------------------------------------------------
+
+Modern CISC processors predict branches.
+
+
+Example:
+
+    if (condition)
+        A
+    else
+        B
+
+
+The processor predicts:
+
+    A
+
+
+and begins execution before the condition is fully resolved.
+
+
+If prediction is correct:
+
+    Performance improves.
+
+
+If incorrect:
+
+    Speculative work may be discarded.
+
+
+============================================================
+28.49 CISC COMPLETE MODERN FLOW
+------------------------------------------------------------
+
+             x86 MACHINE CODE
+                    |
+                    ↓
+             INSTRUCTION FETCH
+                    |
+                    ↓
+              PREDECODING
+                    |
+                    ↓
+                DECODING
+                    |
+                    ↓
+             MICRO-OPERATIONS
+                    |
+                    ↓
+               SCHEDULING
+                    |
+                    ↓
+        +-----------+-----------+
+        |           |           |
+        ↓           ↓           ↓
+       ALU         FPU       LOAD/STORE
+        |           |           |
+        +-----------+-----------+
+                    |
+                    ↓
+                RETIREMENT
+                    |
+                    ↓
+               ARCHITECTURAL
+                  RESULT
+
+
+============================================================
+28.50 IMPORTANT EXAM POINTS
+------------------------------------------------------------
+
+Remember:
+
+    ✔ CISC = Complex Instruction Set Computer
+
+    ✔ Large/rich instruction set
+
+    ✔ Complex instructions
+
+    ✔ Many addressing modes traditionally
+
+    ✔ Variable-length instructions traditionally
+
+    ✔ Memory operands may be supported
+
+    ✔ Complex instruction decoding
+
+    ✔ Microprogramming historically important
+
+    ✔ x86 is the major modern CISC ISA example
+
+    ✔ Modern CISC processors may translate instructions
+      into internal micro-operations
+
+    ✔ Modern RISC/CISC differences are not absolute
+
+
+============================================================
+28.51 COMMON MISTAKES
+------------------------------------------------------------
+
+MISTAKE 1:
+
+    CISC means every instruction is slow.
+
+CORRECTION:
+
+    No. Instruction complexity varies, and modern CISC
+    processors are highly optimised.
+
+
+MISTAKE 2:
+
+    CISC cannot use pipelining.
+
+CORRECTION:
+
+    Modern CISC processors use sophisticated pipelines.
+
+
+MISTAKE 3:
+
+    CISC always requires fewer CPU cycles.
+
+CORRECTION:
+
+    No. Execution time depends on instruction count, CPI,
+    clock cycle time and microarchitecture.
+
+
+MISTAKE 4:
+
+    RISC has no complex hardware.
+
+CORRECTION:
+
+    Modern RISC processors can have extremely complex
+    microarchitectures.
+
+
+MISTAKE 5:
+
+    x86 instructions execute directly as one simple hardware
+    operation.
+
+CORRECTION:
+
+    Modern x86 processors can decode instructions into
+    internal micro-operations.
+
+
+MISTAKE 6:
+
+    RISC and CISC are completely opposite architectures.
+
+CORRECTION:
+
+    They are primarily ISA design philosophies, and modern
+    implementations often combine ideas from both.
+
+
+============================================================
+28.52 B.TECH QUESTIONS
+------------------------------------------------------------
+
+Q1. Define CISC.
+
+Q2. Explain the characteristics of CISC architecture.
+
+Q3. Why are variable-length instructions used in CISC?
+
+Q4. Explain the role of addressing modes in CISC.
+
+Q5. Explain memory operands in CISC.
+
+Q6. Explain microprogrammed control in CISC.
+
+Q7. Explain the advantages of CISC.
+
+Q8. Explain the limitations of CISC.
+
+Q9. Explain x86 as a CISC ISA.
+
+Q10. Explain variable-length x86 instructions.
+
+Q11. Explain micro-operations in modern CISC processors.
+
+Q12. Compare RISC and CISC.
+
+Q13. Explain the relationship between CISC and code density.
+
+Q14. Explain why CISC decoding can be complex.
+
+Q15. Explain RISC vs CISC from the viewpoint of pipelining.
+
+Q16. Explain the difference between ISA and microarchitecture.
+
+Q17. Explain how modern x86 processors execute CISC
+     instructions internally.
+
+Q18. Explain why the traditional RISC/CISC distinction is
+     becoming less clear.
+
+
+============================================================
+28.53 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. CISC stands for:
+
+    A. Complex Instruction Set Computer
+    B. Computer Instruction System Controller
+    C. Complex Internal System Computer
+    D. Central Instruction Set Computer
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q2. Which ISA is a well-known example of CISC?
+
+    A. RISC-V
+    B. MIPS
+    C. x86
+    D. Classic SPARC
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q3. Which is traditionally associated with CISC?
+
+    A. Variable-length instructions
+    B. Only load/store instructions
+    C. No addressing modes
+    D. No memory operands
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q4. Which is a traditional advantage of CISC?
+
+    A. Potentially compact code
+    B. No instruction decoding
+    C. No memory access
+    D. No control unit
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q5. Which can make CISC instruction decoding more complex?
+
+    A. Variable-length instructions
+    B. No instruction fields
+    C. No operands
+    D. No addressing modes
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q6. Microprogramming was historically associated strongly
+with:
+
+    A. CISC
+    B. Analog computers
+    C. GPUs only
+    D. Memory cells
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q7. Modern x86 processors may translate instructions into:
+
+    A. Micro-operations
+    B. Analog signals
+    C. Only source code
+    D. Page tables
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q8. Which statement is TRUE?
+
+    A. CISC processors cannot be superscalar.
+    B. CISC processors cannot use branch prediction.
+    C. Modern CISC processors can use out-of-order execution.
+    D. CISC processors cannot use caches.
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q9. Which of the following is generally associated with
+traditional RISC rather than traditional CISC?
+
+    A. Many addressing modes
+    B. Variable-length instructions
+    C. Load/store architecture
+    D. Memory-to-memory arithmetic
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q10. The difference between ISA and microarchitecture is:
+
+    A. They are exactly the same.
+    B. ISA specifies the software-visible interface, while
+       microarchitecture describes its implementation.
+    C. ISA only means cache.
+    D. Microarchitecture means programming language.
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q11. Which factor can contribute to good CISC code density?
+
+    A. Complex instructions doing more work
+    B. No instructions
+    C. Unlimited registers
+    D. No memory
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q12. Which statement about RISC vs CISC is most accurate?
+
+    A. RISC is always faster.
+    B. CISC is always slower.
+    C. Modern implementations blur the traditional distinction.
+    D. RISC cannot have complex hardware.
+
+ANSWER:
+    C
+
+
+============================================================
+28.54 QUICK REVISION
+============================================================
+
+CISC
+    ↓
+Complex Instruction Set Computer
+
+
+CORE IDEA
+    ↓
+Provide richer instructions capable of performing
+more work per architectural instruction.
+
+
+CHARACTERISTICS
+    ↓
+Large instruction set
+Complex instructions
+Many addressing modes
+Variable-length instructions
+Memory operands
+Complex decoding
+Microprogramming historically
+
+
+ADVANTAGES
+    ↓
+Compact code
+Rich instructions
+Fewer instructions may be required
+Good code density
+Backward compatibility
+
+
+LIMITATIONS
+    ↓
+Complex decoding
+Complex control
+Implementation difficulty
+Pipeline front-end complexity
+
+
+MAJOR EXAMPLE
+    ↓
+x86
+
+
+MODERN x86
+    ↓
+x86 instruction
+      ↓
+    Decode
+      ↓
+    μops
+      ↓
+    Scheduling
+      ↓
+    Execution
+      ↓
+    Retirement
+
+
+============================================================
+28.55 RISC vs CISC — ONE-LINE MEMORY TRICK
+============================================================
+
+RISC:
+
+    "Many simple instructions."
+
+CISC:
+
+    "Fewer, potentially more complex instructions."
+
+
+But the modern truth is:
+
+    "The ISA may be RISC-like or CISC-like,
+     while the internal processor can be highly complex."
+
+
+============================================================
+28.56 CHAPTER 27 + 28 MASTER CONNECTION
+============================================================
+
+                 ISA DESIGN
+                     |
+          +----------+----------+
+          |                     |
+          ↓                     ↓
+        RISC                   CISC
+          |                     |
+      Simple/regular         Complex/rich
+          |                     |
+      Load/store            Memory operands
+          |                     |
+      Many registers       Many addressing modes
+          |                     |
+      Easy decoding        Complex decoding
+          |                     |
+      Pipeline-friendly    Sophisticated pipeline
+          |                     |
+       RISC-V               x86
+       ARM
+       MIPS
+
+
+============================================================
+CHAPTER 28 COMPLETE
+============================================================

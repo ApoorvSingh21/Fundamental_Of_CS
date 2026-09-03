@@ -1,0 +1,1595 @@
+CHAPTER 22 — INTERRUPTS
+
+============================================================
+CHAPTER 22 — INTERRUPTS
+============================================================
+
+LEVEL: B.Tech 1st Year
+STARTING LEVEL: Absolute Beginner
+GOAL:
+Understand why interrupts are needed, how interrupts work,
+types of interrupts, interrupt handling, priority systems,
+daisy chaining, nested interrupts, vectored interrupts and
+non-vectored interrupts.
+
+============================================================
+22.1 WHAT IS AN INTERRUPT?
+============================================================
+
+An interrupt is a signal/event that temporarily causes the CPU
+to stop its current execution and handle an important event.
+
+Simple definition:
+
+    INTERRUPT =
+    A request that temporarily diverts the CPU from its current
+    program to an interrupt-handling routine.
+
+Real-world analogy:
+
+Imagine you are studying.
+
+    You = CPU
+    Studying = Current program
+    Doorbell = Interrupt
+    Answering the door = Interrupt Service Routine
+    Returning to study = Resume previous program
+
+You do NOT permanently stop studying.
+
+You temporarily handle the important event and then continue.
+
+
+============================================================
+22.2 WHY ARE INTERRUPTS NEEDED?
+============================================================
+
+Without interrupts, the CPU may have to continuously check
+every device.
+
+Example:
+
+    CPU:
+        "Keyboard, any data?"
+
+    Keyboard:
+        "No."
+
+    CPU:
+        "Keyboard, any data?"
+
+    Keyboard:
+        "No."
+
+    CPU:
+        "Keyboard, any data?"
+
+    Keyboard:
+        "No."
+
+This is called:
+
+    POLLING
+
+It wastes CPU time.
+
+With interrupts:
+
+    CPU:
+        "I will continue my work."
+
+    Keyboard:
+        "I have data!"
+
+    Keyboard → INTERRUPT → CPU
+
+The CPU handles the keyboard event.
+
+
+Therefore:
+
+    Interrupts improve CPU efficiency.
+
+
+============================================================
+22.3 BASIC INTERRUPT CONCEPT
+============================================================
+
+Normal execution:
+
+    Instruction 1
+         ↓
+    Instruction 2
+         ↓
+    Instruction 3
+         ↓
+    Instruction 4
+         ↓
+    Instruction 5
+
+
+With an interrupt:
+
+    Instruction 1
+         ↓
+    Instruction 2
+         ↓
+    INTERRUPT
+         ↓
+    Save CPU state
+         ↓
+    Execute ISR
+         ↓
+    Restore CPU state
+         ↓
+    Instruction 3
+         ↓
+    Instruction 4
+
+
+The interrupted program normally continues after servicing
+the interrupt.
+
+
+============================================================
+22.4 INTERRUPT REQUEST
+============================================================
+
+An interrupt request is a signal asking the CPU to service
+an interrupt.
+
+Common abbreviation:
+
+    IRQ = Interrupt Request
+
+Example:
+
+    Keyboard
+       |
+       ↓
+    Keyboard Controller
+       |
+       ↓
+      IRQ
+       |
+       ↓
+      CPU
+
+
+============================================================
+22.5 INTERRUPT SERVICE ROUTINE
+============================================================
+
+ISR = Interrupt Service Routine
+
+An ISR is a special routine executed when an interrupt occurs.
+
+It is also called:
+
+    Interrupt Handler
+
+
+Example:
+
+    Keyboard interrupt
+          ↓
+        ISR
+          ↓
+    Read keyboard data
+          ↓
+    Process the data
+          ↓
+    Return from interrupt
+
+
+The ISR should generally perform the required work efficiently
+and then return control to the interrupted program.
+
+
+============================================================
+22.6 INTERRUPT FLOW
+============================================================
+
+Basic interrupt sequence:
+
+    1. CPU executes current program.
+    2. Interrupt occurs.
+    3. CPU detects interrupt.
+    4. CPU saves necessary state.
+    5. CPU identifies interrupt source.
+    6. CPU transfers control to ISR.
+    7. ISR handles the event.
+    8. CPU restores required state.
+    9. CPU returns to interrupted program.
+
+
+Diagram:
+
+             NORMAL PROGRAM
+                   |
+                   ↓
+             Execute instruction
+                   |
+                   ↓
+             Interrupt occurs
+                   |
+                   ↓
+            Detect interrupt
+                   |
+                   ↓
+            Save CPU state
+                   |
+                   ↓
+           Identify interrupt
+                   |
+                   ↓
+                  ISR
+                   |
+                   ↓
+          Handle interrupt
+                   |
+                   ↓
+          Restore CPU state
+                   |
+                   ↓
+          Return to program
+                   |
+                   ↓
+             Continue
+
+
+============================================================
+22.7 INTERRUPT LATENCY
+============================================================
+
+Interrupt latency is the time between:
+
+    Interrupt occurrence
+
+and:
+
+    Start of interrupt servicing.
+
+Conceptually:
+
+    Interrupt occurs
+         |
+         | ← Interrupt latency →
+         |
+         ↓
+    ISR starts
+
+
+Lower interrupt latency is generally desirable for
+time-sensitive systems.
+
+
+============================================================
+22.8 INTERRUPT HANDLING
+============================================================
+
+When an interrupt occurs, the CPU must preserve enough
+information to resume the interrupted program correctly.
+
+Important information may include:
+
+    • Program Counter (PC)
+    • Status/flag register
+    • Processor state
+    • Sometimes general-purpose registers
+
+
+Conceptually:
+
+    Current program
+         ↓
+    Save state
+         ↓
+    ISR
+         ↓
+    Restore state
+         ↓
+    Continue program
+
+
+============================================================
+22.9 WHAT IS THE PROGRAM COUNTER?
+============================================================
+
+PC = Program Counter
+
+The PC contains the address of the next instruction to be
+executed.
+
+Example:
+
+    PC = 1000
+
+means the CPU is expected to fetch the next instruction from
+address 1000.
+
+During an interrupt, the CPU must preserve the appropriate
+return information so that execution can resume correctly.
+
+
+============================================================
+22.10 INTERRUPT TYPES
+============================================================
+
+Interrupts can be classified in several ways.
+
+Major classifications:
+
+    1. Hardware interrupts
+    2. Software interrupts
+
+Also:
+
+    3. Maskable interrupts
+    4. Non-maskable interrupts
+
+And:
+
+    5. Vectored interrupts
+    6. Non-vectored interrupts
+
+
+These classifications describe different properties.
+
+
+============================================================
+22.11 HARDWARE INTERRUPTS
+============================================================
+
+A hardware interrupt is generated by a hardware device or
+hardware component.
+
+Examples:
+
+    Keyboard
+    Mouse
+    Timer
+    Network controller
+    Disk controller
+
+
+Example:
+
+    Timer
+      ↓
+    Hardware interrupt
+      ↓
+    CPU
+      ↓
+    Timer ISR
+
+
+============================================================
+22.12 SOFTWARE INTERRUPTS
+============================================================
+
+A software interrupt is generated by executing a special
+instruction or through a software-triggered mechanism.
+
+It is generated by software rather than an external hardware
+device.
+
+Conceptually:
+
+    Program
+       ↓
+    Software interrupt instruction
+       ↓
+    CPU
+       ↓
+    Interrupt handler
+
+
+Software interrupts can be used for:
+
+    • Operating system services
+    • System calls
+    • Debugging
+    • Controlled transfer to privileged routines
+
+
+============================================================
+22.13 HARDWARE VS SOFTWARE INTERRUPTS
+============================================================
+
++----------------------+----------------------+
+| Hardware Interrupt  | Software Interrupt   |
++----------------------+----------------------+
+| Generated by        | Generated by         |
+| hardware            | software/instruction|
++----------------------+----------------------+
+| Example: timer      | Example: trap/system |
+| or keyboard         | call mechanism       |
++----------------------+----------------------+
+| External event      | Program-controlled   |
+| may trigger it      | event                |
++----------------------+----------------------+
+
+
+============================================================
+22.14 MASKABLE INTERRUPT
+============================================================
+
+A maskable interrupt is an interrupt that the CPU can
+temporarily disable or mask under appropriate conditions.
+
+Why?
+
+Some interrupts may not need immediate service.
+
+Example:
+
+    CPU is handling a critical operation.
+
+It may temporarily prevent certain maskable interrupts from
+being serviced.
+
+
+Concept:
+
+    MASK = BLOCK / TEMPORARILY IGNORE
+
+
+Important:
+
+    Maskable does NOT mean the interrupt disappears forever.
+
+It means servicing can be temporarily disabled.
+
+
+============================================================
+22.15 NON-MASKABLE INTERRUPT
+============================================================
+
+NMI = Non-Maskable Interrupt
+
+A non-maskable interrupt is intended for important events that
+should not be ignored by ordinary interrupt masking.
+
+Typical conceptual examples:
+
+    Serious hardware fault
+    Critical system condition
+    Emergency hardware event
+
+
+Concept:
+
+    Maskable interrupt:
+        Can normally be disabled/masked.
+
+    Non-maskable interrupt:
+        Intended to remain serviceable even when normal
+        interrupt masking is active.
+
+
+============================================================
+22.16 MASKABLE VS NON-MASKABLE
+============================================================
+
++----------------------+--------------------------+
+| Maskable            | Non-Maskable            |
++----------------------+--------------------------+
+| Can be disabled     | Cannot normally be      |
+| temporarily         | disabled by normal      |
+|                      | masking                 |
++----------------------+--------------------------+
+| Less critical       | More critical/emergency |
+| events               | events                  |
++----------------------+--------------------------+
+| Normal device       | Critical hardware      |
+| interrupts           | conditions              |
++----------------------+--------------------------+
+
+
+============================================================
+22.17 INTERRUPT PRIORITY
+============================================================
+
+Multiple devices may request interrupts at the same time.
+
+Example:
+
+    Keyboard → Interrupt
+    Disk     → Interrupt
+    Timer    → Interrupt
+    Network  → Interrupt
+
+Question:
+
+    Which interrupt should the CPU handle first?
+
+
+An interrupt priority system determines the order of service.
+
+
+============================================================
+22.18 WHY IS PRIORITY NEEDED?
+============================================================
+
+Not all interrupts are equally important.
+
+Example:
+
+    Emergency hardware fault
+          >
+    Timer
+          >
+    Network
+          >
+    Keyboard
+
+
+A high-priority interrupt should generally be serviced before
+a low-priority interrupt.
+
+
+============================================================
+22.19 INTERRUPT PRIORITY SYSTEM
+============================================================
+
+Conceptually:
+
+    Highest Priority
+          ↓
+      Interrupt A
+          ↓
+      Interrupt B
+          ↓
+      Interrupt C
+          ↓
+      Interrupt D
+          ↓
+    Lowest Priority
+
+
+If A and D occur simultaneously:
+
+    CPU handles A first.
+
+
+============================================================
+22.20 PRIORITY INTERRUPT
+============================================================
+
+A priority interrupt system assigns a priority level to each
+interrupt source.
+
+Example:
+
+    Priority 1 → Highest
+    Priority 2
+    Priority 3
+    Priority 4 → Lowest
+
+
+If multiple interrupts are pending:
+
+    Highest-priority pending interrupt
+            ↓
+          serviced first
+
+
+============================================================
+22.21 DAISY CHAINING
+============================================================
+
+Daisy chaining is a hardware method for determining which
+device has requested an interrupt.
+
+Devices are connected in a chain.
+
+Conceptually:
+
+    CPU
+     |
+     ↓
+    Device 1
+     |
+     ↓
+    Device 2
+     |
+     ↓
+    Device 3
+     |
+     ↓
+    Device 4
+
+
+The interrupt acknowledge signal passes through the devices.
+
+The first requesting device in the chain captures the
+acknowledge signal.
+
+Therefore, physical position in the chain can determine
+priority.
+
+
+============================================================
+22.22 DAISY CHAIN EXAMPLE
+============================================================
+
+Suppose priority is:
+
+    Device 1 > Device 2 > Device 3 > Device 4
+
+
+If Device 2 and Device 4 request interrupts:
+
+    Device 1 → No request
+       ↓
+    Device 2 → REQUEST
+       ↓
+    Device 3
+       ↓
+    Device 4 → REQUEST
+
+
+Device 2 gets priority because it appears earlier in the
+chain.
+
+
+============================================================
+22.23 DAISY CHAIN ADVANTAGES
+------------------------------------------------------------
+
+    + Simple hardware
+    + Relatively easy to implement
+    + Priority can be established by device position
+
+
+============================================================
+22.24 DAISY CHAIN DISADVANTAGES
+------------------------------------------------------------
+
+    - Lower-priority devices may wait longer
+    - Failure of part of the chain can cause problems
+    - Priority is tied to physical ordering
+    - Propagation delay may increase with chain length
+
+
+============================================================
+22.25 NESTED INTERRUPTS
+============================================================
+
+A nested interrupt occurs when a new interrupt is accepted
+while another interrupt service routine is already executing.
+
+Example:
+
+    Main Program
+         ↓
+    Interrupt A
+         ↓
+    ISR-A
+         ↓
+    Higher-priority Interrupt B
+         ↓
+    ISR-B
+         ↓
+    Return to ISR-A
+         ↓
+    Return to Main Program
+
+
+This is:
+
+    INTERRUPT NESTING
+
+
+============================================================
+22.26 WHY NESTED INTERRUPTS?
+============================================================
+
+Suppose:
+
+    Interrupt A = low priority
+    Interrupt B = high priority
+
+
+While ISR-A is executing:
+
+    Interrupt B occurs.
+
+
+It may be better to temporarily suspend ISR-A and service
+Interrupt B first.
+
+
+Priority:
+
+    B > A
+
+
+Flow:
+
+    ISR-A
+      ↓
+    Interrupt B
+      ↓
+    ISR-B
+      ↓
+    Resume ISR-A
+
+
+============================================================
+22.27 CONDITIONS FOR NESTED INTERRUPTS
+============================================================
+
+Nested interrupts generally require:
+
+    • Interrupt priority mechanism
+    • Ability to accept higher-priority interrupts
+    • Proper saving/restoring of CPU state
+    • Careful interrupt masking
+
+
+Not every system allows arbitrary nesting.
+
+
+============================================================
+22.28 VECTORED INTERRUPT
+============================================================
+
+In a vectored interrupt system, the interrupt itself or the
+interrupting hardware provides information that allows the CPU
+to locate the appropriate ISR.
+
+The CPU can determine the ISR address efficiently.
+
+Conceptually:
+
+    Interrupt source
+          ↓
+    Interrupt vector
+          ↓
+    ISR address
+          ↓
+         ISR
+
+
+An interrupt vector is associated with the address or location
+of an interrupt service routine.
+
+
+============================================================
+22.29 INTERRUPT VECTOR TABLE
+============================================================
+
+An Interrupt Vector Table (IVT) is a table containing
+information used to locate interrupt service routines.
+
+Conceptually:
+
+    +-----------------------------+
+    | Interrupt 0 → ISR address  |
+    +-----------------------------+
+    | Interrupt 1 → ISR address  |
+    +-----------------------------+
+    | Interrupt 2 → ISR address  |
+    +-----------------------------+
+    | Interrupt 3 → ISR address  |
+    +-----------------------------+
+
+
+When an interrupt occurs:
+
+    CPU identifies interrupt number
+              ↓
+    Looks up corresponding vector
+              ↓
+    Finds ISR
+              ↓
+    Executes ISR
+
+
+============================================================
+22.30 NON-VECTORED INTERRUPT
+============================================================
+
+In a non-vectored interrupt system, the interrupt source does
+not directly provide the ISR address through a vector in the
+same manner.
+
+The CPU may need to determine the source using additional
+hardware/software mechanisms.
+
+Conceptually:
+
+    Interrupt
+       ↓
+    Common entry point
+       ↓
+    Determine source
+       ↓
+    Select appropriate ISR
+
+
+============================================================
+22.31 VECTORED VS NON-VECTORED
+============================================================
+
++----------------------+-------------------------+
+| Vectored Interrupt  | Non-Vectored Interrupt  |
++----------------------+-------------------------+
+| ISR location can be | ISR location is not    |
+| obtained using a    | directly obtained in  |
+| vector               | the same way           |
++----------------------+-------------------------+
+| Faster source-to-ISR | Additional source      |
+| identification       | identification may be |
+|                      | required               |
++----------------------+-------------------------+
+| Uses interrupt      | May use common entry   |
+| vector/table         | mechanism              |
++----------------------+-------------------------+
+
+
+============================================================
+22.32 INTERRUPT VECTOR
+============================================================
+
+An interrupt vector is information used to locate the
+appropriate interrupt service routine.
+
+Important distinction:
+
+    Interrupt vector
+        ≠
+    Interrupt itself
+
+Interrupt:
+
+    "Something needs CPU attention."
+
+
+Vector:
+
+    "Here is where the CPU can find the handler."
+
+
+============================================================
+22.33 INTERRUPT ACKNOWLEDGEMENT
+============================================================
+
+When the CPU accepts an interrupt, it may send an interrupt
+acknowledgement signal.
+
+This can tell the interrupting hardware:
+
+    "The CPU has accepted your interrupt request."
+
+
+In hardware interrupt systems:
+
+    Device
+      ↓
+    Interrupt request
+      ↓
+     CPU
+      ↓
+    Interrupt acknowledge
+      ↓
+    Device provides information
+    / completes handshake
+
+
+============================================================
+22.34 COMPLETE INTERRUPT HANDLING
+============================================================
+
+Let's combine everything.
+
+Suppose a keyboard key is pressed.
+
+STEP 1:
+    User presses a key.
+
+STEP 2:
+    Keyboard controller receives the event.
+
+STEP 3:
+    Controller generates an interrupt request.
+
+STEP 4:
+    CPU detects the interrupt.
+
+STEP 5:
+    CPU determines whether the interrupt can be accepted.
+
+STEP 6:
+    CPU saves necessary execution state.
+
+STEP 7:
+    CPU identifies the interrupt source.
+
+STEP 8:
+    CPU obtains the ISR address.
+
+STEP 9:
+    CPU executes the ISR.
+
+STEP 10:
+    ISR reads/processes keyboard data.
+
+STEP 11:
+    ISR performs required cleanup/acknowledgement.
+
+STEP 12:
+    CPU restores necessary state.
+
+STEP 13:
+    CPU returns to the interrupted program.
+
+Diagram:
+
+    Keyboard
+       |
+       ↓
+    Controller
+       |
+       ↓
+      IRQ
+       |
+       ↓
+      CPU
+       |
+       ↓
+    Save State
+       |
+       ↓
+    Identify Source
+       |
+       ↓
+    Find ISR
+       |
+       ↓
+      ISR
+       |
+       ↓
+    Handle Event
+       |
+       ↓
+    Restore State
+       |
+       ↓
+    Return
+       |
+       ↓
+    Continue Program
+
+
+============================================================
+22.35 INTERRUPT VS POLLING
+============================================================
+
+POLLING:
+
+    CPU repeatedly checks devices.
+
+    CPU → Check → Check → Check → Check
+
+
+INTERRUPT:
+
+    CPU continues normal work.
+
+    Device → Interrupt → CPU
+
+
+Comparison:
+
++----------------------+-------------------------+
+| Polling              | Interrupt               |
++----------------------+-------------------------+
+| CPU checks device    | Device signals CPU      |
++----------------------+-------------------------+
+| Can waste CPU time   | Better CPU utilization  |
++----------------------+-------------------------+
+| Simple               | More complex            |
++----------------------+-------------------------+
+
+
+============================================================
+22.36 INTERRUPT VS DMA
+============================================================
+
+INTERRUPT:
+
+    CPU is notified and generally participates in handling
+    the transfer/event.
+
+
+DMA:
+
+    DMA controller manages bulk data movement between device
+    and memory, reducing CPU involvement.
+
+
+Example:
+
+    Keyboard:
+        Interrupt-driven I/O is appropriate.
+
+    Large disk/SSD transfer:
+        DMA is highly useful.
+
+
+============================================================
+22.37 HARDWARE INTERRUPT FLOW
+============================================================
+
+    Hardware Device
+          |
+          ↓
+    Interrupt Controller
+          |
+          ↓
+         CPU
+          |
+          ↓
+       Save State
+          |
+          ↓
+       Find ISR
+          |
+          ↓
+        Execute ISR
+          |
+          ↓
+       Restore State
+          |
+          ↓
+       Resume Program
+
+
+============================================================
+22.38 INTERRUPT CONTROLLER
+============================================================
+
+An interrupt controller is hardware that manages interrupt
+requests from multiple devices.
+
+It may perform tasks such as:
+
+    • Accepting interrupt requests
+    • Prioritizing interrupts
+    • Masking interrupts
+    • Identifying interrupt source
+    • Sending appropriate information to CPU
+
+
+Conceptually:
+
+    Device 1 ─┐
+    Device 2 ─┤
+    Device 3 ─┤→ Interrupt Controller → CPU
+    Device 4 ─┘
+
+
+This becomes important when many devices can generate
+interrupts.
+
+
+============================================================
+22.39 INTERRUPT PRIORITY EXAMPLE
+============================================================
+
+Suppose:
+
+    Network = Priority 1
+    Disk    = Priority 2
+    Timer   = Priority 3
+    Keyboard= Priority 4
+
+
+All request interrupts simultaneously.
+
+Order:
+
+    1. Network
+    2. Disk
+    3. Timer
+    4. Keyboard
+
+
+Because:
+
+    Priority 1 > Priority 2 > Priority 3 > Priority 4
+
+
+============================================================
+22.40 NESTED PRIORITY EXAMPLE
+============================================================
+
+Suppose:
+
+    Interrupt A = Priority 3
+    Interrupt B = Priority 1
+
+
+CPU is executing:
+
+    ISR-A
+
+
+Then B occurs.
+
+Because:
+
+    Priority B > Priority A
+
+CPU may:
+
+    Pause ISR-A
+        ↓
+    Save ISR-A state
+        ↓
+    Execute ISR-B
+        ↓
+    Return to ISR-A
+        ↓
+    Finish ISR-A
+        ↓
+    Return to main program
+
+
+============================================================
+22.41 INTERRUPT MASKING
+============================================================
+
+Interrupt masking means temporarily disabling selected
+interrupts.
+
+Example:
+
+    CPU enters a critical section.
+
+Some low-priority interrupts may be masked.
+
+After the critical operation:
+
+    Interrupts can be enabled again.
+
+
+Conceptually:
+
+    Interrupts enabled
+          ↓
+    Critical operation
+          ↓
+    Mask selected interrupts
+          ↓
+    Complete operation
+          ↓
+    Unmask/enable
+          ↓
+    Normal operation
+
+
+High-priority or non-maskable events may still be handled
+depending on the architecture.
+
+
+============================================================
+22.42 INTERRUPT OVERHEAD
+============================================================
+
+Interrupts are useful but not free.
+
+There is overhead due to:
+
+    • Detecting the interrupt
+    • Saving state
+    • Entering ISR
+    • Executing ISR
+    • Restoring state
+    • Returning to normal execution
+
+
+If interrupts occur too frequently:
+
+    CPU spends a large amount of time handling interrupts.
+
+
+Therefore:
+
+    Too few interrupts → inefficient response
+
+    Too many interrupts → high overhead
+
+
+============================================================
+22.43 INTERRUPT COALESCING — BASIC IDEA
+============================================================
+
+For high-speed devices, generating an interrupt for every
+small data event can create excessive overhead.
+
+A system may combine multiple events and generate fewer
+interrupts.
+
+Basic idea:
+
+    Many events
+       ↓
+    Group together
+       ↓
+    One interrupt
+
+
+This reduces interrupt frequency and CPU overhead.
+
+
+============================================================
+22.44 REAL-WORLD EXAMPLE
+============================================================
+
+Example 1: Keyboard
+
+    Key pressed
+       ↓
+    Keyboard controller
+       ↓
+    Interrupt
+       ↓
+    CPU
+       ↓
+    Keyboard ISR
+
+
+Example 2: Timer
+
+    Timer expires
+       ↓
+    Interrupt
+       ↓
+    CPU
+       ↓
+    Timer ISR
+
+
+Example 3: Network
+
+    Network packet arrives
+       ↓
+    Network controller
+       ↓
+    Interrupt
+       ↓
+    CPU
+       ↓
+    Network handling routine
+
+
+Example 4: Large storage transfer
+
+    SSD
+      ↓
+    DMA
+      ↓
+    RAM
+
+    Transfer complete
+      ↓
+    Interrupt
+      ↓
+    CPU
+
+
+Notice:
+
+    DMA and interrupts can work together.
+
+DMA performs the transfer.
+
+Interrupt informs CPU that the transfer is complete.
+
+
+============================================================
+22.45 IMPORTANT DISTINCTION
+============================================================
+
+Interrupt:
+
+    A notification/request for CPU attention.
+
+
+ISR:
+
+    Software routine that handles the interrupt.
+
+
+Interrupt Controller:
+
+    Hardware that manages multiple interrupt requests.
+
+
+Interrupt Vector:
+
+    Information used to locate the ISR.
+
+
+Interrupt Priority:
+
+    Determines which interrupt should be serviced first.
+
+
+============================================================
+22.46 B.TECH EXAM QUESTIONS
+============================================================
+
+Q1. Define an interrupt.
+
+Q2. Why are interrupts needed?
+
+Q3. Explain the interrupt handling process.
+
+Q4. What is an ISR?
+
+Q5. Explain hardware interrupts.
+
+Q6. Explain software interrupts.
+
+Q7. Differentiate hardware and software interrupts.
+
+Q8. What are maskable interrupts?
+
+Q9. What are non-maskable interrupts?
+
+Q10. Differentiate maskable and non-maskable interrupts.
+
+Q11. What is interrupt priority?
+
+Q12. Explain priority interrupt systems.
+
+Q13. Explain daisy chaining.
+
+Q14. What are the advantages and disadvantages of daisy
+    chaining?
+
+Q15. What is interrupt nesting?
+
+Q16. Explain vectored interrupts.
+
+Q17. Explain non-vectored interrupts.
+
+Q18. Differentiate vectored and non-vectored interrupts.
+
+Q19. What is an interrupt vector table?
+
+Q20. Explain the role of an interrupt controller.
+
+Q21. What is interrupt latency?
+
+Q22. Compare polling and interrupts.
+
+Q23. Explain interrupt masking.
+
+Q24. Explain the complete interrupt cycle.
+
+
+============================================================
+22.47 COMPETITIVE EXAM HIGH-VALUE FACTS
+============================================================
+
+FACT 1:
+
+    Polling:
+        CPU repeatedly checks device status.
+
+
+FACT 2:
+
+    Interrupt:
+        Device/controller requests CPU attention.
+
+
+FACT 3:
+
+    ISR:
+        Routine that handles an interrupt.
+
+
+FACT 4:
+
+    Maskable interrupt:
+        Can normally be temporarily disabled.
+
+
+FACT 5:
+
+    NMI:
+        Intended for critical events and is not normally
+        disabled by ordinary masking.
+
+
+FACT 6:
+
+    Vectored interrupt:
+        Interrupt vector helps locate the ISR.
+
+
+FACT 7:
+
+    Non-vectored interrupt:
+        ISR location is not directly supplied through a vector
+        in the same way.
+
+
+FACT 8:
+
+    Daisy chaining:
+        Hardware priority can depend on device position.
+
+
+FACT 9:
+
+    Nested interrupt:
+        Higher-priority interrupt can interrupt an ISR.
+
+
+FACT 10:
+
+    Interrupt latency:
+        Time between interrupt occurrence and beginning of
+        interrupt service.
+
+
+FACT 11:
+
+    DMA and interrupts can coexist:
+
+        DMA transfers data.
+        Interrupt reports completion.
+
+
+============================================================
+22.48 QUICK REVISION
+============================================================
+
+INTERRUPT
+    ↓
+Request/event that temporarily diverts CPU execution.
+
+IRQ
+    ↓
+Interrupt Request.
+
+ISR
+    ↓
+Interrupt Service Routine.
+
+HARDWARE INTERRUPT
+    ↓
+Generated by hardware.
+
+SOFTWARE INTERRUPT
+    ↓
+Generated through software/instruction.
+
+MASKABLE
+    ↓
+Can normally be disabled temporarily.
+
+NON-MASKABLE
+    ↓
+Designed for critical events and not normally disabled by
+ordinary masking.
+
+PRIORITY
+    ↓
+Determines which interrupt gets serviced first.
+
+DAISY CHAIN
+    ↓
+Hardware priority arrangement using a chain.
+
+NESTED INTERRUPT
+    ↓
+Interrupt occurs while another ISR is executing.
+
+VECTORED
+    ↓
+Vector identifies/helps locate ISR.
+
+NON-VECTORED
+    ↓
+Additional mechanism is needed to determine the handler.
+
+INTERRUPT LATENCY
+    ↓
+Time from interrupt occurrence to service.
+
+
+============================================================
+22.49 MASTER CONCEPT MAP
+============================================================
+
+                         INTERRUPTS
+                              |
+            +-----------------+-----------------+
+            |                 |                 |
+          WHY?              TYPES            HANDLING
+            |                 |                 |
+     Avoid polling     +------+-------+         |
+                       |              |         |
+                   Hardware       Software      |
+                       |              |         |
+                       +------+-------+         |
+                              |                 |
+                         Maskable/NMI           |
+                              |                 |
+                              +--------+--------+
+                                       |
+                                  Priority
+                                       |
+                          +------------+------------+
+                          |                         |
+                    Daisy Chaining             Nesting
+                          |                         |
+                          +------------+------------+
+                                       |
+                                Interrupt Source
+                                       |
+                                +------+------+
+                                |             |
+                              Vectored    Non-Vectored
+                                |             |
+                                +------+------+
+                                       |
+                                   ISR Address
+                                       |
+                                       ↓
+                                      ISR
+                                       |
+                                       ↓
+                                Save/Restore State
+                                       |
+                                       ↓
+                              Resume Main Program
+
+
+============================================================
+22.50 ONE-LINE MEMORY TRICKS
+============================================================
+
+INTERRUPT
+    = "CPU, something needs attention!"
+
+ISR
+    = "Code that handles the interrupt."
+
+MASKABLE
+    = "Can normally be blocked."
+
+NMI
+    = "Critical interrupt."
+
+PRIORITY
+    = "Who goes first?"
+
+DAISY CHAIN
+    = "Position determines priority."
+
+NESTED INTERRUPT
+    = "Interrupt inside an ISR."
+
+VECTORED
+    = "Vector helps find ISR."
+
+NON-VECTORED
+    = "Need another way to find ISR."
+
+LATENCY
+    = "How long until servicing starts?"
+
+
+============================================================
+CHAPTER 22 COMPLETE
+============================================================

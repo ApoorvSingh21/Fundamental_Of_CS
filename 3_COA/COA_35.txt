@@ -1,0 +1,2132 @@
+CHAPTER 35 — MODERN CPU ARCHITECTURE
+
+============================================================
+CHAPTER 35 — MODERN CPU ARCHITECTURE
+============================================================
+
+LEVEL:
+B.Tech 1st Year → University Foundation → Intermediate
+→ Advanced → Exam Ready → Interview Ready
+
+GOAL:
+Understand the internal structure of a modern CPU, how its
+cores and execution units work, how cache and memory interact,
+and how CPU and GPU systems can work together.
+
+TOPICS:
+    35.1 Modern CPU Components
+    35.2 Multiple Cores
+    35.3 Cache Hierarchy
+    35.4 Memory Controller
+    35.5 Execution Units
+    35.6 Integer Units
+    35.7 Floating-Point Units
+    35.8 Load/Store Units
+    35.9 Branch Units
+    35.10 Modern Memory Hierarchy
+    35.11 CPU-GPU Architecture
+    35.12 Integrated Memory Controllers
+
+
+============================================================
+35.1 FROM BASIC CPU TO MODERN CPU
+============================================================
+
+A basic CPU can be represented as:
+
+             +------------------+
+             |       CPU        |
+             |                  |
+             |   ALU            |
+             |   Registers      |
+             |   Control Unit   |
+             +------------------+
+                     |
+                     ↓
+                   Memory
+
+
+A modern CPU is much more complex.
+
+Simplified:
+
+                    MODERN CPU
+                        |
+        +---------------+---------------+
+        |               |               |
+      Core 0          Core 1          Core 2 ...
+        |               |               |
+   +----+----+     +----+----+     +----+----+
+   | ALU     |     | ALU     |     | ALU     |
+   | FPU     |     | FPU     |     | FPU     |
+   | L/S     |     | L/S     |     | L/S     |
+   | L1      |     | L1      |     | L1      |
+   +---------+     +---------+     +---------+
+        \               |               /
+         \              |              /
+              Shared Cache
+                   |
+            Memory Controller
+                   |
+                   ↓
+                  RAM
+
+
+Modern CPUs contain many components working together.
+
+
+============================================================
+35.2 MODERN CPU COMPONENTS
+============================================================
+
+Important components include:
+
+    1. CPU cores
+    2. Registers
+    3. ALUs
+    4. Floating-point units
+    5. Load/store units
+    6. Branch units
+    7. L1 cache
+    8. L2 cache
+    9. Shared L3 cache
+   10. Memory controller
+   11. Interconnect
+   12. Branch predictor
+   13. Instruction decoder
+   14. Instruction scheduler
+   15. Register-renaming hardware
+   16. Reorder buffer
+   17. Memory subsystem
+
+
+Many of these were studied in previous chapters.
+
+
+============================================================
+35.3 CPU CORE
+============================================================
+
+A CPU core is an independent processing engine capable of
+executing instructions.
+
+
+Simplified core:
+
+             +-------------------------+
+             |          CORE           |
+             |                         |
+             | Fetch                   |
+             | Decode                  |
+             | Rename                  |
+             | Schedule                |
+             |                         |
+             | +------+ +------+       |
+             | | ALU  | | FPU  |       |
+             | +------+ +------+       |
+             |                         |
+             | Load/Store Units        |
+             | Branch Unit             |
+             | Registers               |
+             | L1 Cache                |
+             +-------------------------+
+
+
+A processor may contain:
+
+    1 core
+    2 cores
+    4 cores
+    8 cores
+    16 cores
+    32 cores
+    etc.
+
+
+============================================================
+35.4 SINGLE-CORE PROCESSOR
+============================================================
+
+Single-core:
+
+             +-------------+
+             |     CPU     |
+             |   Core 0    |
+             +-------------+
+                    |
+                    ↓
+                  Memory
+
+
+Only one physical CPU core executes instructions.
+
+
+Multitasking can still occur through operating-system
+scheduling and time sharing.
+
+
+============================================================
+35.5 MULTICORE PROCESSOR
+============================================================
+
+Multicore:
+
+          +---------+---------+---------+
+          | Core 0  | Core 1  | Core 2  |
+          +---------+---------+---------+
+               \        |        /
+                \       |       /
+                 +---------------+
+                 | Interconnect  |
+                 +---------------+
+                        |
+                  Memory System
+
+
+Multiple cores can execute different instruction streams
+concurrently.
+
+
+Example:
+
+    Core 0 → Browser
+    Core 1 → Music
+    Core 2 → Compiler
+    Core 3 → Operating system task
+
+
+============================================================
+35.6 CORE VS CPU
+============================================================
+
+IMPORTANT:
+
+    Core ≠ Entire CPU
+
+
+A modern CPU/chip may contain:
+
+    Multiple cores
+
+
+For example:
+
+    CPU
+     |
+     +-- Core 0
+     +-- Core 1
+     +-- Core 2
+     +-- Core 3
+
+
+Each core can contain its own execution resources.
+
+
+============================================================
+35.7 CACHE HIERARCHY
+============================================================
+
+Modern processors use multiple cache levels.
+
+
+Typical structure:
+
+                CPU
+                 |
+        +--------+--------+
+        |        |        |
+       L1       L1       L1
+        |        |        |
+       L2       L2       L2
+        \        |       /
+         \       |      /
+             Shared L3
+                 |
+               RAM
+
+
+Typical characteristics:
+
+    L1:
+        Smallest
+        Fastest
+
+    L2:
+        Larger
+        Slower than L1
+
+    L3:
+        Larger
+        Usually slower than L2
+        Often shared among cores
+
+    RAM:
+        Much larger
+        Much slower than cache
+
+
+============================================================
+35.8 WHY MULTIPLE CACHE LEVELS?
+============================================================
+
+Because:
+
+    Fast memory → expensive + small
+
+    Large memory → slower + cheaper
+
+
+Therefore:
+
+    Small + fast cache
+          ↓
+    Larger + slower cache
+          ↓
+    Very large + slower RAM
+
+
+This creates a memory hierarchy.
+
+
+============================================================
+35.9 L1 CACHE
+============================================================
+
+L1 = Level 1 cache
+
+
+Usually located very close to or inside a CPU core.
+
+
+Characteristics:
+
+    • Very fast
+    • Small
+    • Low latency
+    • Often split into instruction and data caches
+
+
+Example:
+
+             Core
+              |
+       +------+------+
+       |             |
+      L1-I          L1-D
+    Instruction      Data
+
+
+L1-I:
+
+    Stores instructions.
+
+
+L1-D:
+
+    Stores data.
+
+
+============================================================
+35.10 L2 CACHE
+============================================================
+
+L2 = Level 2 cache
+
+
+Usually larger than L1.
+
+Generally slower than L1 but much faster than main memory.
+
+
+Concept:
+
+    Core
+      |
+     L1
+      |
+     L2
+      |
+     L3
+      |
+     RAM
+
+
+Depending on architecture, L2 may be private to a core or
+organized in another way.
+
+
+============================================================
+35.11 L3 CACHE
+============================================================
+
+L3 = Level 3 cache
+
+
+Usually:
+
+    • Larger than L1/L2
+    • Slower than L1/L2
+    • Shared by multiple cores in many CPUs
+
+
+Example:
+
+        Core 0 ── L1/L2 ──┐
+                           |
+        Core 1 ── L1/L2 ──┤
+                           ↓
+                      Shared L3
+                           |
+                           ↓
+                          RAM
+
+
+============================================================
+35.12 PRIVATE VS SHARED CACHE
+============================================================
+
+PRIVATE CACHE:
+
+    Dedicated to one core.
+
+
+Example:
+
+    Core 0 → L2
+    Core 1 → L2
+
+
+SHARED CACHE:
+
+    Accessible by multiple cores.
+
+
+Example:
+
+        Core 0 ─┐
+        Core 1 ─┼→ Shared L3
+        Core 2 ─┘
+
+
+Advantages of shared cache:
+
+    • Resources can be dynamically shared.
+    • Data can be shared more conveniently.
+    • Better utilization in many workloads.
+
+
+============================================================
+35.13 CACHE HIT
+============================================================
+
+CPU requests data.
+
+
+If data is found in cache:
+
+    CACHE HIT
+
+
+Flow:
+
+    CPU
+     ↓
+    L1
+     ↓
+    Data found
+
+
+Fast.
+
+
+============================================================
+35.14 CACHE MISS
+============================================================
+
+If requested data is not found:
+
+    CACHE MISS
+
+
+Example:
+
+    CPU
+     ↓
+    L1 → MISS
+     ↓
+    L2 → MISS
+     ↓
+    L3 → HIT
+     ↓
+    Data
+
+
+If all cache levels miss:
+
+    RAM must be accessed.
+
+
+============================================================
+35.15 MEMORY CONTROLLER
+============================================================
+
+The memory controller manages communication between the CPU
+and main memory.
+
+
+Simplified:
+
+        CPU
+         |
+         ↓
+    Memory Controller
+         |
+         ↓
+        RAM
+
+
+It helps handle:
+
+    • Memory read requests
+    • Memory write requests
+    • Memory timing
+    • Memory commands
+    • Data transfers
+
+
+============================================================
+35.16 TRADITIONAL MEMORY CONTROLLER
+============================================================
+
+Historically, some systems placed the memory controller in a
+separate chipset component.
+
+
+Conceptually:
+
+    CPU
+     |
+    Bus
+     |
+    Chipset
+     |
+    Memory Controller
+     |
+    RAM
+
+
+This added communication distance/latency.
+
+
+============================================================
+35.17 INTEGRATED MEMORY CONTROLLER (IMC)
+============================================================
+
+Modern CPUs commonly integrate the memory controller onto
+the processor package/chip.
+
+
+Concept:
+
+             +----------------------+
+             |         CPU          |
+             |                      |
+             | Cores                |
+             | Cache                |
+             | Memory Controller    |
+             +----------------------+
+                       |
+                       ↓
+                      RAM
+
+
+Advantages can include:
+
+    • Lower memory latency
+    • Higher memory bandwidth
+    • Better control over memory traffic
+    • Reduced dependence on external chipset paths
+
+
+============================================================
+35.18 EXECUTION UNITS
+============================================================
+
+A modern CPU contains different execution units specialized
+for different types of instructions.
+
+
+Examples:
+
+    Integer ALU
+    Floating-Point Unit
+    Load Unit
+    Store Unit
+    Branch Unit
+    Vector/SIMD Unit
+
+
+Concept:
+
+                 Instructions
+                       |
+            +----------+----------+
+            |          |          |
+            ↓          ↓          ↓
+          Integer      FP       Memory
+           Unit       Unit       Units
+            |          |          |
+            +----------+----------+
+                       |
+                    Results
+
+
+============================================================
+35.19 INTEGER UNIT
+============================================================
+
+Integer execution units handle integer operations.
+
+
+Examples:
+
+    ADD
+    SUB
+    AND
+    OR
+    XOR
+    Shift
+    Compare
+    Integer multiplication
+
+
+Example:
+
+    R1 = R2 + R3
+
+
+Flow:
+
+    R2 ──┐
+         ↓
+        ALU → R1
+         ↑
+    R3 ──┘
+
+
+============================================================
+35.20 INTEGER ALU
+============================================================
+
+ALU = Arithmetic Logic Unit
+
+
+It performs operations such as:
+
+    Arithmetic:
+        ADD
+        SUB
+        INC
+        DEC
+
+    Logical:
+        AND
+        OR
+        XOR
+        NOT
+
+    Comparison:
+        Equal
+        Less than
+        Greater than
+
+
+Modern CPUs may contain multiple integer ALUs.
+
+
+============================================================
+35.21 WHY MULTIPLE INTEGER ALUs?
+============================================================
+
+Suppose:
+
+    I1: ADD
+    I2: SUB
+    I3: AND
+
+
+If multiple ALUs are available:
+
+    ALU 1 → ADD
+    ALU 2 → SUB
+    ALU 3 → AND
+
+
+Several independent instructions can execute
+simultaneously.
+
+
+This increases ILP.
+
+
+============================================================
+35.22 FLOATING-POINT UNIT (FPU)
+============================================================
+
+FPU = Floating-Point Unit
+
+
+It performs floating-point operations.
+
+
+Examples:
+
+    Floating-point addition
+    Floating-point subtraction
+    Floating-point multiplication
+    Floating-point division
+
+
+Example:
+
+    3.14 + 2.71
+
+
+The FPU handles such operations.
+
+
+============================================================
+35.23 INTEGER VS FLOATING-POINT UNIT
+============================================================
+
+INTEGER UNIT:
+
+    Handles integer operations.
+
+Example:
+
+    10 + 20
+
+
+FPU:
+
+    Handles floating-point operations.
+
+Example:
+
+    10.5 + 20.25
+
+
+Conceptually:
+
+    Integer data
+         ↓
+    Integer ALU
+
+
+    Floating-point data
+         ↓
+    FPU
+
+
+============================================================
+35.24 VECTOR / SIMD UNITS
+============================================================
+
+Modern processors may contain vector units.
+
+
+SIMD:
+
+    Single Instruction, Multiple Data
+
+
+Example:
+
+    Instead of:
+
+        A1+B1
+        A2+B2
+        A3+B3
+        A4+B4
+
+    separately,
+
+    one vector instruction may operate on:
+
+        [A1 A2 A3 A4]
+          +
+        [B1 B2 B3 B4]
+
+
+Result:
+
+        [A1+B1 A2+B2 A3+B3 A4+B4]
+
+
+This is Data-Level Parallelism.
+
+
+============================================================
+35.25 LOAD/STORE UNIT
+============================================================
+
+Load/store units handle memory operations.
+
+
+LOAD:
+
+    Memory → Register
+
+
+STORE:
+
+    Register → Memory
+
+
+Example:
+
+    LOAD R1, [1000]
+
+
+means conceptually:
+
+    Memory[1000] → R1
+
+
+Example:
+
+    STORE R1, [2000]
+
+
+means:
+
+    R1 → Memory[2000]
+
+
+============================================================
+35.26 WHY LOAD/STORE UNITS?
+============================================================
+
+Modern CPUs execute many memory instructions.
+
+
+If dedicated hardware handles memory operations:
+
+    CPU can perform memory accesses efficiently while
+    other execution units work on computation.
+
+
+Concept:
+
+                 CPU
+                  |
+          +-------+-------+
+          |               |
+      Compute          Memory
+      Units             Units
+      |                 |
+      ALU/FPU        Load/Store
+                          |
+                          ↓
+                        Cache
+                          |
+                          ↓
+                         RAM
+
+
+============================================================
+35.27 LOAD UNIT
+============================================================
+
+A load unit performs memory reads.
+
+
+Concept:
+
+    Address
+       ↓
+    Load Unit
+       ↓
+    Cache / Memory
+       ↓
+    Register
+
+
+Example:
+
+    LOAD R1, [A]
+
+
+Data from address A is brought into R1.
+
+
+============================================================
+35.28 STORE UNIT
+============================================================
+
+A store unit performs memory writes.
+
+
+Concept:
+
+    Register
+       ↓
+    Store Unit
+       ↓
+    Cache / Memory
+
+
+Example:
+
+    STORE R1, [A]
+
+
+Value of R1 is written to memory location A.
+
+
+============================================================
+35.29 LOAD/STORE QUEUE
+============================================================
+
+Modern out-of-order processors often use structures that
+track outstanding loads and stores.
+
+
+Concept:
+
+    Instructions
+         ↓
+    Load/Store Queue
+         ↓
+    Memory System
+
+
+Why?
+
+    To maintain correct memory ordering and detect
+    dependencies between memory operations.
+
+
+============================================================
+35.30 BRANCH UNIT
+============================================================
+
+Branch instructions change program flow.
+
+
+Examples:
+
+    BEQ
+    BNE
+    JMP
+    CALL
+    RETURN
+
+
+Branch unit helps determine:
+
+    • Whether branch is taken
+    • Target address
+    • Branch execution
+
+
+It works closely with:
+
+    Branch predictor
+    Branch target mechanisms
+    Instruction fetch
+
+
+============================================================
+35.31 BRANCH PREDICTOR
+============================================================
+
+The branch predictor predicts future branch behavior.
+
+
+Example:
+
+    if (x == 0)
+        A
+    else
+        B
+
+
+CPU predicts:
+
+    A
+
+
+Then instruction fetching can continue from A.
+
+
+If correct:
+
+    Pipeline continues efficiently.
+
+
+If incorrect:
+
+    Wrong-path instructions are discarded.
+
+
+============================================================
+35.32 EXECUTION UNIT SUMMARY
+============================================================
+
++----------------------+-----------------------------+
+| Unit                 | Main Purpose                |
++----------------------+-----------------------------+
+| Integer ALU          | Integer arithmetic/logical |
+| FPU                  | Floating-point operations  |
+| Load Unit            | Read memory                |
+| Store Unit           | Write memory               |
+| Branch Unit          | Execute branch operations  |
+| Vector/SIMD Unit     | Parallel data operations   |
++----------------------+-----------------------------+
+
+
+============================================================
+35.33 CPU DATAPATH
+============================================================
+
+A simplified modern datapath:
+
+                 Instruction
+                      |
+                      ↓
+                    Fetch
+                      |
+                      ↓
+                    Decode
+                      |
+                      ↓
+              Register Rename
+                      |
+                      ↓
+                 Scheduling
+                      |
+          +-----------+-----------+
+          |           |           |
+          ↓           ↓           ↓
+        Integer       FP       Load/Store
+         Units       Units        Units
+          |           |           |
+          +-----------+-----------+
+                      |
+                      ↓
+                   Results
+                      |
+                      ↓
+                  Retirement
+
+
+============================================================
+35.34 MODERN MEMORY HIERARCHY
+============================================================
+
+Memory hierarchy:
+
+    Fastest
+      ↑
+      |
+    Registers
+      |
+    L1 Cache
+      |
+    L2 Cache
+      |
+    L3 Cache
+      |
+    RAM
+      |
+    SSD
+      |
+    HDD
+      |
+      ↓
+    Slowest
+
+
+General trend:
+
+    Going downward:
+
+        Capacity ↑
+        Cost per bit ↓
+        Latency ↑
+
+
+============================================================
+35.35 REGISTERS
+============================================================
+
+Registers are the fastest storage locations directly used by
+the processor.
+
+
+Examples:
+
+    General-purpose registers
+    Program Counter
+    Status register
+
+
+Characteristics:
+
+    • Very small capacity
+    • Very fast
+    • Located in/near CPU core
+
+
+============================================================
+35.36 CACHE VS RAM
+============================================================
+
+CACHE:
+
+    Smaller
+    Faster
+    More expensive per bit
+
+
+RAM:
+
+    Larger
+    Slower
+    Cheaper per bit
+
+
+Example:
+
+    CPU
+     ↓
+    Cache → fast access
+     ↓
+    RAM → slower access
+
+
+============================================================
+35.37 CACHE VS STORAGE
+============================================================
+
+Cache:
+
+    Very fast
+    Small
+    Usually volatile
+
+
+RAM:
+
+    Fast
+    Larger
+    Volatile
+
+
+SSD:
+
+    Non-volatile
+    Much larger
+    Slower than RAM
+
+
+HDD:
+
+    Non-volatile
+    Large
+    Usually slower than SSD
+
+
+============================================================
+35.38 MEMORY LOCALITY
+============================================================
+
+Modern memory systems depend heavily on locality.
+
+
+TEMPORAL LOCALITY:
+
+    Recently used data is likely to be used again.
+
+
+SPATIAL LOCALITY:
+
+    Nearby addresses are likely to be accessed soon.
+
+
+Cache exploits both.
+
+
+============================================================
+35.39 CPU-GPU ARCHITECTURE
+============================================================
+
+CPU and GPU are different types of processors.
+
+
+CPU:
+
+    Designed for general-purpose processing.
+
+
+GPU:
+
+    Designed for highly parallel workloads.
+
+
+Simplified:
+
+          +-------------+
+          |     CPU     |
+          | Few powerful|
+          |    cores    |
+          +-------------+
+                 |
+              Memory
+                 |
+          +-------------+
+          |     GPU     |
+          | Many        |
+          | parallel    |
+          | processing  |
+          | elements    |
+          +-------------+
+
+
+============================================================
+35.40 CPU CHARACTERISTICS
+============================================================
+
+CPU typically emphasizes:
+
+    • Low latency
+    • Complex control flow
+    • Branch handling
+    • General-purpose computation
+    • Large caches
+    • Sophisticated out-of-order execution
+
+
+Good for:
+
+    Operating systems
+    Web browsers
+    General applications
+    Sequential/branch-heavy workloads
+
+
+============================================================
+35.41 GPU CHARACTERISTICS
+============================================================
+
+GPU typically emphasizes:
+
+    • Massive parallelism
+    • High throughput
+    • Many arithmetic operations
+    • Data-parallel workloads
+
+
+Good for:
+
+    Graphics
+    Machine learning
+    Scientific computation
+    Image processing
+    Video processing
+
+
+============================================================
+35.42 CPU VS GPU
+============================================================
+
++----------------------+---------------------------+
+| CPU                  | GPU                       |
++----------------------+---------------------------+
+| Few powerful cores  | Many parallel units       |
+| Low latency focus   | High throughput focus    |
+| Complex control     | Data-parallel workloads  |
+| Strong branch logic | Less suited to branching |
+| General purpose     | Parallel workloads       |
++----------------------+---------------------------+
+
+
+IMPORTANT:
+
+    GPU is NOT simply a "faster CPU."
+
+They are optimized for different workloads.
+
+
+============================================================
+35.43 HETEROGENEOUS COMPUTING
+============================================================
+
+Heterogeneous computing means using different types of
+processing units together.
+
+
+Example:
+
+    CPU → General computation
+    GPU → Parallel computation
+
+
+Concept:
+
+                Program
+                   |
+          +--------+--------+
+          |                 |
+         CPU               GPU
+          |                 |
+      General           Parallel
+      tasks              tasks
+
+
+============================================================
+35.44 CPU-GPU COMMUNICATION
+============================================================
+
+A CPU and GPU need to exchange:
+
+    • Instructions
+    • Data
+    • Results
+
+
+Simplified:
+
+    CPU
+     |
+    Interconnect
+     |
+    GPU
+
+
+Depending on system design, CPU and GPU may have:
+
+    • Separate memory
+    • Shared memory
+    • Unified memory/address-space mechanisms
+
+
+============================================================
+35.45 DISCRETE GPU
+============================================================
+
+A discrete GPU is a separate processor/device.
+
+
+Conceptually:
+
+    CPU
+     |
+    PCIe
+     |
+    GPU
+     |
+    GPU Memory
+
+
+GPU commonly has dedicated high-bandwidth memory.
+
+
+Advantages:
+
+    • High GPU performance
+    • Dedicated memory bandwidth
+
+
+============================================================
+35.46 INTEGRATED GPU
+============================================================
+
+An integrated GPU is built into the same processor package/
+system as the CPU in many modern designs.
+
+
+Concept:
+
+             +----------------------+
+             | Processor            |
+             |                      |
+             | CPU Cores            |
+             | GPU                  |
+             | Memory Controller    |
+             +----------------------+
+                       |
+                       ↓
+                      RAM
+
+
+Often shares system memory resources.
+
+
+============================================================
+35.47 CPU + GPU WORKLOAD EXAMPLE
+============================================================
+
+Suppose a machine-learning application performs:
+
+    Control logic
+    Data preparation
+    File operations
+    Sequential operations
+    Matrix multiplication
+
+
+Possible division:
+
+    CPU:
+        Control
+        Scheduling
+        Data preparation
+
+
+    GPU:
+        Matrix/vector calculations
+
+
+This is heterogeneous computing.
+
+
+============================================================
+35.48 INTEGRATED MEMORY CONTROLLER
+============================================================
+
+IMC = Integrated Memory Controller
+
+
+The memory controller is placed on the processor rather than
+being entirely external.
+
+
+Concept:
+
+                 CPU CHIP
+        +-------------------------+
+        | Core 0                  |
+        | Core 1                  |
+        | Cache                   |
+        | Memory Controller      |
+        +-------------------------+
+                    |
+                    ↓
+                   RAM
+
+
+============================================================
+35.49 MEMORY CHANNELS
+============================================================
+
+A memory controller may support multiple memory channels.
+
+
+Concept:
+
+             Memory Controller
+                 /        \
+              Channel 0  Channel 1
+                 |          |
+               RAM        RAM
+
+
+Multiple channels can increase available memory bandwidth.
+
+
+Simplified idea:
+
+    More channels
+        ↓
+    More parallel data transfer
+        ↓
+    Higher memory bandwidth
+
+
+Actual performance depends on workload and platform.
+
+
+============================================================
+35.50 MEMORY BANDWIDTH
+============================================================
+
+Memory bandwidth = amount of data that can be transferred
+per unit time.
+
+
+Example:
+
+    50 GB/s
+
+
+means approximately:
+
+    50 gigabytes of data per second
+
+under the specified conditions.
+
+
+Bandwidth ≠ latency.
+
+
+============================================================
+35.51 LATENCY VS BANDWIDTH
+============================================================
+
+LATENCY:
+
+    How long it takes to begin/complete a particular access.
+
+
+BANDWIDTH:
+
+    How much data can be transferred per unit time.
+
+
+Example:
+
+    A memory system may have:
+
+        Low latency
+        High bandwidth
+
+
+or:
+
+        Higher latency
+        Very high bandwidth
+
+
+They are different performance properties.
+
+
+============================================================
+35.52 CPU CLOCK
+============================================================
+
+CPU clock provides timing.
+
+
+Example:
+
+    3 GHz
+
+
+means:
+
+    3 × 10^9 clock cycles per second
+
+
+But:
+
+    Higher clock frequency does NOT automatically mean
+    higher overall performance.
+
+
+Performance also depends on:
+
+    IPC
+    CPI
+    Architecture
+    Cache behavior
+    Memory performance
+    Number of cores
+    Workload
+
+
+============================================================
+35.53 CPU PERFORMANCE
+============================================================
+
+A simplified performance relationship:
+
+    CPU Time
+       =
+    Instruction Count
+    × CPI
+    × Clock Cycle Time
+
+
+Since:
+
+    Clock Cycle Time = 1 / Clock Rate
+
+
+Therefore:
+
+    CPU Time
+       =
+    Instruction Count × CPI
+    -----------------------
+         Clock Rate
+
+
+Modern architecture tries to improve performance by:
+
+    • Increasing useful IPC
+    • Reducing CPI
+    • Increasing frequency
+    • Increasing parallelism
+    • Improving cache behavior
+    • Improving branch prediction
+
+
+============================================================
+35.54 MODERN CPU — COMPLETE VIEW
+============================================================
+
+                       CPU
+                        |
+       +----------------+----------------+
+       |                |                |
+     Core 0           Core 1          Core 2...
+       |                |                |
+    +--+--+          +--+--+          +--+--+
+    |L1   |          |L1   |          |L1   |
+    |ALU  |          |ALU  |          |ALU  |
+    |FPU  |          |FPU  |          |FPU  |
+    |L/S  |          |L/S  |          |L/S  |
+    +-----+          +-----+          +-----+
+       |                |                |
+       +----------------+----------------+
+                        |
+                   Shared Cache
+                        |
+                   Interconnect
+                        |
+               Memory Controller
+                        |
+                        ↓
+                       RAM
+
+
+============================================================
+35.55 COMPLETE INSTRUCTION FLOW
+============================================================
+
+Suppose:
+
+    ADD R1, R2, R3
+
+
+Step 1:
+    Instruction fetched from cache.
+
+
+Step 2:
+    Instruction decoded.
+
+
+Step 3:
+    Registers are identified.
+
+
+Step 4:
+    Register renaming may occur internally.
+
+
+Step 5:
+    Instruction waits in scheduling structure if necessary.
+
+
+Step 6:
+    Integer execution unit receives operands.
+
+
+Step 7:
+    ALU performs:
+
+        R2 + R3
+
+
+Step 8:
+    Result is produced.
+
+
+Step 9:
+    Result is tracked internally.
+
+
+Step 10:
+    Instruction retires/commits in correct program order.
+
+
+============================================================
+35.56 COMPLETE MEMORY INSTRUCTION FLOW
+============================================================
+
+Instruction:
+
+    LOAD R1, [A]
+
+
+Step 1:
+    Fetch instruction.
+
+
+Step 2:
+    Decode.
+
+
+Step 3:
+    Calculate effective address.
+
+
+Step 4:
+    Load unit issues memory request.
+
+
+Step 5:
+    Check L1 cache.
+
+
+If HIT:
+
+    L1 → Load Unit → R1
+
+
+If MISS:
+
+    Check lower cache level.
+
+
+Eventually:
+
+    Data → Register
+
+
+============================================================
+35.57 MODERN CPU DESIGN GOALS
+============================================================
+
+Modern CPU architecture attempts to maximize:
+
+    PERFORMANCE
+    THROUGHPUT
+    ENERGY EFFICIENCY
+
+
+while minimizing:
+
+    LATENCY
+    POWER
+    AREA
+    COST
+
+
+Techniques include:
+
+    • Multicore
+    • Pipelining
+    • Superscalar execution
+    • Out-of-order execution
+    • Branch prediction
+    • Register renaming
+    • Caches
+    • SIMD/vector processing
+    • Integrated memory controllers
+
+
+============================================================
+35.58 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    "More GHz always means faster CPU."
+
+FALSE.
+
+
+MISTAKE 2:
+
+    "More cores always makes every program faster."
+
+FALSE.
+
+The program must be able to use parallelism.
+
+
+MISTAKE 3:
+
+    "L3 is always private to every core."
+
+FALSE.
+
+It is often shared, depending on architecture.
+
+
+MISTAKE 4:
+
+    "Cache is the same as RAM."
+
+FALSE.
+
+
+MISTAKE 5:
+
+    "GPU replaces CPU."
+
+FALSE.
+
+They are optimized for different workloads.
+
+
+MISTAKE 6:
+
+    "Bandwidth and latency are the same."
+
+FALSE.
+
+
+MISTAKE 7:
+
+    "Integrated GPU always has dedicated VRAM."
+
+FALSE.
+
+Many integrated GPUs use system memory.
+
+
+============================================================
+35.59 B.TECH IMPORTANT QUESTIONS
+============================================================
+
+Q1. Explain the architecture of a modern multicore CPU.
+
+Q2. Explain the role of L1, L2 and L3 caches.
+
+Q3. Differentiate private and shared caches.
+
+Q4. Explain the function of an integrated memory controller.
+
+Q5. Explain the role of integer execution units.
+
+Q6. Explain the role of floating-point units.
+
+Q7. Explain load/store units.
+
+Q8. Explain branch execution and branch prediction.
+
+Q9. Compare CPU and GPU architectures.
+
+Q10. Explain heterogeneous CPU-GPU computing.
+
+Q11. Differentiate memory latency and memory bandwidth.
+
+Q12. Explain the modern CPU memory hierarchy.
+
+
+============================================================
+35.60 COMPETITIVE EXAM MCQs
+============================================================
+
+Q1. Which cache is generally closest to the CPU core?
+
+    A. L1
+    B. L2
+    C. L3
+    D. RAM
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q2. Which unit primarily performs floating-point operations?
+
+    A. Integer ALU
+    B. FPU
+    C. Branch unit
+    D. DMA controller
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q3. A load operation generally transfers data from:
+
+    A. Register to memory
+    B. Memory to register
+    C. ALU to cache only
+    D. CPU to GPU
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q4. A store operation generally transfers data from:
+
+    A. Memory to register
+    B. Register to memory
+    C. RAM to CPU only
+    D. Cache to register only
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q5. Which component manages communication with main memory
+in a system with an integrated memory controller?
+
+    A. ALU
+    B. Memory controller
+    C. Branch unit
+    D. FPU
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q6. Which is usually optimized for massive data parallelism?
+
+    A. GPU
+    B. CPU
+    C. HDD
+    D. RAM
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q7. SIMD stands for:
+
+    A. Single Instruction Multiple Data
+    B. Single Instruction Multiple Devices
+    C. Sequential Instruction Multiple Data
+    D. Simple Instruction Memory Data
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q8. Which generally has lower latency?
+
+    A. RAM
+    B. L1 cache
+    C. SSD
+    D. HDD
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q9. Memory bandwidth measures:
+
+    A. Number of registers
+    B. Data transferred per unit time
+    C. Branch prediction accuracy
+    D. Cache size only
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q10. Which component is primarily responsible for branch
+decision execution?
+
+    A. Branch unit
+    B. FPU
+    C. Memory controller
+    D. DRAM
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q11. A multicore processor contains:
+
+    A. Multiple physical processing cores
+    B. Only one execution unit
+    C. Only one register
+    D. Multiple operating systems necessarily
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q12. Which is generally larger but slower?
+
+    A. L1 cache
+    B. Registers
+    C. L3 cache
+    D. CPU register file
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q13. Integrated graphics commonly:
+
+    A. Always use separate dedicated VRAM
+    B. May use system memory
+    C. Cannot execute parallel workloads
+    D. Replace RAM
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q14. Which is an example of heterogeneous computing?
+
+    A. CPU and GPU working together
+    B. Two RAM cells working together
+    C. Two cache lines only
+    D. Two registers storing data
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q15. Increasing the number of CPU cores:
+
+    A. Always doubles performance
+    B. Can improve parallel workloads
+    C. Always increases single-thread performance
+    D. Eliminates cache misses
+
+ANSWER:
+    B
+
+
+============================================================
+35.61 QUICK REVISION
+============================================================
+
+MODERN CPU:
+    Multiple cores + caches + execution units +
+    memory subsystem.
+
+
+CORE:
+    Independent processing engine.
+
+
+L1:
+    Smallest and fastest cache level.
+
+
+L2:
+    Larger/slower than L1.
+
+
+L3:
+    Larger/slower cache, often shared.
+
+
+INTEGER ALU:
+    Integer operations.
+
+
+FPU:
+    Floating-point operations.
+
+
+LOAD UNIT:
+    Memory → CPU/register.
+
+
+STORE UNIT:
+    CPU/register → memory.
+
+
+BRANCH UNIT:
+    Handles branch operations.
+
+
+MEMORY CONTROLLER:
+    Manages CPU ↔ RAM communication.
+
+
+IMC:
+    Memory controller integrated into processor.
+
+
+CPU:
+    General-purpose, low-latency processing.
+
+
+GPU:
+    Highly parallel, high-throughput processing.
+
+
+LATENCY:
+    Time to access/respond.
+
+
+BANDWIDTH:
+    Data transferred per unit time.
+
+
+MULTICORE:
+    Multiple CPU cores on one processor/chip.
+
+
+============================================================
+35.62 MASTER CONCEPT MAP
+============================================================
+
+                         MODERN COMPUTER
+                               |
+                    +----------+----------+
+                    |                     |
+                   CPU                   GPU
+                    |                     |
+              Multiple Cores        Massive Parallelism
+                    |
+          +---------+---------+
+          |         |         |
+         ALU       FPU      Load/Store
+          |         |         |
+          +---------+---------+
+                    |
+                L1 Cache
+                    |
+                L2 Cache
+                    |
+                L3 Cache
+                    |
+              Interconnect
+                    |
+          Memory Controller
+                    |
+                    ↓
+                   RAM
+                    |
+                    ↓
+                Storage
+
+
+============================================================
+CHAPTER 35 COMPLETE
+============================================================

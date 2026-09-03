@@ -1,0 +1,2180 @@
+CHAPTER 37 — ASSEMBLY LANGUAGE FUNDAMENTALS
+
+============================================================
+CHAPTER 37 — ASSEMBLY LANGUAGE FUNDAMENTALS
+============================================================
+
+LEVEL:
+B.Tech 1st Year → Foundation → Intermediate → Advanced
+→ Exam Ready → Interview Ready
+
+GOAL:
+Understand how human-readable assembly instructions represent
+machine instructions and how a CPU uses registers, memory,
+arithmetic, logic, branches, stack operations, and function
+calls.
+
+TOPICS:
+    37.1 Machine Code vs Assembly
+    37.2 Assembly Instructions
+    37.3 Registers
+    37.4 Load and Store
+    37.5 Arithmetic Instructions
+    37.6 Logical Instructions
+    37.7 Branch Instructions
+    37.8 Stack Operations
+    37.9 Function Calls
+    37.10 Basic Assembly Programs
+
+
+============================================================
+37.1 WHAT IS ASSEMBLY LANGUAGE?
+============================================================
+
+Assembly language is a low-level programming language that
+uses human-readable symbols to represent machine instructions.
+
+Example:
+
+    ADD x5, x6, x7
+
+Instead of writing binary directly:
+
+    0000000..................
+
+
+Assembly makes machine-level programming easier to read.
+
+
+IMPORTANT:
+
+    Assembly language is closely related to a particular ISA.
+
+Examples:
+
+    x86 assembly
+    ARM assembly
+    RISC-V assembly
+    MIPS assembly
+
+
+Therefore, assembly language is NOT universal.
+
+
+============================================================
+37.2 MACHINE LANGUAGE
+============================================================
+
+Machine language consists of binary-encoded instructions that
+the processor can execute directly.
+
+Example:
+
+    10110000 01100001
+
+
+The exact meaning depends on the processor's ISA.
+
+
+CPU ultimately executes:
+
+    MACHINE CODE
+
+
+Not English-like assembly text.
+
+
+============================================================
+37.3 ASSEMBLY LANGUAGE
+============================================================
+
+Assembly replaces binary instruction encodings with symbolic
+names.
+
+Example:
+
+    ADD x5, x6, x7
+
+
+Meaning conceptually:
+
+    x5 = x6 + x7
+
+
+The assembler converts the assembly instruction into machine
+code.
+
+
+============================================================
+37.4 HIGH-LEVEL LANGUAGE → MACHINE CODE
+============================================================
+
+A typical path is:
+
+    C / C++ / Java / Rust / etc.
+             |
+             ↓
+        Compiler
+             |
+             ↓
+        Assembly
+             |
+             ↓
+        Assembler
+             |
+             ↓
+        Machine Code
+             |
+             ↓
+            CPU
+
+
+For some languages/platforms, additional steps such as
+linking, interpretation, or JIT compilation may be involved.
+
+
+============================================================
+37.5 ASSEMBLER
+============================================================
+
+Assembler:
+
+    Assembly language
+          ↓
+       Assembler
+          ↓
+      Machine code
+
+
+Example:
+
+    ADD x5, x6, x7
+
+is translated into the binary encoding defined by the ISA.
+
+
+============================================================
+37.6 ASSEMBLY VS MACHINE CODE
+============================================================
+
++----------------------+-----------------------------+
+| Assembly             | Machine Code               |
++----------------------+-----------------------------+
+| Human-readable      | Machine-readable           |
+| Uses mnemonics      | Uses binary encoding       |
+| Easier to understand| Hard to read               |
+| ISA-specific        | ISA-specific               |
+| Processed by assembler| Executed by CPU          |
++----------------------+-----------------------------+
+
+
+============================================================
+37.7 WHAT IS AN INSTRUCTION?
+============================================================
+
+An instruction tells the CPU what operation to perform.
+
+Examples:
+
+    ADD
+    SUB
+    AND
+    OR
+    LOAD
+    STORE
+    BEQ
+    JUMP
+
+
+An instruction may specify:
+
+    • Operation
+    • Source operands
+    • Destination operand
+    • Immediate value
+    • Address information
+
+
+============================================================
+37.8 INSTRUCTION MNEMONICS
+============================================================
+
+A mnemonic is a short symbolic name for an instruction.
+
+Examples:
+
+    ADD
+    SUB
+    AND
+    OR
+    LW
+    SW
+    BEQ
+
+
+Instead of binary, programmers can read:
+
+    ADD x5, x6, x7
+
+
+Much easier than raw machine encoding.
+
+
+============================================================
+37.9 OPERANDS
+============================================================
+
+Operands are the data or locations on which an instruction
+operates.
+
+Example:
+
+    ADD x5, x6, x7
+
+
+Conceptually:
+
+    x6 + x7 → x5
+
+
+Here:
+
+    Operation = ADD
+    Source operands = x6, x7
+    Destination = x5
+
+
+============================================================
+37.10 REGISTERS
+============================================================
+
+Registers are small, very fast storage locations inside the
+CPU.
+
+
+Example:
+
+    x0
+    x1
+    x2
+    x3
+    ...
+
+
+Registers hold:
+
+    • Numbers
+    • Addresses
+    • Intermediate results
+    • Function arguments
+    • Return values
+
+
+============================================================
+37.11 WHY USE REGISTERS?
+============================================================
+
+Registers are much faster to access than main memory.
+
+Example:
+
+    x5 = x6 + x7
+
+
+The CPU can perform the operation using registers.
+
+
+Compared with:
+
+    Read memory
+    Read memory
+    Add
+    Write memory
+
+
+register operations are generally much faster.
+
+
+============================================================
+37.12 REGISTER FILE
+============================================================
+
+A register file is a collection of CPU registers.
+
+Concept:
+
+             REGISTER FILE
+
+       +---------------------+
+       | x0                  |
+       | x1                  |
+       | x2                  |
+       | x3                  |
+       | ...                 |
+       | x31                 |
+       +---------------------+
+
+
+The exact number and purpose of registers depends on the ISA.
+
+
+============================================================
+37.13 GENERAL-PURPOSE REGISTERS
+============================================================
+
+General-purpose registers can hold:
+
+    • Integer values
+    • Addresses
+    • Intermediate results
+    • Function arguments
+
+
+Example in RISC-V:
+
+    x5
+    x6
+    x7
+
+
+These can be used for calculations.
+
+
+============================================================
+37.14 SPECIAL REGISTERS
+============================================================
+
+Processors may also have special-purpose registers.
+
+Examples include:
+
+    Program Counter (PC)
+    Stack Pointer (SP)
+    Status/flags register
+
+
+The exact register organization depends on the ISA.
+
+
+============================================================
+37.15 PROGRAM COUNTER
+============================================================
+
+PC = Program Counter
+
+
+It stores the address of the next instruction to be fetched
+(or, depending on architecture, the relevant current/next
+instruction state).
+
+
+Concept:
+
+        PC
+         |
+         ↓
+    Instruction
+     Memory
+         |
+         ↓
+       CPU
+
+
+After instruction execution, PC normally advances to the next
+instruction unless control flow changes.
+
+
+============================================================
+37.16 LOAD INSTRUCTION
+============================================================
+
+LOAD transfers data from memory to a register.
+
+
+Concept:
+
+    Memory
+       |
+       ↓
+    Register
+
+
+Example:
+
+    LW x5, 0(x6)
+
+
+Conceptually:
+
+    x5 = Memory[x6 + 0]
+
+
+If x6 contains address 1000:
+
+    x5 = Memory[1000]
+
+
+============================================================
+37.17 STORE INSTRUCTION
+============================================================
+
+STORE transfers data from a register to memory.
+
+
+Concept:
+
+    Register
+       |
+       ↓
+    Memory
+
+
+Example:
+
+    SW x5, 0(x6)
+
+
+Conceptually:
+
+    Memory[x6 + 0] = x5
+
+
+============================================================
+37.18 LOAD/STORE ARCHITECTURE
+============================================================
+
+In a load/store ISA such as RISC-V:
+
+    LOAD:
+        Memory → Register
+
+
+    STORE:
+        Register → Memory
+
+
+Arithmetic instructions normally operate on registers.
+
+
+Example:
+
+    LW x5, 0(x6)
+    LW x7, 0(x8)
+    ADD x9, x5, x7
+    SW x9, 0(x10)
+
+
+Conceptually:
+
+    Memory → Registers → ALU → Register → Memory
+
+
+============================================================
+37.19 ARITHMETIC INSTRUCTIONS
+============================================================
+
+Common arithmetic instructions:
+
+    ADD
+    SUB
+    ADDI
+    MUL
+    DIV
+
+
+Example:
+
+    ADD x5, x6, x7
+
+
+Means:
+
+    x5 = x6 + x7
+
+
+Example:
+
+    SUB x5, x6, x7
+
+
+Means:
+
+    x5 = x6 - x7
+
+
+============================================================
+37.20 IMMEDIATE OPERAND
+============================================================
+
+An immediate is a constant value encoded inside the
+instruction.
+
+Example:
+
+    ADDI x5, x6, 10
+
+
+Means:
+
+    x5 = x6 + 10
+
+
+Here:
+
+    x6 = register operand
+    10 = immediate constant
+
+
+============================================================
+37.21 ADDITION EXAMPLE
+============================================================
+
+Suppose:
+
+    x6 = 10
+    x7 = 20
+
+
+Instruction:
+
+    ADD x5, x6, x7
+
+
+Execution:
+
+    x5 = x6 + x7
+       = 10 + 20
+       = 30
+
+
+Result:
+
+    x5 = 30
+
+
+============================================================
+37.22 SUBTRACTION EXAMPLE
+============================================================
+
+Suppose:
+
+    x6 = 50
+    x7 = 20
+
+
+Instruction:
+
+    SUB x5, x6, x7
+
+
+Result:
+
+    x5 = 50 - 20
+       = 30
+
+
+============================================================
+37.23 MULTIPLICATION
+============================================================
+
+Example:
+
+    MUL x5, x6, x7
+
+
+If:
+
+    x6 = 6
+    x7 = 7
+
+
+Then:
+
+    x5 = 6 × 7
+       = 42
+
+
+Whether MUL exists directly and exactly how it behaves
+depends on the ISA/extensions.
+
+
+============================================================
+37.24 DIVISION
+============================================================
+
+Example:
+
+    DIV x5, x6, x7
+
+
+If:
+
+    x6 = 20
+    x7 = 5
+
+
+Then:
+
+    x5 = 20 / 5
+       = 4
+
+
+Division semantics depend on the ISA, including behavior for
+special cases such as division by zero.
+
+
+============================================================
+37.25 LOGICAL INSTRUCTIONS
+============================================================
+
+Logical instructions operate on bits.
+
+
+Common operations:
+
+    AND
+    OR
+    XOR
+    NOT / equivalent instruction depending on ISA
+    Shift operations
+
+
+Example:
+
+    AND x5, x6, x7
+
+
+Conceptually:
+
+    x5 = x6 AND x7
+
+
+============================================================
+37.26 BITWISE AND
+============================================================
+
+Example:
+
+    x6 = 1100
+    x7 = 1010
+
+
+AND:
+
+      1100
+    AND 1010
+    --------
+      1000
+
+
+Result:
+
+    x5 = 1000
+
+
+============================================================
+37.27 BITWISE OR
+============================================================
+
+Example:
+
+      1100
+    OR 1010
+    --------
+      1110
+
+
+Result:
+
+    x5 = 1110
+
+
+============================================================
+37.28 BITWISE XOR
+============================================================
+
+XOR gives 1 when bits are different.
+
+
+Example:
+
+      1100
+    XOR 1010
+    ---------
+      0110
+
+
+Result:
+
+    x5 = 0110
+
+
+============================================================
+37.29 SHIFT INSTRUCTIONS
+============================================================
+
+Shift instructions move bits left or right.
+
+
+Examples:
+
+    SLL
+    SRL
+    SRA
+
+
+Exact instruction names depend on ISA.
+
+
+LEFT SHIFT:
+
+    0011 << 1
+
+    = 0110
+
+
+RIGHT SHIFT:
+
+    1100 >> 1
+
+    = 0110
+
+The behavior for signed values depends on the type of shift.
+
+
+============================================================
+37.30 LEFT SHIFT
+============================================================
+
+For unsigned/integer bit patterns, a left shift by one
+position is conceptually similar to multiplying by 2 when
+no significant bit is lost.
+
+Example:
+
+    0011 = 3
+
+    0011 << 1
+      ↓
+    0110 = 6
+
+
+============================================================
+37.31 RIGHT SHIFT
+============================================================
+
+Logical right shift inserts zeros from the left.
+
+Example:
+
+    1100 >> 1
+
+    = 0110
+
+
+Arithmetic right shift preserves the sign bit for signed
+two's-complement values.
+
+
+============================================================
+37.32 BRANCH INSTRUCTIONS
+============================================================
+
+Branch instructions change the normal sequence of execution.
+
+Examples:
+
+    BEQ
+    BNE
+    BLT
+    BGE
+
+
+Example:
+
+    BEQ x5, x6, LABEL
+
+
+Meaning conceptually:
+
+    IF x5 == x6
+        go to LABEL
+    ELSE
+        continue normally
+
+
+============================================================
+37.33 CONDITIONAL BRANCH
+============================================================
+
+High-level language:
+
+    if (x == y)
+        result = 1;
+
+
+Assembly-style concept:
+
+    BEQ x5, x6, EQUAL
+    ...
+    ...
+EQUAL:
+    ...
+
+
+The branch determines which instruction executes next.
+
+
+============================================================
+37.34 UNCONDITIONAL JUMP
+============================================================
+
+A jump changes control flow without requiring a comparison.
+
+Conceptually:
+
+    J LABEL
+
+
+Execution:
+
+    Current code
+         |
+         ↓
+       J LABEL
+         |
+         |-------->
+                   |
+                   ↓
+                 LABEL
+
+
+Instruction naming differs between ISAs.
+
+
+============================================================
+37.35 LOOP IN ASSEMBLY
+============================================================
+
+High-level:
+
+    for (i = 0; i < 5; i++)
+        ...
+
+
+Assembly-style concept:
+
+    LOOP:
+        ...
+        ADDI x5, x5, 1
+        BLT x5, x6, LOOP
+
+
+The branch sends execution back to LOOP.
+
+
+============================================================
+37.36 SIMPLE LOOP EXAMPLE
+============================================================
+
+Goal:
+
+    Count from 0 to 4.
+
+
+Conceptual RISC-V-style assembly:
+
+    ADDI x5, x0, 0      # i = 0
+    ADDI x6, x0, 5      # limit = 5
+
+LOOP:
+    ADDI x5, x5, 1      # i = i + 1
+    BLT  x5, x6, LOOP  # if i < 5, repeat
+
+
+The exact loop boundary and syntax should be checked against
+the selected ISA and assembler.
+
+
+============================================================
+37.37 STACK
+============================================================
+
+A stack is a memory region used for temporary data and
+function-related information.
+
+
+Basic rule:
+
+    PUSH → place data on stack
+    POP  → remove data from stack
+
+
+Concept:
+
+             Higher address
+                  |
+                  |
+               Stack
+                  |
+                  ↓
+             Stack Pointer
+                  |
+             Lower address
+
+
+The exact direction of stack growth depends on architecture.
+
+
+============================================================
+37.38 STACK POINTER
+============================================================
+
+SP = Stack Pointer
+
+
+It points to the current stack location according to the
+architecture's stack convention.
+
+
+Used for:
+
+    • Function calls
+    • Local variables
+    • Saved registers
+    • Temporary data
+    • Return information
+
+
+============================================================
+37.39 PUSH
+============================================================
+
+Conceptually:
+
+    PUSH value
+
+
+means:
+
+    Put value onto stack.
+
+
+Example:
+
+    Before:
+
+        Stack
+          |
+        [A]
+
+    PUSH B
+
+    After:
+
+        Stack
+          |
+        [B]
+        [A]
+
+
+Exact instruction sequence depends on ISA.
+
+
+============================================================
+37.40 POP
+============================================================
+
+Conceptually:
+
+    POP register
+
+
+means:
+
+    Remove top stack value and place it into a register.
+
+
+Example:
+
+    Before:
+
+        [B] ← top
+        [A]
+
+    POP x5
+
+    After:
+
+        x5 = B
+
+        [A]
+
+
+============================================================
+37.41 STACK FRAME
+============================================================
+
+A function may create a stack frame containing:
+
+    • Local variables
+    • Saved registers
+    • Temporary values
+    • Return-related information
+
+
+Concept:
+
+        Function Stack Frame
+    +-------------------------+
+    | Local variables         |
+    +-------------------------+
+    | Saved registers         |
+    +-------------------------+
+    | Other temporary data    |
+    +-------------------------+
+
+
+============================================================
+37.42 FUNCTION CALL
+============================================================
+
+A function call transfers control to another piece of code.
+
+High-level:
+
+    result = add(a, b);
+
+
+Assembly concept:
+
+    Put arguments somewhere
+          ↓
+    CALL function
+          ↓
+    Function executes
+          ↓
+    Return result
+
+
+============================================================
+37.43 RETURN ADDRESS
+============================================================
+
+When a function is called, the CPU must know where to return.
+
+The return address identifies the instruction to execute after
+the function returns.
+
+
+Concept:
+
+    Main program
+         |
+         ↓
+       CALL
+         |
+         ↓
+      Function
+         |
+         ↓
+      RETURN
+         |
+         ↓
+    Next instruction
+
+
+Different ISAs store/manage the return address differently.
+
+
+============================================================
+37.44 FUNCTION CALL IN RISC-V
+============================================================
+
+RISC-V commonly uses:
+
+    JAL
+    JALR
+
+
+JAL:
+
+    Jump And Link
+
+
+It performs a jump and records a return address in a
+destination register.
+
+
+Concept:
+
+    JAL ra, function
+
+
+Conceptually:
+
+    ra = return address
+    PC = function
+
+
+Here:
+
+    ra = return-address register by convention.
+
+
+============================================================
+37.45 FUNCTION RETURN IN RISC-V
+============================================================
+
+A common RISC-V return sequence is conceptually:
+
+    JALR x0, 0(ra)
+
+
+or the assembler pseudo-instruction:
+
+    RET
+
+
+Meaning:
+
+    Jump to the address stored in ra.
+
+
+============================================================
+37.46 FUNCTION ARGUMENTS
+============================================================
+
+Functions need input values.
+
+For example:
+
+    add(10, 20)
+
+
+The calling convention defines where arguments are placed.
+
+In RISC-V's standard calling convention, argument registers
+include:
+
+    a0, a1, a2, ...
+
+
+Example:
+
+    a0 = 10
+    a1 = 20
+
+
+Then call:
+
+    function
+
+
+============================================================
+37.47 FUNCTION RETURN VALUE
+============================================================
+
+A function must return its result.
+
+In the standard RISC-V calling convention, return values are
+commonly placed in:
+
+    a0
+    a1
+
+
+Example:
+
+    add(10,20)
+
+Result:
+
+    a0 = 30
+
+
+============================================================
+37.48 CALLING CONVENTION
+============================================================
+
+A calling convention defines rules for function calls.
+
+It specifies things such as:
+
+    • Where arguments are placed
+    • Where return values are placed
+    • Which registers must be preserved
+    • Stack alignment
+    • How functions interact
+
+
+Calling conventions allow separately compiled functions to
+work together.
+
+
+============================================================
+37.49 REGISTER CALLING CONVENTION
+============================================================
+
+Different registers may have different roles.
+
+Conceptual categories:
+
+    Argument registers
+    Return-value registers
+    Temporary registers
+    Saved registers
+    Stack pointer
+    Return-address register
+
+
+The exact names and rules depend on the ISA/ABI.
+
+
+============================================================
+37.50 ASSEMBLY COMMENTS
+============================================================
+
+Comments explain assembly instructions to humans.
+
+Example:
+
+    ADDI x5, x0, 10      # x5 = 10
+    ADDI x6, x0, 20      # x6 = 20
+    ADD  x7, x5, x6      # x7 = 30
+
+
+Comments are ignored by the assembler.
+
+
+============================================================
+37.51 BASIC PROGRAM — ADD TWO NUMBERS
+============================================================
+
+Goal:
+
+    result = 10 + 20
+
+
+RISC-V-style:
+
+    ADDI x5, x0, 10
+    ADDI x6, x0, 20
+    ADD  x7, x5, x6
+
+
+Step-by-step:
+
+    x5 = 10
+    x6 = 20
+    x7 = x5 + x6
+       = 30
+
+
+Final:
+
+    x7 = 30
+
+
+============================================================
+37.52 BASIC PROGRAM — SUBTRACTION
+============================================================
+
+Goal:
+
+    result = 50 - 20
+
+
+    ADDI x5, x0, 50
+    ADDI x6, x0, 20
+    SUB  x7, x5, x6
+
+
+Result:
+
+    x7 = 30
+
+
+============================================================
+37.53 BASIC PROGRAM — MULTIPLICATION
+============================================================
+
+Goal:
+
+    result = 6 × 7
+
+
+Conceptual RISC-V-style:
+
+    ADDI x5, x0, 6
+    ADDI x6, x0, 7
+    MUL  x7, x5, x6
+
+
+Result:
+
+    x7 = 42
+
+
+MUL requires the appropriate RISC-V multiply extension.
+
+
+============================================================
+37.54 BASIC PROGRAM — LOAD AND ADD
+============================================================
+
+Suppose:
+
+    Memory[A] = 10
+    Memory[B] = 20
+
+
+Goal:
+
+    result = Memory[A] + Memory[B]
+
+
+Conceptual:
+
+    LW  x5, 0(x10)
+    LW  x6, 0(x11)
+    ADD x7, x5, x6
+
+
+Then:
+
+    x7 = 30
+
+
+============================================================
+37.55 BASIC PROGRAM — STORE RESULT
+============================================================
+
+Suppose:
+
+    x7 = 30
+
+
+Store it in memory:
+
+    SW x7, 0(x12)
+
+
+Conceptually:
+
+    Memory[x12] = 30
+
+
+============================================================
+37.56 BASIC IF CONDITION
+============================================================
+
+High-level:
+
+    if (a == b)
+        result = 1;
+    else
+        result = 0;
+
+
+Assembly-style concept:
+
+    BEQ x5, x6, EQUAL
+
+    ADDI x7, x0, 0
+    J DONE
+
+EQUAL:
+    ADDI x7, x0, 1
+
+DONE:
+
+
+Concept:
+
+    Compare
+       ↓
+    Branch
+      / \
+   Equal Not equal
+    ↓       ↓
+   1        0
+
+
+============================================================
+37.57 BASIC LOOP
+============================================================
+
+Goal:
+
+    Calculate:
+
+        1 + 2 + 3 + 4 + 5
+
+
+Concept:
+
+    sum = 0
+    i = 1
+
+LOOP:
+    sum = sum + i
+    i = i + 1
+    if i <= 5
+        repeat
+
+
+Assembly-style:
+
+    ADDI x5, x0, 0      # sum = 0
+    ADDI x6, x0, 1      # i = 1
+    ADDI x7, x0, 6      # limit = 6
+
+LOOP:
+    ADD  x5, x5, x6
+    ADDI x6, x6, 1
+    BLT  x6, x7, LOOP
+
+
+Final:
+
+    x5 = 15
+
+
+============================================================
+37.58 FUNCTION EXAMPLE
+============================================================
+
+Goal:
+
+    add(a,b)
+
+
+Conceptual RISC-V-style:
+
+add:
+    ADD a0, a0, a1
+    RET
+
+
+If:
+
+    a0 = 10
+    a1 = 20
+
+
+Then:
+
+    a0 = 30
+
+
+The caller receives:
+
+    return value = 30
+
+
+============================================================
+37.59 FUNCTION CALL FLOW
+============================================================
+
+Caller:
+
+    Put arguments
+         ↓
+    CALL function
+         ↓
+    Save necessary state
+         ↓
+    Function executes
+         ↓
+    Return result
+         ↓
+    RETURN
+         ↓
+    Caller continues
+
+
+============================================================
+37.60 ASSEMBLY AND THE CPU DATAPATH
+============================================================
+
+Consider:
+
+    ADD x5, x6, x7
+
+
+Conceptual CPU operation:
+
+    Instruction
+         ↓
+       Fetch
+         ↓
+       Decode
+         ↓
+    Read registers
+         ↓
+       ALU
+         ↓
+    Write result
+         ↓
+       x5
+
+
+Assembly gives a human-readable representation of the
+operation that the datapath performs.
+
+
+============================================================
+37.61 ASSEMBLY AND MEMORY
+============================================================
+
+Consider:
+
+    LW x5, 0(x6)
+
+
+Conceptual hardware operation:
+
+    x6
+     |
+     ↓
+    Address calculation
+     |
+     ↓
+    Cache / Memory
+     |
+     ↓
+    Data
+     |
+     ↓
+    x5
+
+
+Therefore assembly connects directly to COA concepts.
+
+
+============================================================
+37.62 ASSEMBLY AND CONTROL FLOW
+============================================================
+
+Instructions normally execute:
+
+    I1
+     ↓
+    I2
+     ↓
+    I3
+     ↓
+    I4
+
+
+A branch changes this:
+
+    I1
+     ↓
+    I2
+     ↓
+    BEQ
+    /  \
+   /    \
+  ↓      ↓
+ I3     I10
+  |
+  ↓
+ ...
+
+
+This is why branch prediction and pipelining are important.
+
+
+============================================================
+37.63 ASSEMBLY AND STACK
+============================================================
+
+Function call:
+
+    CALL
+      ↓
+    Stack frame
+      ↓
+    Local variables
+      ↓
+    Function execution
+      ↓
+    Restore state
+      ↓
+    RETURN
+
+
+This connects assembly language to:
+
+    • Registers
+    • Memory
+    • Calling conventions
+    • Operating systems
+    • Compilers
+
+
+============================================================
+37.64 ASSEMBLY LANGUAGE — COMPLETE VIEW
+============================================================
+
+High-Level Code:
+
+    result = a + b;
+
+
+          ↓ Compiler
+
+
+Assembly:
+
+    ADD x5, x6, x7
+
+
+          ↓ Assembler
+
+
+Machine Code:
+
+    Binary instruction encoding
+
+
+          ↓
+
+
+CPU:
+
+    Fetch
+      ↓
+    Decode
+      ↓
+    Register Read
+      ↓
+    ALU
+      ↓
+    Register Write
+
+
+============================================================
+37.65 COMMON ASSEMBLY INSTRUCTION CATEGORIES
+============================================================
+
+DATA TRANSFER:
+
+    LOAD
+    STORE
+
+
+ARITHMETIC:
+
+    ADD
+    SUB
+    MUL
+    DIV
+
+
+LOGICAL:
+
+    AND
+    OR
+    XOR
+
+
+SHIFT:
+
+    SLL
+    SRL
+    SRA
+
+
+CONTROL FLOW:
+
+    BEQ
+    BNE
+    JUMP
+    CALL
+    RETURN
+
+
+SYSTEM:
+
+    System/privileged instructions vary by ISA.
+
+
+============================================================
+37.66 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    "Assembly language is machine code."
+
+FALSE.
+
+Assembly is a symbolic representation of machine instructions.
+
+
+MISTAKE 2:
+
+    "One assembly instruction always equals one CPU cycle."
+
+FALSE.
+
+Instruction execution can take multiple stages/cycles and may
+be pipelined or executed out of order.
+
+
+MISTAKE 3:
+
+    "All processors use the same assembly language."
+
+FALSE.
+
+
+MISTAKE 4:
+
+    "Registers are the same as RAM."
+
+FALSE.
+
+
+MISTAKE 5:
+
+    "LOAD performs computation."
+
+Usually its primary job is transferring data from memory to a
+register.
+
+
+MISTAKE 6:
+
+    "STORE moves data from memory to register."
+
+FALSE.
+
+STORE generally moves register data to memory.
+
+
+MISTAKE 7:
+
+    "A branch always means the branch is taken."
+
+FALSE.
+
+Conditional branches may or may not be taken.
+
+
+MISTAKE 8:
+
+    "The stack is a CPU register."
+
+FALSE.
+
+The stack is generally a region of memory; SP is the register
+used to track its location.
+
+
+============================================================
+37.67 B.TECH IMPORTANT QUESTIONS
+============================================================
+
+Q1. Define assembly language.
+
+Q2. Differentiate machine language and assembly language.
+
+Q3. What is an assembler?
+
+Q4. Explain the role of registers in assembly programming.
+
+Q5. Explain load and store instructions.
+
+Q6. Explain arithmetic and logical instructions.
+
+Q7. Explain branch instructions.
+
+Q8. Explain stack operations.
+
+Q9. Explain function calls and return addresses.
+
+Q10. What is a calling convention?
+
+Q11. Write an assembly program to add two numbers.
+
+Q12. Write an assembly program to perform subtraction.
+
+Q13. Write an assembly program using a loop.
+
+Q14. Explain how assembly instructions are executed by the CPU.
+
+Q15. Explain the relationship between assembly language and
+the CPU datapath.
+
+
+============================================================
+37.68 COMPETITIVE EXAM MCQs
+============================================================
+
+Q1. Assembly language is primarily:
+
+    A. A symbolic representation of machine instructions
+    B. A database language
+    C. An operating system
+    D. A hardware circuit
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q2. Which component converts assembly instructions into
+machine code?
+
+    A. Compiler
+    B. Assembler
+    C. Loader
+    D. CPU
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q3. Which operation generally transfers data from memory to
+a register?
+
+    A. STORE
+    B. LOAD
+    C. ADD
+    D. BRANCH
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q4. Which operation generally transfers data from a register
+to memory?
+
+    A. LOAD
+    B. STORE
+    C. ADD
+    D. XOR
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q5. The Program Counter primarily contains:
+
+    A. Current arithmetic result
+    B. Address associated with the next instruction to fetch
+    C. Stack data
+    D. Cache tag
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q6. Which instruction category changes program control flow?
+
+    A. Branch
+    B. Arithmetic
+    C. Logical
+    D. Load
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q7. What does ADDI generally indicate in RISC-V?
+
+    A. Add immediate
+    B. Add instruction pointer
+    C. Address instruction
+    D. Arithmetic division instruction
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q8. Which register conventionally holds the stack location
+in RISC-V?
+
+    A. sp
+    B. pc
+    C. ra
+    D. zero
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q9. In RISC-V, JAL stands for:
+
+    A. Jump And Link
+    B. Jump And Load
+    C. Joint Arithmetic Logic
+    D. Jump Address Location
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q10. A function's return address is needed so that:
+
+    A. The function can access RAM
+    B. Execution can return to the caller
+    C. The ALU can add numbers
+    D. Cache can be cleared
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q11. Which operation performs bitwise exclusive OR?
+
+    A. AND
+    B. OR
+    C. XOR
+    D. ADD
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q12. Which is generally the fastest storage accessible to
+the CPU?
+
+    A. HDD
+    B. RAM
+    C. Register
+    D. SSD
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q13. In a load/store architecture, arithmetic operations
+normally operate on:
+
+    A. Registers
+    B. HDD sectors
+    C. I/O ports only
+    D. Disk blocks
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q14. A calling convention specifies:
+
+    A. Rules for function interaction
+    B. Cache replacement policy
+    C. Disk scheduling only
+    D. CPU manufacturing process
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q15. Which statement is correct?
+
+    A. Assembly is completely independent of ISA
+    B. Assembly is generally ISA-specific
+    C. Assembly is higher level than Python
+    D. Assembly is identical to binary
+
+ANSWER:
+    B
+
+
+============================================================
+37.69 QUICK REVISION
+============================================================
+
+ASSEMBLY:
+    Human-readable representation of machine instructions.
+
+
+MACHINE CODE:
+    Binary encoding executed by the processor.
+
+
+ASSEMBLER:
+    Assembly → Machine code.
+
+
+REGISTER:
+    Fast CPU storage.
+
+
+LOAD:
+    Memory → Register.
+
+
+STORE:
+    Register → Memory.
+
+
+ADD:
+    Addition.
+
+
+SUB:
+    Subtraction.
+
+
+AND:
+    Bitwise AND.
+
+
+OR:
+    Bitwise OR.
+
+
+XOR:
+    Bitwise XOR.
+
+
+BRANCH:
+    Changes control flow.
+
+
+PC:
+    Tracks instruction execution.
+
+
+SP:
+    Tracks stack location.
+
+
+CALL:
+    Transfers control to a function and preserves return
+    information according to the ISA/calling convention.
+
+
+RETURN:
+    Transfers control back to the caller.
+
+
+STACK:
+    Memory region used for function-related temporary data.
+
+
+CALLING CONVENTION:
+    Rules governing function calls, arguments, registers,
+    return values, and preserved state.
+
+
+============================================================
+37.70 MASTER CONCEPT MAP
+============================================================
+
+                    HIGH-LEVEL PROGRAM
+                           |
+                           ↓
+                       COMPILER
+                           |
+                           ↓
+                       ASSEMBLY
+                           |
+                           ↓
+                       ASSEMBLER
+                           |
+                           ↓
+                     MACHINE CODE
+                           |
+                           ↓
+                          CPU
+                           |
+          +----------------+----------------+
+          |                |                |
+       Registers          ALU            Memory
+          |                |                |
+          +----------------+----------------+
+                           |
+                       Execution
+                           |
+              +------------+------------+
+              |            |            |
+           Arithmetic    Logic       Control Flow
+              |            |            |
+             ADD          AND          Branch
+             SUB          OR           Jump
+             MUL          XOR          Call
+             DIV          SHIFT        Return
+
+
+============================================================
+37.71 FINAL LEARNING POINT
+============================================================
+
+Assembly language is the bridge between:
+
+    SOFTWARE
+        ↓
+    MACHINE INSTRUCTIONS
+        ↓
+    CPU HARDWARE
+
+
+When you understand assembly, you can see how:
+
+    Variables
+        ↓
+    Registers / Memory
+
+    Arithmetic
+        ↓
+    ALU
+
+    if / else
+        ↓
+    Branch instructions
+
+    loops
+        ↓
+    Branch + comparison
+
+    Functions
+        ↓
+    Call + stack + return
+
+    Arrays
+        ↓
+    Address calculation + load/store
+
+
+This is why assembly language is extremely important for
+understanding Computer Organisation and Architecture.
+
+
+============================================================
+CHAPTER 37 COMPLETE
+============================================================

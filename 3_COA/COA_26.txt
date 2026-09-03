@@ -1,0 +1,2312 @@
+CHAPTER 26 — ADVANCED PIPELINING
+
+============================================================
+CHAPTER 26 — ADVANCED PIPELINING
+============================================================
+
+LEVEL:
+B.Tech 1st Year → Intermediate → Advanced
+
+PREREQUISITE:
+Chapter 25 — Instruction Pipelining
+
+GOAL:
+Understand advanced pipeline hazards, branch prediction,
+superscalar processors, out-of-order execution, speculative
+execution, and instruction-level parallelism (ILP).
+
+============================================================
+
+
+------------------------------------------------------------
+26.1 WHAT IS ADVANCED PIPELINING?
+------------------------------------------------------------
+
+Basic pipelining overlaps instruction stages:
+
+    IF → ID → EX → MEM → WB
+
+
+Advanced pipelining goes further.
+
+Modern processors try to:
+
+    • Execute multiple instructions at once
+    • Reduce pipeline stalls
+    • Predict branches
+    • Execute independent instructions early
+    • Execute instructions out of program order
+    • Rename registers to remove false dependencies
+    • Speculatively execute instructions
+
+
+Main goal:
+
+    Increase instruction-level parallelism (ILP)
+
+
+------------------------------------------------------------
+26.2 BASIC PIPELINE VS ADVANCED PIPELINE
+------------------------------------------------------------
+
+Basic pipeline:
+
+    One instruction enters approximately per cycle.
+
+Advanced processor:
+
+    Multiple instructions may be fetched,
+    decoded, issued, and executed per cycle.
+
+
+Example:
+
+    Cycle 1:
+        I1
+
+    Cycle 2:
+        I1 + I2
+
+    Cycle 3:
+        I2 + I3 + I4
+
+
+This requires much more hardware and control logic.
+
+
+============================================================
+26.3 DATA HAZARDS — DEEPER STUDY
+============================================================
+
+A data hazard occurs when instructions have a dependency
+relationship.
+
+
+The three classical data hazards are:
+
+    1. RAW
+    2. WAR
+    3. WAW
+
+
+Memory trick:
+
+    RAW = Read After Write
+    WAR = Write After Read
+    WAW = Write After Write
+
+
+IMPORTANT:
+
+    RAW is a true data dependency.
+
+    WAR and WAW are generally false/name dependencies in
+    conventional in-order pipelines, but can matter in
+    more advanced/out-of-order systems.
+
+
+============================================================
+26.4 RAW HAZARD
+============================================================
+
+RAW:
+
+    Read After Write
+
+
+Meaning:
+
+    An instruction needs to READ a value that an earlier
+    instruction must WRITE first.
+
+
+Example:
+
+    I1:
+        ADD R1, R2, R3
+
+    I2:
+        SUB R4, R1, R5
+
+
+I1 produces:
+
+    R1
+
+
+I2 consumes:
+
+    R1
+
+
+Dependency:
+
+    I1 → I2
+
+
+Timeline:
+
+    I1: ADD R1, R2, R3
+    I2: SUB R4, R1, R5
+
+
+The second instruction cannot correctly use the new R1
+until the value is available.
+
+
+Therefore:
+
+    RAW = true dependency
+
+
+============================================================
+26.5 RAW EXAMPLE
+============================================================
+
+Suppose:
+
+    R2 = 10
+    R3 = 20
+
+Instruction:
+
+    I1: ADD R1, R2, R3
+
+Result:
+
+    R1 = 30
+
+
+Next:
+
+    I2: SUB R4, R1, R5
+
+
+I2 needs:
+
+    R1 = 30
+
+
+Therefore:
+
+    I2 depends on I1.
+
+
+If R1 is not yet available:
+
+    I2 may have to wait.
+
+
+Solutions:
+
+    • Forwarding
+    • Stalling
+    • Scheduling
+
+
+============================================================
+26.6 WAR HAZARD
+============================================================
+
+WAR:
+
+    Write After Read
+
+
+Meaning:
+
+    A later instruction writes to a location before an
+    earlier instruction has finished reading it.
+
+
+Example:
+
+    I1:
+        SUB R4, R1, R5
+
+    I2:
+        ADD R1, R2, R3
+
+
+I1 must READ R1.
+
+I2 wants to WRITE R1.
+
+
+Required order:
+
+    I1 reads R1
+        ↓
+    I2 writes R1
+
+
+If I2 writes R1 too early:
+
+    I1 could read the wrong value.
+
+
+Therefore:
+
+    WAR = anti-dependency
+
+
+============================================================
+26.7 WAW HAZARD
+============================================================
+
+WAW:
+
+    Write After Write
+
+
+Two instructions write to the same destination.
+
+
+Example:
+
+    I1:
+        ADD R1, R2, R3
+
+    I2:
+        SUB R1, R4, R5
+
+
+Both write:
+
+    R1
+
+
+Correct final ordering requires:
+
+    I1 writes R1
+        before
+    I2 writes R1
+
+
+If I2 writes first and I1 writes later:
+
+    The final value could be incorrect.
+
+
+Therefore:
+
+    WAW = output dependency
+
+
+============================================================
+26.8 RAW vs WAR vs WAW
+============================================================
+
++-------+----------------------+--------------------------+
+| Type  | Meaning              | Dependency               |
++-------+----------------------+--------------------------+
+| RAW   | Read After Write     | True dependency          |
+| WAR   | Write After Read     | Anti-dependency          |
+| WAW   | Write After Write    | Output dependency        |
++-------+----------------------+--------------------------+
+
+
+RAW:
+
+    Earlier instruction produces data.
+
+WAR:
+
+    Earlier instruction needs to read before later write.
+
+WAW:
+
+    Multiple instructions write the same destination.
+
+
+============================================================
+26.9 CONTROL HAZARDS
+============================================================
+
+Control hazards occur when the next instruction depends on
+a branch or jump decision.
+
+
+Example:
+
+    I1:
+        BEQ R1, R2, TARGET
+
+    I2:
+        ADD R3, R4, R5
+
+    I3:
+        SUB R6, R7, R8
+
+
+The CPU does not immediately know whether:
+
+    Next instruction = I2
+
+or:
+
+    Next instruction = TARGET
+
+
+This creates uncertainty.
+
+
+============================================================
+26.10 BRANCH PENALTY
+============================================================
+
+If a branch is mispredicted:
+
+    Wrong-path instructions may enter the pipeline.
+
+
+They must be removed.
+
+Then:
+
+    Correct-path instructions
+    must be fetched.
+
+
+Lost cycles are called:
+
+    BRANCH PENALTY
+
+
+Example:
+
+    Prediction:
+        Not taken
+
+    Actual:
+        Taken
+
+
+Wrong instructions:
+
+    fetched
+      ↓
+    decoded
+      ↓
+    partially processed
+      ↓
+    discarded
+
+
+Therefore:
+
+    performance decreases.
+
+
+============================================================
+26.11 WHY BRANCH PREDICTION IS IMPORTANT
+------------------------------------------------------------
+
+Modern processors have deep pipelines.
+
+A branch may take several stages before its outcome is known.
+
+
+Without prediction:
+
+    CPU might wait.
+
+
+With prediction:
+
+    CPU continues fetching instructions.
+
+
+If prediction is correct:
+
+    Performance improves.
+
+
+If prediction is wrong:
+
+    Pipeline flush + penalty.
+
+
+Therefore:
+
+    High prediction accuracy is extremely important.
+
+
+============================================================
+26.12 STATIC BRANCH PREDICTION
+============================================================
+
+Static prediction uses a fixed rule.
+
+
+Examples:
+
+    Always taken
+
+    Always not taken
+
+    Backward branches → taken
+
+    Forward branches → not taken
+
+
+Static prediction:
+
+    Simple
+    ↓
+    Low hardware complexity
+
+
+But:
+
+    Less adaptive
+
+
+============================================================
+26.13 DYNAMIC BRANCH PREDICTION
+============================================================
+
+Dynamic branch prediction uses runtime information.
+
+
+The processor remembers previous branch behaviour.
+
+
+Example:
+
+    Previous outcomes:
+
+        Taken
+        Taken
+        Taken
+        Taken
+
+
+Next prediction:
+
+        Taken
+
+
+If the branch changes behaviour:
+
+    predictor updates its state.
+
+
+Therefore:
+
+    Dynamic predictor adapts to program behaviour.
+
+
+============================================================
+26.14 1-BIT BRANCH PREDICTOR
+============================================================
+
+A simple dynamic predictor can use one bit.
+
+
+Bit:
+
+    0 → predict Not Taken
+
+    1 → predict Taken
+
+
+Example:
+
+    Previous branch outcome = Taken
+
+    Predictor stores:
+
+        1
+
+
+Next time:
+
+    Predict Taken.
+
+
+If actual result is:
+
+    Not Taken
+
+
+The predictor changes:
+
+    1 → 0
+
+
+Problem:
+
+    A single unusual branch outcome immediately changes
+    the prediction.
+
+
+============================================================
+26.15 2-BIT SATURATING PREDICTOR
+============================================================
+
+A common improvement is a 2-bit predictor.
+
+
+Four states:
+
+    00 = Strongly Not Taken
+    01 = Weakly Not Taken
+    10 = Weakly Taken
+    11 = Strongly Taken
+
+
+Conceptually:
+
+             Taken
+               ↑
+    00 → 01 → 10 → 11
+               ↓
+             Not Taken
+
+
+More precisely, the state moves gradually toward the
+observed behaviour.
+
+
+Advantage:
+
+    One unusual branch does not necessarily reverse the
+    prediction immediately.
+
+
+============================================================
+26.16 BRANCH TARGET BUFFER (BTB)
+============================================================
+
+A Branch Target Buffer stores information about previously
+encountered branches.
+
+
+It can help provide:
+
+    • Branch prediction
+    • Target address
+
+
+Example:
+
+    Branch instruction
+          |
+          ↓
+        BTB
+          |
+          ↓
+    Predicted target
+
+
+This allows the CPU to fetch from the predicted target
+quickly.
+
+
+============================================================
+26.17 BRANCH PREDICTION SUMMARY
+============================================================
+
+STATIC:
+
+    Fixed prediction strategy.
+
+
+DYNAMIC:
+
+    Uses runtime history.
+
+
+1-BIT:
+
+    Remembers recent branch behaviour using one bit.
+
+
+2-BIT:
+
+    Uses four prediction states and is more resistant to
+    occasional changes.
+
+
+BTB:
+
+    Helps remember branch target addresses.
+
+
+============================================================
+26.18 WHAT IS INSTRUCTION-LEVEL PARALLELISM?
+============================================================
+
+Instruction-Level Parallelism:
+
+    ILP
+
+means:
+
+    The ability to execute multiple independent instructions
+    at overlapping times.
+
+
+Example:
+
+    I1:
+        ADD R1, R2, R3
+
+    I2:
+        SUB R4, R5, R6
+
+    I3:
+        AND R7, R8, R9
+
+
+These instructions are independent.
+
+
+They may potentially execute simultaneously.
+
+
+============================================================
+26.19 ILP EXAMPLE
+============================================================
+
+Consider:
+
+    I1: R1 = R2 + R3
+    I2: R4 = R5 + R6
+    I3: R7 = R8 + R9
+
+
+Dependencies:
+
+    I1 → none
+    I2 → none
+    I3 → none
+
+
+Therefore:
+
+    I1
+    I2
+    I3
+
+
+can potentially execute in parallel if enough hardware
+resources exist.
+
+
+============================================================
+26.20 ILP WITH DEPENDENCY
+============================================================
+
+Consider:
+
+    I1: R1 = R2 + R3
+
+    I2: R4 = R1 + R5
+
+    I3: R6 = R7 + R8
+
+
+Dependencies:
+
+    I1 → I2
+
+But:
+
+    I3 is independent.
+
+
+Therefore:
+
+    I1 and I3 can potentially make progress together,
+    while I2 waits for R1.
+
+
+This is why instruction scheduling is important.
+
+
+============================================================
+26.21 SUPERSCALAR PROCESSOR
+============================================================
+
+A superscalar processor can issue multiple instructions
+per clock cycle.
+
+
+Traditional scalar processor:
+
+    ≈ 1 instruction issued/cycle
+
+
+2-wide superscalar:
+
+    Up to 2 instructions/cycle
+
+
+4-wide superscalar:
+
+    Up to 4 instructions/cycle
+
+
+Example:
+
+    Cycle 1:
+
+        I1 → ALU
+        I2 → ALU
+
+
+    Cycle 2:
+
+        I3 → ALU
+        I4 → Load/Store
+
+
+Multiple execution units allow parallel execution.
+
+
+============================================================
+26.22 SUPERSCALAR ARCHITECTURE
+============================================================
+
+Simplified architecture:
+
+                 Instructions
+                      |
+                      ↓
+                  Fetch Unit
+                      |
+                      ↓
+                 Decode / Rename
+                      |
+                      ↓
+                Issue / Schedule
+                  /    |    \
+                 /     |     \
+                ↓      ↓      ↓
+              ALU     FPU    Load/Store
+                \      |      /
+                 \     |     /
+                      ↓
+                   Results
+
+
+The processor contains multiple execution resources.
+
+
+============================================================
+26.23 SCALAR VS SUPERSCALAR
+============================================================
+
+SCALAR:
+
+    Usually one instruction issued per cycle.
+
+
+SUPERSCALAR:
+
+    Multiple instructions can be issued per cycle.
+
+
+Example:
+
+    Scalar:
+
+        Cycle 1 → I1
+        Cycle 2 → I2
+        Cycle 3 → I3
+
+
+    3-wide superscalar:
+
+        Cycle 1 → I1, I2, I3
+
+
+But:
+
+    "3-wide" does NOT guarantee 3 completed instructions
+    every cycle.
+
+Dependencies, branches, cache misses, and resource
+limitations can reduce actual performance.
+
+
+============================================================
+26.24 ISSUE WIDTH
+============================================================
+
+Issue width means:
+
+    Maximum number of instructions that can be issued in
+    one clock cycle.
+
+
+Examples:
+
+    1-wide
+    2-wide
+    4-wide
+    6-wide
+    etc.
+
+
+Larger width can increase potential ILP.
+
+But:
+
+    More width → more hardware complexity.
+
+
+============================================================
+26.25 OUT-OF-ORDER EXECUTION
+============================================================
+
+In simple in-order execution:
+
+    Instructions execute in program order.
+
+
+Example:
+
+    I1
+    I2
+    I3
+    I4
+
+
+Execution order:
+
+    I1 → I2 → I3 → I4
+
+
+In out-of-order execution:
+
+    Independent instructions may execute before earlier
+    instructions that are waiting.
+
+
+Example:
+
+    I1 → waiting for memory
+
+    I2 → independent
+
+    I3 → independent
+
+
+Instead of waiting for I1:
+
+    I2 and I3 may execute first.
+
+
+============================================================
+26.26 WHY OUT-OF-ORDER EXECUTION?
+============================================================
+
+Suppose:
+
+    I1 = LOAD R1, [memory]
+    I2 = ADD R4, R5, R6
+    I3 = SUB R7, R8, R9
+
+
+I1 experiences a cache miss.
+
+Waiting for I1 could waste CPU resources.
+
+
+But I2 and I3 are independent.
+
+
+Out-of-order execution allows:
+
+    I1 → waiting
+
+    I2 → execute
+
+    I3 → execute
+
+
+Therefore:
+
+    Hardware resources stay busy.
+
+
+============================================================
+26.27 OUT-OF-ORDER EXECUTION DOES NOT MEAN
+     OUT-OF-ORDER PROGRAM RESULTS
+------------------------------------------------------------
+
+This is VERY IMPORTANT.
+
+
+Instructions may:
+
+    EXECUTE out of order
+
+
+but the processor generally ensures that:
+
+    ARCHITECTURAL RESULTS
+
+are committed in a manner that preserves correct program
+semantics.
+
+
+Example:
+
+    Program order:
+
+        I1
+        I2
+        I3
+
+
+Possible execution:
+
+        I2
+        I3
+        I1
+
+
+But retirement/commit maintains the required architectural
+ordering.
+
+
+============================================================
+26.28 DYNAMIC SCHEDULING
+============================================================
+
+Dynamic scheduling means hardware decides at runtime when
+instructions should execute.
+
+
+The processor examines:
+
+    • Dependencies
+    • Operand availability
+    • Execution-unit availability
+    • Instruction priority
+    • Memory readiness
+
+
+Then it selects instructions that are ready.
+
+
+Example:
+
+    I1 → waiting for R1
+
+    I2 → ready
+
+    I3 → ready
+
+
+Scheduler:
+
+    Execute I2
+    Execute I3
+
+while:
+
+    I1 waits.
+
+
+============================================================
+26.29 REGISTER RENAMING
+============================================================
+
+Register renaming removes false dependencies caused by reuse
+of the same architectural register name.
+
+
+Consider:
+
+    I1:
+        R1 = R2 + R3
+
+    I2:
+        R1 = R4 + R5
+
+
+Both use:
+
+    R1
+
+
+But I2 does not actually need the result of I1.
+
+
+They simply use the same register name.
+
+
+This can create:
+
+    WAW
+
+
+and potentially:
+
+    WAR
+
+
+problems in an out-of-order processor.
+
+
+Register renaming gives them different physical registers.
+
+
+Example:
+
+    I1 result → P10
+
+    I2 result → P15
+
+
+Instead of both competing for one physical R1.
+
+
+============================================================
+26.30 ARCHITECTURAL VS PHYSICAL REGISTERS
+============================================================
+
+ARCHITECTURAL REGISTER:
+
+    Register visible in the ISA.
+
+
+Example:
+
+    R1
+
+
+PHYSICAL REGISTER:
+
+    Internal hardware storage used by the processor.
+
+
+Example:
+
+    P10
+    P15
+
+
+Mapping:
+
+    R1 → P10
+
+
+Later:
+
+    R1 → P15
+
+
+This enables register renaming.
+
+
+============================================================
+26.31 TRUE VS FALSE DEPENDENCIES
+============================================================
+
+TRUE DEPENDENCY:
+
+    RAW
+
+
+Example:
+
+    I1:
+        R1 = R2 + R3
+
+    I2:
+        R4 = R1 + R5
+
+
+I2 genuinely needs I1's result.
+
+
+FALSE/NAME DEPENDENCIES:
+
+    WAR
+    WAW
+
+
+These arise because instructions reuse the same register
+names.
+
+
+Register renaming can eliminate WAR and WAW.
+
+
+It cannot eliminate a genuine RAW dependency.
+
+
+============================================================
+26.32 SPECULATIVE EXECUTION
+============================================================
+
+Speculative execution means:
+
+    The processor executes instructions before it knows
+    with certainty that those instructions are actually
+    needed.
+
+
+Most commonly:
+
+    Based on branch prediction.
+
+
+Example:
+
+    IF branch predicted TAKEN:
+
+        CPU begins executing instructions from TARGET.
+
+
+If prediction is correct:
+
+    Work is useful.
+
+
+If prediction is wrong:
+
+    Speculative work is discarded.
+
+
+============================================================
+26.33 SPECULATIVE EXECUTION EXAMPLE
+============================================================
+
+Code:
+
+    if (condition)
+        A;
+    else
+        B;
+
+
+CPU does not immediately know the condition.
+
+
+Suppose it predicts:
+
+    condition = TRUE
+
+
+CPU starts executing:
+
+    A
+
+
+If prediction is correct:
+
+    A's work can be retained.
+
+
+If prediction is wrong:
+
+    A's speculative work is discarded.
+
+    CPU executes B.
+
+
+============================================================
+26.34 SPECULATION + BRANCH PREDICTION
+============================================================
+
+These concepts work together:
+
+    Branch Prediction
+            ↓
+    Predict future path
+            ↓
+    Speculative Execution
+            ↓
+    Execute predicted instructions
+            ↓
+       +----+----+
+       |         |
+    Correct    Wrong
+       |         |
+       ↓         ↓
+    Keep      Flush
+    work      work
+
+
+============================================================
+26.35 REORDER BUFFER — BASIC CONCEPT
+============================================================
+
+A Reorder Buffer:
+
+    ROB
+
+helps an out-of-order processor maintain correct program
+order when completing instructions.
+
+
+Example:
+
+    Program order:
+
+        I1
+        I2
+        I3
+
+
+Execution order:
+
+        I2
+        I3
+        I1
+
+
+ROB tracks their status.
+
+
+It allows the processor to:
+
+    • Track instructions
+    • Store results temporarily
+    • Handle exceptions
+    • Commit results in program order
+
+
+------------------------------------------------------------
+26.36 RETIREMENT / COMMIT
+------------------------------------------------------------
+
+After execution:
+
+    Instruction results are not necessarily immediately
+    made architecturally permanent.
+
+
+They can wait until it is safe to commit them.
+
+
+Commit generally follows:
+
+    Program order
+
+
+Example:
+
+    ROB:
+
+        I1
+        I2
+        I3
+
+
+Even if:
+
+    I3 finishes first,
+
+it may wait until:
+
+    I1 and I2 are ready to retire according to the
+    processor's rules.
+
+
+============================================================
+26.37 BASIC OUT-OF-ORDER PROCESSOR FLOW
+============================================================
+
+                 Instruction Fetch
+                         |
+                         ↓
+                    Decode
+                         |
+                         ↓
+                   Register Rename
+                         |
+                         ↓
+                    Dispatch
+                         |
+                         ↓
+                  Issue / Schedule
+                         |
+              +----------+----------+
+              |          |          |
+              ↓          ↓          ↓
+             ALU        FPU       Load/Store
+              |          |          |
+              +----------+----------+
+                         |
+                         ↓
+                       ROB
+                         |
+                         ↓
+                    Commit/Retire
+
+
+This is a simplified conceptual model.
+
+
+============================================================
+26.38 ILP LIMITATIONS
+============================================================
+
+Theoretical ILP may be high.
+
+Actual ILP can be limited by:
+
+    • RAW dependencies
+    • Branches
+    • Cache misses
+    • Memory dependencies
+    • Limited execution units
+    • Limited instruction window
+    • Limited issue width
+    • Pipeline stalls
+
+
+Therefore:
+
+    More hardware does not automatically mean unlimited
+    performance.
+
+
+============================================================
+26.39 DEPENDENCY EXAMPLE
+============================================================
+
+Consider:
+
+    I1: ADD R1, R2, R3
+    I2: SUB R4, R1, R5
+    I3: AND R6, R7, R8
+    I4: OR  R9, R10, R11
+
+
+Dependencies:
+
+    I1 → I2
+
+
+Independent:
+
+    I3
+    I4
+
+
+An advanced processor may:
+
+    Execute I3
+    Execute I4
+
+while:
+
+    I2 waits for I1.
+
+
+This increases resource utilisation.
+
+
+============================================================
+26.40 SUPERSCALAR + OUT-OF-ORDER
+============================================================
+
+These concepts are often combined.
+
+
+SUPERSCALAR:
+
+    Multiple instructions can be issued/executed per cycle.
+
+
+OUT-OF-ORDER:
+
+    Ready independent instructions may execute before
+    earlier stalled instructions.
+
+
+Together:
+
+    Multiple independent instructions
+    +
+    Dynamic scheduling
+    +
+    Multiple execution units
+
+can provide high ILP.
+
+
+============================================================
+26.41 ADVANCED PIPELINE EXAMPLE
+============================================================
+
+Consider:
+
+    I1: LOAD R1, [100]
+    I2: ADD R2, R3, R4
+    I3: SUB R5, R6, R7
+    I4: ADD R8, R1, R9
+
+
+Dependency:
+
+    I1 → I4
+
+
+But:
+
+    I2 and I3 are independent.
+
+
+If I1 experiences a delay:
+
+    I2 → execute
+    I3 → execute
+
+while:
+
+    I1 → waiting
+
+
+I4 must wait for R1.
+
+
+This demonstrates:
+
+    Out-of-order execution
+    +
+    RAW dependency
+    +
+    ILP
+
+
+============================================================
+26.42 PIPELINE HAZARD HANDLING SUMMARY
+============================================================
+
+RAW:
+
+    Main solution:
+        Forwarding
+        Stalling
+
+
+WAR:
+
+    Main advanced solution:
+        Register renaming
+
+
+WAW:
+
+    Main advanced solution:
+        Register renaming
+
+
+CONTROL:
+
+    Main solutions:
+        Branch prediction
+        Speculation
+        Early branch resolution
+        Flushing
+
+
+STRUCTURAL:
+
+    Main solutions:
+        Additional resources
+        Resource scheduling
+        Stalling
+
+
+============================================================
+26.43 PIPELINE PERFORMANCE EQUATION
+============================================================
+
+A useful conceptual model:
+
+    Actual CPI
+
+        =
+    Ideal CPI
+    +
+    Stall cycles per instruction
+
+
+For a simple ideal scalar pipeline:
+
+    Ideal CPI ≈ 1
+
+
+Therefore:
+
+    CPI_actual
+
+        ≈
+
+    1 + pipeline stall contribution
+
+
+Stalls can come from:
+
+    • Data hazards
+    • Branches
+    • Cache misses
+    • Structural conflicts
+
+
+============================================================
+26.44 BRANCH PERFORMANCE
+============================================================
+
+Suppose:
+
+    Branch frequency = 20%
+
+    Misprediction rate = 5%
+
+    Misprediction penalty = 4 cycles
+
+
+Average branch penalty per instruction:
+
+    0.20 × 0.05 × 4
+
+    = 0.04 cycles/instruction
+
+
+If ideal CPI = 1:
+
+    CPI ≈ 1 + 0.04
+
+         = 1.04
+
+
+This shows why branch prediction matters.
+
+
+============================================================
+26.45 NUMERICAL PROBLEM — SUPERSCALAR
+============================================================
+
+Suppose:
+
+    Processor is 4-wide.
+
+Theoretical maximum issue rate:
+
+    4 instructions/cycle.
+
+
+If a program has enough independent instructions and no
+other limitations:
+
+    Maximum IPC ≈ 4
+
+
+where:
+
+    IPC = Instructions Per Cycle
+
+
+If clock frequency:
+
+    2 GHz
+
+
+Then theoretical instruction throughput:
+
+    4 × 2 billion
+
+    = 8 billion instructions/second
+
+
+Important:
+
+    This is an ideal maximum, not a guarantee.
+
+
+============================================================
+26.46 IPC
+============================================================
+
+IPC:
+
+    Instructions Per Cycle
+
+
+Formula:
+
+    IPC = Instructions executed / Number of cycles
+
+
+Example:
+
+    100 instructions
+    50 cycles
+
+
+IPC:
+
+    100 / 50
+
+    = 2
+
+
+Therefore:
+
+    Average IPC = 2
+
+
+Relationship:
+
+    Higher IPC generally means more useful instruction
+    throughput, assuming comparable clock conditions.
+
+
+============================================================
+26.47 CPI VS IPC
+============================================================
+
+CPI:
+
+    Cycles Per Instruction
+
+
+IPC:
+
+    Instructions Per Cycle
+
+
+They are approximately reciprocals when measured consistently:
+
+    IPC ≈ 1 / CPI
+
+
+Example:
+
+    CPI = 2
+
+    IPC ≈ 0.5
+
+
+Example:
+
+    CPI = 0.5
+
+    IPC ≈ 2
+
+
+============================================================
+26.48 DEEP PIPELINING
+============================================================
+
+A deeper pipeline contains more stages.
+
+Example:
+
+    5-stage:
+
+    IF → ID → EX → MEM → WB
+
+
+A deeper pipeline might divide work into many smaller stages:
+
+    IF1 → IF2 → ID1 → ID2 → EX1 → EX2 → MEM1 → MEM2 → WB
+
+
+Advantages:
+
+    • Potentially higher clock frequency
+    • More opportunities for overlap
+
+
+Disadvantages:
+
+    • More pipeline registers
+    • More branch penalty
+    • More complex hazard handling
+    • Greater misprediction cost
+
+
+============================================================
+26.49 PIPELINE DEPTH TRADE-OFF
+============================================================
+
+Shallow pipeline:
+
+    + Simpler
+    + Smaller branch penalty
+    + Easier control
+
+    - Potentially lower clock frequency
+
+
+Deep pipeline:
+
+    + Potentially higher clock frequency
+    + More stages of overlap
+
+    - More complexity
+    - Larger branch penalty
+    - More difficult hazard management
+
+
+Therefore:
+
+    There is no universally optimal pipeline depth.
+
+
+============================================================
+26.50 INSTRUCTION WINDOW
+============================================================
+
+An out-of-order processor may examine a group of instructions
+to find those that are ready to execute.
+
+
+This collection is often called an:
+
+    Instruction Window
+
+
+Larger window:
+
+    More instructions available for analysis.
+
+Potential benefit:
+
+    More opportunities to find independent instructions.
+
+
+But:
+
+    More hardware complexity and power.
+
+
+============================================================
+26.51 EXECUTION UNITS
+============================================================
+
+Modern CPUs can have several execution units.
+
+
+Examples:
+
+    Integer ALU
+    Floating-point unit
+    Load unit
+    Store unit
+    Branch unit
+    Vector unit
+
+
+Example:
+
+    I1 → Integer ALU
+
+    I2 → Floating Point Unit
+
+    I3 → Load Unit
+
+    I4 → Branch Unit
+
+
+Independent operations can execute simultaneously.
+
+
+============================================================
+26.52 ILP VS TLP
+============================================================
+
+ILP:
+
+    Instruction-Level Parallelism
+
+    Parallelism among instructions within a thread.
+
+
+TLP:
+
+    Thread-Level Parallelism
+
+    Parallelism among multiple threads.
+
+
+Example:
+
+    ILP:
+        Execute several independent instructions
+        from one program thread.
+
+
+    TLP:
+        Run Thread A and Thread B simultaneously.
+
+
+Do not confuse them.
+
+
+============================================================
+26.53 ADVANCED PIPELINE MASTER FLOW
+============================================================
+
+                    Instructions
+                         |
+                         ↓
+                      FETCH
+                         |
+                         ↓
+                     PREDICT
+                         |
+                         ↓
+                      DECODE
+                         |
+                         ↓
+                    RENAME
+                         |
+                         ↓
+                    DISPATCH
+                         |
+                         ↓
+                     SCHEDULE
+                         |
+                         ↓
+                +--------+--------+
+                |        |        |
+                ↓        ↓        ↓
+               ALU      FPU    LOAD/STORE
+                |        |        |
+                +--------+--------+
+                         |
+                         ↓
+                       ROB
+                         |
+                         ↓
+                     COMMIT
+
+
+This is a conceptual representation of a modern
+out-of-order superscalar pipeline.
+
+
+============================================================
+26.54 IMPORTANT DIFFERENCES
+============================================================
+
+PIPELINING:
+
+    Overlap stages of multiple instructions.
+
+
+SUPERSCALAR:
+
+    Multiple instructions can be issued/executed per cycle.
+
+
+OUT-OF-ORDER:
+
+    Instructions may execute in an order different from
+    program order when dependencies permit.
+
+
+REGISTER RENAMING:
+
+    Removes false register dependencies.
+
+
+SPECULATIVE EXECUTION:
+
+    Execute predicted instructions before certainty.
+
+
+BRANCH PREDICTION:
+
+    Predict branch outcome.
+
+
+REORDER BUFFER:
+
+    Helps track in-flight instructions and support
+    in-order retirement.
+
+
+ILP:
+
+    Ability to exploit independent instructions.
+
+
+============================================================
+26.55 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    RAW, WAR and WAW are all true data dependencies.
+
+CORRECTION:
+
+    RAW is a true dependency.
+
+    WAR and WAW are name/false dependencies in the usual
+    classification.
+
+
+MISTAKE 2:
+
+    Out-of-order execution means results can be committed
+    randomly.
+
+CORRECTION:
+
+    Execution can occur out of order, while retirement is
+    controlled to preserve correct architectural behaviour.
+
+
+MISTAKE 3:
+
+    Register renaming removes RAW.
+
+CORRECTION:
+
+    Register renaming mainly removes WAR and WAW.
+
+
+MISTAKE 4:
+
+    Branch prediction guarantees correct execution.
+
+CORRECTION:
+
+    It predicts. It can be wrong.
+
+
+MISTAKE 5:
+
+    Superscalar means pipelining is absent.
+
+CORRECTION:
+
+    Superscalar processors generally use pipelines.
+
+
+MISTAKE 6:
+
+    4-wide means exactly 4 instructions complete every cycle.
+
+CORRECTION:
+
+    4-wide means up to 4 instructions can potentially be
+    issued/processed per cycle, subject to many limitations.
+
+
+MISTAKE 7:
+
+    Deeper pipeline always means faster CPU.
+
+CORRECTION:
+
+    Deeper pipelines can increase clock frequency but also
+    increase complexity and branch penalties.
+
+
+============================================================
+26.56 B.TECH QUESTIONS
+============================================================
+
+Q1. Explain RAW, WAR and WAW hazards.
+
+Q2. Differentiate true and false dependencies.
+
+Q3. Explain control hazards.
+
+Q4. What is branch prediction?
+
+Q5. Explain static branch prediction.
+
+Q6. Explain dynamic branch prediction.
+
+Q7. Explain 1-bit branch prediction.
+
+Q8. Explain 2-bit branch prediction.
+
+Q9. What is a Branch Target Buffer?
+
+Q10. Define instruction-level parallelism.
+
+Q11. What is a superscalar processor?
+
+Q12. Explain issue width.
+
+Q13. Explain out-of-order execution.
+
+Q14. What is dynamic scheduling?
+
+Q15. Explain register renaming.
+
+Q16. Differentiate architectural and physical registers.
+
+Q17. What is speculative execution?
+
+Q18. Explain the purpose of a reorder buffer.
+
+Q19. Explain instruction retirement/commit.
+
+Q20. Explain how modern processors exploit ILP.
+
+
+============================================================
+26.57 COMPETITIVE-EXAM QUESTIONS
+============================================================
+
+Q1.
+
+Which hazard represents a true dependency?
+
+    A. WAR
+    B. WAW
+    C. RAW
+    D. Structural
+
+Answer:
+
+    C. RAW
+
+
+Q2.
+
+Which technique primarily eliminates WAR and WAW hazards?
+
+    A. Forwarding
+    B. Register renaming
+    C. Branch prediction
+    D. Stalling
+
+Answer:
+
+    B. Register renaming
+
+
+Q3.
+
+A processor that can issue four instructions per cycle is
+called:
+
+    A. Scalar
+    B. Single-cycle
+    C. 4-wide superscalar
+    D. Non-pipelined
+
+Answer:
+
+    C. 4-wide superscalar
+
+
+Q4.
+
+Which mechanism predicts the target address of branches?
+
+    A. ALU
+    B. BTB
+    C. Register file
+    D. Cache controller
+
+Answer:
+
+    B. BTB
+
+
+Q5.
+
+Which dependency cannot be removed by register renaming?
+
+    A. WAR
+    B. WAW
+    C. RAW
+    D. Name dependency
+
+Answer:
+
+    C. RAW
+
+
+Q6.
+
+A 4-wide processor executes 200 instructions in an ideal
+case. Minimum issue cycles, ignoring pipeline fill/drain,
+are approximately:
+
+    200 / 4
+
+    = 50 cycles
+
+
+Answer:
+
+    50 cycles
+
+
+Q7.
+
+If a branch predictor is wrong, what generally happens?
+
+    Answer:
+
+    Wrong-path instructions are flushed and a branch
+    misprediction penalty is incurred.
+
+
+Q8.
+
+Which technique allows an instruction to execute before an
+older stalled instruction?
+
+    Answer:
+
+    Out-of-order execution, provided dependencies and
+    resource constraints permit it.
+
+
+============================================================
+26.58 QUICK REVISION
+============================================================
+
+ADVANCED PIPELINING
+    ↓
+Improve instruction throughput by exploiting ILP.
+
+
+DATA HAZARDS
+    ↓
+RAW + WAR + WAW
+
+
+RAW
+    ↓
+Read After Write
+    ↓
+True dependency
+
+
+WAR
+    ↓
+Write After Read
+    ↓
+Anti-dependency
+
+
+WAW
+    ↓
+Write After Write
+    ↓
+Output dependency
+
+
+REGISTER RENAMING
+    ↓
+Removes WAR/WAW false dependencies.
+
+
+CONTROL HAZARD
+    ↓
+Branch/jump uncertainty.
+
+
+BRANCH PREDICTION
+    ↓
+Predict branch direction/target.
+
+
+BTB
+    ↓
+Stores branch target information.
+
+
+SPECULATIVE EXECUTION
+    ↓
+Execute predicted instructions early.
+
+
+SUPERSCALAR
+    ↓
+Multiple instructions per cycle.
+
+
+OUT-OF-ORDER
+    ↓
+Execute ready instructions before stalled older ones.
+
+
+DYNAMIC SCHEDULING
+    ↓
+Hardware chooses ready instructions at runtime.
+
+
+ROB
+    ↓
+Tracks instructions and supports correct retirement.
+
+
+ILP
+    ↓
+Instruction-Level Parallelism.
+
+
+IPC
+    ↓
+Instructions Per Cycle.
+
+
+CPI
+    ↓
+Cycles Per Instruction.
+
+
+IDEAL RELATION:
+    IPC ≈ 1/CPI
+
+
+============================================================
+26.59 FINAL MASTER CONCEPT
+============================================================
+
+Basic pipelining says:
+
+    "Overlap instructions."
+
+
+Advanced pipelining says:
+
+    "Find as much independent work as possible and execute it
+     efficiently."
+
+
+The processor tries to do this using:
+
+    Pipelining
+         ↓
+    Branch Prediction
+         ↓
+    Speculation
+         ↓
+    Register Renaming
+         ↓
+    Dynamic Scheduling
+         ↓
+    Out-of-Order Execution
+         ↓
+    Multiple Execution Units
+         ↓
+    Superscalar Issue
+         ↓
+    High Instruction-Level Parallelism
+
+
+The central idea is:
+
+    KEEP THE CPU'S EXECUTION HARDWARE BUSY.
+
+
+============================================================
+CHAPTER 26 COMPLETE
+============================================================

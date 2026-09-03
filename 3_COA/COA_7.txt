@@ -1,0 +1,2274 @@
+============================================================
+CHAPTER 7 — COMBINATIONAL AND SEQUENTIAL CIRCUITS
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner
+
+OBJECTIVE:
+Understand how digital circuits are built using logic gates,
+how arithmetic and data-selection circuits work, and how
+memory can be created using latches, flip-flops, registers,
+and counters.
+
+
+============================================================
+7.1 BIG PICTURE
+============================================================
+
+Digital circuits are mainly divided into two categories:
+
+    1. COMBINATIONAL CIRCUITS
+    2. SEQUENTIAL CIRCUITS
+
+
+COMBINATIONAL:
+
+    Output depends only on PRESENT INPUTS.
+
+        Inputs ───────► Circuit ───────► Output
+
+
+SEQUENTIAL:
+
+    Output depends on:
+
+        PRESENT INPUTS
+              +
+        PREVIOUS STATE
+
+
+        Inputs ───────► Circuit ───────► Output
+                          ▲
+                          │
+                       Memory
+                          │
+                          └──── Previous State
+
+
+Simple rule:
+
+    Combinational = NO MEMORY
+
+    Sequential = MEMORY
+
+
+============================================================
+7.2 COMBINATIONAL CIRCUITS
+============================================================
+
+A combinational circuit is a digital circuit whose output
+depends only on the current input combination.
+
+Mathematically:
+
+    Output = f(Current Inputs)
+
+
+Examples:
+
+    • Half Adder
+    • Full Adder
+    • Half Subtractor
+    • Full Subtractor
+    • Multiplexer
+    • Demultiplexer
+    • Encoder
+    • Decoder
+    • Comparator
+
+
+------------------------------------------------------------
+REAL-WORLD ANALOGY
+------------------------------------------------------------
+
+Imagine a calculator that receives:
+
+    5 + 3
+
+and immediately produces:
+
+    8
+
+Its output is determined by the current inputs.
+
+There is no requirement to remember what happened previously.
+
+
+============================================================
+7.3 SEQUENTIAL CIRCUITS
+============================================================
+
+A sequential circuit has memory.
+
+Its output depends on:
+
+    Current Inputs
+          +
+    Previous State
+
+
+Conceptually:
+
+    Next State = f(Current Input, Present State)
+
+
+Examples:
+
+    • Latches
+    • Flip-flops
+    • Registers
+    • Counters
+
+
+------------------------------------------------------------
+REAL-WORLD ANALOGY
+------------------------------------------------------------
+
+A counter remembers its previous value.
+
+If it currently contains:
+
+    5
+
+and receives a clock pulse:
+
+    5 → 6
+
+It must remember that it was previously 5.
+
+Therefore, it needs memory.
+
+
+============================================================
+7.4 COMBINATIONAL VS SEQUENTIAL
+============================================================
+
+    +----------------------+----------------------+
+    | Combinational        | Sequential           |
+    +----------------------+----------------------+
+    | No memory            | Has memory           |
+    | Current input only   | Input + previous     |
+    |                      | state                |
+    | No feedback required | Feedback commonly    |
+    |                      | used                 |
+    | Usually simpler      | Usually more complex |
+    | Adders               | Registers            |
+    | Multiplexers         | Counters             |
+    | Decoders             | Flip-flops           |
+    +----------------------+----------------------+
+
+
+============================================================
+7.5 HALF ADDER
+============================================================
+
+A half adder adds two 1-bit binary numbers.
+
+Inputs:
+
+    A
+    B
+
+Outputs:
+
+    Sum (S)
+    Carry (C)
+
+
+Block:
+
+        A ─────┐
+               │
+             HALF
+             ADDER ───► S
+               │
+        B ─────┘
+               │
+               └──────► C
+
+
+Binary addition:
+
+    0 + 0 = 00
+    0 + 1 = 01
+    1 + 0 = 01
+    1 + 1 = 10
+
+
+Therefore:
+
+    Sum = A XOR B
+
+    Carry = A AND B
+
+
+Equations:
+
+    S = A ⊕ B
+
+    C = A · B
+
+
+============================================================
+7.6 HALF ADDER TRUTH TABLE
+============================================================
+
+    +---+---+---+---+
+    | A | B | S | C |
+    +---+---+---+---+
+    | 0 | 0 | 0 | 0 |
+    | 0 | 1 | 1 | 0 |
+    | 1 | 0 | 1 | 0 |
+    | 1 | 1 | 0 | 1 |
+    +---+---+---+---+
+
+
+Remember:
+
+    XOR → Sum
+
+    AND → Carry
+
+
+============================================================
+7.7 HALF ADDER CIRCUIT
+============================================================
+
+             ┌─────────┐
+    A ──────►│  XOR    │────► S
+             └─────────┘
+       │
+       │     ┌─────────┐
+       └────►│  AND    │────► C
+       │     └─────────┘
+       │
+    B ───────►
+
+
+Two gates are sufficient:
+
+    1 XOR gate
+    1 AND gate
+
+
+============================================================
+7.8 LIMITATION OF HALF ADDER
+============================================================
+
+A half adder cannot directly handle an incoming carry.
+
+For multi-bit addition, lower-order bits can generate a
+carry that must be added to the next bit.
+
+Therefore we need:
+
+    FULL ADDER
+
+
+============================================================
+7.9 FULL ADDER
+============================================================
+
+A full adder adds THREE 1-bit inputs:
+
+    A
+    B
+    Cin
+
+where:
+
+    Cin = Carry-in
+
+
+Outputs:
+
+    S
+    Cout
+
+
+Block:
+
+        A ─────┐
+        B ─────┼──► FULL ADDER ───► S
+       Cin ────┘                   │
+                                   └──► Cout
+
+
+Equation:
+
+    S = A ⊕ B ⊕ Cin
+
+
+Carry equation:
+
+    Cout = AB + ACin + BCin
+
+
+Alternative:
+
+    Cout = AB + Cin(A ⊕ B)
+
+
+============================================================
+7.10 FULL ADDER TRUTH TABLE
+============================================================
+
+    +---+---+-----+---+------+
+    | A | B | Cin | S | Cout |
+    +---+---+-----+---+------+
+    | 0 | 0 |  0  | 0 |  0   |
+    | 0 | 0 |  1  | 1 |  0   |
+    | 0 | 1 |  0  | 1 |  0   |
+    | 0 | 1 |  1  | 0 |  1   |
+    | 1 | 0 |  0  | 1 |  0   |
+    | 1 | 0 |  1  | 0 |  1   |
+    | 1 | 1 |  0  | 0 |  1   |
+    | 1 | 1 |  1  | 1 |  1   |
+    +---+---+-----+---+------+
+
+
+Important:
+
+    1 + 1 + 1 = 11₂
+
+Therefore:
+
+    Sum = 1
+    Carry = 1
+
+
+============================================================
+7.11 FULL ADDER USING TWO HALF ADDERS
+============================================================
+
+A full adder can be constructed using:
+
+    2 Half Adders
+    +
+    1 OR gate
+
+
+Structure:
+
+              ┌──────────────┐
+    A ───────►│              │
+              │ Half Adder 1 │──► S1
+    B ───────►│              │
+              └──────────────┘
+                     │
+                    C1
+
+    S1 ──────────────┐
+                     ▼
+              ┌──────────────┐
+    Cin ─────►│ Half Adder 2 │──► S
+              └──────────────┘
+                     │
+                    C2
+
+                 C1 ──┐
+                      OR ───► Cout
+                 C2 ──┘
+
+
+Therefore:
+
+    S = A ⊕ B ⊕ Cin
+
+    Cout = C1 + C2
+
+
+============================================================
+7.12 HALF SUBTRACTOR
+============================================================
+
+A half subtractor subtracts one 1-bit number from another.
+
+Inputs:
+
+    A = Minuend
+    B = Subtrahend
+
+Outputs:
+
+    Difference (D)
+    Borrow (Borr)
+
+
+Equation:
+
+    D = A ⊕ B
+
+    Borrow = A'B
+
+
+============================================================
+7.13 HALF SUBTRACTOR TRUTH TABLE
+============================================================
+
+    +---+---+---+--------+
+    | A | B | D | Borrow |
+    +---+---+---+--------+
+    | 0 | 0 | 0 |   0    |
+    | 0 | 1 | 1 |   1    |
+    | 1 | 0 | 1 |   0    |
+    | 1 | 1 | 0 |   0    |
+    +---+---+---+--------+
+
+
+Why:
+
+    0 - 1
+
+requires borrowing.
+
+Therefore:
+
+    Difference = 1
+    Borrow = 1
+
+
+============================================================
+7.14 FULL SUBTRACTOR
+============================================================
+
+A full subtractor subtracts:
+
+    B
+    +
+    Bin
+
+from:
+
+    A
+
+
+Inputs:
+
+    A
+    B
+    Bin = Borrow-in
+
+
+Outputs:
+
+    D = Difference
+    Bout = Borrow-out
+
+
+Difference:
+
+    D = A ⊕ B ⊕ Bin
+
+
+Borrow-out:
+
+    Bout = A'B + A'Bin + BBin
+
+
+============================================================
+7.15 FULL SUBTRACTOR TRUTH TABLE
+============================================================
+
+    +---+---+-----+---+------+
+    | A | B | Bin | D | Bout |
+    +---+---+-----+---+------+
+    | 0 | 0 |  0  | 0 |  0   |
+    | 0 | 0 |  1  | 1 |  1   |
+    | 0 | 1 |  0  | 1 |  1   |
+    | 0 | 1 |  1  | 0 |  1   |
+    | 1 | 0 |  0  | 1 |  0   |
+    | 1 | 0 |  1  | 0 |  0   |
+    | 1 | 1 |  0  | 0 |  0   |
+    | 1 | 1 |  1  | 1 |  1   |
+    +---+---+-----+---+------+
+
+
+============================================================
+7.16 MULTIPLEXER (MUX)
+============================================================
+
+A multiplexer is a:
+
+    DATA SELECTOR
+
+
+It selects one of several input lines and sends the
+selected input to a single output.
+
+
+For a 2-to-1 MUX:
+
+    Inputs:
+        I0
+        I1
+
+    Select:
+        S
+
+    Output:
+        Y
+
+
+Concept:
+
+              I0 ─────┐
+                      │
+              I1 ─────┤ MUX ───► Y
+                      │
+               S ─────┘
+
+
+If:
+
+    S = 0 → Y = I0
+
+    S = 1 → Y = I1
+
+
+Equation:
+
+    Y = S'I0 + SI1
+
+
+============================================================
+7.17 4-TO-1 MULTIPLEXER
+============================================================
+
+Inputs:
+
+    I0
+    I1
+    I2
+    I3
+
+Select lines:
+
+    S1
+    S0
+
+Output:
+
+    Y
+
+
+There are:
+
+    4 inputs
+    2 select lines
+    1 output
+
+
+Because:
+
+    2² = 4
+
+
+Selection table:
+
+    +----+----+--------+
+    | S1 | S0 | Output |
+    +----+----+--------+
+    | 0  | 0  | I0     |
+    | 0  | 1  | I1     |
+    | 1  | 0  | I2     |
+    | 1  | 1  | I3     |
+    +----+----+--------+
+
+
+General rule:
+
+    n select lines
+    → 2^n inputs
+
+
+============================================================
+7.18 DEMULTIPLEXER
+============================================================
+
+A demultiplexer is the opposite of a multiplexer.
+
+MUX:
+
+    MANY INPUTS → ONE OUTPUT
+
+
+DEMUX:
+
+    ONE INPUT → MANY OUTPUTS
+
+
+Example 1-to-4 DEMUX:
+
+             ┌─────────┐
+    Input ──►│  DEMUX  │──► Y0
+             │         │──► Y1
+      S ────►│         │──► Y2
+             └─────────┘──► Y3
+
+
+Only one output is selected at a time.
+
+
+============================================================
+7.19 MUX VS DEMUX
+============================================================
+
+    MUX:
+
+        Many → One
+
+        Data selector
+
+
+    DEMUX:
+
+        One → Many
+
+        Data distributor
+
+
+Memory trick:
+
+    MUX = selects
+
+    DEMUX = distributes
+
+
+============================================================
+7.20 DECODER
+============================================================
+
+A decoder converts:
+
+    n input lines
+
+into:
+
+    2^n output lines
+
+
+For a 2-to-4 decoder:
+
+    Inputs = 2
+
+    Outputs = 4
+
+
+    +----+----+--------+
+    | A  | B  | Active |
+    +----+----+--------+
+    | 0  | 0  | Y0     |
+    | 0  | 1  | Y1     |
+    | 1  | 0  | Y2     |
+    | 1  | 1  | Y3     |
+    +----+----+--------+
+
+
+Only one output is active for each input combination
+in a basic one-hot decoder.
+
+
+============================================================
+7.21 DECODER APPLICATIONS
+============================================================
+
+Decoders are used in:
+
+    • Memory address selection
+    • Instruction decoding
+    • Device selection
+    • Control circuits
+    • Display systems
+
+
+COA connection:
+
+The CPU can use decoding logic to determine which register,
+memory location, or device should respond to a control signal.
+
+
+============================================================
+7.22 ENCODER
+============================================================
+
+An encoder performs the reverse conceptual operation.
+
+It converts:
+
+    2^n input lines
+
+into:
+
+    n output lines
+
+
+Example:
+
+    4-to-2 Encoder
+
+
+    +-------+------+
+    | Input | Code |
+    +-------+------+
+    | I0    | 00   |
+    | I1    | 01   |
+    | I2    | 10   |
+    | I3    | 11   |
+    +-------+------+
+
+
+Basic encoder assumes only one input is active at a time.
+
+
+============================================================
+7.23 PRIORITY ENCODER
+============================================================
+
+Problem with a basic encoder:
+
+What happens if multiple inputs are active?
+
+A priority encoder solves this by assigning priority.
+
+Example:
+
+    I3 > I2 > I1 > I0
+
+
+If I3 and I1 are both active:
+
+    I3 wins.
+
+
+Priority encoders are widely used in interrupt systems.
+
+
+============================================================
+7.24 COMPARATOR
+============================================================
+
+A digital comparator compares two binary numbers.
+
+For two numbers:
+
+    A
+    B
+
+
+It can indicate:
+
+    A > B
+
+    A = B
+
+    A < B
+
+
+For 1-bit values:
+
+    A > B = AB'
+
+    A = B = A'B' + AB
+
+    A < B = A'B
+
+
+============================================================
+7.25 SEQUENTIAL CIRCUITS
+============================================================
+
+Now we move from:
+
+    NO MEMORY
+
+to:
+
+    MEMORY
+
+
+Sequential circuits contain storage elements.
+
+Basic storage elements include:
+
+    • Latches
+    • Flip-flops
+
+
+These can be combined to form:
+
+    • Registers
+    • Counters
+    • Memory structures
+
+
+============================================================
+7.26 LATCH
+============================================================
+
+A latch is a basic storage device.
+
+It can store:
+
+    1 bit
+
+
+A latch is generally:
+
+    LEVEL-SENSITIVE
+
+
+That means its behavior depends on the level of its
+enable/control signal.
+
+
+Concept:
+
+        Input
+          │
+          ▼
+       ┌───────┐
+       │ Latch │
+       └───────┘
+          │
+          ▼
+         Q
+
+
+============================================================
+7.27 FLIP-FLOP
+============================================================
+
+A flip-flop is also a:
+
+    1-bit storage element.
+
+
+A basic distinction:
+
+    Latch:
+        Level-sensitive
+
+
+    Flip-flop:
+        Usually edge-triggered
+
+
+A flip-flop changes state in response to a clock edge.
+
+
+Clock:
+
+    ────┐    ┌────
+        └────┘
+        ↑
+      Edge
+
+
+Two common clock edges:
+
+    Rising edge:
+        0 → 1
+
+
+    Falling edge:
+        1 → 0
+
+
+============================================================
+7.28 SR LATCH / SR FLIP-FLOP
+============================================================
+
+SR means:
+
+    S = Set
+    R = Reset
+
+
+Basic idea:
+
+    S = 1 → Set Q to 1
+
+    R = 1 → Reset Q to 0
+
+
+For a basic NOR-based SR latch:
+
+    +---+---+---+
+    | S | R | Q |
+    +---+---+---+
+    | 0 | 0 | Hold
+    | 0 | 1 |  0
+    | 1 | 0 |  1
+    | 1 | 1 | Invalid
+    +---+---+---+
+
+
+The exact behavior depends on the implementation
+(e.g., NOR vs NAND), so always check the circuit convention.
+
+
+============================================================
+7.29 SR FLIP-FLOP PROBLEM
+============================================================
+
+For the common NOR-based active-high SR latch:
+
+    S = 1, R = 1
+
+is an invalid condition.
+
+
+Why?
+
+Both outputs can be forced toward the same state, violating
+the desired complementary relationship:
+
+    Q' = NOT Q
+
+
+This undesirable condition motivated improved designs such as:
+
+    JK flip-flop
+
+
+============================================================
+7.30 D FLIP-FLOP
+============================================================
+
+D means:
+
+    DATA
+
+
+A D flip-flop has:
+
+    D input
+    Clock
+    Q output
+
+
+At the active clock edge:
+
+    Q(next) = D
+
+
+Concept:
+
+        D ─────►┌─────────┐
+                │ D Flip  │──► Q
+       CLK ────►│  Flop   │
+                └─────────┘
+
+
+Truth table at active clock edge:
+
+    +---+----------+
+    | D | Q(next)  |
+    +---+----------+
+    | 0 |    0     |
+    | 1 |    1     |
+    +---+----------+
+
+
+Therefore:
+
+    Q(next) = D
+
+
+D flip-flops are extremely important for:
+
+    • Registers
+    • Pipelines
+    • CPU state storage
+    • Memory elements
+
+
+============================================================
+7.31 JK FLIP-FLOP
+============================================================
+
+JK flip-flop improves the SR design.
+
+Inputs:
+
+    J
+    K
+
+
+Behavior:
+
+    +---+---+----------+
+    | J | K | Q(next)  |
+    +---+---+----------+
+    | 0 | 0 | Q        |
+    | 0 | 1 | 0        |
+    | 1 | 0 | 1        |
+    | 1 | 1 | Q'       |
+    +---+---+----------+
+
+
+The important case:
+
+    J = 1
+    K = 1
+
+causes:
+
+    TOGGLE
+
+
+Therefore:
+
+    0 → 1
+
+    1 → 0
+
+
+============================================================
+7.32 T FLIP-FLOP
+============================================================
+
+T means:
+
+    TOGGLE
+
+
+Inputs:
+
+    T
+
+
+Behavior:
+
+    +---+----------+
+    | T | Q(next)  |
+    +---+----------+
+    | 0 | Q        |
+    | 1 | Q'       |
+    +---+----------+
+
+
+Therefore:
+
+    T = 0 → Hold
+
+    T = 1 → Toggle
+
+
+T flip-flops are especially useful in:
+
+    • Counters
+    • Frequency division
+
+
+============================================================
+7.33 FLIP-FLOP COMPARISON
+============================================================
+
+    +------+---------------------------+
+    | Type | Main operation            |
+    +------+---------------------------+
+    | SR   | Set / Reset               |
+    | D    | Store Data                |
+    | JK   | Set / Reset / Toggle      |
+    | T    | Toggle                    |
+    +------+---------------------------+
+
+
+Easy memory trick:
+
+    D → Data
+
+    T → Toggle
+
+    J/K → Improved Set/Reset
+
+
+============================================================
+7.34 CHARACTERISTIC EQUATIONS
+============================================================
+
+D:
+
+    Q(next) = D
+
+
+T:
+
+    Q(next) = T ⊕ Q
+
+
+JK:
+
+    Q(next) = JQ' + K'Q
+
+
+SR:
+
+    Q(next) = S + R'Q
+
+for the appropriate valid-input convention.
+
+
+============================================================
+7.35 REGISTERS
+============================================================
+
+A register is a group of flip-flops used to store multiple
+bits.
+
+If:
+
+    1 flip-flop → 1 bit
+
+
+Then:
+
+    8 flip-flops → 8-bit register
+
+    32 flip-flops → 32-bit register
+
+    64 flip-flops → 64-bit register
+
+
+Concept:
+
+    D0 ─►┌───┐
+    D1 ─►│FF │
+    D2 ─►│FF │
+    D3 ─►│FF │
+         └───┘
+
+Each flip-flop stores one bit.
+
+
+============================================================
+7.36 CPU REGISTERS
+============================================================
+
+Registers are critical inside the CPU.
+
+Examples:
+
+    • Program Counter (PC)
+    • Instruction Register (IR)
+    • Accumulator
+    • General-purpose registers
+    • Status register
+    • Stack Pointer
+
+
+The register file in a processor may contain many
+general-purpose registers.
+
+
+============================================================
+7.37 SHIFT REGISTER
+============================================================
+
+A shift register is a register that can move stored bits
+left or right.
+
+Example:
+
+    1011
+
+
+Shift right:
+
+    0101
+
+
+Shift left:
+
+    0110
+
+depending on the inserted bit.
+
+
+Concept:
+
+    ┌───┐   ┌───┐   ┌───┐   ┌───┐
+    │FF │→  │FF │→  │FF │→  │FF │
+    └───┘   └───┘   └───┘   └───┘
+
+
+A common clock drives all stages.
+
+
+============================================================
+7.38 SERIAL TRANSFER
+============================================================
+
+Serial transfer sends data:
+
+    ONE BIT AT A TIME
+
+
+Example:
+
+    1011
+
+Transmission:
+
+    1 → 0 → 1 → 1
+
+
+Advantages:
+
+    • Fewer wires
+    • Useful for long-distance communication
+
+
+Disadvantage:
+
+    • Generally slower than transferring multiple bits
+      simultaneously for the same clock rate.
+
+
+============================================================
+7.39 PARALLEL TRANSFER
+============================================================
+
+Parallel transfer sends multiple bits simultaneously.
+
+Example:
+
+    1011
+
+Four bits can be transferred at once:
+
+    1
+    0
+    1
+    1
+
+
+Concept:
+
+    D3 ─────────►
+    D2 ─────────►
+    D1 ─────────► Register
+    D0 ─────────►
+
+
+Advantages:
+
+    • High data transfer per operation
+
+
+Disadvantage:
+
+    • Requires more signal lines
+
+
+============================================================
+7.40 SERIAL VS PARALLEL
+============================================================
+
+    +----------------+----------------+
+    | Serial         | Parallel       |
+    +----------------+----------------+
+    | One bit at     | Multiple bits  |
+    | a time         | at once        |
+    | Fewer wires    | More wires     |
+    | Simple wiring  | More hardware  |
+    +----------------+----------------+
+
+
+============================================================
+7.41 TYPES OF SHIFT REGISTERS
+============================================================
+
+Common types:
+
+    SISO
+    SIPO
+    PISO
+    PIPO
+
+
+Meaning:
+
+    SISO = Serial In, Serial Out
+
+    SIPO = Serial In, Parallel Out
+
+    PISO = Parallel In, Serial Out
+
+    PIPO = Parallel In, Parallel Out
+
+
+------------------------------------------------------------
+SISO
+------------------------------------------------------------
+
+Serial input:
+
+    one bit at a time
+
+Serial output:
+
+    one bit at a time
+
+
+------------------------------------------------------------
+SIPO
+------------------------------------------------------------
+
+Serial input:
+
+    one bit at a time
+
+Parallel output:
+
+    multiple bits available simultaneously
+
+
+Useful for:
+
+    Serial-to-parallel conversion
+
+
+------------------------------------------------------------
+PISO
+------------------------------------------------------------
+
+Parallel input:
+
+    multiple bits loaded at once
+
+Serial output:
+
+    bits shifted out sequentially
+
+
+Useful for:
+
+    Parallel-to-serial conversion
+
+
+------------------------------------------------------------
+PIPO
+------------------------------------------------------------
+
+Parallel input:
+
+    multiple bits
+
+Parallel output:
+
+    multiple bits
+
+
+============================================================
+7.42 COUNTER
+============================================================
+
+A counter is a sequential circuit that goes through a
+predetermined sequence of states.
+
+Example 2-bit binary counter:
+
+    00
+    01
+    10
+    11
+    00
+    ...
+
+
+It uses flip-flops and clock signals.
+
+
+============================================================
+7.43 2-BIT COUNTER
+============================================================
+
+A 2-bit binary counter has:
+
+    2 flip-flops
+
+
+Number of states:
+
+    2² = 4
+
+
+Sequence:
+
+    00 → 01 → 10 → 11 → 00 → ...
+
+
+A counter with n flip-flops can represent up to:
+
+    2^n states
+
+
+============================================================
+7.44 UP COUNTER
+============================================================
+
+An up counter counts upward.
+
+Example:
+
+    000
+    001
+    010
+    011
+    100
+    101
+    110
+    111
+    000...
+
+
+Decimal:
+
+    0
+    1
+    2
+    3
+    4
+    5
+    6
+    7
+    0...
+
+
+============================================================
+7.45 DOWN COUNTER
+============================================================
+
+A down counter counts downward.
+
+Example:
+
+    111
+    110
+    101
+    100
+    011
+    010
+    001
+    000
+    111...
+
+
+Decimal:
+
+    7
+    6
+    5
+    4
+    3
+    2
+    1
+    0
+    7...
+
+
+============================================================
+7.46 ASYNCHRONOUS COUNTER
+============================================================
+
+Also called:
+
+    Ripple Counter
+
+
+In an asynchronous counter, the clock is not applied
+simultaneously to every flip-flop.
+
+Instead:
+
+    First FF receives clock.
+          ↓
+    Second FF triggered by first FF.
+          ↓
+    Third FF triggered by second FF.
+
+
+Concept:
+
+    CLK → FF0 → FF1 → FF2 → FF3
+
+
+The state change "ripples" through the flip-flops.
+
+
+ADVANTAGE:
+
+    Simple design
+
+
+DISADVANTAGE:
+
+    Propagation delay accumulates.
+
+
+============================================================
+7.47 SYNCHRONOUS COUNTER
+============================================================
+
+In a synchronous counter:
+
+    All flip-flops receive the same clock.
+
+
+Concept:
+
+            ┌──► FF0
+    CLK ────┼──► FF1
+            ├──► FF2
+            └──► FF3
+
+
+Advantages:
+
+    • Faster
+    • Better timing control
+    • Less ripple delay
+
+
+Disadvantage:
+
+    More complex logic may be required.
+
+
+============================================================
+7.48 ASYNCHRONOUS VS SYNCHRONOUS
+============================================================
+
+    +----------------------+----------------------+
+    | Asynchronous         | Synchronous          |
+    +----------------------+----------------------+
+    | Ripple counter       | Common clock         |
+    | Clock ripples        | All FFs clocked      |
+    | Simpler              | More complex         |
+    | Slower               | Faster               |
+    | Propagation delay    | Better timing        |
+    +----------------------+----------------------+
+
+
+============================================================
+7.49 HOW ADDERS ARE USED INSIDE ALU
+============================================================
+
+The Arithmetic Logic Unit (ALU) performs operations such as:
+
+    Addition
+    Subtraction
+    AND
+    OR
+    XOR
+    Comparisons
+    Shifts
+
+
+Adders are fundamental building blocks of the arithmetic
+section.
+
+Example:
+
+    A + B
+
+can be implemented using a chain of full adders.
+
+
+For an n-bit adder:
+
+    n full-adder stages
+
+
+Example 4-bit:
+
+    A3 A2 A1 A0
+    +
+    B3 B2 B1 B0
+
+    ↓
+
+    FA3 FA2 FA1 FA0
+
+
+============================================================
+7.50 HOW FLIP-FLOPS FORM REGISTERS
+============================================================
+
+One flip-flop:
+
+    Stores 1 bit
+
+
+Multiple flip-flops:
+
+    Store multiple bits
+
+
+Therefore:
+
+    32 flip-flops
+         ↓
+    32-bit register
+
+
+CPU registers are essentially groups of storage elements
+combined with control logic.
+
+
+============================================================
+7.51 HOW REGISTERS STORE CPU STATE
+============================================================
+
+The CPU must remember information such as:
+
+    • Current instruction
+    • Next instruction address
+    • Intermediate results
+    • Status flags
+    • Operands
+
+
+Registers provide very fast storage for this information.
+
+
+Example:
+
+    PC = address of next instruction
+
+    IR = currently executing instruction
+
+
+Therefore, registers are essential to CPU operation.
+
+
+============================================================
+7.52 HOW DIGITAL CIRCUITS IMPLEMENT COMPUTER HARDWARE
+============================================================
+
+At the lowest level, computers are built from electronic
+digital circuits.
+
+Hierarchy:
+
+    Transistors
+         ↓
+    Logic Gates
+         ↓
+    Combinational / Sequential Circuits
+         ↓
+    Adders / Multiplexers / Registers
+         ↓
+    ALU / Datapath / Control Unit
+         ↓
+    CPU
+         ↓
+    Complete Computer
+
+
+This is one of the most important COA connections.
+
+
+============================================================
+7.53 COMPLETE COA CONNECTION
+============================================================
+
+                COMPUTER
+                    │
+                    ▼
+                   CPU
+                    │
+          ┌─────────┴─────────┐
+          │                   │
+         ALU              Control Unit
+          │                   │
+          │                   │
+       Adders              Control Signals
+          │
+          ▼
+      Registers
+          │
+          ▼
+      Flip-Flops
+          │
+          ▼
+      Digital Logic
+          │
+          ▼
+        Gates
+          │
+          ▼
+      Transistors
+
+
+Therefore:
+
+    Gates → Circuits → CPU components → CPU
+
+
+============================================================
+7.54 IMPORTANT FORMULAS
+============================================================
+
+HALF ADDER:
+
+    Sum = A ⊕ B
+
+    Carry = AB
+
+
+FULL ADDER:
+
+    Sum = A ⊕ B ⊕ Cin
+
+    Cout = AB + ACin + BCin
+
+
+HALF SUBTRACTOR:
+
+    Difference = A ⊕ B
+
+    Borrow = A'B
+
+
+FULL SUBTRACTOR:
+
+    Difference = A ⊕ B ⊕ Bin
+
+    Bout = A'B + A'Bin + BBin
+
+
+MUX:
+
+    n select lines
+    → 2^n inputs
+
+
+DECODER:
+
+    n inputs
+    → 2^n outputs
+
+
+REGISTER:
+
+    n flip-flops
+    → n-bit storage
+
+
+COUNTER:
+
+    n flip-flops
+    → up to 2^n states
+
+
+============================================================
+7.55 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    Confusing MUX and DEMUX.
+
+CORRECT:
+
+    MUX:
+        Many → One
+
+    DEMUX:
+        One → Many
+
+
+MISTAKE 2:
+
+    Confusing encoder and decoder.
+
+CORRECT:
+
+    Encoder:
+        Many inputs → fewer coded outputs
+
+    Decoder:
+        Coded inputs → many outputs
+
+
+MISTAKE 3:
+
+    Thinking a half adder handles carry-in.
+
+CORRECT:
+
+    Full adder handles carry-in.
+
+
+MISTAKE 4:
+
+    Confusing latch and flip-flop.
+
+BASIC DISTINCTION:
+
+    Latch → level-sensitive
+
+    Flip-flop → edge-triggered
+
+
+MISTAKE 5:
+
+    Thinking a register stores only one bit.
+
+CORRECT:
+
+    One flip-flop → one bit
+
+    n flip-flops → n bits
+
+
+MISTAKE 6:
+
+    Thinking asynchronous means "without a clock."
+
+CORRECT:
+
+    An asynchronous/ripple counter still operates with
+    clocking, but the clock does not reach all flip-flops
+    simultaneously.
+
+
+MISTAKE 7:
+
+    Confusing serial and parallel transfer.
+
+    Serial:
+        One bit at a time
+
+    Parallel:
+        Multiple bits simultaneously
+
+
+============================================================
+7.56 B.TECH IMPORTANT QUESTIONS
+============================================================
+
+1. Define combinational circuit.
+
+2. Define sequential circuit.
+
+3. Differentiate combinational and sequential circuits.
+
+4. Explain half adder with truth table and circuit.
+
+5. Explain full adder with truth table.
+
+6. Derive the full-adder equations.
+
+7. Implement a full adder using two half adders.
+
+8. Explain half subtractor.
+
+9. Explain full subtractor.
+
+10. Explain multiplexer.
+
+11. Explain 2-to-1 MUX.
+
+12. Explain 4-to-1 MUX.
+
+13. Derive the output equation of a MUX.
+
+14. Explain demultiplexer.
+
+15. Differentiate MUX and DEMUX.
+
+16. Explain encoder.
+
+17. Explain priority encoder.
+
+18. Explain decoder.
+
+19. Differentiate encoder and decoder.
+
+20. Explain digital comparator.
+
+21. What is a latch?
+
+22. What is a flip-flop?
+
+23. Differentiate latch and flip-flop.
+
+24. Explain SR flip-flop.
+
+25. Explain D flip-flop.
+
+26. Explain JK flip-flop.
+
+27. Explain T flip-flop.
+
+28. Compare SR, JK, D and T flip-flops.
+
+29. Explain registers.
+
+30. Explain shift registers.
+
+31. Explain SISO, SIPO, PISO and PIPO.
+
+32. Explain serial and parallel transfer.
+
+33. Explain counters.
+
+34. Explain asynchronous counter.
+
+35. Explain synchronous counter.
+
+36. Differentiate synchronous and asynchronous counters.
+
+37. Explain the role of adders in ALU.
+
+38. Explain how flip-flops form registers.
+
+39. Explain how digital circuits build a CPU.
+
+
+============================================================
+7.57 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. A combinational circuit depends on:
+
+A. Present input only
+B. Previous state only
+C. Clock only
+D. Previous input only
+
+
+Q2. A sequential circuit contains:
+
+A. No memory
+B. Memory
+C. Only AND gates
+D. Only OR gates
+
+
+Q3. The sum output of a half adder is:
+
+A. A + B
+B. AB
+C. A ⊕ B
+D. A'B
+
+
+Q4. The carry output of a half adder is:
+
+A. A ⊕ B
+B. AB
+C. A + B
+D. A'B
+
+
+Q5. A full adder has:
+
+A. 2 inputs and 1 output
+B. 2 inputs and 2 outputs
+C. 3 inputs and 2 outputs
+D. 3 inputs and 3 outputs
+
+
+Q6. A multiplexer is a:
+
+A. Data distributor
+B. Data selector
+C. Counter
+D. Memory device
+
+
+Q7. A 4-to-1 MUX requires:
+
+A. 1 select line
+B. 2 select lines
+C. 3 select lines
+D. 4 select lines
+
+
+Q8. A decoder with n input lines generally has:
+
+A. n outputs
+B. n² outputs
+C. 2n outputs
+D. 2^n outputs
+
+
+Q9. A D flip-flop is primarily used to:
+
+A. Store one bit
+B. Add two numbers
+C. Decode addresses
+D. Select data
+
+
+Q10. When J = K = 1, a JK flip-flop:
+
+A. Holds
+B. Resets
+C. Sets
+D. Toggles
+
+
+Q11. When T = 0, a T flip-flop:
+
+A. Toggles
+B. Holds its state
+C. Resets
+D. Sets
+
+
+Q12. An 8-bit register requires:
+
+A. 4 flip-flops
+B. 8 flip-flops
+C. 16 flip-flops
+D. 64 flip-flops
+
+
+Q13. A counter with 4 flip-flops can have:
+
+A. 4 states
+B. 8 states
+C. 16 states
+D. 32 states
+
+
+Q14. In a ripple counter:
+
+A. All flip-flops receive the clock simultaneously
+B. Clock propagates through flip-flops
+C. There is no clock
+D. Only combinational logic is used
+
+
+Q15. In a synchronous counter:
+
+A. Every flip-flop receives the same clock
+B. No flip-flop receives a clock
+C. Clock is randomly applied
+D. Only the last flip-flop receives the clock
+
+
+ANSWERS:
+
+    Q1  → A
+    Q2  → B
+    Q3  → C
+    Q4  → B
+    Q5  → C
+    Q6  → B
+    Q7  → B
+    Q8  → D
+    Q9  → A
+    Q10 → D
+    Q11 → B
+    Q12 → B
+    Q13 → C
+    Q14 → B
+    Q15 → A
+
+
+============================================================
+7.58 QUICK REVISION
+============================================================
+
+COMBINATIONAL:
+
+    Output = Present Inputs
+
+
+SEQUENTIAL:
+
+    Output = Present Inputs + Previous State
+
+
+HALF ADDER:
+
+    S = A ⊕ B
+    C = AB
+
+
+FULL ADDER:
+
+    S = A ⊕ B ⊕ Cin
+
+    Cout = AB + ACin + BCin
+
+
+HALF SUBTRACTOR:
+
+    D = A ⊕ B
+
+    Borrow = A'B
+
+
+FULL SUBTRACTOR:
+
+    D = A ⊕ B ⊕ Bin
+
+
+MUX:
+
+    Many → One
+
+    Data selector
+
+
+DEMUX:
+
+    One → Many
+
+    Data distributor
+
+
+ENCODER:
+
+    2^n → n
+
+
+DECODER:
+
+    n → 2^n
+
+
+LATCH:
+
+    Level-sensitive
+
+
+FLIP-FLOP:
+
+    Edge-triggered storage element
+
+
+D FLIP-FLOP:
+
+    Q(next) = D
+
+
+JK:
+
+    J = K = 1 → Toggle
+
+
+T:
+
+    T = 1 → Toggle
+    T = 0 → Hold
+
+
+REGISTER:
+
+    Group of flip-flops
+
+
+SHIFT REGISTER:
+
+    Moves bits left/right
+
+
+SERIAL:
+
+    One bit at a time
+
+
+PARALLEL:
+
+    Multiple bits at once
+
+
+COUNTER:
+
+    Sequential circuit that follows a state sequence
+
+
+ASYNCHRONOUS COUNTER:
+
+    Ripple clocking
+
+
+SYNCHRONOUS COUNTER:
+
+    Common clock
+
+
+============================================================
+7.59 MASTER CHECKPOINT
+============================================================
+
+Before considering Chapter 7 mastered:
+
+[ ] Explain combinational circuits.
+[ ] Explain sequential circuits.
+[ ] Differentiate both.
+[ ] Solve half-adder problems.
+[ ] Solve full-adder problems.
+[ ] Solve half-subtractor problems.
+[ ] Solve full-subtractor problems.
+[ ] Explain MUX.
+[ ] Solve MUX selection problems.
+[ ] Explain DEMUX.
+[ ] Explain encoder.
+[ ] Explain priority encoder.
+[ ] Explain decoder.
+[ ] Explain comparator.
+[ ] Explain latch.
+[ ] Explain flip-flop.
+[ ] Explain SR flip-flop.
+[ ] Explain JK flip-flop.
+[ ] Explain D flip-flop.
+[ ] Explain T flip-flop.
+[ ] Compare flip-flops.
+[ ] Explain registers.
+[ ] Explain shift registers.
+[ ] Explain serial transfer.
+[ ] Explain parallel transfer.
+[ ] Explain counters.
+[ ] Explain asynchronous counters.
+[ ] Explain synchronous counters.
+[ ] Explain the connection between adders and ALU.
+[ ] Explain the connection between flip-flops and registers.
+[ ] Explain how digital circuits build CPU hardware.
+
+
+============================================================
+END OF CHAPTER 7
+============================================================
+
+NEXT:
+
+CHAPTER 8 — BASIC COMPUTER ORGANISATION
+
+    8.1 Functional Units
+        • Input
+        • Output
+        • Memory
+        • ALU
+        • Control Unit
+        • CPU
+
+    8.2 CPU Components
+        • ALU
+        • Control Unit
+        • Registers
+        • Internal buses
+
+    8.3 System Bus
+        • Address bus
+        • Data bus
+        • Control bus
+
+    8.4 Bus Characteristics
+        • Bus width
+        • Data transfer rate
+        • Bus arbitration
+        • Synchronous bus
+        • Asynchronous bus
+============================================================

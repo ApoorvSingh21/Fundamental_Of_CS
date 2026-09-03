@@ -1,0 +1,2481 @@
+============================================================
+CHAPTER 5 — FLOATING-POINT REPRESENTATION
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner
+
+CHAPTER GOAL:
+Understand how computers represent very large, very small,
+and fractional real numbers using floating-point notation.
+
+You will learn:
+
+    • Why floating point is needed
+    • Integer limitations
+    • Fractional numbers
+    • Scientific notation
+    • Floating-point representation
+    • Sign
+    • Significand / Mantissa
+    • Exponent
+    • Base
+    • Normalization
+    • IEEE 754
+    • Single precision
+    • Double precision
+    • Sign bit
+    • Exponent field
+    • Fraction field
+    • Bias
+    • Special values
+    • Zero
+    • Positive infinity
+    • Negative infinity
+    • NaN
+    • Subnormal numbers
+    • Precision
+    • Rounding
+    • Overflow
+    • Underflow
+    • Floating-point errors
+    • Numerical examples
+    • B.Tech questions
+    • Competitive questions
+
+
+============================================================
+5.1 WHY DO WE NEED FLOATING-POINT REPRESENTATION?
+============================================================
+
+Computers need to represent many types of numbers.
+
+Examples:
+
+    25
+    -100
+    3.14
+    0.001
+    123456789
+    0.00000000045
+
+Integers are relatively easy to represent using binary.
+
+But fractional numbers create a problem.
+
+Example:
+
+    3.14
+
+Binary computers cannot generally represent every decimal
+fraction exactly using a finite number of bits.
+
+Also, numbers may be extremely large or extremely small.
+
+Examples:
+
+    Earth's mass:
+        approximately 5.97 × 10²⁴ kg
+
+    Electron mass:
+        approximately 9.11 × 10⁻³¹ kg
+
+
+A fixed-size integer representation cannot conveniently
+represent both.
+
+Therefore computers use:
+
+    FLOATING-POINT REPRESENTATION
+
+
+============================================================
+5.2 INTEGER LIMITATION
+============================================================
+
+Suppose we use 8 bits for an unsigned integer.
+
+Maximum:
+
+    11111111₂
+    = 255
+
+
+Therefore, values such as:
+
+    1000
+    50000
+    10⁹
+
+cannot be represented using an 8-bit unsigned integer.
+
+
+What about fractions?
+
+An integer representation cannot directly represent:
+
+    3.14
+    0.5
+    0.125
+    0.001
+
+
+Floating point solves this by separating a number into
+different parts.
+
+
+============================================================
+5.3 FIXED-POINT VS FLOATING-POINT
+============================================================
+
+FIXED-POINT:
+
+The decimal/binary point has a fixed position.
+
+Example:
+
+    123.45
+
+
+Suppose we always reserve:
+
+    2 digits after decimal point.
+
+Then:
+
+    123.45
+    456.78
+    12.34
+
+
+But this is less flexible.
+
+------------------------------------------------------------
+
+FLOATING-POINT:
+
+The position of the point can effectively move.
+
+Example:
+
+    12345.6
+
+can be represented as:
+
+    1.23456 × 10⁴
+
+
+And:
+
+    0.000123456
+
+can be represented as:
+
+    1.23456 × 10⁻⁴
+
+
+The point "floats" depending on the exponent.
+
+
+============================================================
+5.4 SCIENTIFIC NOTATION
+============================================================
+
+Floating-point representation is closely related to
+scientific notation.
+
+General form:
+
+    Number = Significand × Base^Exponent
+
+
+For decimal:
+
+    6.25 × 10³
+
+
+Here:
+
+    Significand = 6.25
+    Base       = 10
+    Exponent   = 3
+
+
+Another example:
+
+    6.25 × 10⁻³
+
+
+Here:
+
+    Significand = 6.25
+    Base       = 10
+    Exponent   = -3
+
+
+============================================================
+5.5 BINARY SCIENTIFIC NOTATION
+============================================================
+
+Computers use base 2.
+
+Therefore:
+
+    Number = Significand × 2^Exponent
+
+
+Example:
+
+    101.101₂
+
+
+Move the binary point until only one digit remains
+to the left of the point:
+
+    1.01101₂ × 2²
+
+
+Therefore:
+
+    101.101₂
+    =
+    1.01101₂ × 2²
+
+
+This is the basic idea behind normalized floating point.
+
+
+============================================================
+5.6 MAIN PARTS OF A FLOATING-POINT NUMBER
+============================================================
+
+A floating-point number can be viewed as:
+
+    SIGN × SIGNIFICAND × BASE^EXPONENT
+
+
+Conceptually:
+
+    +-----------------------------+
+    | Sign | Significand | Exp.   |
+    +-----------------------------+
+
+
+The three important concepts are:
+
+    1. Sign
+    2. Significand
+    3. Exponent
+
+
+The base is usually implied by the format.
+
+
+============================================================
+5.7 SIGN
+============================================================
+
+The sign indicates whether the number is positive or
+negative.
+
+Typically:
+
+    Sign bit = 0 → Positive
+
+    Sign bit = 1 → Negative
+
+
+Example:
+
+    +5.5
+
+    Sign = 0
+
+
+    -5.5
+
+    Sign = 1
+
+
+IMPORTANT:
+
+The sign bit does not usually store '+' or '-'.
+
+It stores:
+
+    0 or 1
+
+
+============================================================
+5.8 SIGNIFICAND
+============================================================
+
+The significand contains the significant digits of the
+number.
+
+It is also commonly called:
+
+    Mantissa
+
+
+Modern terminology prefers:
+
+    SIGNIFICAND
+
+
+Example:
+
+    6.25 × 10³
+
+Here:
+
+    6.25 = significand
+
+
+In binary:
+
+    1.101 × 2²
+
+Here:
+
+    1.101 = significand
+
+
+============================================================
+5.9 EXPONENT
+============================================================
+
+The exponent tells us how far the radix point has been
+shifted.
+
+Example:
+
+    1.101 × 2³
+
+
+Exponent:
+
+    3
+
+
+Example:
+
+    1.101 × 2⁻³
+
+
+Exponent:
+
+    -3
+
+
+The exponent allows floating-point representation to cover
+a very large range of values.
+
+
+============================================================
+5.10 BASE
+============================================================
+
+The base is the radix used by the representation.
+
+Decimal scientific notation:
+
+    Base = 10
+
+
+Computer binary floating point:
+
+    Base = 2
+
+
+Example:
+
+    1.101 × 2⁴
+
+
+The base is often implicit in IEEE 754.
+
+You do not store a separate "base field" in an IEEE 754
+floating-point number.
+
+
+============================================================
+5.11 NORMALIZATION
+============================================================
+
+Normalization means representing a number in a standard
+form.
+
+For binary normalized numbers, the significand is generally:
+
+    1.xxxxx × 2^E
+
+
+Example:
+
+    101.101₂
+
+Move binary point left:
+
+    1.01101₂ × 2²
+
+
+Therefore:
+
+    101.101₂
+    =
+    1.01101₂ × 2²
+
+
+Another example:
+
+    0.001101₂
+
+Move point right:
+
+    1.101₂ × 2⁻³
+
+
+Therefore:
+
+    0.001101₂
+    =
+    1.101₂ × 2⁻³
+
+
+============================================================
+5.12 WHY NORMALIZATION IS IMPORTANT
+============================================================
+
+Normalization provides a standard representation.
+
+For a nonzero binary number:
+
+    1.xxxxx × 2^E
+
+
+Because the first digit is always 1, IEEE 754 can exploit
+this fact in normalized numbers.
+
+This leads to an important concept:
+
+    HIDDEN / IMPLIED LEADING 1
+
+
+For normal IEEE 754 binary numbers, the leading 1 is not
+stored explicitly in the fraction field.
+
+
+============================================================
+5.13 IEEE 754
+============================================================
+
+IEEE 754 is a widely used standard for floating-point
+arithmetic.
+
+It defines formats and rules for:
+
+    • Floating-point representation
+    • Arithmetic
+    • Rounding
+    • Infinity
+    • NaN
+    • Zero
+    • Subnormal numbers
+
+
+The two most important formats are:
+
+    Single precision
+    Double precision
+
+
+============================================================
+5.14 IEEE 754 SINGLE PRECISION
+============================================================
+
+Single precision uses:
+
+    32 bits
+
+
+Structure:
+
+    +-----+----------+-----------------------+
+    |  S  | Exponent |       Fraction        |
+    | 1   |  8 bits  |        23 bits        |
+    +-----+----------+-----------------------+
+
+
+Therefore:
+
+    Sign     = 1 bit
+    Exponent = 8 bits
+    Fraction = 23 bits
+
+Total:
+
+    1 + 8 + 23 = 32 bits
+
+
+IMPORTANT:
+
+    The fraction field has 23 stored bits.
+
+For normalized numbers, there is an implied leading:
+
+    1
+
+
+Therefore the significand effectively has:
+
+    24 bits of precision
+
+
+============================================================
+5.15 IEEE 754 DOUBLE PRECISION
+============================================================
+
+Double precision uses:
+
+    64 bits
+
+
+Structure:
+
+    +-----+-------------+--------------------------+
+    |  S  |  Exponent   |        Fraction          |
+    | 1   |   11 bits   |         52 bits          |
+    +-----+-------------+--------------------------+
+
+
+Therefore:
+
+    Sign     = 1 bit
+    Exponent = 11 bits
+    Fraction = 52 bits
+
+Total:
+
+    1 + 11 + 52 = 64 bits
+
+
+For normalized numbers:
+
+    Effective significand precision
+    = 53 bits
+
+
+============================================================
+5.16 SINGLE VS DOUBLE PRECISION
+============================================================
+
+    +----------------+----------------+----------------+
+    | Feature        | Single         | Double         |
+    +----------------+----------------+----------------+
+    | Total bits     | 32             | 64             |
+    | Sign           | 1              | 1              |
+    | Exponent       | 8              | 11             |
+    | Fraction       | 23             | 52             |
+    | Precision      | 24 bits*      | 53 bits*      |
+    | Exponent bias  | 127            | 1023           |
+    +----------------+----------------+----------------+
+
+*For normalized binary values, including the implicit leading
+1.
+
+
+============================================================
+5.17 IEEE 754 FIELD STRUCTURE
+============================================================
+
+Single precision:
+
+    Bit 31
+      |
+      v
+    +---+--------+-----------------------+
+    | S |   E    |           F           |
+    +---+--------+-----------------------+
+      1     8             23
+
+
+Double precision:
+
+    +---+-----------+-----------------------------+
+    | S |     E     |             F               |
+    +---+-----------+-----------------------------+
+      1      11                52
+
+
+Where:
+
+    S = Sign
+    E = Exponent field
+    F = Fraction field
+
+
+============================================================
+5.18 EXPONENT BIAS
+============================================================
+
+The actual exponent can be positive or negative.
+
+But IEEE 754 does not normally store the exponent as an
+ordinary signed integer.
+
+Instead, it uses:
+
+    BIASED EXPONENT
+
+
+Formula:
+
+    Stored exponent
+        =
+    Actual exponent + Bias
+
+
+Therefore:
+
+    Actual exponent
+        =
+    Stored exponent - Bias
+
+
+============================================================
+5.19 SINGLE-PRECISION BIAS
+============================================================
+
+Single precision has:
+
+    8 exponent bits
+
+
+Bias:
+
+    127
+
+
+Therefore:
+
+    Stored exponent = Actual exponent + 127
+
+
+Example:
+
+    Actual exponent = 0
+
+    Stored exponent:
+
+        0 + 127
+        = 127
+
+
+127 in 8-bit binary:
+
+    01111111
+
+
+Therefore:
+
+    Actual exponent 0
+    → Stored exponent 127
+    → 01111111
+
+
+============================================================
+5.20 DOUBLE-PRECISION BIAS
+============================================================
+
+Double precision has:
+
+    11 exponent bits
+
+
+Bias:
+
+    1023
+
+
+Formula:
+
+    Stored exponent = Actual exponent + 1023
+
+
+Example:
+
+    Actual exponent = 0
+
+    Stored exponent:
+
+        0 + 1023
+        = 1023
+
+
+============================================================
+5.21 WHY IS BIAS USED?
+============================================================
+
+The exponent may be:
+
+    Positive
+    Zero
+    Negative
+
+
+Bias allows the exponent to be stored as an unsigned
+binary value.
+
+Example for single precision:
+
+    Actual exponent:
+        -3
+
+Stored:
+
+    -3 + 127
+    = 124
+
+
+Actual exponent:
+
+    +5
+
+Stored:
+
+    5 + 127
+    = 132
+
+
+This simplifies comparison and hardware representation.
+
+
+============================================================
+5.22 IEEE 754 NORMALIZED VALUE
+============================================================
+
+For a normalized finite number:
+
+    Value =
+    (-1)^S × (1.F) × 2^(E - Bias)
+
+
+Where:
+
+    S = sign bit
+
+    E = stored exponent
+
+    F = fraction field
+
+
+For single precision:
+
+    Bias = 127
+
+
+Therefore:
+
+    Value =
+    (-1)^S × (1.F) × 2^(E - 127)
+
+
+For double precision:
+
+    Value =
+    (-1)^S × (1.F) × 2^(E - 1023)
+
+
+============================================================
+5.23 UNDERSTANDING THE FRACTION FIELD
+============================================================
+
+Suppose the fraction field is:
+
+    10100000000000000000000
+
+
+For a normalized number, the significand is:
+
+    1.101
+
+
+The leading 1 is implicit.
+
+Therefore:
+
+    Fraction field:
+
+        101...
+
+    Effective significand:
+
+        1.101...
+
+
+This is called:
+
+    IMPLIED LEADING 1
+
+
+============================================================
+5.24 IEEE 754 EXAMPLE — +5.5
+============================================================
+
+Represent:
+
+    +5.5
+
+
+Step 1:
+Convert 5.5 to binary.
+
+    5 = 101₂
+
+    0.5 = 0.1₂
+
+Therefore:
+
+    5.5 = 101.1₂
+
+
+Step 2:
+Normalize.
+
+    101.1
+    =
+    1.011 × 2²
+
+
+Step 3:
+Sign.
+
+Positive:
+
+    S = 0
+
+
+Step 4:
+Actual exponent:
+
+    E = 2
+
+
+Step 5:
+Add bias.
+
+Single precision bias:
+
+    127
+
+Stored exponent:
+
+    2 + 127
+    = 129
+
+
+129 in binary:
+
+    10000001
+
+
+Step 6:
+Fraction.
+
+From:
+
+    1.011
+
+Ignore the leading 1.
+
+Fraction:
+
+    01100000000000000000000
+
+
+Therefore:
+
+    Sign:
+        0
+
+    Exponent:
+        10000001
+
+    Fraction:
+        01100000000000000000000
+
+
+Full 32-bit representation:
+
+    0 10000001 01100000000000000000000
+
+
+============================================================
+5.25 IEEE 754 EXAMPLE — -5.5
+============================================================
+
+We already know:
+
+    +5.5:
+
+    0 10000001 01100000000000000000000
+
+
+For:
+
+    -5.5
+
+
+Only the sign changes.
+
+Therefore:
+
+    1 10000001 01100000000000000000000
+
+
+IMPORTANT:
+
+The sign bit changes.
+
+The magnitude fields remain the same.
+
+
+============================================================
+5.26 DECODING IEEE 754
+============================================================
+
+Suppose:
+
+    S = 0
+
+    E = 10000001
+
+    F = 01100000000000000000000
+
+
+Step 1:
+Sign:
+
+    S = 0
+
+    Positive
+
+
+Step 2:
+Exponent:
+
+    10000001₂ = 129
+
+
+Actual exponent:
+
+    129 - 127
+    = 2
+
+
+Step 3:
+Fraction:
+
+    F = 011...
+
+Therefore significand:
+
+    1.011
+
+
+Step 4:
+Calculate:
+
+    +1.011₂ × 2²
+
+
+    1.011₂ = 1 + 0/2 + 1/4 + 1/8
+
+            = 1 + 0.25 + 0.125
+
+            = 1.375
+
+
+Multiply:
+
+    1.375 × 4
+    = 5.5
+
+
+Answer:
+
+    5.5
+
+
+============================================================
+5.27 SPECIAL VALUES IN IEEE 754
+============================================================
+
+IEEE 754 reserves certain exponent patterns for special
+values.
+
+Important special values:
+
+    • Positive zero
+    • Negative zero
+    • Positive infinity
+    • Negative infinity
+    • NaN
+    • Subnormal numbers
+
+
+These allow floating-point hardware to handle exceptional
+situations in a defined way.
+
+
+============================================================
+5.28 IEEE 754 SPECIAL VALUE PATTERNS
+============================================================
+
+For normalized numbers:
+
+    Exponent = neither all 0 nor all 1
+
+
+Special cases:
+
+    Exponent = all 0
+    Fraction = 0
+        → Zero
+
+
+    Exponent = all 0
+    Fraction ≠ 0
+        → Subnormal
+
+
+    Exponent = all 1
+    Fraction = 0
+        → Infinity
+
+
+    Exponent = all 1
+    Fraction ≠ 0
+        → NaN
+
+
+This table is extremely important for exams.
+
+
+============================================================
+5.29 ZERO
+============================================================
+
+IEEE 754 supports:
+
+    +0
+    -0
+
+
+For zero:
+
+    Exponent = all zeros
+    Fraction = all zeros
+
+
+Only sign differs.
+
+
+Positive zero:
+
+    Sign = 0
+    Exponent = 00000000
+    Fraction = all 0
+
+
+Negative zero:
+
+    Sign = 1
+    Exponent = 00000000
+    Fraction = all 0
+
+
+Therefore:
+
+    +0 ≠ bit-for-bit -0
+
+but both represent zero numerically in many operations.
+
+
+============================================================
+5.30 INFINITY
+============================================================
+
+Infinity represents a value beyond the finite range.
+
+Examples:
+
+    +∞
+    -∞
+
+
+IEEE 754 representation:
+
+    Exponent = all 1s
+    Fraction = all 0s
+
+
+Sign determines the direction.
+
+Positive infinity:
+
+    S = 0
+    E = all 1
+    F = all 0
+
+
+Negative infinity:
+
+    S = 1
+    E = all 1
+    F = all 0
+
+
+Example:
+
+    Very large positive calculation
+        ↓
+       +∞
+
+
+============================================================
+5.31 NAN
+============================================================
+
+NaN stands for:
+
+    NOT A NUMBER
+
+
+NaN is used for undefined or invalid numerical results.
+
+
+Examples can include:
+
+    0 / 0
+
+or certain invalid floating-point operations.
+
+
+IEEE 754:
+
+    Exponent = all 1s
+    Fraction ≠ 0
+
+
+Therefore:
+
+    E = all 1s
+    F = nonzero
+
+
+NaN is not an ordinary numerical value.
+
+
+============================================================
+5.32 SUBNORMAL NUMBERS
+============================================================
+
+Subnormal numbers are used to represent values very close
+to zero that are smaller than the smallest normal number.
+
+
+They provide:
+
+    GRADUAL UNDERFLOW
+
+
+For subnormal numbers:
+
+    Exponent field = all 0s
+
+    Fraction field ≠ 0
+
+
+Unlike normalized numbers, they do NOT use the implicit:
+
+    1.
+
+
+Their significand is effectively:
+
+    0.F
+
+
+This allows smaller values to be represented closer to zero.
+
+
+============================================================
+5.33 NORMAL VS SUBNORMAL
+============================================================
+
+NORMAL:
+
+    Exponent ≠ 0 and ≠ all 1s
+
+    Significand:
+
+        1.F
+
+
+SUBNORMAL:
+
+    Exponent = 0
+
+    Fraction ≠ 0
+
+    Significand behaves like:
+
+        0.F
+
+
+Purpose of subnormal numbers:
+
+    Avoid an abrupt jump from the smallest normal value
+    directly to zero.
+
+
+============================================================
+5.34 FLOATING-POINT PRECISION
+============================================================
+
+Precision means approximately:
+
+    How many significant digits/bits can be represented
+    accurately.
+
+
+Single precision:
+
+    24 bits of significand precision for normalized values.
+
+
+Double precision:
+
+    53 bits of significand precision for normalized values.
+
+
+More precision generally means:
+
+    Smaller rounding error.
+
+
+But it does NOT mean:
+
+    Every decimal number can be represented exactly.
+
+
+============================================================
+5.35 RANGE VS PRECISION
+============================================================
+
+Two different concepts:
+
+    RANGE:
+        How large/small a number can be.
+
+
+    PRECISION:
+        How accurately significant digits can be stored.
+
+
+Exponent mainly controls:
+
+    RANGE
+
+
+Fraction/significand mainly controls:
+
+    PRECISION
+
+
+This distinction is extremely important.
+
+
+============================================================
+5.36 FLOATING-POINT ROUNDING
+============================================================
+
+Many real numbers cannot be represented exactly using a
+fixed number of bits.
+
+Therefore the computer must choose a nearby representable
+value.
+
+This is:
+
+    ROUNDING
+
+
+Example concept:
+
+Suppose only three decimal digits are available.
+
+Number:
+
+    3.14159265
+
+
+Possible stored approximation:
+
+    3.14
+
+
+The stored value is close to the original but not exact.
+
+
+============================================================
+5.37 ROUND-TO-NEAREST
+============================================================
+
+One common IEEE 754 rounding mode is:
+
+    ROUND TO NEAREST, TIES TO EVEN
+
+
+Basic idea:
+
+    Choose the representable value closest to the exact
+    result.
+
+If exactly halfway between two choices, choose the one
+whose last retained digit is even.
+
+
+This helps reduce systematic rounding bias.
+
+
+============================================================
+5.38 TRUNCATION
+============================================================
+
+Truncation means:
+
+    Simply discard extra digits/bits.
+
+
+Example:
+
+    Original:
+
+        3.141592
+
+
+    Truncate after 3 decimal places:
+
+        3.141
+
+
+Truncation is not the same as rounding.
+
+Rounding considers the discarded part.
+
+Truncation simply removes it.
+
+
+============================================================
+5.39 FLOATING-POINT OVERFLOW
+============================================================
+
+Overflow occurs when a calculated value is too large to
+represent within the available floating-point format.
+
+
+Concept:
+
+    Largest representable finite number
+                  ↓
+             calculation
+                  ↓
+          value too large
+                  ↓
+              +∞ / -∞
+          (depending on operation)
+
+
+Example:
+
+    A × B
+
+where the mathematical result is far beyond the maximum
+finite value.
+
+
+============================================================
+5.40 FLOATING-POINT UNDERFLOW
+============================================================
+
+Underflow occurs when a nonzero result becomes too small
+in magnitude to be represented as a normal floating-point
+number.
+
+
+Concept:
+
+    Small value
+        ↓
+    Smaller operation
+        ↓
+    Below normal range
+        ↓
+    Subnormal or zero
+
+
+IEEE 754 supports subnormal numbers to provide gradual
+underflow.
+
+
+============================================================
+5.41 PRECISION LOSS
+============================================================
+
+Floating-point numbers are approximations.
+
+Therefore operations can produce small errors.
+
+Example:
+
+    Decimal 0.1
+
+does not have a finite exact binary representation.
+
+Therefore a computer may store something very close to:
+
+    0.1
+
+but not exactly 0.1.
+
+
+This can cause surprising results in numerical programs.
+
+
+============================================================
+5.42 WHY 0.1 IS DIFFICULT IN BINARY
+============================================================
+
+In decimal:
+
+    0.1 = 1/10
+
+
+But 1/10 cannot be represented as a finite sum of powers
+of 1/2.
+
+Binary expansion continues indefinitely:
+
+    0.000110011001100110011...
+
+Therefore a finite floating-point format must round it.
+
+
+This is why:
+
+    0.1 + 0.2
+
+may not produce exactly:
+
+    0.3
+
+in binary floating-point arithmetic.
+
+
+============================================================
+5.43 FLOATING-POINT ERROR
+============================================================
+
+Common sources of floating-point error:
+
+    • Rounding
+    • Representation error
+    • Loss of precision
+    • Cancellation
+    • Overflow
+    • Underflow
+
+
+Therefore:
+
+    Floating-point arithmetic is approximate.
+
+
+This is important in:
+
+    • Scientific computing
+    • Engineering
+    • Finance
+    • Graphics
+    • Machine learning
+    • Simulations
+
+
+============================================================
+5.44 LOSS OF SIGNIFICANCE
+============================================================
+
+Suppose two nearly equal numbers are subtracted:
+
+    1.234567
+    1.234566
+    --------
+    0.000001
+
+
+Much of the meaningful precision can be lost.
+
+This is called:
+
+    LOSS OF SIGNIFICANCE
+
+or
+
+    CANCELLATION
+
+
+It can produce significant numerical error.
+
+
+============================================================
+5.45 FLOATING-POINT ADDITION — CONCEPT
+============================================================
+
+Floating-point addition is not simply:
+
+    significand + significand
+
+
+The exponents must first be aligned.
+
+
+Example:
+
+    1.01 × 2³
+    +
+    1.10 × 2¹
+
+
+Step 1:
+Align exponents.
+
+Convert second number:
+
+    1.10 × 2¹
+    =
+    0.011 × 2³
+
+
+Step 2:
+Add significands:
+
+    1.010
+  + 0.011
+  -------
+    1.101
+
+
+Step 3:
+Normalize if necessary.
+
+Result:
+
+    1.101 × 2³
+
+
+Main idea:
+
+    ALIGN → ADD → NORMALIZE → ROUND
+
+
+============================================================
+5.46 FLOATING-POINT SUBTRACTION — CONCEPT
+============================================================
+
+Similar process:
+
+    1. Align exponents.
+    2. Subtract significands.
+    3. Normalize.
+    4. Round if necessary.
+
+
+Concept:
+
+    ALIGN
+      ↓
+    SUBTRACT
+      ↓
+    NORMALIZE
+      ↓
+    ROUND
+
+
+============================================================
+5.47 FLOATING-POINT MULTIPLICATION
+============================================================
+
+For:
+
+    A × B
+
+
+Conceptually:
+
+    Multiply significands.
+
+    Add exponents.
+
+    Determine sign.
+
+    Normalize.
+
+    Round.
+
+
+Example:
+
+    (1.1 × 2³) × (1.01 × 2²)
+
+
+Significands:
+
+    1.1 × 1.01
+
+
+Exponents:
+
+    3 + 2 = 5
+
+
+Then normalize and round as required.
+
+
+============================================================
+5.48 FLOATING-POINT DIVISION
+============================================================
+
+For:
+
+    A / B
+
+
+Conceptually:
+
+    Divide significands.
+
+    Subtract exponents.
+
+    Determine sign.
+
+    Normalize.
+
+    Round.
+
+
+Example:
+
+    (1.1 × 2⁵) / (1.01 × 2²)
+
+
+Exponent:
+
+    5 - 2 = 3
+
+
+Then divide significands and normalize.
+
+
+============================================================
+5.49 FLOATING-POINT HARDWARE
+============================================================
+
+Modern processors often contain specialized hardware for
+floating-point operations.
+
+This is commonly associated with:
+
+    FPU
+
+FPU stands for:
+
+    Floating-Point Unit
+
+
+It can perform operations such as:
+
+    • Floating-point addition
+    • Floating-point subtraction
+    • Floating-point multiplication
+    • Floating-point division
+    • Comparisons
+    • Other numerical operations
+
+
+Conceptually:
+
+    CPU
+      |
+      +----------------+
+      |                |
+    Integer ALU      FPU
+      |                |
+    Integers       Floating point
+
+
+============================================================
+5.50 IEEE 754 SINGLE-PRECISION SPECIAL VALUES
+============================================================
+
+For single precision:
+
+    Exponent field = 8 bits
+
+
+All-zero exponent:
+
+    00000000
+
+
+All-one exponent:
+
+    11111111
+
+
+Cases:
+
+    +------------------+------------------+
+    | Exponent          | Fraction         |
+    +------------------+------------------+
+    | 00000000          | 00000000...      |
+    |                   | → Zero           |
+    | 00000000          | nonzero          |
+    |                   | → Subnormal      |
+    | 11111111          | 00000000...      |
+    |                   | → Infinity       |
+    | 11111111          | nonzero          |
+    |                   | → NaN            |
+    +------------------+------------------+
+
+
+============================================================
+5.51 IMPORTANT IEEE 754 FORMULAS
+============================================================
+
+SINGLE PRECISION:
+
+    Total bits = 32
+
+    Sign = 1 bit
+
+    Exponent = 8 bits
+
+    Fraction = 23 bits
+
+    Bias = 127
+
+
+For normalized numbers:
+
+    Value =
+    (-1)^S × (1.F) × 2^(E-127)
+
+
+DOUBLE PRECISION:
+
+    Total bits = 64
+
+    Sign = 1 bit
+
+    Exponent = 11 bits
+
+    Fraction = 52 bits
+
+    Bias = 1023
+
+
+For normalized numbers:
+
+    Value =
+    (-1)^S × (1.F) × 2^(E-1023)
+
+
+============================================================
+5.52 IMPORTANT NUMERICAL EXAMPLE
+============================================================
+
+QUESTION:
+
+Represent +13.25 in IEEE 754 single precision.
+
+
+STEP 1:
+Convert to binary.
+
+13:
+
+    1101₂
+
+
+0.25:
+
+    0.01₂
+
+
+Therefore:
+
+    13.25 = 1101.01₂
+
+
+STEP 2:
+Normalize:
+
+    1101.01
+    =
+    1.10101 × 2³
+
+
+STEP 3:
+Sign:
+
+    Positive
+
+    S = 0
+
+
+STEP 4:
+Exponent:
+
+    Actual exponent = 3
+
+
+STEP 5:
+Add bias:
+
+    3 + 127
+    = 130
+
+
+130 in binary:
+
+    10000010
+
+
+STEP 6:
+Fraction:
+
+    10101
+
+Fill remaining bits with zeros:
+
+    10101000000000000000000
+
+
+STEP 7:
+Combine:
+
+    Sign:
+        0
+
+    Exponent:
+        10000010
+
+    Fraction:
+        10101000000000000000000
+
+
+FINAL:
+
+    0 10000010 10101000000000000000000
+
+
+============================================================
+5.53 ANOTHER EXAMPLE — DECODE
+============================================================
+
+Given:
+
+    0 10000010 10101000000000000000000
+
+
+Step 1:
+Sign:
+
+    0 → positive
+
+
+Step 2:
+Exponent:
+
+    10000010₂ = 130
+
+
+Actual exponent:
+
+    130 - 127
+    = 3
+
+
+Step 3:
+Fraction:
+
+    10101...
+
+
+Implicit leading 1:
+
+    1.10101
+
+
+Step 4:
+
+    1.10101₂ × 2³
+
+
+Convert:
+
+    1.10101₂
+
+    = 1
+      + 1/2
+      + 0/4
+      + 1/8
+      + 0/16
+      + 1/32
+
+    = 1 + 0.5 + 0.125 + 0.03125
+
+    = 1.65625
+
+
+Multiply by 8:
+
+    1.65625 × 8
+    = 13.25
+
+
+Therefore:
+
+    Answer = +13.25
+
+
+============================================================
+5.54 FLOATING-POINT NUMBER FORMAT — BIG PICTURE
+============================================================
+
+IEEE 754:
+
+             32 bits
+                |
+       +--------+--------+
+       |        |        |
+      Sign   Exponent  Fraction
+       |        |        |
+      1 bit    8 bits   23 bits
+
+
+Interpretation:
+
+    Sign
+      ↓
+    Positive/Negative
+
+    Exponent
+      ↓
+    Controls scale/range
+
+    Fraction
+      ↓
+    Controls precision
+
+
+============================================================
+5.55 RANGE VS PRECISION — EXAM POINT
+============================================================
+
+If you increase:
+
+    Exponent bits
+
+you generally increase:
+
+    Representable range
+
+
+If you increase:
+
+    Fraction bits
+
+you generally increase:
+
+    Precision
+
+
+Therefore:
+
+    Exponent → RANGE
+
+    Fraction → PRECISION
+
+
+Remember this for MCQs.
+
+
+============================================================
+5.56 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    Thinking floating point means the decimal point physically
+    moves inside the computer.
+
+CORRECT:
+
+    It is a mathematical representation using a significand
+    and exponent.
+
+
+MISTAKE 2:
+
+    Confusing fraction field with the complete significand.
+
+For normalized IEEE binary:
+
+    Significand = 1.F
+
+The leading 1 is implicit.
+
+
+MISTAKE 3:
+
+    Forgetting the exponent bias.
+
+Single:
+
+    Bias = 127
+
+Double:
+
+    Bias = 1023
+
+
+MISTAKE 4:
+
+    Saying single precision has only 23 bits of precision.
+
+Correct:
+
+    Fraction field = 23 bits.
+
+    Effective significand precision for normalized values
+    = 24 bits.
+
+
+MISTAKE 5:
+
+    Thinking double precision means exactly twice the
+    numerical precision.
+
+It has:
+
+    53 bits of significand precision
+
+compared with:
+
+    24 bits for single precision.
+
+
+MISTAKE 6:
+
+    Confusing Unicode with UTF-8.
+
+Unicode:
+
+    Code-point system/repertoire.
+
+UTF-8:
+
+    Encoding format.
+
+
+MISTAKE 7:
+
+    Thinking exponent all 1s always means infinity.
+
+Correct:
+
+    Exponent all 1s + fraction zero
+        → Infinity
+
+    Exponent all 1s + fraction nonzero
+        → NaN
+
+
+MISTAKE 8:
+
+    Thinking exponent all 0s always means zero.
+
+Correct:
+
+    Exponent all 0s + fraction zero
+        → Zero
+
+    Exponent all 0s + fraction nonzero
+        → Subnormal
+
+
+============================================================
+5.57 B.TECH IMPORTANT QUESTIONS
+============================================================
+
+Q1.
+Why is floating-point representation required?
+
+Q2.
+Explain fixed-point and floating-point representation.
+
+Q3.
+Explain scientific notation.
+
+Q4.
+What are sign, significand, exponent and base?
+
+Q5.
+What is normalization?
+
+Q6.
+Explain IEEE 754 floating-point representation.
+
+Q7.
+Explain IEEE 754 single precision.
+
+Q8.
+Explain IEEE 754 double precision.
+
+Q9.
+What is exponent bias?
+
+Q10.
+Why is bias used?
+
+Q11.
+What is the bias for single precision?
+
+Q12.
+What is the bias for double precision?
+
+Q13.
+Represent 5.5 in IEEE 754 single precision.
+
+Q14.
+Represent 13.25 in IEEE 754 single precision.
+
+Q15.
+Decode a given IEEE 754 single-precision number.
+
+Q16.
+Explain positive and negative zero.
+
+Q17.
+Explain infinity.
+
+Q18.
+What is NaN?
+
+Q19.
+What are subnormal numbers?
+
+Q20.
+Explain floating-point overflow and underflow.
+
+Q21.
+What is rounding?
+
+Q22.
+Explain precision and range.
+
+Q23.
+What is an FPU?
+
+Q24.
+Explain floating-point addition.
+
+Q25.
+Explain floating-point multiplication.
+
+
+============================================================
+5.58 COMPETITIVE EXAM MCQs
+============================================================
+
+Q1.
+IEEE 754 single precision uses:
+
+A. 16 bits
+B. 32 bits
+C. 64 bits
+D. 128 bits
+
+
+Q2.
+The number of exponent bits in single precision is:
+
+A. 7
+B. 8
+C. 11
+D. 23
+
+
+Q3.
+The number of fraction bits in single precision is:
+
+A. 8
+B. 11
+C. 23
+D. 24
+
+
+Q4.
+The bias of IEEE 754 single precision is:
+
+A. 63
+B. 127
+C. 128
+D. 255
+
+
+Q5.
+The bias of IEEE 754 double precision is:
+
+A. 127
+B. 255
+C. 1023
+D. 2047
+
+
+Q6.
+The effective significand precision of a normalized
+single-precision number is:
+
+A. 23 bits
+B. 24 bits
+C. 32 bits
+D. 8 bits
+
+
+Q7.
+In IEEE 754, exponent = all 1s and fraction = 0 represents:
+
+A. Zero
+B. Subnormal
+C. Infinity
+D. NaN
+
+
+Q8.
+In IEEE 754, exponent = all 1s and fraction ≠ 0 represents:
+
+A. Infinity
+B. NaN
+C. Zero
+D. Normal number
+
+
+Q9.
+In IEEE 754, exponent = all 0s and fraction ≠ 0 represents:
+
+A. Infinity
+B. NaN
+C. Subnormal
+D. Normal number
+
+
+Q10.
+Which part mainly determines the range of floating-point
+numbers?
+
+A. Sign
+B. Exponent
+C. Fraction
+D. Significand only
+
+
+ANSWERS:
+
+    Q1 → B
+    Q2 → B
+    Q3 → C
+    Q4 → B
+    Q5 → C
+    Q6 → B
+    Q7 → C
+    Q8 → B
+    Q9 → C
+    Q10 → B
+
+
+============================================================
+5.59 QUICK REVISION
+============================================================
+
+FLOATING POINT:
+
+    Number =
+    Sign × Significand × Base^Exponent
+
+
+BINARY NORMALIZED FORM:
+
+    1.xxxxx × 2^E
+
+
+IEEE 754 SINGLE:
+
+    32 bits
+
+    1 Sign
+    8 Exponent
+    23 Fraction
+
+    Bias = 127
+
+
+IEEE 754 DOUBLE:
+
+    64 bits
+
+    1 Sign
+    11 Exponent
+    52 Fraction
+
+    Bias = 1023
+
+
+NORMALIZED NUMBER:
+
+    (-1)^S × (1.F) × 2^(E-Bias)
+
+
+SPECIAL VALUES:
+
+    E = 0, F = 0
+        → Zero
+
+    E = 0, F ≠ 0
+        → Subnormal
+
+    E = all 1, F = 0
+        → Infinity
+
+    E = all 1, F ≠ 0
+        → NaN
+
+
+IMPORTANT:
+
+    Exponent → Range
+
+    Fraction → Precision
+
+
+FLOATING-POINT OPERATIONS:
+
+    Addition:
+        Align → Add → Normalize → Round
+
+    Subtraction:
+        Align → Subtract → Normalize → Round
+
+    Multiplication:
+        Multiply significands
+        Add exponents
+        Normalize
+        Round
+
+    Division:
+        Divide significands
+        Subtract exponents
+        Normalize
+        Round
+
+
+ERRORS:
+
+    • Rounding
+    • Representation error
+    • Precision loss
+    • Overflow
+    • Underflow
+    • Cancellation
+
+
+============================================================
+5.60 MASTER CHECKPOINT
+============================================================
+
+Before moving to Chapter 6, you should be able to:
+
+[ ] Explain why floating point is required.
+[ ] Explain fixed-point representation.
+[ ] Explain floating-point representation.
+[ ] Explain scientific notation.
+[ ] Identify sign, significand and exponent.
+[ ] Convert binary numbers into normalized form.
+[ ] Explain IEEE 754.
+[ ] Explain single precision.
+[ ] Explain double precision.
+[ ] Remember single-precision field sizes.
+[ ] Remember double-precision field sizes.
+[ ] Calculate exponent bias.
+[ ] Encode simple values in IEEE 754.
+[ ] Decode IEEE 754 values.
+[ ] Explain the hidden leading 1.
+[ ] Explain zero.
+[ ] Explain infinity.
+[ ] Explain NaN.
+[ ] Explain subnormal numbers.
+[ ] Explain precision.
+[ ] Explain rounding.
+[ ] Explain overflow.
+[ ] Explain underflow.
+[ ] Understand floating-point arithmetic.
+[ ] Solve B.Tech-level numerical problems.
+[ ] Solve competitive-exam MCQs.
+
+
+============================================================
+CHAPTER 5 COMPLETE
+============================================================
+
+NEXT:
+
+CHAPTER 6 — DIGITAL LOGIC FUNDAMENTALS
+
+Topics:
+
+    • Digital vs Analog Systems
+    • Analog Signals
+    • Digital Signals
+    • Advantages of Digital Systems
+    • Logic Gates
+    • AND
+    • OR
+    • NOT
+    • NAND
+    • NOR
+    • XOR
+    • XNOR
+    • Boolean Variables
+    • Boolean Expressions
+    • Boolean Operations
+    • Boolean Identities
+    • De Morgan's Laws
+    • Truth Tables
+    • Logic Circuits
+    • Combinational Circuits
+    • Sequential Circuits
+============================================================

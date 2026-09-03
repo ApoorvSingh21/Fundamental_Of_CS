@@ -1,0 +1,2496 @@
+============================================================
+CHAPTER 12 — INSTRUCTION EXECUTION
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner
+
+OBJECTIVE:
+Understand how the CPU executes an instruction from the
+moment it is fetched from memory until the final result is
+stored.
+
+CORE IDEA:
+
+    FETCH → DECODE → EXECUTE → MEMORY ACCESS → WRITE-BACK
+
+This complete process is called the:
+
+    INSTRUCTION CYCLE
+
+
+============================================================
+12.1 WHAT IS AN INSTRUCTION?
+============================================================
+
+An instruction is a command given to the CPU.
+
+Examples:
+
+    ADD R1, R2
+    LOAD R1, 1000
+    SUB R3, R4
+    STORE R1, 2000
+    JUMP 5000
+
+
+An instruction tells the CPU:
+
+    1. What operation to perform
+    2. What operands to use
+    3. Where the result should go
+
+
+Example:
+
+    ADD R1, R2
+
+means approximately:
+
+    R1 ← R1 + R2
+
+
+============================================================
+12.2 WHAT HAPPENS WHEN A PROGRAM RUNS?
+============================================================
+
+Suppose a program contains:
+
+    ADD R1, R2
+
+The CPU cannot simply "understand" this instruction
+magically.
+
+It performs several steps:
+
+    1. Find the instruction in memory.
+    2. Bring the instruction into the CPU.
+    3. Decode what the instruction means.
+    4. Find/access the operands.
+    5. Perform the required operation.
+    6. Store the result.
+    7. Move to the next instruction.
+
+
+This repeated process is called instruction execution.
+
+
+============================================================
+12.3 IMPORTANT CPU REGISTERS
+============================================================
+
+Before studying instruction execution, know these
+important registers.
+
+
+------------------------------------------------------------
+PROGRAM COUNTER (PC)
+------------------------------------------------------------
+
+PC stores the address of the next instruction to be
+fetched.
+
+Example:
+
+    PC = 1000
+
+This means:
+
+    "The next instruction is at memory address 1000."
+
+
+------------------------------------------------------------
+INSTRUCTION REGISTER (IR)
+------------------------------------------------------------
+
+IR stores the instruction currently being executed.
+
+
+Example:
+
+    IR = ADD R1, R2
+
+
+------------------------------------------------------------
+MEMORY ADDRESS REGISTER (MAR)
+------------------------------------------------------------
+
+MAR stores the address of the memory location that the
+CPU wants to access.
+
+
+Example:
+
+    MAR = 1000
+
+
+means:
+
+    "Access memory location 1000."
+
+
+------------------------------------------------------------
+MEMORY DATA REGISTER (MDR)
+------------------------------------------------------------
+
+MDR stores data being transferred between CPU and memory.
+
+During READ:
+
+    Memory → MDR
+
+
+During WRITE:
+
+    MDR → Memory
+
+
+------------------------------------------------------------
+ACCUMULATOR (AC)
+------------------------------------------------------------
+
+A register used for intermediate arithmetic/logic results
+in some CPU architectures.
+
+
+------------------------------------------------------------
+GENERAL-PURPOSE REGISTERS
+------------------------------------------------------------
+
+These hold operands and results.
+
+Examples:
+
+    R0
+    R1
+    R2
+    R3
+    ...
+
+
+============================================================
+12.4 BASIC INSTRUCTION CYCLE
+============================================================
+
+The instruction cycle can be represented as:
+
+             ┌─────────────┐
+             │   FETCH     │
+             └──────┬──────┘
+                    ↓
+             ┌─────────────┐
+             │   DECODE    │
+             └──────┬──────┘
+                    ↓
+             ┌─────────────┐
+             │   EXECUTE   │
+             └──────┬──────┘
+                    ↓
+             ┌─────────────┐
+             │   MEMORY    │
+             │   ACCESS    │
+             └──────┬──────┘
+                    ↓
+             ┌─────────────┐
+             │ WRITE-BACK   │
+             └──────┬──────┘
+                    ↓
+             NEXT INSTRUCTION
+                    │
+                    └──────────→ FETCH
+
+
+Important:
+
+Not every instruction requires a separate memory-access
+operation or write-back operation.
+
+The exact stages depend on the processor architecture.
+
+
+============================================================
+12.5 STAGE 1 — FETCH
+============================================================
+
+FETCH means:
+
+    Get the next instruction from memory.
+
+
+The PC tells the CPU where the instruction is located.
+
+
+Example:
+
+    PC = 1000
+
+
+Memory:
+
+    Memory[1000] = ADD R1, R2
+
+
+The CPU fetches:
+
+    ADD R1, R2
+
+
+and places it into the Instruction Register.
+
+
+Basic operation:
+
+    MAR ← PC
+
+    MDR ← Memory[MAR]
+
+    IR ← MDR
+
+    PC ← PC + instruction_size
+
+
+============================================================
+12.6 FETCH CYCLE STEP-BY-STEP
+============================================================
+
+Suppose:
+
+    PC = 1000
+
+
+Step 1:
+
+    MAR ← PC
+
+Therefore:
+
+    MAR = 1000
+
+
+Step 2:
+
+    MDR ← Memory[MAR]
+
+
+Suppose:
+
+    Memory[1000] = ADD R1, R2
+
+
+Therefore:
+
+    MDR = ADD R1, R2
+
+
+Step 3:
+
+    IR ← MDR
+
+
+Therefore:
+
+    IR = ADD R1, R2
+
+
+Step 4:
+
+    PC ← PC + instruction length
+
+
+If instruction length = 4 bytes:
+
+    PC = 1004
+
+
+Now:
+
+    IR contains current instruction.
+
+    PC contains address of next instruction.
+
+
+============================================================
+12.7 FETCH DIAGRAM
+============================================================
+
+                 PC
+                  │
+                  ▼
+                 MAR
+                  │
+                  ▼
+               MEMORY
+                  │
+                  ▼
+                 MDR
+                  │
+                  ▼
+                  IR
+
+
+At the same time:
+
+                 PC
+                  │
+                  ▼
+             PC + instruction
+                length
+
+
+============================================================
+12.8 WHY IS PC INCREMENTED?
+============================================================
+
+After fetching an instruction, the CPU normally needs to
+fetch the next instruction.
+
+Therefore:
+
+    PC ← PC + instruction length
+
+
+Example:
+
+    Current instruction address = 1000
+
+    Instruction size = 4 bytes
+
+
+Next instruction:
+
+    1004
+
+
+Therefore:
+
+    PC = 1004
+
+
+IMPORTANT:
+
+For a branch/jump instruction, the PC may later be changed
+to a different target address.
+
+
+============================================================
+12.9 STAGE 2 — DECODE
+============================================================
+
+After fetching, the CPU must understand what the instruction
+means.
+
+
+This is called:
+
+    INSTRUCTION DECODING
+
+
+The Control Unit examines the instruction in the IR.
+
+
+Example:
+
+    IR = ADD R1, R2
+
+
+The CPU determines:
+
+    Operation = ADD
+
+    Source operand = R2
+
+    Destination = R1
+
+
+The instruction decoder identifies the opcode and other
+fields.
+
+
+============================================================
+12.10 OPCODE
+============================================================
+
+Opcode means:
+
+    Operation Code
+
+
+It specifies what operation the CPU should perform.
+
+
+Examples:
+
+    ADD
+    SUB
+    AND
+    OR
+    LOAD
+    STORE
+    JUMP
+
+
+Conceptually:
+
+    ┌──────────────┬─────────────────┐
+    │    OPCODE    │     OPERANDS    │
+    ├──────────────┼─────────────────┤
+    │     ADD      │      R1,R2      │
+    └──────────────┴─────────────────┘
+
+
+The actual machine instruction uses binary bits.
+
+
+============================================================
+12.11 OPERAND
+============================================================
+
+An operand is the data used by an instruction.
+
+
+Example:
+
+    ADD R1, R2
+
+
+Operands:
+
+    R1
+    R2
+
+
+Depending on the ISA, an operand can be:
+
+    • Register
+    • Immediate value
+    • Memory location
+    • Address calculated using an addressing mode
+
+
+============================================================
+12.12 DECODING EXAMPLE
+============================================================
+
+Suppose:
+
+    IR = ADD R1, R2
+
+
+The Control Unit determines:
+
+    Operation:
+        ADD
+
+    Source:
+        R2
+
+    Destination:
+        R1
+
+
+Then it generates appropriate control signals for the
+datapath and ALU.
+
+
+============================================================
+12.13 STAGE 3 — EXECUTE
+============================================================
+
+EXECUTE means:
+
+    Perform the operation specified by the instruction.
+
+
+For:
+
+    ADD R1, R2
+
+
+The ALU performs:
+
+    R1 + R2
+
+
+For:
+
+    SUB R1, R2
+
+
+The ALU performs:
+
+    R1 - R2
+
+
+For:
+
+    AND R1, R2
+
+
+The ALU performs:
+
+    R1 AND R2
+
+
+For:
+
+    JUMP 5000
+
+
+The CPU changes the PC to the required target.
+
+
+============================================================
+12.14 EXECUTION DEPENDS ON INSTRUCTION TYPE
+============================================================
+
+Different instructions execute differently.
+
+
+ARITHMETIC:
+
+    ADD
+    SUB
+    MUL
+
+
+LOGICAL:
+
+    AND
+    OR
+    XOR
+
+
+DATA TRANSFER:
+
+    LOAD
+    STORE
+
+
+CONTROL FLOW:
+
+    JUMP
+    BRANCH
+    CALL
+    RETURN
+
+
+Therefore:
+
+    There is no single identical execution operation
+    for every instruction.
+
+
+============================================================
+12.15 STAGE 4 — MEMORY ACCESS
+============================================================
+
+Some instructions require memory access.
+
+
+Example:
+
+    LOAD R1, 1000
+
+
+The CPU must read data from memory.
+
+
+Conceptually:
+
+    MAR ← 1000
+
+    MDR ← Memory[MAR]
+
+    R1 ← MDR
+
+
+For STORE:
+
+    STORE R1, 1000
+
+
+The CPU writes the contents of R1 into memory.
+
+
+Conceptually:
+
+    MAR ← 1000
+
+    MDR ← R1
+
+    Memory[MAR] ← MDR
+
+
+============================================================
+12.16 LOAD INSTRUCTION
+============================================================
+
+LOAD means:
+
+    Transfer data from memory to a CPU register.
+
+
+Example:
+
+    LOAD R1, 5000
+
+
+Suppose:
+
+    Memory[5000] = 75
+
+
+Then:
+
+    R1 = 75
+
+
+Conceptually:
+
+    MAR ← 5000
+
+    MDR ← Memory[MAR]
+
+    R1 ← MDR
+
+
+Direction:
+
+    MEMORY → CPU
+
+
+============================================================
+12.17 STORE INSTRUCTION
+============================================================
+
+STORE means:
+
+    Transfer data from a CPU register to memory.
+
+
+Example:
+
+    STORE R1, 5000
+
+
+Suppose:
+
+    R1 = 75
+
+
+Then:
+
+    Memory[5000] = 75
+
+
+Conceptually:
+
+    MAR ← 5000
+
+    MDR ← R1
+
+    Memory[MAR] ← MDR
+
+
+Direction:
+
+    CPU → MEMORY
+
+
+============================================================
+12.18 LOAD VS STORE
+============================================================
+
+LOAD:
+
+    Memory → Register
+
+
+STORE:
+
+    Register → Memory
+
+
+Remember:
+
+    LOAD  = Bring data into CPU
+
+    STORE = Send data to memory
+
+
+============================================================
+12.19 STAGE 5 — WRITE-BACK
+============================================================
+
+Write-back means:
+
+    Store the result of execution into the destination
+    register or appropriate destination.
+
+
+Example:
+
+    ADD R1, R2
+
+
+Suppose:
+
+    R1 = 20
+    R2 = 30
+
+
+ALU calculates:
+
+    20 + 30 = 50
+
+
+Then:
+
+    R1 ← 50
+
+
+The result is written back to R1.
+
+
+============================================================
+12.20 COMPLETE EXAMPLE
+============================================================
+
+Consider:
+
+    ADD R1, R2
+
+
+Initial values:
+
+    R1 = 20
+    R2 = 30
+
+
+STEP 1 — FETCH
+
+    CPU fetches:
+
+        ADD R1, R2
+
+    IR ← ADD R1, R2
+
+
+STEP 2 — DECODE
+
+    CPU identifies:
+
+        Operation = ADD
+        Source = R2
+        Destination = R1
+
+
+STEP 3 — EXECUTE
+
+    ALU performs:
+
+        20 + 30 = 50
+
+
+STEP 4 — MEMORY ACCESS
+
+    Not required for a simple register-register ADD.
+
+
+STEP 5 — WRITE-BACK
+
+    R1 ← 50
+
+
+FINAL:
+
+    R1 = 50
+
+
+============================================================
+12.21 COMPLETE EXAMPLE WITH LOAD
+============================================================
+
+Instruction:
+
+    LOAD R1, 1000
+
+
+Suppose:
+
+    Memory[1000] = 75
+
+
+FETCH:
+
+    IR ← LOAD R1, 1000
+
+
+DECODE:
+
+    Operation = LOAD
+    Destination = R1
+    Address = 1000
+
+
+EXECUTE / ADDRESS CALCULATION:
+
+    EA = 1000
+
+
+MEMORY ACCESS:
+
+    MDR ← Memory[1000]
+
+    MDR = 75
+
+
+WRITE-BACK:
+
+    R1 ← MDR
+
+    R1 = 75
+
+
+FINAL:
+
+    R1 = 75
+
+
+============================================================
+12.22 COMPLETE EXAMPLE WITH STORE
+============================================================
+
+Instruction:
+
+    STORE R1, 2000
+
+
+Suppose:
+
+    R1 = 90
+
+
+FETCH:
+
+    IR ← STORE R1, 2000
+
+
+DECODE:
+
+    Operation = STORE
+
+
+EXECUTE:
+
+    Calculate address:
+
+        EA = 2000
+
+
+MEMORY ACCESS:
+
+    MAR ← 2000
+
+    MDR ← R1
+
+    MDR = 90
+
+    Memory[2000] ← MDR
+
+
+FINAL:
+
+    Memory[2000] = 90
+
+
+============================================================
+12.23 COMPLETE INSTRUCTION CYCLE
+============================================================
+
+The complete conceptual flow is:
+
+
+            ┌─────────────────┐
+            │       PC        │
+            └────────┬────────┘
+                     │
+                     ▼
+            ┌─────────────────┐
+            │      FETCH      │
+            └────────┬────────┘
+                     │
+                     ▼
+            ┌─────────────────┐
+            │       IR        │
+            └────────┬────────┘
+                     │
+                     ▼
+            ┌─────────────────┐
+            │     DECODE      │
+            └────────┬────────┘
+                     │
+                     ▼
+            ┌─────────────────┐
+            │     OPERANDS    │
+            │      / EA       │
+            └────────┬────────┘
+                     │
+                     ▼
+            ┌─────────────────┐
+            │     EXECUTE     │
+            │      ALU        │
+            └────────┬────────┘
+                     │
+                     ▼
+            ┌─────────────────┐
+            │  MEMORY ACCESS  │
+            │   if required   │
+            └────────┬────────┘
+                     │
+                     ▼
+            ┌─────────────────┐
+            │   WRITE-BACK    │
+            └────────┬────────┘
+                     │
+                     ▼
+                NEXT INSTRUCTION
+
+
+============================================================
+12.24 INSTRUCTION CYCLE VS MACHINE CYCLE
+============================================================
+
+These terms can differ between architectures and textbooks.
+
+
+Instruction Cycle:
+
+    Complete processing of one instruction.
+
+
+Machine Cycle:
+
+    A smaller sequence of operations required for a
+    particular CPU operation, depending on the architecture.
+
+
+Do not assume that every processor uses the exact same
+definition of "machine cycle."
+
+
+============================================================
+12.25 MICROOPERATIONS
+============================================================
+
+A microoperation is a small, elementary operation performed
+inside the CPU on data stored in registers.
+
+
+Examples:
+
+    R1 ← R2
+
+    R3 ← R1 + R2
+
+    R1 ← R1 AND R2
+
+    R1 ← R1 << 1
+
+
+Microoperations are the low-level steps used to implement
+instruction execution.
+
+
+============================================================
+12.26 REGISTER TRANSFER MICROOPERATION
+============================================================
+
+A register transfer moves data from one register to another.
+
+
+Example:
+
+    R1 ← R2
+
+
+Meaning:
+
+    Copy contents of R2 into R1.
+
+
+If:
+
+    R2 = 50
+
+
+Then after:
+
+    R1 ← R2
+
+
+we have:
+
+    R1 = 50
+
+
+R2 remains unchanged.
+
+
+============================================================
+12.27 REGISTER TRANSFER DIAGRAM
+============================================================
+
+    ┌───────┐
+    │  R2   │
+    │  50   │
+    └───┬───┘
+        │
+        │ Transfer
+        ▼
+    ┌───────┐
+    │  R1   │
+    │  50   │
+    └───────┘
+
+
+RTL notation:
+
+    R1 ← R2
+
+
+RTL = Register Transfer Language
+
+
+============================================================
+12.28 REGISTER TRANSFER LANGUAGE (RTL)
+============================================================
+
+RTL is a notation used to describe operations involving
+registers.
+
+
+Examples:
+
+    R1 ← R2
+
+    MAR ← PC
+
+    MDR ← Memory[MAR]
+
+    IR ← MDR
+
+    PC ← PC + 4
+
+
+RTL makes CPU operations easier to describe.
+
+
+============================================================
+12.29 ARITHMETIC MICROOPERATIONS
+============================================================
+
+Arithmetic microoperations perform arithmetic on register
+contents.
+
+
+Examples:
+
+    R1 ← R2 + R3
+
+    R1 ← R1 + 1
+
+    R2 ← R2 - 1
+
+    R3 ← R1 - R2
+
+
+Common operations:
+
+    Addition
+    Subtraction
+    Increment
+    Decrement
+
+
+============================================================
+12.30 LOGICAL MICROOPERATIONS
+============================================================
+
+Logical microoperations perform bit-level logical
+operations.
+
+
+Examples:
+
+    R1 ← R2 AND R3
+
+    R1 ← R2 OR R3
+
+    R1 ← R2 XOR R3
+
+    R1 ← NOT R2
+
+
+These operations are performed using logic circuits/ALU.
+
+
+============================================================
+12.31 SHIFT MICROOPERATIONS
+============================================================
+
+Shift operations move bits left or right.
+
+
+Examples:
+
+    Logical shift left
+    Logical shift right
+    Arithmetic shift right
+
+
+Example:
+
+    R1 = 00001010
+
+
+Shift left by one:
+
+    00010100
+
+
+Shift right by one:
+
+    00000101
+
+
+A left shift by one position is closely related to
+multiplication by 2 for suitable unsigned values.
+
+
+A right shift by one position is closely related to
+division by 2 for suitable unsigned values.
+
+
+============================================================
+12.32 LOGICAL SHIFT LEFT
+============================================================
+
+Example:
+
+    00101101
+
+
+Shift left by 1:
+
+    01011010
+
+
+The leftmost bit is discarded and a 0 enters from the right.
+
+
+Concept:
+
+    ┌─────────────────────────────┐
+    │ 0 0 1 0 1 1 0 1             │
+    └─────────────────────────────┘
+                  ↓ shift left
+    ┌─────────────────────────────┐
+    │ 0 1 0 1 1 0 1 0             │
+    └─────────────────────────────┘
+
+
+============================================================
+12.33 LOGICAL SHIFT RIGHT
+============================================================
+
+Example:
+
+    00101101
+
+
+Shift right by 1:
+
+    00010110
+
+
+A 0 enters from the left.
+
+
+============================================================
+12.34 ARITHMETIC SHIFT RIGHT
+============================================================
+
+Arithmetic right shift is used for signed binary numbers.
+
+
+The sign bit is generally preserved.
+
+
+Example:
+
+    11001000
+
+
+Arithmetic shift right:
+
+    11100100
+
+
+The leftmost sign bit remains 1.
+
+
+IMPORTANT:
+
+    Logical right shift inserts 0.
+
+    Arithmetic right shift preserves the sign bit.
+
+
+============================================================
+12.35 CONTROL SIGNALS
+============================================================
+
+The Control Unit generates signals that tell CPU components
+what to do.
+
+
+Examples:
+
+    • Read memory
+    • Write memory
+    • Load register
+    • Enable register output
+    • Select ALU operation
+    • Increment PC
+    • Load PC
+    • Select bus source
+
+
+Conceptually:
+
+              CONTROL UNIT
+                    │
+        ┌───────────┼───────────┐
+        ▼           ▼           ▼
+       ALU       Registers     Memory
+        │           │           │
+        └───────────┴───────────┘
+
+
+============================================================
+12.36 DATAPATH
+============================================================
+
+The datapath is the part of the processor through which
+data moves and is processed.
+
+
+Typical datapath components:
+
+    • Registers
+    • ALU
+    • Multiplexers
+    • Internal buses
+    • Shifters
+    • Other functional units
+
+
+The Control Unit controls the datapath.
+
+
+Simple relationship:
+
+    CONTROL UNIT
+         │
+         │ control signals
+         ▼
+      DATAPATH
+         │
+         ▼
+      OPERATIONS
+
+
+============================================================
+12.37 CONTROL PATH VS DATAPATH
+============================================================
+
+DATAPATH:
+
+    Performs data operations.
+
+
+CONTROL PATH:
+
+    Generates control signals that direct those operations.
+
+
+Analogy:
+
+    Datapath = workers + machines
+
+    Control Unit = manager giving instructions
+
+
+============================================================
+12.38 INSTRUCTION EXECUTION EXAMPLE
+============================================================
+
+Instruction:
+
+    R3 ← R1 + R2
+
+
+Suppose:
+
+    R1 = 15
+    R2 = 25
+
+
+Possible conceptual microoperations:
+
+    1. Read R1
+    2. Read R2
+    3. ALU performs addition
+    4. Write result to R3
+
+
+Result:
+
+    R3 = 40
+
+
+RTL:
+
+    R3 ← R1 + R2
+
+
+============================================================
+12.39 FETCH MICROOPERATIONS
+============================================================
+
+A simplified fetch sequence can be written:
+
+    T1:
+        MAR ← PC
+
+
+    T2:
+        MDR ← Memory[MAR]
+
+
+    T3:
+        IR ← MDR
+
+
+    T4:
+        PC ← PC + instruction_size
+
+
+Exact timing and ordering vary by architecture.
+
+
+============================================================
+12.40 MEMORY READ MICROOPERATIONS
+============================================================
+
+For a memory read:
+
+    MAR ← Address
+
+    MDR ← Memory[MAR]
+
+
+Data direction:
+
+    MEMORY → MDR
+
+
+Then:
+
+    Register ← MDR
+
+
+if the data is needed in a register.
+
+
+============================================================
+12.41 MEMORY WRITE MICROOPERATIONS
+============================================================
+
+For a memory write:
+
+    MAR ← Address
+
+    MDR ← Data
+
+    Memory[MAR] ← MDR
+
+
+Data direction:
+
+    Register/CPU → MDR → MEMORY
+
+
+============================================================
+12.42 BRANCH INSTRUCTION
+============================================================
+
+Consider:
+
+    BEQ R1, R2, LABEL
+
+
+Meaning conceptually:
+
+    If R1 == R2:
+
+        PC ← LABEL
+
+
+Otherwise:
+
+    PC continues to the next instruction.
+
+
+A branch can therefore change the normal sequential
+instruction flow.
+
+
+============================================================
+12.43 NORMAL SEQUENTIAL EXECUTION
+============================================================
+
+Normally:
+
+    Instruction 1
+         ↓
+    Instruction 2
+         ↓
+    Instruction 3
+         ↓
+    Instruction 4
+
+
+PC normally moves forward:
+
+    PC → PC + instruction size
+
+
+============================================================
+12.44 BRANCH EXECUTION
+============================================================
+
+With a branch:
+
+    Instruction 1
+         ↓
+    Branch
+       / \
+     True False
+      │      │
+      ▼      ▼
+    LABEL   Next instruction
+
+
+If branch is taken:
+
+    PC ← Target Address
+
+
+============================================================
+12.45 INTERRUPT
+============================================================
+
+An interrupt is a signal/event that causes the CPU to
+temporarily stop normal program execution and handle a
+special event.
+
+
+Examples:
+
+    • I/O device requires service
+    • Timer event
+    • Hardware event
+    • Software-generated interrupt
+
+
+Basic idea:
+
+    Normal Program
+         │
+         ▼
+      INTERRUPT
+         │
+         ▼
+    Save CPU state
+         │
+         ▼
+    Interrupt Service Routine
+         │
+         ▼
+    Restore state
+         │
+         ▼
+    Resume program
+
+
+============================================================
+12.46 INTERRUPT CYCLE
+============================================================
+
+A simplified interrupt sequence:
+
+    1. Finish/currently recognize an interrupt
+    2. Save necessary CPU state
+    3. Identify interrupt source/vector
+    4. Load ISR address
+    5. Execute Interrupt Service Routine
+    6. Restore saved state
+    7. Return to interrupted program
+
+
+ISR:
+
+    Interrupt Service Routine
+
+
+============================================================
+12.47 INTERRUPT SERVICE ROUTINE
+============================================================
+
+An ISR is a special program/function that handles an
+interrupt.
+
+
+Example:
+
+    Keyboard event occurs.
+
+    ↓
+
+    CPU receives interrupt.
+
+    ↓
+
+    CPU executes keyboard ISR.
+
+    ↓
+
+    Keyboard data is processed.
+
+    ↓
+
+    CPU returns to the interrupted program.
+
+
+============================================================
+12.48 COMPLETE INSTRUCTION + INTERRUPT FLOW
+============================================================
+
+                 FETCH
+                   ↓
+                DECODE
+                   ↓
+                EXECUTE
+                   ↓
+              MEMORY ACCESS
+                   ↓
+               WRITE-BACK
+                   ↓
+          Check/recognize interrupt
+                /       \
+              NO         YES
+              │           │
+              │           ▼
+              │      Save CPU state
+              │           ↓
+              │          ISR
+              │           ↓
+              │     Restore state
+              │           │
+              └───────────┘
+                   ↓
+              Next instruction
+
+
+============================================================
+12.49 HARDWARE INVOLVED IN EXECUTION
+============================================================
+
+A typical CPU uses:
+
+    ┌────────────────────────────────────┐
+    │                 CPU                │
+    │                                    │
+    │  ┌─────────────┐  ┌─────────────┐ │
+    │  │ Control Unit│  │     ALU     │ │
+    │  └─────────────┘  └─────────────┘ │
+    │          │              │          │
+    │          └──────┬───────┘          │
+    │                 │                  │
+    │            Registers               │
+    │                                    │
+    │       PC   IR   MAR   MDR          │
+    └─────────────────┬──────────────────┘
+                      │
+                 System Bus
+                      │
+                      ▼
+                   MEMORY
+
+
+============================================================
+12.50 SIMPLE REAL-WORLD ANALOGY
+============================================================
+
+Imagine a restaurant.
+
+Customer gives an order:
+
+    "Give me a burger."
+
+
+FETCH:
+
+    Waiter receives the order.
+
+
+DECODE:
+
+    Waiter understands:
+
+        Item = burger
+
+
+OPERANDS:
+
+    Identify ingredients required.
+
+
+EXECUTE:
+
+    Kitchen prepares the burger.
+
+
+MEMORY ACCESS:
+
+    Ingredients are obtained from storage.
+
+
+WRITE-BACK:
+
+    Finished burger is given to the customer.
+
+
+The CPU works similarly:
+
+    Instruction
+        ↓
+    Fetch
+        ↓
+    Decode
+        ↓
+    Obtain data
+        ↓
+    Execute
+        ↓
+    Store result
+
+
+============================================================
+12.51 IMPORTANT DIFFERENCE:
+INSTRUCTION FETCH VS DATA FETCH
+============================================================
+
+Instruction Fetch:
+
+    Memory → CPU
+
+    Fetches the instruction itself.
+
+
+Data Fetch:
+
+    Memory → CPU
+
+    Fetches operand/data when required.
+
+
+Example:
+
+    LOAD R1, 1000
+
+
+First:
+
+    CPU fetches the LOAD instruction.
+
+
+Then:
+
+    CPU accesses address 1000
+    to obtain the actual data.
+
+
+So there can be:
+
+    Instruction memory access
+
+    +
+    
+    Data memory access
+
+
+============================================================
+12.52 INSTRUCTION CYCLE VS CLOCK CYCLE
+============================================================
+
+These are NOT the same.
+
+
+CLOCK CYCLE:
+
+    One period of the processor's clock.
+
+
+INSTRUCTION CYCLE:
+
+    Complete process of executing one instruction.
+
+
+One instruction may require multiple clock cycles in some
+CPU designs.
+
+
+In pipelined processors, different instructions can occupy
+different pipeline stages during the same clock cycle.
+
+
+============================================================
+12.53 CPI
+============================================================
+
+CPI means:
+
+    Cycles Per Instruction
+
+
+It represents the average number of clock cycles required
+per instruction.
+
+
+Formula:
+
+    CPI = CPU Clock Cycles / Instruction Count
+
+
+Example:
+
+    Total cycles = 2,000,000
+
+    Instructions = 1,000,000
+
+
+Then:
+
+    CPI = 2,000,000 / 1,000,000
+
+        = 2
+
+
+Therefore:
+
+    Average = 2 cycles/instruction
+
+
+============================================================
+12.54 INSTRUCTION EXECUTION AND PERFORMANCE
+============================================================
+
+CPU performance depends on:
+
+    • Instruction count
+    • CPI
+    • Clock cycle time
+    • Clock frequency
+
+
+Important equation:
+
+    CPU Time
+        =
+    Instruction Count × CPI × Clock Cycle Time
+
+
+Since:
+
+    Clock Cycle Time = 1 / Clock Rate
+
+
+Therefore:
+
+    CPU Time
+        =
+    Instruction Count × CPI
+    ────────────────────────
+          Clock Rate
+
+
+This becomes extremely important in Chapter 33.
+
+
+============================================================
+12.55 NUMERICAL PROBLEM 1
+============================================================
+
+Given:
+
+    PC = 1000
+
+    Instruction size = 4 bytes
+
+
+After fetching a normal sequential instruction:
+
+    PC = ?
+
+
+Formula:
+
+    PC(new) = PC(old) + instruction size
+
+
+Therefore:
+
+    PC = 1000 + 4
+
+       = 1004
+
+
+ANSWER:
+
+    PC = 1004
+
+
+============================================================
+12.56 NUMERICAL PROBLEM 2
+============================================================
+
+Given:
+
+    R1 = 20
+
+    R2 = 30
+
+
+Instruction:
+
+    ADD R3, R1, R2
+
+
+Calculate result.
+
+
+Execution:
+
+    R3 ← R1 + R2
+
+       = 20 + 30
+
+       = 50
+
+
+ANSWER:
+
+    R3 = 50
+
+
+============================================================
+12.57 NUMERICAL PROBLEM 3
+============================================================
+
+Given:
+
+    Memory[5000] = 75
+
+
+Instruction:
+
+    LOAD R1, 5000
+
+
+Execution:
+
+    MAR ← 5000
+
+    MDR ← Memory[5000]
+
+    MDR = 75
+
+    R1 ← MDR
+
+
+ANSWER:
+
+    R1 = 75
+
+
+============================================================
+12.58 NUMERICAL PROBLEM 4
+============================================================
+
+Given:
+
+    R1 = 90
+
+
+Instruction:
+
+    STORE R1, 3000
+
+
+Then:
+
+    MAR = 3000
+
+    MDR = 90
+
+    Memory[3000] = 90
+
+
+ANSWER:
+
+    Memory[3000] = 90
+
+
+============================================================
+12.59 NUMERICAL PROBLEM 5
+============================================================
+
+Given:
+
+    Instruction Count = 10,000
+    CPI = 2
+    Clock Rate = 1 GHz
+
+
+Find CPU time.
+
+
+Formula:
+
+    CPU Time =
+        Instruction Count × CPI
+        ───────────────────────
+             Clock Rate
+
+
+Convert:
+
+    1 GHz = 1,000,000,000 Hz
+
+
+Therefore:
+
+    CPU Time =
+        10,000 × 2
+        ─────────────
+        1,000,000,000
+
+
+    = 20,000 / 1,000,000,000
+
+    = 0.00002 seconds
+
+
+Therefore:
+
+    CPU Time = 20 microseconds
+
+
+============================================================
+12.60 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    "PC stores the current instruction."
+
+CORRECT:
+
+    PC normally stores the address of the next instruction
+    to be fetched.
+
+
+MISTAKE 2:
+
+    "IR stores the address of the instruction."
+
+CORRECT:
+
+    IR stores the current instruction.
+
+
+MISTAKE 3:
+
+    "MAR stores data."
+
+CORRECT:
+
+    MAR stores a memory address.
+
+
+MISTAKE 4:
+
+    "MDR stores an address."
+
+CORRECT:
+
+    MDR stores data being transferred to/from memory.
+
+
+MISTAKE 5:
+
+    "Every instruction requires memory access for operands."
+
+CORRECT:
+
+    Register/immediate instructions may not require
+    operand memory access.
+
+
+MISTAKE 6:
+
+    "Fetch and execute are the same."
+
+CORRECT:
+
+    Fetch obtains the instruction.
+
+    Execute performs the operation.
+
+
+MISTAKE 7:
+
+    "Write-back always means writing to RAM."
+
+CORRECT:
+
+    Write-back in the instruction-cycle context usually
+    means writing the result to the destination register
+    or architectural destination.
+
+
+MISTAKE 8:
+
+    "Every CPU has exactly the same five stages."
+
+CORRECT:
+
+    Five stages are a common conceptual model. Actual
+    processors may have different numbers and arrangements
+    of stages.
+
+
+============================================================
+12.61 B.TECH EXAM QUESTIONS
+============================================================
+
+1. Define instruction cycle.
+
+2. Explain the instruction fetch cycle.
+
+3. Explain the role of PC during instruction execution.
+
+4. Explain the role of IR.
+
+5. Explain MAR and MDR.
+
+6. Explain the instruction decode cycle.
+
+7. Explain the execute cycle.
+
+8. Explain the memory access stage.
+
+9. Explain write-back.
+
+10. Explain instruction execution using RTL.
+
+11. Define microoperation.
+
+12. Explain register transfer microoperations.
+
+13. Explain arithmetic microoperations.
+
+14. Explain logical microoperations.
+
+15. Explain shift microoperations.
+
+16. Explain the complete instruction cycle with a diagram.
+
+17. Explain interrupt cycle.
+
+18. Differentiate instruction cycle and clock cycle.
+
+19. Explain the role of the Control Unit during instruction
+    execution.
+
+20. Explain the complete execution of a LOAD instruction.
+
+21. Explain the complete execution of a STORE instruction.
+
+22. Explain the execution of an arithmetic instruction.
+
+23. Explain how PC changes during sequential instruction
+    execution.
+
+24. Explain how a branch instruction changes normal
+    instruction flow.
+
+
+============================================================
+12.62 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. Which register normally contains the address of the next
+    instruction?
+
+A. IR
+B. PC
+C. MDR
+D. MAR
+
+
+Q2. Which register holds the currently executing instruction?
+
+A. PC
+B. IR
+C. MAR
+D. MDR
+
+
+Q3. Which register stores a memory address?
+
+A. MAR
+B. MDR
+C. IR
+D. ALU
+
+
+Q4. Which register holds data transferred to/from memory?
+
+A. PC
+B. IR
+C. MDR
+D. MAR
+
+
+Q5. The first major stage of instruction execution is:
+
+A. Execute
+B. Decode
+C. Fetch
+D. Write-back
+
+
+Q6. The opcode is primarily interpreted during:
+
+A. Fetch
+B. Decode
+C. Write-back
+D. Storage
+
+
+Q7. Which unit generates control signals?
+
+A. ALU
+B. Control Unit
+C. RAM
+D. Register file
+
+
+Q8. The operation
+
+    R1 ← R2
+
+is an example of:
+
+A. Logical microoperation
+B. Register transfer microoperation
+C. Memory write
+D. Branch operation
+
+
+Q9. Which operation is performed by an ALU?
+
+A. Addition
+B. Keyboard input
+C. Disk rotation
+D. Program loading only
+
+
+Q10. During a LOAD operation, data generally moves:
+
+A. CPU → Memory
+B. Memory → CPU
+C. CPU → CPU only
+D. ALU → Disk
+
+
+Q11. During a STORE operation, data generally moves:
+
+A. Memory → CPU
+B. CPU → Memory
+C. RAM → ALU only
+D. Cache → Register only
+
+
+Q12. If PC = 2000 and instruction size = 4 bytes,
+     the next sequential instruction address is:
+
+A. 1996
+B. 2000
+C. 2004
+D. 4000
+
+
+Q13. Which stage performs the actual arithmetic operation?
+
+A. Fetch
+B. Decode
+C. Execute
+D. Write-back only
+
+
+Q14. Which of the following can change the normal sequential
+     value of PC?
+
+A. Branch instruction
+B. Simple register transfer
+C. AND operation only
+D. Register read only
+
+
+Q15. A microoperation is:
+
+A. A complete program
+B. A small elementary CPU operation
+C. A disk operation
+D. A compiler instruction
+
+
+============================================================
+ANSWERS
+============================================================
+
+    Q1  → B
+    Q2  → B
+    Q3  → A
+    Q4  → C
+    Q5  → C
+    Q6  → B
+    Q7  → B
+    Q8  → B
+    Q9  → A
+    Q10 → B
+    Q11 → B
+    Q12 → C
+    Q13 → C
+    Q14 → A
+    Q15 → B
+
+
+============================================================
+12.63 QUICK REVISION
+============================================================
+
+INSTRUCTION CYCLE:
+
+    FETCH
+      ↓
+    DECODE
+      ↓
+    EXECUTE
+      ↓
+    MEMORY ACCESS
+      ↓
+    WRITE-BACK
+
+
+IMPORTANT REGISTERS:
+
+    PC  → Address of next instruction
+
+    IR  → Current instruction
+
+    MAR → Memory address
+
+    MDR → Memory data
+
+
+FETCH:
+
+    MAR ← PC
+    MDR ← Memory[MAR]
+    IR  ← MDR
+    PC  ← PC + instruction size
+
+
+LOAD:
+
+    Memory → Register
+
+
+STORE:
+
+    Register → Memory
+
+
+MICROOPERATIONS:
+
+    Register transfer
+    Arithmetic
+    Logical
+    Shift
+
+
+IMPORTANT RTL EXAMPLES:
+
+    R1 ← R2
+
+    R3 ← R1 + R2
+
+    MAR ← PC
+
+    MDR ← Memory[MAR]
+
+    IR ← MDR
+
+    PC ← PC + 4
+
+
+PERFORMANCE:
+
+    CPU Time =
+    Instruction Count × CPI × Clock Cycle Time
+
+
+or:
+
+    CPU Time =
+    Instruction Count × CPI
+    ───────────────────────
+          Clock Rate
+
+
+============================================================
+12.64 MASTER CHECKPOINT
+============================================================
+
+[ ] Define an instruction.
+[ ] Explain the instruction cycle.
+[ ] Explain FETCH.
+[ ] Explain DECODE.
+[ ] Explain EXECUTE.
+[ ] Explain MEMORY ACCESS.
+[ ] Explain WRITE-BACK.
+[ ] Explain PC.
+[ ] Explain IR.
+[ ] Explain MAR.
+[ ] Explain MDR.
+[ ] Explain opcode.
+[ ] Explain operand.
+[ ] Explain LOAD.
+[ ] Explain STORE.
+[ ] Explain branch execution.
+[ ] Explain interrupt cycle.
+[ ] Define microoperation.
+[ ] Explain RTL.
+[ ] Explain register transfer microoperations.
+[ ] Explain arithmetic microoperations.
+[ ] Explain logical microoperations.
+[ ] Explain shift microoperations.
+[ ] Explain datapath.
+[ ] Explain control path.
+[ ] Calculate simple instruction-execution problems.
+[ ] Calculate CPU time using instruction count and CPI.
+
+
+============================================================
+CHAPTER 12 COMPLETE
+============================================================
+
+THE MOST IMPORTANT IDEA:
+
+    A CPU repeatedly performs:
+
+        ┌──────────────┐
+        │    FETCH     │
+        └──────┬───────┘
+               ↓
+        ┌──────────────┐
+        │    DECODE    │
+        └──────┬───────┘
+               ↓
+        ┌──────────────┐
+        │    EXECUTE   │
+        └──────┬───────┘
+               ↓
+        ┌──────────────┐
+        │ MEMORY ACCESS│
+        │  if needed   │
+        └──────┬───────┘
+               ↓
+        ┌──────────────┐
+        │  WRITE-BACK  │
+        └──────┬───────┘
+               ↓
+        NEXT INSTRUCTION
+
+
+REMEMBER:
+
+    PC  = Where is the next instruction?
+
+    IR  = What instruction am I executing?
+
+    MAR = Which memory address am I accessing?
+
+    MDR = What data is moving to/from memory?
+
+    CU  = What control signals should be generated?
+
+    ALU = What arithmetic/logic operation should be done?
+
+    REGISTERS = Where can operands/results be held?
+
+
+============================================================
+NEXT:
+CHAPTER 13 — CONTROL UNIT
+============================================================
+
+13.1 Role of Control Unit
+    • Control signals
+    • Coordination of CPU components
+
+13.2 Hardwired Control
+    • Control logic
+    • Control signals
+    • Advantages
+    • Disadvantages
+
+13.3 Microprogrammed Control
+    • Control memory
+    • Microinstruction
+    • Microprogram
+    • Microprogram sequencer
+
+13.4 Hardwired vs Microprogrammed Control
+
+13.5 Microinstruction Formats
+    • Horizontal microinstructions
+    • Vertical microinstructions
+============================================================
+

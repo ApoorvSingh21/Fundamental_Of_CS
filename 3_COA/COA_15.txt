@@ -1,0 +1,2648 @@
+============================================================
+CHAPTER 15 — FLOATING-POINT ARITHMETIC
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner
+
+OBJECTIVE:
+Understand how computers perform arithmetic on floating-point
+numbers, including addition, subtraction, multiplication,
+division, rounding, precision, and the role of the FPU.
+
+
+============================================================
+15.1 WHAT IS FLOATING-POINT ARITHMETIC?
+============================================================
+
+Floating-point arithmetic is the process of performing
+arithmetic operations on numbers that may contain fractional
+parts.
+
+Examples:
+
+    3.14
+    0.5
+    125.75
+    -0.003
+    6.022 × 10²³
+
+
+Computers cannot store every real number exactly.
+
+Therefore, computers use a special representation called:
+
+    FLOATING-POINT REPRESENTATION
+
+
+The most widely used standard is:
+
+    IEEE 754
+
+
+============================================================
+15.2 WHY DO WE NEED FLOATING-POINT NUMBERS?
+============================================================
+
+Integers are useful:
+
+    5
+    100
+    -20
+    5000
+
+
+But many calculations require fractions:
+
+    3.14
+    0.25
+    1.5
+    0.000001
+
+
+For example:
+
+    Scientific calculations
+    Engineering calculations
+    Graphics
+    Machine learning
+    Physics
+    Statistics
+
+
+Integer representation alone cannot efficiently represent
+very large and very small fractional values.
+
+
+============================================================
+15.3 REAL-WORLD ANALOGY
+============================================================
+
+Think about scientific notation.
+
+For example:
+
+    4500000
+
+can be written as:
+
+    4.5 × 10⁶
+
+
+Similarly:
+
+    0.00045
+
+can be written as:
+
+    4.5 × 10⁻⁴
+
+
+Floating-point representation uses a similar idea in binary.
+
+
+============================================================
+15.4 GENERAL FLOATING-POINT FORM
+============================================================
+
+A floating-point number can be thought of as:
+
+    Number = Sign × Significand × Base^Exponent
+
+
+For decimal:
+
+    4.5 × 10³
+
+
+Here:
+
+    Sign       = positive
+    Significand = 4.5
+    Base       = 10
+    Exponent   = 3
+
+
+For binary floating point:
+
+    Base = 2
+
+
+Therefore:
+
+    Number = Significand × 2^Exponent
+
+
+============================================================
+15.5 MAIN PARTS OF A FLOATING-POINT NUMBER
+============================================================
+
+A floating-point number contains three major fields:
+
+    1. Sign
+    2. Exponent
+    3. Fraction/Significand
+
+
+Conceptually:
+
+    ┌──────┬────────────┬─────────────────────┐
+    │ Sign │  Exponent  │       Fraction      │
+    └──────┴────────────┴─────────────────────┘
+
+
+IEEE 754 single precision:
+
+    1 bit      8 bits          23 bits
+    ┌───┬──────────┬───────────────────────┐
+    │ S │ Exponent │       Fraction        │
+    └───┴──────────┴───────────────────────┘
+
+
+Total:
+
+    1 + 8 + 23 = 32 bits
+
+
+============================================================
+15.6 SIGN BIT
+============================================================
+
+The sign bit determines whether the number is positive or
+negative.
+
+For IEEE 754:
+
+    Sign = 0 → Positive
+
+    Sign = 1 → Negative
+
+
+Example:
+
+    0 → +
+    1 → -
+
+
+IMPORTANT:
+
+The sign bit does not directly represent +1 or -1 as an
+ordinary integer bit.
+
+It indicates the sign of the floating-point number.
+
+
+============================================================
+15.7 SIGNIFICAND
+============================================================
+
+The significand contains the significant digits of the number.
+
+It is sometimes called:
+
+    Mantissa
+
+
+Modern terminology generally prefers:
+
+    SIGNIFICAND
+
+
+Example:
+
+    6.25 × 10³
+
+
+The significant part is:
+
+    6.25
+
+
+In normalized binary floating point, the significand has a
+specific form.
+
+
+============================================================
+15.8 EXPONENT
+============================================================
+
+The exponent determines the scale of the number.
+
+Example:
+
+    1.5 × 2³
+
+
+Exponent:
+
+    3
+
+
+If exponent is positive:
+
+    Number becomes larger.
+
+
+If exponent is negative:
+
+    Number becomes smaller.
+
+
+Example:
+
+    1.5 × 2³ = 12
+
+    1.5 × 2⁻³ = 0.1875
+
+
+============================================================
+15.9 NORMALIZATION
+============================================================
+
+Before performing floating-point arithmetic, numbers are
+usually normalized.
+
+
+For binary numbers, normalized scientific notation has the
+form:
+
+    1.xxxxx × 2^n
+
+
+Example:
+
+    101.1₂
+
+
+Move the binary point:
+
+    101.1
+       ↓
+    1.011 × 2²
+
+
+Therefore:
+
+    101.1₂ = 1.011₂ × 2²
+
+
+============================================================
+15.10 WHY NORMALIZATION IS IMPORTANT
+============================================================
+
+Normalization provides a consistent representation.
+
+For example:
+
+    101.1₂
+
+could theoretically be written as:
+
+    10.11 × 2¹
+
+or:
+
+    1.011 × 2²
+
+or:
+
+    0.1011 × 2³
+
+
+Normalized form is:
+
+    1.011 × 2²
+
+
+This makes floating-point representation and arithmetic
+systematic.
+
+
+============================================================
+15.11 IEEE 754
+============================================================
+
+IEEE 754 is the widely used standard for representing and
+performing floating-point arithmetic.
+
+
+Two common formats are:
+
+    Single precision
+    Double precision
+
+
+Single:
+
+    32 bits
+
+
+Double:
+
+    64 bits
+
+
+============================================================
+15.12 IEEE 754 SINGLE PRECISION
+============================================================
+
+Single precision uses:
+
+    Sign     = 1 bit
+    Exponent = 8 bits
+    Fraction = 23 bits
+
+
+Total:
+
+    32 bits
+
+
+Structure:
+
+    ┌────┬──────────┬───────────────────────┐
+    │ S  │    E     │           F           │
+    │ 1  │    8     │          23           │
+    └────┴──────────┴───────────────────────┘
+
+
+For normalized numbers:
+
+    Value = (-1)^S × (1.F) × 2^(E-127)
+
+
+Here:
+
+    127 = Bias
+
+
+============================================================
+15.13 IEEE 754 DOUBLE PRECISION
+============================================================
+
+Double precision uses:
+
+    Sign     = 1 bit
+    Exponent = 11 bits
+    Fraction = 52 bits
+
+
+Total:
+
+    64 bits
+
+
+Structure:
+
+    ┌────┬─────────────┬────────────────────────────────────┐
+    │ S  │  Exponent   │              Fraction              │
+    │ 1  │     11      │                 52                 │
+    └────┴─────────────┴────────────────────────────────────┘
+
+
+Bias:
+
+    1023
+
+
+For normalized numbers:
+
+    Value = (-1)^S × (1.F) × 2^(E-1023)
+
+
+============================================================
+15.14 BIASED EXPONENT
+============================================================
+
+IEEE 754 does not store the exponent directly.
+
+Instead, it uses a bias.
+
+
+For single precision:
+
+    Bias = 127
+
+
+Stored exponent:
+
+    E = Actual exponent + 127
+
+
+Example:
+
+Actual exponent:
+
+    +3
+
+
+Stored exponent:
+
+    3 + 127 = 130
+
+
+130 in binary:
+
+    10000010
+
+
+Therefore:
+
+    Actual exponent = Stored exponent - 127
+
+
+============================================================
+15.15 DOUBLE PRECISION BIAS
+============================================================
+
+For double precision:
+
+    Bias = 1023
+
+
+Example:
+
+Actual exponent:
+
+    +5
+
+
+Stored exponent:
+
+    5 + 1023
+    = 1028
+
+
+To recover:
+
+    Actual exponent
+    = Stored exponent - 1023
+
+
+============================================================
+15.16 FLOATING-POINT ADDITION
+============================================================
+
+Floating-point addition is NOT simply:
+
+    Add the fraction bits.
+
+
+The exponents must first be aligned.
+
+
+General steps:
+
+    1. Compare exponents
+    2. Align significands
+    3. Add significands
+    4. Normalize result
+    5. Round result
+    6. Check overflow/underflow
+
+
+MEMORY:
+
+    COMPARE
+       ↓
+    ALIGN
+       ↓
+      ADD
+       ↓
+    NORMALIZE
+       ↓
+     ROUND
+
+
+============================================================
+15.17 FLOATING-POINT ADDITION — EXAMPLE
+============================================================
+
+Consider:
+
+    1.5 × 2³
+    +
+    1.25 × 2²
+
+
+Step 1:
+
+    Compare exponents.
+
+    3 and 2
+
+
+Step 2:
+
+    Make exponents equal.
+
+Convert:
+
+    1.25 × 2²
+
+to:
+
+    0.625 × 2³
+
+
+Step 3:
+
+    Add significands:
+
+    1.5
+    0.625
+    -----
+    2.125
+
+
+Therefore:
+
+    2.125 × 2³
+
+
+Step 4:
+
+Normalize:
+
+    2.125 × 2³
+    =
+    1.0625 × 2⁴
+
+
+Final:
+
+    1.0625 × 2⁴
+
+
+============================================================
+15.18 WHY EXPONENT ALIGNMENT IS NECESSARY
+============================================================
+
+Suppose:
+
+    1.1 × 2⁵
+    +
+    1.01 × 2³
+
+
+We cannot directly add:
+
+    1.1 + 1.01
+
+
+because their powers of 2 are different.
+
+
+We must first convert:
+
+    1.01 × 2³
+
+into:
+
+    0.0101 × 2⁵
+
+
+Now:
+
+    1.1000
+    0.0101
+    ------
+    1.1101
+
+
+Therefore:
+
+    1.1101 × 2⁵
+
+
+============================================================
+15.19 FLOATING-POINT ADDITION ALGORITHM
+============================================================
+
+Given:
+
+    A = M₁ × 2^E₁
+    B = M₂ × 2^E₂
+
+
+STEP 1:
+
+    Compare E₁ and E₂.
+
+
+STEP 2:
+
+    Shift the significand of the number having the smaller
+    exponent.
+
+
+STEP 3:
+
+    Make:
+
+        E₁ = E₂
+
+
+STEP 4:
+
+    Add the significands.
+
+
+STEP 5:
+
+    Normalize the result.
+
+
+STEP 6:
+
+    Round if necessary.
+
+
+STEP 7:
+
+    Check for overflow/underflow.
+
+
+============================================================
+15.20 FLOATING-POINT SUBTRACTION
+============================================================
+
+Floating-point subtraction follows almost the same process
+as addition.
+
+
+Steps:
+
+    1. Compare exponents
+    2. Align significands
+    3. Subtract significands
+    4. Normalize
+    5. Round
+    6. Check range
+
+
+Example:
+
+    1.75 × 2³
+    -
+    1.25 × 2³
+
+
+Same exponent:
+
+    1.75 - 1.25 = 0.5
+
+
+Therefore:
+
+    0.5 × 2³
+
+
+Normalize:
+
+    1.0 × 2²
+
+
+Final:
+
+    1.0 × 2²
+
+
+============================================================
+15.21 NORMALIZATION AFTER SUBTRACTION
+============================================================
+
+Subtraction may produce a result beginning with zero.
+
+
+Example:
+
+    1.000 × 2⁴
+    -
+    0.111 × 2⁴
+    = 0.001 × 2⁴
+
+
+This is not normalized.
+
+
+Move the binary point:
+
+    0.001 × 2⁴
+    =
+    1.000 × 2¹
+
+
+Therefore:
+
+    Normalize by shifting left
+    and decreasing the exponent.
+
+
+============================================================
+15.22 FLOATING-POINT MULTIPLICATION
+============================================================
+
+Floating-point multiplication is easier than addition.
+
+
+General rule:
+
+    Multiply significands.
+
+    Add exponents.
+
+    Determine sign.
+
+    Normalize.
+
+    Round.
+
+
+Formula:
+
+    (M₁ × 2^E₁) × (M₂ × 2^E₂)
+
+    =
+    (M₁ × M₂) × 2^(E₁+E₂)
+
+
+============================================================
+15.23 MULTIPLICATION SIGN
+============================================================
+
+Sign rules:
+
+    Positive × Positive = Positive
+
+    Positive × Negative = Negative
+
+    Negative × Positive = Negative
+
+    Negative × Negative = Positive
+
+
+In terms of sign bits:
+
+    Sign result = S₁ XOR S₂
+
+
+============================================================
+15.24 FLOATING-POINT MULTIPLICATION EXAMPLE
+============================================================
+
+Calculate:
+
+    (1.5 × 2²) × (1.25 × 2³)
+
+
+Step 1:
+
+Multiply significands:
+
+    1.5 × 1.25
+    = 1.875
+
+
+Step 2:
+
+Add exponents:
+
+    2 + 3 = 5
+
+
+Therefore:
+
+    1.875 × 2⁵
+
+
+Already normalized.
+
+
+Final:
+
+    1.875 × 2⁵
+
+
+============================================================
+15.25 FLOATING-POINT DIVISION
+============================================================
+
+Floating-point division follows:
+
+    Divide significands.
+
+    Subtract exponents.
+
+    Determine sign.
+
+    Normalize.
+
+    Round.
+
+
+Formula:
+
+    (M₁ × 2^E₁)
+    ----------------
+    (M₂ × 2^E₂)
+
+    =
+    (M₁/M₂) × 2^(E₁-E₂)
+
+
+============================================================
+15.26 DIVISION SIGN
+============================================================
+
+Sign rules:
+
+    Positive ÷ Positive = Positive
+
+    Positive ÷ Negative = Negative
+
+    Negative ÷ Positive = Negative
+
+    Negative ÷ Negative = Positive
+
+
+Sign result:
+
+    S₁ XOR S₂
+
+
+============================================================
+15.27 FLOATING-POINT DIVISION EXAMPLE
+============================================================
+
+Calculate:
+
+    (1.5 × 2⁵) ÷ (1.25 × 2²)
+
+
+Step 1:
+
+Divide significands:
+
+    1.5 / 1.25
+    = 1.2
+
+
+Step 2:
+
+Subtract exponents:
+
+    5 - 2 = 3
+
+
+Therefore:
+
+    1.2 × 2³
+
+
+This is normalized.
+
+
+Final:
+
+    1.2 × 2³
+
+
+============================================================
+15.28 FLOATING-POINT OPERATION SUMMARY
+============================================================
+
+ADDITION:
+
+    Align exponents
+        ↓
+    Add significands
+        ↓
+    Normalize
+        ↓
+    Round
+
+
+SUBTRACTION:
+
+    Align exponents
+        ↓
+    Subtract significands
+        ↓
+    Normalize
+        ↓
+    Round
+
+
+MULTIPLICATION:
+
+    Multiply significands
+        ↓
+    Add exponents
+        ↓
+    Normalize
+        ↓
+    Round
+
+
+DIVISION:
+
+    Divide significands
+        ↓
+    Subtract exponents
+        ↓
+    Normalize
+        ↓
+    Round
+
+
+============================================================
+15.29 PRECISION
+============================================================
+
+Precision refers to how accurately a floating-point format
+can represent values.
+
+
+More fraction bits generally provide:
+
+    Higher precision
+
+
+Single precision:
+
+    23 explicit fraction bits
+
+
+Double precision:
+
+    52 explicit fraction bits
+
+
+Double precision generally provides more precision than
+single precision.
+
+
+============================================================
+15.30 RANGE VS PRECISION
+============================================================
+
+Two important concepts:
+
+    RANGE
+    PRECISION
+
+
+RANGE:
+
+    How large or small a number can be represented.
+
+
+PRECISION:
+
+    How many significant digits can be represented accurately.
+
+
+Exponent mainly affects:
+
+    RANGE
+
+
+Fraction/significand mainly affects:
+
+    PRECISION
+
+
+MEMORY TRICK:
+
+    Exponent → Range
+
+    Fraction → Precision
+
+
+============================================================
+15.31 ROUNDING
+============================================================
+
+A floating-point format has limited bits.
+
+
+Sometimes the exact mathematical result contains more bits
+than can be stored.
+
+
+The extra bits must be handled.
+
+This process is:
+
+    ROUNDING
+
+
+Example:
+
+Suppose only 4 fractional bits are available:
+
+    Exact:
+        1.101101...
+
+
+Stored approximation may be:
+
+    1.1011
+
+
+or:
+
+    1.1100
+
+
+depending on the rounding rule.
+
+
+============================================================
+15.32 TRUNCATION
+============================================================
+
+Truncation simply discards extra bits.
+
+
+Example:
+
+    Exact:
+
+    1.10110111
+
+
+Keep 4 fraction bits:
+
+    1.1011
+
+
+Discard:
+
+    0111
+
+
+No adjustment is made.
+
+
+Truncation is simple but may introduce more error than
+round-to-nearest.
+
+
+============================================================
+15.33 ROUND-TO-NEAREST
+============================================================
+
+The value closest to the exact result is selected.
+
+
+Conceptually:
+
+    Exact value
+         ↓
+    Find nearest representable value
+         ↓
+    Store it
+
+
+IEEE 754 commonly uses:
+
+    Round to nearest, ties to even
+
+
+This is also called:
+
+    Round-to-nearest-even
+
+
+============================================================
+15.34 ROUND-TO-NEAREST-EVEN
+============================================================
+
+When the exact value lies exactly halfway between two
+representable values, the one whose final retained bit is
+even is selected.
+
+
+This helps reduce systematic rounding bias.
+
+
+Example concept:
+
+    Two possible values:
+
+        ...0
+        ...1
+
+
+If exactly halfway:
+
+    Choose the one with an even least significant retained
+    bit.
+
+
+============================================================
+15.35 ROUNDING ERROR
+============================================================
+
+Because only a finite number of bits are available, the
+stored result may differ from the exact mathematical result.
+
+
+This difference is:
+
+    ROUNDING ERROR
+
+
+Example:
+
+    Exact:
+        1/3
+
+Decimal:
+
+    0.333333333...
+
+
+A finite computer representation cannot store infinitely many
+digits.
+
+
+Therefore:
+
+    Stored value ≈ 0.333333...
+
+
+not exactly:
+
+    1/3
+
+
+============================================================
+15.36 FLOATING-POINT PRECISION PROBLEM
+============================================================
+
+A famous example:
+
+    0.1 + 0.2
+
+
+Mathematically:
+
+    0.1 + 0.2 = 0.3
+
+
+But in binary floating-point, 0.1 and 0.2 generally cannot
+be represented exactly in finite binary form.
+
+
+Therefore the computer may obtain a value extremely close to:
+
+    0.3
+
+
+but not necessarily exactly equal to the mathematical value
+0.3.
+
+
+This is a representation issue, not simply an arithmetic
+mistake.
+
+
+============================================================
+15.37 CATASTROPHIC CANCELLATION
+============================================================
+
+When subtracting two nearly equal floating-point numbers,
+many leading significant digits can cancel.
+
+
+Example:
+
+    1.234567
+    -
+    1.234566
+    --------
+    0.000001
+
+
+The original numbers may each have many accurate digits, but
+the subtraction can leave a result with much less reliable
+relative precision.
+
+
+This is called:
+
+    CANCELLATION
+
+
+It is an important numerical-computing issue.
+
+
+============================================================
+15.38 FLOATING-POINT OVERFLOW
+============================================================
+
+Overflow occurs when the result is too large to be represented
+by the floating-point format.
+
+
+Example concept:
+
+    Maximum representable value
+            +
+         another value
+            ↓
+       Too large
+
+
+Result may become:
+
+    +∞
+
+or:
+
+    -∞
+
+depending on the operation and signs.
+
+
+============================================================
+15.39 FLOATING-POINT UNDERFLOW
+============================================================
+
+Underflow occurs when a nonzero result is too small in
+magnitude to be represented as a normal floating-point number.
+
+
+Example concept:
+
+    Very small × Very small
+             ↓
+       Extremely small
+             ↓
+          Underflow
+
+
+IEEE 754 supports subnormal numbers to extend the range
+gradually toward zero.
+
+
+============================================================
+15.40 ZERO
+============================================================
+
+IEEE 754 supports:
+
+    +0
+
+and:
+
+    -0
+
+
+They compare equal in ordinary numerical comparison, but the
+sign of zero can matter in some operations.
+
+
+IEEE 754 therefore has two representations of zero.
+
+
+============================================================
+15.41 INFINITY
+============================================================
+
+IEEE 754 supports:
+
+    +∞
+    -∞
+
+
+Infinity can arise from operations such as:
+
+    Positive finite number / 0
+
+or from overflow.
+
+
+Examples conceptually:
+
+    1 / 0 → +∞
+
+    -1 / 0 → -∞
+
+
+The exact behavior depends on the operands and IEEE 754 rules.
+
+
+============================================================
+15.42 NaN
+============================================================
+
+NaN means:
+
+    Not a Number
+
+
+NaN represents an invalid or undefined numerical result.
+
+
+Examples include certain invalid operations such as:
+
+    0 / 0
+
+
+or:
+
+    ∞ - ∞
+
+
+NaN is not an ordinary numerical value.
+
+
+============================================================
+15.43 SUBNORMAL NUMBERS
+============================================================
+
+Normal IEEE 754 numbers generally have an implicit leading 1:
+
+    1.F
+
+
+Subnormal numbers do not use that implicit leading 1.
+
+
+They allow representation of values very close to zero.
+
+
+Purpose:
+
+    Provide gradual underflow.
+
+
+This reduces the abrupt jump from the smallest normal number
+directly to zero.
+
+
+============================================================
+15.44 IEEE 754 SPECIAL VALUES
+============================================================
+
+Special representations include:
+
+    +0
+    -0
+    +∞
+    -∞
+    NaN
+    Subnormal numbers
+
+
+Conceptually:
+
+    ┌───────────────────────────────────────────┐
+    │ IEEE 754                                  │
+    │                                           │
+    │ Normal numbers                            │
+    │ Subnormal numbers                         │
+    │ +0 / -0                                   │
+    │ +∞ / -∞                                   │
+    │ NaN                                       │
+    └───────────────────────────────────────────┘
+
+
+============================================================
+15.45 FLOATING-POINT UNIT (FPU)
+============================================================
+
+FPU stands for:
+
+    FLOATING-POINT UNIT
+
+
+It is hardware designed to efficiently perform floating-point
+operations.
+
+
+Typical FPU operations include:
+
+    • Floating-point addition
+    • Floating-point subtraction
+    • Floating-point multiplication
+    • Floating-point division
+    • Comparisons
+    • Conversion operations
+
+
+Modern processors may include floating-point hardware within
+their execution units.
+
+
+============================================================
+15.46 FPU BASIC STRUCTURE
+============================================================
+
+Conceptually:
+
+                    CPU
+                     │
+        ┌────────────┴────────────┐
+        │                         │
+        ▼                         ▼
+   Integer ALU                   FPU
+        │                         │
+        │                  ┌──────┼──────┐
+        │                  │      │      │
+        │                 ADD    MUL    DIV
+        │                  │      │      │
+        └──────────────────┴──────┴──────┘
+                           │
+                         Result
+
+
+The actual structure of a modern CPU is much more complex.
+
+
+============================================================
+15.47 FPU VS INTEGER ALU
+============================================================
+
+INTEGER ALU:
+
+    Designed primarily for integer and bitwise operations.
+
+
+FPU:
+
+    Designed for floating-point operations.
+
+
+Example:
+
+    Integer:
+
+        10 + 20
+
+
+    Floating point:
+
+        10.25 + 20.75
+
+
+Modern processors may have multiple specialized execution
+units rather than one simple ALU and one simple FPU.
+
+
+============================================================
+15.48 FLOATING-POINT ADDITION HARDWARE
+============================================================
+
+A conceptual floating-point adder contains:
+
+    1. Exponent comparison
+    2. Significand alignment
+    3. Significand addition/subtraction
+    4. Normalization
+    5. Rounding
+    6. Exception detection
+
+
+Conceptually:
+
+    A ──→ Unpack ──→ Align ──→ Add/Sub ──→ Normalize
+                                              │
+                                              ▼
+                                            Round
+                                              │
+                                              ▼
+                                           Result
+
+
+============================================================
+15.49 FLOATING-POINT MULTIPLICATION HARDWARE
+============================================================
+
+Conceptual process:
+
+    A ──→ Unpack
+             │
+             ├── Determine sign
+             │
+             ├── Add exponents
+             │
+             └── Multiply significands
+                       │
+                       ▼
+                   Normalize
+                       │
+                       ▼
+                     Round
+                       │
+                       ▼
+                    Result
+
+
+============================================================
+15.50 FLOATING-POINT DIVISION HARDWARE
+============================================================
+
+Conceptual process:
+
+    A ──→ Unpack
+             │
+             ├── Determine sign
+             │
+             ├── Subtract exponents
+             │
+             └── Divide significands
+                       │
+                       ▼
+                   Normalize
+                       │
+                       ▼
+                     Round
+                       │
+                       ▼
+                    Result
+
+
+============================================================
+15.51 GUARD, ROUND AND STICKY BITS
+============================================================
+
+Floating-point hardware often uses extra bits during
+rounding.
+
+
+Important bits include:
+
+    Guard bit
+    Round bit
+    Sticky bit
+
+
+They help determine whether the result should be rounded.
+
+
+Conceptually:
+
+    Stored fraction | Guard | Round | Sticky
+
+
+These bits are especially important for correctly rounded
+floating-point arithmetic.
+
+
+============================================================
+15.52 GUARD BIT
+============================================================
+
+The guard bit is an extra bit immediately beyond the retained
+precision.
+
+
+Example:
+
+    Desired fraction:
+
+        1011
+
+    Additional bits:
+
+        1 0 1...
+
+
+The first extra bit may serve as the:
+
+    Guard bit
+
+
+============================================================
+15.53 ROUND BIT
+============================================================
+
+The round bit is another bit beyond the guard bit.
+
+
+Conceptually:
+
+    Fraction | G | R | S
+
+
+where:
+
+    G = Guard
+    R = Round
+    S = Sticky
+
+
+These provide information about discarded bits.
+
+
+============================================================
+15.54 STICKY BIT
+============================================================
+
+Sticky bit becomes 1 if any discarded bit after the relevant
+rounding position is 1.
+
+
+Example:
+
+    Discarded bits:
+
+        0001000
+
+
+Sticky:
+
+        1
+
+
+because at least one discarded bit is 1.
+
+
+If all discarded bits are zero:
+
+    Sticky = 0
+
+
+============================================================
+15.55 FLOATING-POINT COMPARISON
+============================================================
+
+Floating-point comparison must account for:
+
+    • Sign
+    • Exponent
+    • Significand
+    • Special values
+
+
+Examples:
+
+    5.0 > 3.0
+
+    2.5 = 2.5
+
+
+But:
+
+    NaN
+
+has special comparison behavior.
+
+
+In IEEE 754, NaN is unordered with ordinary numerical
+values.
+
+
+============================================================
+15.56 ABSOLUTE VS RELATIVE ERROR
+============================================================
+
+ABSOLUTE ERROR:
+
+    |Exact value - Approximate value|
+
+
+RELATIVE ERROR:
+
+    |Exact - Approximate|
+    ---------------------
+         |Exact|
+
+
+Relative error is often useful when comparing accuracy across
+different scales.
+
+
+============================================================
+15.57 FLOATING-POINT PRECISION EXAMPLE
+============================================================
+
+Suppose a system can store only a limited number of
+significant bits.
+
+
+Exact result:
+
+    1.101101101...
+
+
+Stored:
+
+    1.101101
+
+
+The difference between exact and stored values is due to
+finite precision.
+
+
+Therefore:
+
+    More fraction bits
+          ↓
+    More precision
+          ↓
+    Usually smaller rounding error
+
+
+============================================================
+15.58 IMPORTANT DIFFERENCE:
+      FLOATING-POINT VS INTEGER
+============================================================
+
+INTEGER:
+
+    Fixed positional representation.
+
+
+Example:
+
+    1010₂ = 10
+
+
+FLOATING-POINT:
+
+    Uses:
+
+    Sign + Exponent + Significand
+
+
+Example concept:
+
+    1.01 × 2³
+
+
+Floating-point supports a much larger range of values.
+
+
+============================================================
+15.59 ADVANTAGES OF FLOATING POINT
+============================================================
+
+Advantages:
+
+    • Represents very large numbers.
+    • Represents very small numbers.
+    • Represents fractional values.
+    • Useful for scientific calculations.
+    • Supports a wide dynamic range.
+
+
+============================================================
+15.60 LIMITATIONS OF FLOATING POINT
+============================================================
+
+Limitations:
+
+    • Not every real number can be represented exactly.
+    • Rounding errors occur.
+    • Arithmetic can accumulate error.
+    • Comparisons can require care.
+    • Overflow and underflow are possible.
+    • Hardware is more complex than integer arithmetic.
+
+
+============================================================
+15.61 NUMERICAL PROBLEM 1
+============================================================
+
+Represent:
+
+    5.5
+
+in normalized binary form.
+
+
+Step 1:
+
+    5.5₁₀ = 101.1₂
+
+
+Step 2:
+
+Normalize:
+
+    101.1₂
+    =
+    1.011₂ × 2²
+
+
+Answer:
+
+    1.011 × 2²
+
+
+============================================================
+15.62 NUMERICAL PROBLEM 2
+============================================================
+
+Convert:
+
+    0.75₁₀
+
+to binary.
+
+
+Multiply by 2:
+
+    0.75 × 2 = 1.5
+
+First bit:
+
+    1
+
+
+Take fractional part:
+
+    0.5 × 2 = 1.0
+
+Next bit:
+
+    1
+
+
+Therefore:
+
+    0.75₁₀ = 0.11₂
+
+
+Normalized:
+
+    1.1₂ × 2⁻¹
+
+
+Answer:
+
+    1.1 × 2⁻¹
+
+
+============================================================
+15.63 NUMERICAL PROBLEM 3
+============================================================
+
+Add:
+
+    1.5 × 2³
+    +
+    1.25 × 2²
+
+
+Align exponents:
+
+    1.5 × 2³
+    +
+    0.625 × 2³
+
+
+Add:
+
+    1.5 + 0.625
+    = 2.125
+
+
+Therefore:
+
+    2.125 × 2³
+
+
+Normalize:
+
+    1.0625 × 2⁴
+
+
+Answer:
+
+    1.0625 × 2⁴
+
+
+============================================================
+15.64 NUMERICAL PROBLEM 4
+============================================================
+
+Multiply:
+
+    (1.5 × 2²)(1.25 × 2³)
+
+
+Significands:
+
+    1.5 × 1.25 = 1.875
+
+
+Exponents:
+
+    2 + 3 = 5
+
+
+Answer:
+
+    1.875 × 2⁵
+
+
+============================================================
+15.65 NUMERICAL PROBLEM 5
+============================================================
+
+Divide:
+
+    (1.5 × 2⁵)
+    ------------
+    (1.25 × 2²)
+
+
+Significands:
+
+    1.5 / 1.25 = 1.2
+
+
+Exponents:
+
+    5 - 2 = 3
+
+
+Answer:
+
+    1.2 × 2³
+
+
+============================================================
+15.66 IEEE 754 SINGLE-PRECISION EXAMPLE
+============================================================
+
+Represent:
+
+    +5.5
+
+
+Step 1:
+
+Convert to binary:
+
+    5.5 = 101.1₂
+
+
+Step 2:
+
+Normalize:
+
+    1.011 × 2²
+
+
+Step 3:
+
+Sign:
+
+    Positive
+
+    S = 0
+
+
+Step 4:
+
+Actual exponent:
+
+    2
+
+
+Bias:
+
+    127
+
+
+Stored exponent:
+
+    2 + 127
+    = 129
+
+
+129 in binary:
+
+    10000001
+
+
+Step 5:
+
+Fraction:
+
+    01100000000000000000000
+
+
+Therefore:
+
+    Sign:
+        0
+
+    Exponent:
+        10000001
+
+    Fraction:
+        01100000000000000000000
+
+
+Complete:
+
+    0 10000001 01100000000000000000000
+
+
+============================================================
+15.67 IEEE 754 SINGLE-PRECISION FORMULA
+============================================================
+
+For a normalized number:
+
+    Value = (-1)^S × (1.F) × 2^(E-127)
+
+
+Where:
+
+    S = Sign bit
+
+    E = Stored exponent
+
+    F = Fraction field
+
+
+Remember:
+
+    Stored exponent ≠ actual exponent
+
+
+Actual exponent:
+
+    E - 127
+
+
+============================================================
+15.68 IEEE 754 DOUBLE-PRECISION FORMULA
+============================================================
+
+For a normalized number:
+
+    Value = (-1)^S × (1.F) × 2^(E-1023)
+
+
+Where:
+
+    S = Sign bit
+
+    E = Stored exponent
+
+    F = Fraction field
+
+
+Bias:
+
+    1023
+
+
+============================================================
+15.69 SPECIAL IEEE 754 CASES
+============================================================
+
+Exponent = all 0s:
+
+    • Zero
+    • Subnormal numbers
+
+
+Exponent = all 1s:
+
+    • Infinity
+    • NaN
+
+
+Conceptually:
+
+    ┌──────────────┬─────────────────────────┐
+    │ Exponent     │ Meaning                 │
+    ├──────────────┼─────────────────────────┤
+    │ All 0        │ Zero / Subnormal        │
+    │ Normal       │ Normalized numbers      │
+    │ All 1        │ Infinity / NaN          │
+    └──────────────┴─────────────────────────┘
+
+
+============================================================
+15.70 B.TECH QUESTIONS
+============================================================
+
+1. What is floating-point representation?
+
+2. Why is floating-point representation required?
+
+3. Explain sign, exponent and significand.
+
+4. Explain normalization.
+
+5. Explain IEEE 754 single precision.
+
+6. Explain IEEE 754 double precision.
+
+7. What is exponent bias?
+
+8. Why is a biased exponent used?
+
+9. Explain floating-point addition.
+
+10. Explain floating-point subtraction.
+
+11. Explain floating-point multiplication.
+
+12. Explain floating-point division.
+
+13. Explain rounding.
+
+14. Explain truncation.
+
+15. What is round-to-nearest-even?
+
+16. Explain floating-point precision.
+
+17. Differentiate range and precision.
+
+18. Explain floating-point overflow and underflow.
+
+19. What is NaN?
+
+20. What are subnormal numbers?
+
+21. Explain guard, round and sticky bits.
+
+22. What is an FPU?
+
+23. Differentiate integer ALU and FPU.
+
+24. Explain floating-point addition hardware.
+
+25. Explain floating-point multiplication hardware.
+
+
+============================================================
+15.71 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. IEEE 754 single precision uses:
+
+A. 16 bits
+B. 32 bits
+C. 64 bits
+D. 128 bits
+
+
+Q2. In single precision, the exponent field contains:
+
+A. 4 bits
+B. 8 bits
+C. 11 bits
+D. 23 bits
+
+
+Q3. In single precision, the fraction field contains:
+
+A. 8 bits
+B. 11 bits
+C. 23 bits
+D. 52 bits
+
+
+Q4. The bias for IEEE 754 single precision is:
+
+A. 31
+B. 63
+C. 127
+D. 255
+
+
+Q5. The bias for IEEE 754 double precision is:
+
+A. 127
+B. 255
+C. 512
+D. 1023
+
+
+Q6. A normalized binary floating-point number generally
+     has the form:
+
+A. 0.x × 2ⁿ
+B. 1.x × 2ⁿ
+C. 2.x × 2ⁿ
+D. 10.x × 2ⁿ
+
+
+Q7. In floating-point addition, the first major step is:
+
+A. Multiply significands
+B. Align exponents
+C. Divide exponents
+D. Round immediately
+
+
+Q8. In floating-point multiplication, exponents are:
+
+A. Added
+B. Subtracted
+C. Multiplied
+D. Ignored
+
+
+Q9. In floating-point division, exponents are:
+
+A. Added
+B. Subtracted
+C. Multiplied
+D. Squared
+
+
+Q10. Which field primarily determines the range?
+
+A. Sign
+B. Fraction
+C. Exponent
+D. Mantissa sign
+
+
+Q11. Which field primarily determines precision?
+
+A. Exponent
+B. Fraction
+C. Sign
+D. Bias
+
+
+Q12. NaN means:
+
+A. Negative and Null
+B. Not a Number
+C. Normal Arithmetic Number
+D. New Arithmetic Node
+
+
+Q13. Subnormal numbers help handle:
+
+A. Very large values
+B. Values close to zero
+C. Only integers
+D. Only negative values
+
+
+Q14. The sign result of floating-point multiplication can be
+     determined using:
+
+A. AND
+B. OR
+C. XOR
+D. NAND
+
+
+Q15. FPU stands for:
+
+A. Floating Processing Unit
+B. Floating-Point Unit
+C. Fixed Processing Unit
+D. Fast Processing Unit
+
+
+============================================================
+ANSWERS
+============================================================
+
+    Q1  → B
+    Q2  → B
+    Q3  → C
+    Q4  → C
+    Q5  → D
+    Q6  → B
+    Q7  → B
+    Q8  → A
+    Q9  → B
+    Q10 → C
+    Q11 → B
+    Q12 → B
+    Q13 → B
+    Q14 → C
+    Q15 → B
+
+
+============================================================
+15.72 COMMON EXAM TRAPS
+============================================================
+
+TRAP 1:
+
+    Thinking exponent field stores the actual exponent.
+
+CORRECT:
+
+    IEEE 754 stores a biased exponent.
+
+
+TRAP 2:
+
+    Assuming floating-point numbers are always exact.
+
+CORRECT:
+
+    Many decimal fractions cannot be represented exactly
+    in finite binary floating point.
+
+
+TRAP 3:
+
+    Adding significands before aligning exponents.
+
+CORRECT:
+
+    Align exponents first.
+
+
+TRAP 4:
+
+    Multiplying exponents during multiplication.
+
+CORRECT:
+
+    Add exponents.
+
+
+TRAP 5:
+
+    Dividing exponents during division.
+
+CORRECT:
+
+    Subtract exponents.
+
+
+TRAP 6:
+
+    Confusing range and precision.
+
+CORRECT:
+
+    Exponent → Range
+
+    Fraction → Precision
+
+
+TRAP 7:
+
+    Thinking overflow and underflow are the same.
+
+CORRECT:
+
+    Overflow → result too large
+
+    Underflow → result too small in magnitude
+
+
+TRAP 8:
+
+    Assuming NaN is infinity.
+
+CORRECT:
+
+    NaN and infinity are different IEEE 754 values.
+
+
+============================================================
+15.73 QUICK REVISION
+============================================================
+
+FLOATING POINT:
+
+    Sign + Exponent + Fraction
+
+
+SINGLE:
+
+    32 bits
+
+    1 Sign
+    8 Exponent
+    23 Fraction
+
+    Bias = 127
+
+
+DOUBLE:
+
+    64 bits
+
+    1 Sign
+    11 Exponent
+    52 Fraction
+
+    Bias = 1023
+
+
+NORMALIZED FORM:
+
+    1.x × 2^n
+
+
+ADDITION:
+
+    Align
+      ↓
+    Add
+      ↓
+    Normalize
+      ↓
+    Round
+
+
+SUBTRACTION:
+
+    Align
+      ↓
+    Subtract
+      ↓
+    Normalize
+      ↓
+    Round
+
+
+MULTIPLICATION:
+
+    Multiply significands
+    Add exponents
+    Normalize
+    Round
+
+
+DIVISION:
+
+    Divide significands
+    Subtract exponents
+    Normalize
+    Round
+
+
+SPECIAL VALUES:
+
+    +0
+    -0
+    +∞
+    -∞
+    NaN
+    Subnormal numbers
+
+
+PRECISION:
+
+    Mainly related to fraction/significand bits.
+
+
+RANGE:
+
+    Mainly related to exponent bits.
+
+
+FPU:
+
+    Hardware for floating-point operations.
+
+
+============================================================
+15.74 MASTER MEMORY MAP
+============================================================
+
+                 FLOATING-POINT
+                       │
+          ┌────────────┼────────────┐
+          │            │            │
+          ▼            ▼            ▼
+        SIGN        EXPONENT      FRACTION
+          │            │            │
+       + / -         RANGE       PRECISION
+                       │
+                       ▼
+                     BIAS
+                       │
+                       ▼
+                IEEE 754 FORMAT
+
+
+ARITHMETIC:
+
+    ADD:
+        Align → Add → Normalize → Round
+
+    SUB:
+        Align → Subtract → Normalize → Round
+
+    MUL:
+        Multiply → Add Exponents → Normalize → Round
+
+    DIV:
+        Divide → Subtract Exponents → Normalize → Round
+
+
+============================================================
+15.75 MASTER CHECKPOINT
+============================================================
+
+Before moving ahead, you should be able to:
+
+[ ] Define floating-point representation.
+[ ] Explain why floating point is required.
+[ ] Explain sign, exponent and significand.
+[ ] Convert binary fractions.
+[ ] Normalize binary floating-point numbers.
+[ ] Explain IEEE 754.
+[ ] Explain single precision.
+[ ] Explain double precision.
+[ ] Calculate exponent bias.
+[ ] Encode a simple IEEE 754 value.
+[ ] Decode a simple IEEE 754 value.
+[ ] Perform floating-point addition.
+[ ] Perform floating-point subtraction.
+[ ] Perform floating-point multiplication.
+[ ] Perform floating-point division.
+[ ] Explain normalization.
+[ ] Explain rounding.
+[ ] Explain truncation.
+[ ] Explain round-to-nearest-even.
+[ ] Explain precision.
+[ ] Explain range.
+[ ] Explain rounding error.
+[ ] Explain overflow.
+[ ] Explain underflow.
+[ ] Explain zero.
+[ ] Explain infinity.
+[ ] Explain NaN.
+[ ] Explain subnormal numbers.
+[ ] Explain guard, round and sticky bits.
+[ ] Explain FPU.
+[ ] Differentiate ALU and FPU.
+[ ] Solve floating-point numerical problems.
+
+
+============================================================
+CHAPTER 15 COMPLETE
+============================================================
+
+CORE IDEA:
+
+    Floating-point number
+            │
+            ▼
+    ┌─────────────────┐
+    │ Sign            │
+    │ Exponent        │
+    │ Fraction        │
+    └────────┬────────┘
+             │
+             ▼
+       IEEE 754 format
+             │
+             ▼
+       Floating-point
+         hardware
+             │
+       ┌─────┼─────┐
+       ▼     ▼     ▼
+      ADD   MUL   DIV
+       │     │     │
+       └─────┼─────┘
+             ▼
+       Normalize
+             ▼
+          Round
+             ▼
+          Result
+
+
+============================================================
+NEXT:
+CHAPTER 16 — MEMORY FUNDAMENTALS
+============================================================
+
+16.1 What is Memory?
+    • Storage concept
+    • Memory hierarchy
+
+16.2 Memory Terminology
+    • Bit
+    • Cell
+    • Address
+    • Word
+    • Capacity
+    • Access time
+    • Cycle time
+
+16.3 Memory Operations
+    • Read
+    • Write
+
+16.4 Memory Addressing
+    • Address space
+    • Addressable memory
+    • Byte addressing
+    • Word addressing
+============================================================

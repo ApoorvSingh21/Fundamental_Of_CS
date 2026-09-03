@@ -1,0 +1,2045 @@
+============================================================
+CHAPTER 10 — MACHINE INSTRUCTIONS
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner
+
+OBJECTIVE:
+Understand what machine instructions are, how instructions
+are represented, what opcode and operands mean, how
+instruction formats are designed, and how different types
+of instructions form an Instruction Set Architecture (ISA).
+
+
+============================================================
+10.1 WHAT IS AN INSTRUCTION?
+============================================================
+
+An INSTRUCTION is a command given to the CPU telling it
+what operation to perform.
+
+Examples:
+
+    ADD
+    SUB
+    LOAD
+    STORE
+    AND
+    OR
+    JUMP
+
+
+Simple idea:
+
+    Instruction = Command for the CPU
+
+
+Example:
+
+    ADD R1, R2
+
+
+Meaning:
+
+    Add the contents of R1 and R2.
+
+
+============================================================
+10.2 REAL-WORLD ANALOGY
+============================================================
+
+Imagine giving instructions to a person:
+
+    1. Pick up book.
+    2. Open page 10.
+    3. Read the page.
+    4. Write the answer.
+
+
+Similarly, a CPU receives instructions such as:
+
+    LOAD
+    ADD
+    STORE
+    JUMP
+
+
+A program is essentially a sequence of instructions.
+
+
+============================================================
+10.3 PROGRAM = SEQUENCE OF INSTRUCTIONS
+============================================================
+
+A CPU does not normally receive an entire program as one
+single command.
+
+Instead, it executes instructions one after another.
+
+Example:
+
+    LOAD R1, 1000
+    LOAD R2, 1004
+    ADD  R3, R1, R2
+    STORE R3, 1008
+
+
+Conceptually:
+
+    Instruction 1
+         ↓
+    Instruction 2
+         ↓
+    Instruction 3
+         ↓
+    Instruction 4
+         ↓
+    Program completed
+
+
+============================================================
+10.4 MACHINE INSTRUCTION
+============================================================
+
+A MACHINE INSTRUCTION is a binary-coded instruction that
+the processor's hardware can understand and execute.
+
+Humans prefer:
+
+    ADD R1, R2
+
+The processor ultimately works with encoded bits.
+
+Example of a simplified machine instruction:
+
+    0001 0010 0011
+
+
+The exact binary encoding depends on the ISA.
+
+
+Therefore:
+
+    Assembly instruction
+            ↓
+    Machine-code encoding
+            ↓
+    CPU executes it
+
+
+============================================================
+10.5 MACHINE LANGUAGE
+============================================================
+
+Machine language is the language directly represented by
+binary machine instructions.
+
+Example:
+
+    10110000 01100101
+
+
+The CPU's instruction-decoding hardware interprets these
+bits according to its ISA.
+
+
+Important:
+
+    Machine language is hardware/ISA specific.
+
+
+A machine instruction valid for one ISA may not be valid
+for another ISA.
+
+
+============================================================
+10.6 ASSEMBLY LANGUAGE
+============================================================
+
+Writing long sequences of binary numbers is difficult for
+humans.
+
+Assembly language uses symbolic names.
+
+Instead of:
+
+    0001 0010 0011
+
+we might write:
+
+    ADD R1, R2
+
+
+The assembler converts assembly language into machine-code
+instructions.
+
+
+Concept:
+
+    Assembly language
+            │
+            ▼
+        Assembler
+            │
+            ▼
+      Machine code
+            │
+            ▼
+           CPU
+
+
+============================================================
+10.7 INSTRUCTION COMPONENTS
+============================================================
+
+A machine instruction commonly contains:
+
+    1. Opcode
+    2. Operand information
+
+
+Conceptually:
+
+    ┌───────────────┬────────────────────────┐
+    │     OPCODE    │     OPERAND FIELDS     │
+    └───────────────┴────────────────────────┘
+
+
+Example:
+
+    ADD R1, R2
+
+
+    ADD
+     │
+     └── Opcode
+
+    R1, R2
+       │
+       └── Operand information
+
+
+============================================================
+10.8 OPCODE
+============================================================
+
+Opcode = Operation Code
+
+
+The opcode tells the CPU WHAT operation to perform.
+
+
+Examples:
+
+    ADD
+    SUB
+    LOAD
+    STORE
+    AND
+    OR
+    SHIFT
+    JUMP
+
+
+Example:
+
+    ADD R1, R2
+
+
+Opcode:
+
+    ADD
+
+
+Meaning:
+
+    Perform addition.
+
+
+============================================================
+10.9 OPERAND
+============================================================
+
+An OPERAND is the data, register, or address on which
+the operation acts.
+
+Example:
+
+    ADD R1, R2
+
+
+Operation:
+
+    ADD
+
+
+Operands:
+
+    R1
+    R2
+
+
+Another example:
+
+    ADD R1, 10
+
+
+Operands:
+
+    R1
+    10
+
+
+The exact syntax and operand count depend on the ISA.
+
+
+============================================================
+10.10 OPCODE VS OPERAND
+============================================================
+
+    OPCODE:
+
+        Tells CPU WHAT to do.
+
+
+    OPERAND:
+
+        Tells CPU WITH WHAT data/location to do it.
+
+
+Example:
+
+    ADD R1, R2
+
+
+    ADD → What to do
+    R1  → Operand
+    R2  → Operand
+
+
+Easy memory trick:
+
+    OPCODE = OPERATION
+
+    OPERAND = OBJECT/DATA USED BY OPERATION
+
+
+============================================================
+10.11 EXAMPLE OF AN INSTRUCTION
+============================================================
+
+Consider:
+
+    SUB R3, R1, R2
+
+
+Meaning:
+
+    R3 ← R1 - R2
+
+
+Here:
+
+    Opcode = SUB
+
+    Source operands:
+        R1
+        R2
+
+    Destination:
+        R3
+
+
+So the instruction tells the CPU:
+
+    Take R1
+    subtract R2
+    place the result in R3.
+
+
+============================================================
+10.12 ADDRESS FIELD
+============================================================
+
+An instruction may contain information identifying
+where an operand is located.
+
+This may be:
+
+    • A memory address
+    • A register number
+    • An immediate value
+    • An offset/displacement
+
+
+Example:
+
+    LOAD R1, 5000
+
+
+Possible interpretation:
+
+    R1 ← Memory[5000]
+
+
+Here:
+
+    R1   → destination register
+    5000 → address information
+
+
+============================================================
+10.13 INSTRUCTION FORMAT
+============================================================
+
+Instruction format describes how the bits of an instruction
+are divided into different fields.
+
+
+Example:
+
+    ┌────────┬──────────┬──────────┬──────────┐
+    │ Opcode │ Register │ Register │ Address  │
+    └────────┴──────────┴──────────┴──────────┘
+
+
+The exact fields depend on the processor's ISA.
+
+
+============================================================
+10.14 BASIC INSTRUCTION FORMAT
+============================================================
+
+A simplified instruction could be:
+
+    ┌──────────────┬───────────────┐
+    │    OPCODE    │    OPERAND    │
+    └──────────────┴───────────────┘
+
+
+For example:
+
+    ┌────────┬──────────┐
+    │  ADD   │  R1,R2   │
+    └────────┴──────────┘
+
+
+Actual machine code stores encoded bit patterns rather
+than text such as "ADD" or "R1".
+
+
+============================================================
+10.15 OPCODE FIELD
+============================================================
+
+The opcode field contains the binary encoding of the
+operation.
+
+
+Suppose an imaginary CPU has:
+
+    4-bit opcode
+
+
+Then there can be:
+
+    2^4 = 16
+
+possible opcode patterns.
+
+
+For example:
+
+    0000 → ADD
+    0001 → SUB
+    0010 → LOAD
+    0011 → STORE
+    ...
+
+
+IMPORTANT:
+
+These codes are only examples.
+
+Real processors use their own ISA-specific encodings.
+
+
+============================================================
+10.16 NUMBER OF OPERANDS
+============================================================
+
+Instructions can have different numbers of operands.
+
+
+Common forms:
+
+    0-operand
+    1-operand
+    2-operand
+    3-operand
+
+
+============================================================
+10.17 ZERO-ADDRESS INSTRUCTIONS
+============================================================
+
+Zero-address instructions contain no explicit operand
+addresses.
+
+They are commonly associated with stack-based machines.
+
+
+Example:
+
+    PUSH A
+    PUSH B
+    ADD
+
+
+ADD operates on values at the top of the stack.
+
+
+Concept:
+
+          Stack
+
+        B ← Top
+        A
+
+    ADD
+
+    → remove B
+    → remove A
+    → calculate A+B
+    → push result
+
+
+============================================================
+10.18 ONE-ADDRESS INSTRUCTIONS
+============================================================
+
+A one-address instruction explicitly specifies one address.
+
+A common example is an accumulator-based architecture.
+
+
+Example:
+
+    ADD X
+
+
+Possible meaning:
+
+    ACC ← ACC + Memory[X]
+
+
+Here:
+
+    ACC = accumulator
+
+
+The accumulator acts as an implicit operand.
+
+
+============================================================
+10.19 TWO-ADDRESS INSTRUCTIONS
+============================================================
+
+A two-address instruction explicitly specifies two
+operands.
+
+
+Example:
+
+    ADD R1, R2
+
+
+Possible meaning:
+
+    R1 ← R1 + R2
+
+
+Here:
+
+    R1 → destination + source
+    R2 → source
+
+
+The exact meaning depends on the ISA.
+
+
+============================================================
+10.20 THREE-ADDRESS INSTRUCTIONS
+============================================================
+
+Three-address instructions explicitly specify three
+registers/operands.
+
+
+Example:
+
+    ADD R3, R1, R2
+
+
+Meaning:
+
+    R3 ← R1 + R2
+
+
+Here:
+
+    R3 → destination
+    R1 → source
+    R2 → source
+
+
+Advantage:
+
+    Source registers can remain unchanged.
+
+
+============================================================
+10.21 COMPARISON OF ADDRESS FORMATS
+============================================================
+
+    ┌──────────────┬──────────────────────────────┐
+    │ Type         │ Example                      │
+    ├──────────────┼──────────────────────────────┤
+    │ 0-address    │ ADD                          │
+    │ 1-address    │ ADD X                        │
+    │ 2-address    │ ADD R1, R2                   │
+    │ 3-address    │ ADD R3, R1, R2              │
+    └──────────────┴──────────────────────────────┘
+
+
+General idea:
+
+    More explicit operands
+        ↓
+    More information in instruction
+        ↓
+    Potentially fewer instructions for an expression
+
+
+But instruction size and encoding complexity can increase.
+
+
+============================================================
+10.22 INSTRUCTION LENGTH
+============================================================
+
+Instruction length = Number of bits used to encode
+an instruction.
+
+
+Examples:
+
+    16-bit instruction
+    32-bit instruction
+    64-bit instruction
+
+
+Some ISAs use fixed-length instructions.
+
+Others use variable-length instructions.
+
+
+============================================================
+10.23 FIXED-LENGTH INSTRUCTIONS
+============================================================
+
+All or most instructions use the same instruction size.
+
+
+Example:
+
+    Every instruction = 32 bits
+
+
+Concept:
+
+    ┌────────────────────────────────┐
+    │          Instruction 1         │ 32 bits
+    ├────────────────────────────────┤
+    │          Instruction 2         │ 32 bits
+    ├────────────────────────────────┤
+    │          Instruction 3         │ 32 bits
+    └────────────────────────────────┘
+
+
+Advantages:
+
+    • Simple instruction fetch
+    • Easier decoding
+    • Predictable instruction boundaries
+    • Pipeline-friendly design
+
+
+Commonly associated with many RISC ISAs.
+
+
+============================================================
+10.24 VARIABLE-LENGTH INSTRUCTIONS
+============================================================
+
+Instructions may have different sizes.
+
+
+Example:
+
+    Instruction 1 → 1 byte
+    Instruction 2 → 3 bytes
+    Instruction 3 → 5 bytes
+
+
+Advantages:
+
+    • Can provide compact code
+    • Can support complex instruction encodings
+
+
+Disadvantages:
+
+    • More complicated decoding
+    • Instruction boundaries are less uniform
+
+
+x86 is a major example of an ISA with variable-length
+instructions.
+
+
+============================================================
+10.25 INSTRUCTION SET
+============================================================
+
+An INSTRUCTION SET is the collection of machine
+instructions supported by a processor's ISA.
+
+
+It may include:
+
+    Data transfer
+    Arithmetic
+    Logical
+    Shift
+    Branch
+    Control
+    I/O
+
+
+Example instruction set:
+
+    LOAD
+    STORE
+    ADD
+    SUB
+    AND
+    OR
+    XOR
+    SHIFT
+    JUMP
+
+
+The exact instruction set depends on the architecture.
+
+
+============================================================
+10.26 INSTRUCTION SET ARCHITECTURE — ISA
+============================================================
+
+ISA = Instruction Set Architecture
+
+
+ISA is the interface between software and processor
+hardware.
+
+
+It defines things such as:
+
+    • Instructions
+    • Registers
+    • Data types
+    • Instruction formats
+    • Addressing modes
+    • Memory model
+    • Exception/interrupt behavior
+
+
+Concept:
+
+    Software
+       │
+       │ ISA
+       ▼
+    Processor Hardware
+
+
+Programs target the ISA rather than the internal circuit
+implementation.
+
+
+============================================================
+10.27 ARCHITECTURE VS IMPLEMENTATION
+============================================================
+
+ISA tells us:
+
+    WHAT the processor can do.
+
+
+Microarchitecture tells us:
+
+    HOW the processor implements it.
+
+
+Example:
+
+    ISA:
+        Supports ADD instruction.
+
+
+    Microarchitecture:
+        May use one or more ALUs,
+        pipelines, forwarding,
+        scheduling, etc.
+
+
+Therefore:
+
+    ISA = Programmer-visible specification
+
+    Microarchitecture = Internal implementation
+
+
+============================================================
+10.28 DATA TRANSFER INSTRUCTIONS
+============================================================
+
+Data transfer instructions move data between locations.
+
+
+Examples:
+
+    LOAD
+    STORE
+    MOVE
+
+
+Example:
+
+    LOAD R1, 1000
+
+
+Meaning:
+
+    R1 ← Memory[1000]
+
+
+Example:
+
+    STORE R1, 2000
+
+
+Meaning:
+
+    Memory[2000] ← R1
+
+
+Example:
+
+    MOVE R2, R1
+
+
+Meaning:
+
+    R2 ← R1
+
+
+Exact syntax varies by ISA.
+
+
+============================================================
+10.29 ARITHMETIC INSTRUCTIONS
+============================================================
+
+Arithmetic instructions perform mathematical operations.
+
+
+Examples:
+
+    ADD
+    SUB
+    MUL
+    DIV
+    INC
+    DEC
+
+
+Example:
+
+    ADD R1, R2
+
+
+Possible operation:
+
+    R1 ← R1 + R2
+
+
+Example:
+
+    SUB R3, R4
+
+
+Possible operation:
+
+    R3 ← R3 - R4
+
+
+============================================================
+10.30 LOGICAL INSTRUCTIONS
+============================================================
+
+Logical instructions operate on individual bits or
+bit patterns.
+
+
+Examples:
+
+    AND
+    OR
+    XOR
+    NOT
+
+
+Example:
+
+    R3 ← R1 AND R2
+
+
+If:
+
+    R1 = 1010
+    R2 = 1100
+
+
+Then:
+
+        1010
+    AND 1100
+        ----
+        1000
+
+
+Therefore:
+
+    R3 = 1000
+
+
+============================================================
+10.31 SHIFT INSTRUCTIONS
+============================================================
+
+Shift instructions move bits.
+
+
+Examples:
+
+    Logical Shift Left
+    Logical Shift Right
+    Arithmetic Shift Right
+    Rotate
+
+
+Example:
+
+    R1 = 00101100
+
+
+Logical left shift by 1:
+
+    01011000
+
+
+Logical right shift by 1:
+
+    00010110
+
+
+Shifts are useful for:
+
+    • Bit manipulation
+    • Multiplication/division by powers of 2
+    • Data processing
+
+
+============================================================
+10.32 BRANCH INSTRUCTIONS
+============================================================
+
+Branch instructions change the normal sequence of
+instruction execution.
+
+
+Normally:
+
+    Instruction 1
+         ↓
+    Instruction 2
+         ↓
+    Instruction 3
+         ↓
+    Instruction 4
+
+
+A branch may cause:
+
+    Instruction 1
+         ↓
+    Instruction 2
+         ↓
+      JUMP
+         │
+         └────────► Instruction 20
+
+
+Examples:
+
+    JUMP
+    BEQ
+    BNE
+    BLT
+    BGT
+
+
+These are important for:
+
+    • if statements
+    • loops
+    • function control flow
+
+
+============================================================
+10.33 CONDITIONAL BRANCH
+============================================================
+
+A conditional branch changes control flow only if a
+condition is satisfied.
+
+
+Example:
+
+    BEQ R1, R2, LABEL
+
+
+Possible meaning:
+
+    If R1 == R2:
+
+        PC ← address of LABEL
+
+
+Otherwise:
+
+    Continue with next instruction.
+
+
+This allows programs to make decisions.
+
+
+============================================================
+10.34 CONTROL INSTRUCTIONS
+============================================================
+
+Control instructions affect processor operation or
+program execution.
+
+
+Examples may include:
+
+    • HALT
+    • NOP
+    • Interrupt-related instructions
+    • Return-from-exception instructions
+    • Privileged/system-control instructions
+
+
+Exact instructions depend on the ISA.
+
+
+============================================================
+10.35 I/O INSTRUCTIONS
+============================================================
+
+Some architectures provide explicit instructions for
+communication with I/O devices.
+
+
+Examples conceptually:
+
+    IN
+    OUT
+
+
+However, many modern architectures use
+memory-mapped I/O, where ordinary load/store operations
+access device registers.
+
+
+Important:
+
+    I/O organization is architecture-dependent.
+
+
+============================================================
+10.36 LOAD AND STORE
+============================================================
+
+Load:
+
+    Memory → Register
+
+
+Example:
+
+    LOAD R1, 1000
+
+    R1 ← Memory[1000]
+
+
+Store:
+
+    Register → Memory
+
+
+Example:
+
+    STORE R1, 1000
+
+    Memory[1000] ← R1
+
+
+Very important concept:
+
+    LOAD  = Bring data into CPU register
+
+    STORE = Send data from register to memory
+
+
+============================================================
+10.37 RISC LOAD/STORE IDEA
+============================================================
+
+In a typical load/store RISC architecture:
+
+    Arithmetic operations
+        ↓
+    Mostly operate on registers
+
+
+    Memory access
+        ↓
+    Performed using LOAD/STORE
+
+
+Example:
+
+    LOAD  R1, 1000
+    LOAD  R2, 1004
+    ADD   R3, R1, R2
+    STORE R3, 1008
+
+
+This is a key idea in RISC architectures.
+
+
+============================================================
+10.38 INSTRUCTION EXECUTION
+============================================================
+
+The CPU generally performs:
+
+    FETCH
+      ↓
+    DECODE
+      ↓
+    EXECUTE
+      ↓
+    MEMORY ACCESS
+      ↓
+    WRITE-BACK
+
+
+Example:
+
+    ADD R3, R1, R2
+
+
+FETCH:
+
+    CPU obtains the instruction.
+
+
+DECODE:
+
+    CPU identifies ADD and its operands.
+
+
+EXECUTE:
+
+    ALU performs:
+
+        R1 + R2
+
+
+WRITE-BACK:
+
+    Result is placed in R3.
+
+
+The exact stages vary by processor.
+
+
+============================================================
+10.39 INSTRUCTION DECODING
+============================================================
+
+After fetching an instruction, the CPU must determine:
+
+    • What operation is required?
+    • Which registers are involved?
+    • Is memory required?
+    • What addressing mode is being used?
+    • What control signals are required?
+
+
+The Control Unit/instruction decoder interprets
+the instruction encoding.
+
+
+Concept:
+
+    Machine instruction
+            │
+            ▼
+        Decoder
+            │
+       ┌────┼────┐
+       ▼    ▼    ▼
+      ALU  Reg  Memory
+     control control control
+
+
+============================================================
+10.40 INSTRUCTION FORMAT EXAMPLE
+============================================================
+
+Suppose an imaginary CPU uses a 16-bit instruction:
+
+    ┌────────┬───────┬───────┬──────────┐
+    │ Opcode │  R1   │  R2   │ Address  │
+    │ 4 bits │ 3 bits│ 3 bits│ 6 bits   │
+    └────────┴───────┴───────┴──────────┘
+
+Total:
+
+    4 + 3 + 3 + 6
+    = 16 bits
+
+
+This is only an educational example.
+
+Real ISAs have their own formats.
+
+
+============================================================
+10.41 NUMERICAL PROBLEM — OPCODE CAPACITY
+============================================================
+
+Suppose an instruction has a 5-bit opcode field.
+
+How many different opcode patterns are possible?
+
+
+Formula:
+
+    Number of patterns = 2^n
+
+where:
+
+    n = number of opcode bits
+
+
+Therefore:
+
+    2^5 = 32
+
+
+ANSWER:
+
+    32 different opcode patterns
+
+
+============================================================
+10.42 NUMERICAL PROBLEM — REGISTER ENCODING
+============================================================
+
+Suppose a register field contains 4 bits.
+
+How many registers can it identify?
+
+
+    2^4 = 16
+
+
+ANSWER:
+
+    16 registers
+
+
+============================================================
+10.43 NUMERICAL PROBLEM — INSTRUCTION FORMAT
+============================================================
+
+An instruction is 32 bits long.
+
+It contains:
+
+    Opcode = 6 bits
+    Register 1 = 5 bits
+    Register 2 = 5 bits
+
+How many bits remain?
+
+
+    Remaining
+    = 32 - 6 - 5 - 5
+    = 16 bits
+
+
+ANSWER:
+
+    16 bits
+
+
+These remaining bits could be used for an immediate,
+address, displacement, function field, or other information,
+depending on the ISA.
+
+
+============================================================
+10.44 NUMERICAL PROBLEM — OPCODE + REGISTERS
+============================================================
+
+A 32-bit instruction contains:
+
+    Opcode = 7 bits
+    Three register fields = 5 bits each
+
+
+Total used:
+
+    7 + 5 + 5 + 5
+    = 22 bits
+
+
+Remaining:
+
+    32 - 22
+    = 10 bits
+
+
+ANSWER:
+
+    10 bits remain.
+
+
+============================================================
+10.45 MACHINE INSTRUCTION VS ASSEMBLY INSTRUCTION
+============================================================
+
+Assembly:
+
+    ADD R1, R2
+
+
+Machine code:
+
+    Binary encoding defined by the ISA.
+
+
+Assembly is human-readable.
+
+Machine code is directly encoded for the processor.
+
+
+Conversion:
+
+    Assembly
+       │
+       ▼
+    Assembler
+       │
+       ▼
+    Machine Code
+       │
+       ▼
+       CPU
+
+
+============================================================
+10.46 RISC
+============================================================
+
+RISC = Reduced Instruction Set Computer
+
+
+RISC design generally emphasizes:
+
+    • Simple instructions
+    • Load/store architecture
+    • Large register sets
+    • Regular instruction formats
+    • Often fixed-length instructions
+    • Efficient pipelining
+
+
+Examples:
+
+    ARM
+    RISC-V
+    MIPS
+
+
+Important:
+
+    RISC does NOT simply mean "few instructions."
+
+It is a broader design philosophy emphasizing simple,
+regular instructions and efficient implementation.
+
+
+============================================================
+10.47 CISC
+============================================================
+
+CISC = Complex Instruction Set Computer
+
+
+CISC architectures generally support:
+
+    • More complex instructions
+    • Many instruction formats
+    • Many addressing modes
+    • Variable-length instructions in some major examples
+    • Instructions that may perform multiple low-level
+      operations
+
+
+Example:
+
+    x86
+
+
+Modern CISC processors may internally translate complex
+instructions into simpler internal operations.
+
+
+============================================================
+10.48 RISC VS CISC
+============================================================
+
+    ┌──────────────────┬──────────────────────┬──────────────────────┐
+    │ Feature          │ RISC                 │ CISC                 │
+    ├──────────────────┼──────────────────────┼──────────────────────┤
+    │ Instructions     │ Generally simpler    │ Generally complex    │
+    │ Formats           │ More regular         │ More varied          │
+    │ Instruction size │ Often fixed          │ Often variable       │
+    │ Memory operations │ Load/store emphasis  │ Can be more varied   │
+    │ Addressing modes │ Generally fewer       │ Generally more       │
+    │ Pipelining        │ Often easier         │ More complex         │
+    │ Example           │ RISC-V, ARM, MIPS    │ x86                  │
+    └──────────────────┴──────────────────────┴──────────────────────┘
+
+
+This is a simplified comparison.
+
+Modern processors blur the traditional distinction.
+
+
+============================================================
+10.49 RISC EXAMPLE
+============================================================
+
+Suppose we want:
+
+    C = A + B
+
+
+A load/store-style sequence could be:
+
+    LOAD  R1, A
+    LOAD  R2, B
+    ADD   R3, R1, R2
+    STORE R3, C
+
+
+Meaning:
+
+    R1 ← A
+    R2 ← B
+    R3 ← R1 + R2
+    C  ← R3
+
+
+The arithmetic operation works on registers.
+
+
+============================================================
+10.50 INSTRUCTION SET AND SOFTWARE
+============================================================
+
+Software is compiled/assembled into instructions that
+the target ISA supports.
+
+
+Concept:
+
+    High-level program
+          │
+          ▼
+       Compiler
+          │
+          ▼
+      Assembly
+          │
+          ▼
+      Machine code
+          │
+          ▼
+          ISA
+          │
+          ▼
+         CPU
+
+
+Therefore, ISA acts as an important boundary between
+software and hardware.
+
+
+============================================================
+10.51 ISA VS MICROARCHITECTURE
+============================================================
+
+ISA:
+
+    WHAT the programmer-visible processor supports.
+
+
+Microarchitecture:
+
+    HOW the processor internally implements it.
+
+
+Example:
+
+    ISA:
+        ADD R1, R2
+
+
+Possible implementation:
+
+    Registers
+       ↓
+      ALU
+       ↓
+    Result
+       ↓
+    Register
+
+
+Another implementation may use:
+
+    Multiple execution units
+    Pipeline
+    Forwarding
+    Out-of-order execution
+
+
+The same ISA can have multiple implementations.
+
+
+============================================================
+10.52 IMPORTANT CONCEPT
+============================================================
+
+Two different processors can implement the SAME ISA.
+
+For example, two processors may both execute the same
+machine instructions while having different:
+
+    • Pipeline depths
+    • Cache sizes
+    • Number of ALUs
+    • Clock frequencies
+    • Branch predictors
+    • Internal execution mechanisms
+
+
+Therefore:
+
+    Same ISA ≠ Same internal hardware
+
+
+============================================================
+10.53 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    "Opcode stores the data."
+
+CORRECT:
+
+    Opcode specifies the operation.
+
+
+MISTAKE 2:
+
+    "Operand always means memory address."
+
+CORRECT:
+
+    Operand information may refer to a register,
+    immediate value, memory location, etc.
+
+
+MISTAKE 3:
+
+    "All CPUs have the same instruction set."
+
+CORRECT:
+
+    Different ISAs have different instructions and
+    encodings.
+
+
+MISTAKE 4:
+
+    "RISC means only a small number of instructions."
+
+CORRECT:
+
+    RISC is a broader architectural design philosophy.
+
+
+MISTAKE 5:
+
+    "CISC processors cannot use pipelining."
+
+CORRECT:
+
+    Modern CISC processors use sophisticated pipelining.
+
+
+MISTAKE 6:
+
+    "Machine code and assembly are exactly the same."
+
+CORRECT:
+
+    Assembly is symbolic; machine code is encoded bits.
+
+
+MISTAKE 7:
+
+    "ISA and CPU implementation are identical."
+
+CORRECT:
+
+    ISA specifies programmer-visible behavior;
+    implementation/microarchitecture determines how it
+    is built internally.
+
+
+============================================================
+10.54 B.TECH EXAM QUESTIONS
+============================================================
+
+1. Define machine instruction.
+
+2. Explain opcode and operand with an example.
+
+3. What is an instruction format?
+
+4. Explain instruction length.
+
+5. Explain zero-, one-, two-, and three-address
+   instruction formats.
+
+6. Compare fixed-length and variable-length instructions.
+
+7. Explain data transfer instructions.
+
+8. Explain arithmetic instructions.
+
+9. Explain logical instructions.
+
+10. Explain shift instructions.
+
+11. Explain branch instructions.
+
+12. Explain conditional branch instructions.
+
+13. What is an instruction set?
+
+14. Define ISA.
+
+15. Explain ISA as the interface between hardware and
+    software.
+
+16. Differentiate ISA and microarchitecture.
+
+17. Explain RISC architecture.
+
+18. Explain CISC architecture.
+
+19. Compare RISC and CISC.
+
+20. Explain the role of LOAD and STORE instructions.
+
+21. What is the difference between machine language and
+    assembly language?
+
+22. Explain the instruction-decoding process.
+
+23. Explain different instruction-address formats.
+
+24. Explain the relationship between opcode, operand and
+    instruction format.
+
+
+============================================================
+10.55 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. The part of an instruction that specifies the operation
+    to be performed is:
+
+A. Operand
+B. Opcode
+C. Address
+D. Register
+
+
+Q2. Which of the following is a data-transfer instruction?
+
+A. ADD
+B. AND
+C. LOAD
+D. XOR
+
+
+Q3. In a three-address instruction:
+
+    ADD R3, R1, R2
+
+the destination is:
+
+A. R1
+B. R2
+C. R3
+D. ADD
+
+
+Q4. A 6-bit opcode field can represent how many different
+    opcode patterns?
+
+A. 6
+B. 12
+C. 32
+D. 64
+
+
+Q5. A 5-bit register field can identify how many registers?
+
+A. 5
+B. 10
+C. 16
+D. 32
+
+
+Q6. Which architecture is commonly associated with
+    load/store design?
+
+A. RISC
+B. CISC only
+C. Stack architecture only
+D. None
+
+
+Q7. Which is a well-known CISC ISA?
+
+A. x86
+B. RISC-V
+C. MIPS
+D. SPARC
+
+
+Q8. Which is a RISC ISA?
+
+A. x86
+B. RISC-V
+C. None
+D. BIOS
+
+
+Q9. Which instruction normally transfers data from memory
+    into a register?
+
+A. STORE
+B. LOAD
+C. SUB
+D. JUMP
+
+
+Q10. Which instruction normally transfers data from a
+     register to memory?
+
+A. LOAD
+B. STORE
+C. ADD
+D. AND
+
+
+Q11. Which instruction changes normal sequential control
+     flow?
+
+A. Branch
+B. ADD
+C. AND
+D. LOAD
+
+
+Q12. Which is generally true about fixed-length
+     instructions?
+
+A. All instructions have different sizes.
+B. Instruction decoding can be more regular.
+C. They cannot be pipelined.
+D. They always require more memory.
+
+
+Q13. ISA primarily defines:
+
+A. Only transistor layout
+B. Programmer-visible processor behavior
+C. Only cache circuits
+D. Only power supply
+
+
+Q14. Which statement is correct?
+
+A. ISA describes WHAT the processor provides.
+B. ISA describes only transistor placement.
+C. Microarchitecture is always identical across CPUs.
+D. Assembly language is electrical voltage.
+
+
+Q15. Which of the following is NOT normally an instruction
+     category?
+
+A. Arithmetic
+B. Logical
+C. Data transfer
+D. Keyboard painting
+
+
+============================================================
+ANSWERS
+============================================================
+
+    Q1  → B
+    Q2  → C
+    Q3  → C
+    Q4  → D
+    Q5  → D
+    Q6  → A
+    Q7  → A
+    Q8  → B
+    Q9  → B
+    Q10 → B
+    Q11 → A
+    Q12 → B
+    Q13 → B
+    Q14 → A
+    Q15 → D
+
+
+============================================================
+10.56 QUICK REVISION
+============================================================
+
+INSTRUCTION:
+
+    Command executed by CPU.
+
+
+MACHINE INSTRUCTION:
+
+    Binary-encoded instruction understood according to
+    the processor's ISA.
+
+
+OPCODE:
+
+    Specifies the operation.
+
+
+OPERAND:
+
+    Specifies the data/location/register involved.
+
+
+INSTRUCTION FORMAT:
+
+    Arrangement of opcode and operand-related fields.
+
+
+INSTRUCTION LENGTH:
+
+    Number of bits/bytes used by the instruction.
+
+
+INSTRUCTION SET:
+
+    Collection of instructions supported by an ISA.
+
+
+ISA:
+
+    Interface between software and processor hardware.
+
+
+LOAD:
+
+    Memory → Register
+
+
+STORE:
+
+    Register → Memory
+
+
+BRANCH:
+
+    Changes instruction execution flow.
+
+
+RISC:
+
+    Simple/regular instruction-oriented design philosophy;
+    commonly uses load/store architecture.
+
+
+CISC:
+
+    More complex and varied instruction-set design;
+    x86 is a major example.
+
+
+============================================================
+10.57 MASTER CHECKPOINT
+============================================================
+
+[ ] Define instruction.
+[ ] Define machine instruction.
+[ ] Explain machine language.
+[ ] Explain assembly language.
+[ ] Explain opcode.
+[ ] Explain operand.
+[ ] Differentiate opcode and operand.
+[ ] Explain instruction format.
+[ ] Explain address field.
+[ ] Explain instruction length.
+[ ] Calculate opcode capacity.
+[ ] Calculate register-field capacity.
+[ ] Explain zero-address instructions.
+[ ] Explain one-address instructions.
+[ ] Explain two-address instructions.
+[ ] Explain three-address instructions.
+[ ] Explain data-transfer instructions.
+[ ] Explain arithmetic instructions.
+[ ] Explain logical instructions.
+[ ] Explain shift instructions.
+[ ] Explain branch instructions.
+[ ] Explain conditional branches.
+[ ] Explain LOAD and STORE.
+[ ] Define instruction set.
+[ ] Define ISA.
+[ ] Explain ISA vs microarchitecture.
+[ ] Explain RISC.
+[ ] Explain CISC.
+[ ] Compare RISC and CISC.
+
+
+============================================================
+CHAPTER 10 COMPLETE
+============================================================
+
+CORE IDEA:
+
+                 MACHINE INSTRUCTION
+                         │
+             ┌───────────┴───────────┐
+             ▼                       ▼
+           OPCODE                 OPERANDS
+             │                       │
+        WHAT TO DO             WITH WHAT DATA
+             │                       │
+             └───────────┬───────────┘
+                         ▼
+                       CPU
+                         │
+          ┌──────────────┼──────────────┐
+          ▼              ▼              ▼
+         ALU          Registers       Memory
+          │              │              │
+          └──────────────┼──────────────┘
+                         ▼
+                       Result
+
+
+A program is a sequence of machine instructions defined
+by an ISA.
+
+============================================================
+NEXT:
+CHAPTER 11 — ADDRESSING MODES
+============================================================
+
+Topics:
+
+11.1 Why Addressing Modes?
+    • Operand location
+    • Effective address
+
+11.2 Addressing Modes
+    • Immediate
+    • Direct
+    • Indirect
+    • Register
+    • Register indirect
+    • Indexed
+    • Base addressing
+    • Relative addressing
+    • Auto-increment
+    • Auto-decrement
+
+11.3 Effective Address Calculation
+
+11.4 Addressing Mode Comparison
+    • Speed
+    • Instruction size
+    • Flexibility
+============================================================

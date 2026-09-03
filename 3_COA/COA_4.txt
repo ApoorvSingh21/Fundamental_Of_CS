@@ -1,0 +1,2354 @@
+============================================================
+CHAPTER 4 — DATA REPRESENTATION
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner
+
+CHAPTER GOAL:
+Understand how computers represent numbers, characters,
+and other types of data using bits.
+
+In this chapter you will learn:
+
+    • Bit
+    • Nibble
+    • Byte
+    • Word
+    • Word length
+    • Unsigned integers
+    • Signed integers
+    • Sign-magnitude representation
+    • 1's complement representation
+    • 2's complement representation
+    • 2's complement in depth
+    • Signed number ranges
+    • Negative numbers
+    • Sign extension
+    • ASCII
+    • Extended ASCII
+    • Unicode
+    • UTF-8
+    • Character encoding
+    • BCD
+    • BCD arithmetic
+    • Gray code
+    • Binary-to-Gray conversion
+    • Gray-to-Binary conversion
+    • Applications
+
+
+============================================================
+4.1 WHAT IS DATA REPRESENTATION?
+============================================================
+
+A computer ultimately stores and processes information as
+binary digits:
+
+    0 and 1
+
+But real-world information includes:
+
+    Numbers
+    Letters
+    Symbols
+    Images
+    Audio
+    Video
+    Instructions
+
+Therefore, computers need rules for converting information
+into binary.
+
+This is called:
+
+    DATA REPRESENTATION
+
+
+Simple idea:
+
+    Real-world data
+          ↓
+    Encoding/Representation
+          ↓
+       Binary
+          ↓
+    Computer processing
+
+
+Example:
+
+    Decimal number:
+        25
+
+    Binary representation:
+        11001
+
+
+Example:
+
+    Character:
+        A
+
+    ASCII representation:
+        01000001
+
+
+============================================================
+4.2 BIT
+============================================================
+
+BIT stands for:
+
+    Binary Digit
+
+A bit can have only two possible values:
+
+    0
+    1
+
+It is the smallest unit of digital information.
+
+Example:
+
+    101101
+
+This contains:
+
+    6 bits
+
+
+------------------------------------------------------------
+REAL-WORLD ANALOGY
+------------------------------------------------------------
+
+Think of a light switch.
+
+    OFF → 0
+    ON  → 1
+
+One switch can represent one bit.
+
+Multiple switches can represent more information.
+
+
+============================================================
+4.3 NIBBLE
+============================================================
+
+A NIBBLE consists of:
+
+    4 bits
+
+
+Example:
+
+    1011
+
+This is one nibble.
+
+
+Relationship:
+
+    1 nibble = 4 bits
+
+
+A hexadecimal digit represents exactly:
+
+    4 bits
+
+
+Example:
+
+    Binary:
+        1010
+
+    Hex:
+        A
+
+
+Therefore:
+
+    1 hex digit = 1 nibble = 4 bits
+
+
+============================================================
+4.4 BYTE
+============================================================
+
+A BYTE consists of:
+
+    8 bits
+
+
+Example:
+
+    10110101
+
+This is:
+
+    1 byte
+
+
+Therefore:
+
+    1 byte = 8 bits
+    1 byte = 2 nibbles
+
+
+Since one hexadecimal digit represents 4 bits:
+
+    1 byte = 2 hexadecimal digits
+
+
+Example:
+
+    10101111
+
+    = AF₁₆
+
+
+============================================================
+4.5 WORD
+============================================================
+
+A WORD is the natural unit of data handled by a processor.
+
+The exact size depends on the architecture.
+
+Common word sizes include:
+
+    8 bits
+    16 bits
+    32 bits
+    64 bits
+
+
+For example:
+
+    A 32-bit processor may naturally process
+    32-bit values.
+
+    A 64-bit processor may naturally process
+    64-bit values.
+
+
+IMPORTANT:
+
+    Word size is architecture-dependent.
+
+Do not assume that:
+
+    1 word = 8 bits
+
+That is a BYTE, not necessarily a word.
+
+
+============================================================
+4.6 WORD LENGTH
+============================================================
+
+Word length means:
+
+    Number of bits in a processor's natural data word.
+
+
+Example:
+
+    32-bit architecture:
+
+        Word length = 32 bits
+
+
+    64-bit architecture:
+
+        Word length = 64 bits
+
+
+Word length affects:
+
+    • Integer processing
+    • Register size
+    • Addressing capability
+    • Data movement
+    • Instruction processing
+    • Memory addressing in many architectures
+
+
+============================================================
+4.7 BIT → NIBBLE → BYTE → WORD
+============================================================
+
+Basic hierarchy:
+
+    BIT
+      ↓
+    4 bits
+      ↓
+    NIBBLE
+      ↓
+    8 bits
+      ↓
+    BYTE
+      ↓
+    WORD
+      ↓
+    Architecture-dependent
+
+
+Quick table:
+
+    +-----------+------------------+
+    | Unit      | Size             |
+    +-----------+------------------+
+    | Bit       | 1 bit            |
+    | Nibble    | 4 bits           |
+    | Byte      | 8 bits           |
+    | Word      | Architecture     |
+    |           | dependent        |
+    +-----------+------------------+
+
+
+============================================================
+4.8 UNSIGNED INTEGER REPRESENTATION
+============================================================
+
+An unsigned number has:
+
+    No negative values.
+
+All bits represent the magnitude/value.
+
+
+Example using 4 bits:
+
+    0000 = 0
+    0001 = 1
+    0010 = 2
+    0011 = 3
+    0100 = 4
+    0101 = 5
+    0110 = 6
+    0111 = 7
+    1000 = 8
+    1001 = 9
+    1010 = 10
+    1011 = 11
+    1100 = 12
+    1101 = 13
+    1110 = 14
+    1111 = 15
+
+
+Therefore:
+
+    4-bit unsigned range:
+
+        0 to 15
+
+
+============================================================
+4.9 UNSIGNED RANGE
+============================================================
+
+For n bits:
+
+    Minimum = 0
+
+    Maximum = 2ⁿ - 1
+
+
+Example:
+
+    4 bits:
+
+    2⁴ - 1
+    = 16 - 1
+    = 15
+
+
+8 bits:
+
+    2⁸ - 1
+    = 255
+
+
+16 bits:
+
+    2¹⁶ - 1
+    = 65,535
+
+
+32 bits:
+
+    2³² - 1
+    = 4,294,967,295
+
+
+64 bits:
+
+    2⁶⁴ - 1
+
+
+IMPORTANT:
+
+    Unsigned numbers use every bit to represent magnitude.
+
+
+============================================================
+4.10 SIGNED INTEGER REPRESENTATION
+============================================================
+
+Computers also need to represent negative numbers.
+
+For example:
+
+    +5
+    -5
+
+
+Several representations have been developed:
+
+    1. Sign-magnitude
+    2. 1's complement
+    3. 2's complement
+
+
+The most important modern representation is:
+
+    2's COMPLEMENT
+
+
+============================================================
+4.11 SIGN BIT
+============================================================
+
+In signed representations, a bit is used to indicate
+whether the number is positive or negative.
+
+Usually:
+
+    0 → Positive
+    1 → Negative
+
+
+The leftmost bit is called:
+
+    MSB
+    Most Significant Bit
+
+
+Example:
+
+    0101
+
+    MSB = 0
+
+Therefore:
+
+    Positive
+
+
+Example:
+
+    1101
+
+    MSB = 1
+
+Therefore:
+
+    Negative
+
+This interpretation depends on the signed representation
+being used.
+
+
+============================================================
+4.12 SIGN-MAGNITUDE REPRESENTATION
+============================================================
+
+In sign-magnitude representation:
+
+    MSB = Sign
+    Remaining bits = Magnitude
+
+
+Convention:
+
+    0 → Positive
+    1 → Negative
+
+
+Example using 8 bits:
+
+    +13
+
+13 in binary:
+
+    0001101
+
+Add sign bit 0:
+
+    00001101
+
+
+For -13:
+
+    Sign = 1
+    Magnitude = 0001101
+
+Therefore:
+
+    10001101
+
+
+So:
+
+    +13 = 00001101
+    -13 = 10001101
+
+
+============================================================
+4.13 SIGN-MAGNITUDE RANGE
+============================================================
+
+For n bits:
+
+    One bit is used for sign.
+
+    Remaining n-1 bits represent magnitude.
+
+
+Magnitude range:
+
+    0 to 2ⁿ⁻¹ - 1
+
+
+Therefore signed range is:
+
+    -(2ⁿ⁻¹ - 1)
+    to
+    +(2ⁿ⁻¹ - 1)
+
+
+For 4 bits:
+
+    -7 to +7
+
+
+However, there are TWO representations of zero:
+
+    +0 = 0000
+    -0 = 1000
+
+
+This is one major disadvantage.
+
+
+============================================================
+4.14 1's COMPLEMENT REPRESENTATION
+============================================================
+
+To represent a negative number using 1's complement:
+
+    1. Write the positive number.
+    2. Invert every bit.
+
+
+Example:
+
+    +5 using 4 bits:
+
+        0101
+
+1's complement:
+
+        1010
+
+Therefore:
+
+    -5 = 1010
+
+
+Another example:
+
+    +9 using 8 bits:
+
+        00001001
+
+1's complement:
+
+        11110110
+
+Therefore:
+
+    -9 = 11110110
+
+
+============================================================
+4.15 1's COMPLEMENT ZERO
+============================================================
+
+1's complement also has two zeros.
+
+Positive zero:
+
+    0000
+
+
+Negative zero:
+
+    1111
+
+
+Therefore:
+
+    +0 = 0000
+    -0 = 1111
+
+
+This is another disadvantage.
+
+
+============================================================
+4.16 2's COMPLEMENT REPRESENTATION
+============================================================
+
+2's complement is the most widely used representation
+for signed integers in modern computers.
+
+
+To obtain the negative representation:
+
+    Step 1:
+        Write the positive number.
+
+    Step 2:
+        Find 1's complement.
+
+    Step 3:
+        Add 1.
+
+
+Example:
+
+    Find -5 using 4 bits.
+
+
+Step 1:
+
+    +5 = 0101
+
+
+Step 2:
+
+    1's complement:
+
+    1010
+
+
+Step 3:
+
+    Add 1:
+
+    1010
+    +0001
+    -----
+    1011
+
+
+Therefore:
+
+    -5 = 1011
+
+
+============================================================
+4.17 WHY 2's COMPLEMENT IS PREFERRED
+============================================================
+
+2's complement has several advantages:
+
+    • Only one representation of zero.
+    • Addition works naturally.
+    • Subtraction can be performed using addition.
+    • Hardware is simpler.
+    • Sign handling is convenient.
+    • Widely used by modern CPUs.
+
+
+For example:
+
+    A - B
+
+can be performed as:
+
+    A + (-B)
+
+where:
+
+    -B = 2's complement of B
+
+
+============================================================
+4.18 2's COMPLEMENT RANGE
+============================================================
+
+For n bits:
+
+    Minimum = -2ⁿ⁻¹
+
+    Maximum = 2ⁿ⁻¹ - 1
+
+
+Example:
+
+    4 bits:
+
+    Minimum:
+        -2³ = -8
+
+    Maximum:
+        2³ - 1 = 7
+
+Therefore:
+
+    4-bit range:
+
+        -8 to +7
+
+
+Example:
+
+    8 bits:
+
+    -2⁷ to 2⁷ - 1
+
+    = -128 to +127
+
+
+Example:
+
+    16 bits:
+
+    -32768 to +32767
+
+
+Example:
+
+    32 bits:
+
+    -2³¹ to 2³¹ - 1
+
+
+============================================================
+4.19 4-BIT 2's COMPLEMENT TABLE
+============================================================
+
+    Binary    Decimal
+    -----------------
+    0000        0
+    0001        +1
+    0010        +2
+    0011        +3
+    0100        +4
+    0101        +5
+    0110        +6
+    0111        +7
+    1000        -8
+    1001        -7
+    1010        -6
+    1011        -5
+    1100        -4
+    1101        -3
+    1110        -2
+    1111        -1
+
+
+Notice:
+
+    0000 = 0
+
+There is only ONE zero.
+
+
+============================================================
+4.20 HOW TO INTERPRET A 2's COMPLEMENT NUMBER
+============================================================
+
+Suppose we have:
+
+    1101
+
+
+MSB = 1
+
+Therefore it is negative.
+
+
+To find its magnitude:
+
+    Step 1:
+        Find 1's complement.
+
+        1101 → 0010
+
+
+    Step 2:
+        Add 1.
+
+        0010 + 1 = 0011
+
+
+    Step 3:
+        0011 = 3
+
+
+Therefore:
+
+    1101 = -3
+
+
+============================================================
+4.21 SIGN EXTENSION
+============================================================
+
+Suppose a signed number is stored using 4 bits but we need
+to store it using 8 bits.
+
+We must preserve its value.
+
+This is called:
+
+    SIGN EXTENSION
+
+
+RULE:
+
+    If MSB = 0:
+        Add zeros.
+
+    If MSB = 1:
+        Add ones.
+
+
+------------------------------------------------------------
+Example 1: Positive number
+------------------------------------------------------------
+
+4-bit:
+
+    0101
+
+MSB = 0
+
+8-bit:
+
+    00000101
+
+
+Value:
+
+    +5
+
+
+------------------------------------------------------------
+Example 2: Negative number
+------------------------------------------------------------
+
+4-bit:
+
+    1011
+
+This represents:
+
+    -5
+
+
+Sign extend:
+
+    11111011
+
+
+The value remains:
+
+    -5
+
+
+Therefore:
+
+    1011 (4-bit)
+    =
+    11111011 (8-bit)
+
+
+============================================================
+4.22 WHY SIGN EXTENSION WORKS
+============================================================
+
+For negative 2's complement numbers, the MSB is 1.
+
+Repeating 1s on the left preserves the mathematical value.
+
+Example:
+
+    1011 = -5
+
+    11111011 = -5
+
+
+We did not change the number.
+
+We only increased the number of bits available to represent
+it.
+
+
+============================================================
+4.23 INTEGER REPRESENTATION COMPARISON
+============================================================
+
+For 4-bit signed numbers:
+
+    Representation      Range       Zeroes
+    ------------------------------------------------
+    Sign-magnitude      -7 to +7     Two
+    1's complement      -7 to +7     Two
+    2's complement      -8 to +7     One
+
+
+2's complement is superior because:
+
+    • It has one zero.
+    • It has one extra negative value.
+    • Arithmetic is simpler.
+
+
+============================================================
+4.24 CHARACTER REPRESENTATION
+============================================================
+
+Computers also need to represent:
+
+    A
+    B
+    C
+    a
+    b
+    c
+    0
+    1
+    !
+    @
+    #
+
+Characters are represented using:
+
+    CHARACTER ENCODING
+
+
+A character encoding maps:
+
+    Character → Numeric code → Binary
+
+
+Example:
+
+    A
+    ↓
+    ASCII code 65
+    ↓
+    Binary 01000001
+
+
+============================================================
+4.25 ASCII
+============================================================
+
+ASCII stands for:
+
+    American Standard Code for Information Interchange
+
+
+Traditional ASCII uses:
+
+    7 bits
+
+
+Therefore:
+
+    2⁷ = 128
+
+possible code values:
+
+    0 to 127
+
+
+ASCII represents:
+
+    • Uppercase letters
+    • Lowercase letters
+    • Digits
+    • Punctuation
+    • Control characters
+
+
+Examples:
+
+    Character    Decimal    Binary
+    --------------------------------
+       A           65       1000001
+       B           66       1000010
+       C           67       1000011
+
+       a           97       1100001
+       b           98       1100010
+
+       0           48       0110000
+       1           49       0110001
+
+
+IMPORTANT:
+
+ASCII '0' is NOT binary numeric zero.
+
+ASCII '0':
+
+    Decimal code = 48
+
+
+============================================================
+4.26 ASCII CONTROL CHARACTERS
+============================================================
+
+ASCII also contains non-printing control characters.
+
+Examples include:
+
+    NUL
+    TAB
+    LF
+    CR
+    ESC
+
+
+These are used to control text processing and communication.
+
+
+Examples:
+
+    LF  → Line Feed
+    CR  → Carriage Return
+    TAB → Horizontal tab
+
+
+============================================================
+4.27 EXTENDED ASCII
+============================================================
+
+Traditional ASCII uses 7 bits.
+
+Many systems historically used an 8-bit byte to represent
+additional characters.
+
+These are often informally called:
+
+    Extended ASCII
+
+
+An 8-bit encoding can represent:
+
+    2⁸ = 256
+
+values.
+
+However, there is NOT one single universal "Extended ASCII"
+standard.
+
+Different code pages used different values above 127.
+
+
+IMPORTANT:
+
+    ASCII = standardized 7-bit character set.
+
+    "Extended ASCII" = a broad historical term for various
+    8-bit extensions/code pages.
+
+
+============================================================
+4.28 UNICODE
+============================================================
+
+ASCII cannot represent all languages of the world.
+
+For example:
+
+    English
+    Hindi
+    Bengali
+    Chinese
+    Japanese
+    Arabic
+    Korean
+    etc.
+
+
+Unicode was created to provide a universal system for
+representing characters from many writing systems.
+
+
+Unicode assigns characters:
+
+    CODE POINTS
+
+
+Example:
+
+    A
+
+has Unicode code point:
+
+    U+0041
+
+
+The important idea:
+
+    Unicode code point ≠ necessarily the exact bytes stored
+    in a file.
+
+The code point can be encoded using formats such as:
+
+    UTF-8
+    UTF-16
+    UTF-32
+
+
+============================================================
+4.29 UTF-8
+============================================================
+
+UTF-8 stands for:
+
+    Unicode Transformation Format — 8-bit
+
+
+UTF-8 is a variable-length encoding.
+
+A Unicode character can use:
+
+    1 to 4 bytes
+
+
+Basic idea:
+
+    ASCII characters
+        ↓
+    1 byte in UTF-8
+
+
+Characters outside the ASCII range may require:
+
+    2, 3, or 4 bytes
+
+
+One major advantage:
+
+    UTF-8 is backward-compatible with ASCII for the
+    ASCII character range.
+
+
+Example:
+
+    'A'
+
+Unicode code point:
+
+    U+0041
+
+UTF-8:
+
+    41₁₆
+
+
+============================================================
+4.30 CHARACTER ENCODING
+============================================================
+
+Character encoding means converting characters into a
+sequence of bytes according to an encoding scheme.
+
+
+Concept:
+
+    Character
+       ↓
+    Unicode code point
+       ↓
+    Encoding
+       ↓
+    Bytes
+       ↓
+    Storage/transmission
+
+
+For example:
+
+    "A"
+      ↓
+    U+0041
+      ↓
+    UTF-8
+      ↓
+    41₁₆
+
+
+============================================================
+4.31 ASCII VS UNICODE VS UTF-8
+============================================================
+
+    ASCII:
+        Character set/code system.
+        Traditional ASCII uses 7 bits.
+
+    Unicode:
+        Universal character repertoire/code points.
+
+    UTF-8:
+        An encoding format for Unicode.
+
+
+Simple analogy:
+
+    Unicode = list of characters and their code points
+
+    UTF-8 = method for storing those characters as bytes
+
+
+============================================================
+4.32 BCD
+============================================================
+
+BCD stands for:
+
+    Binary Coded Decimal
+
+
+BCD represents EACH decimal digit separately using
+4 binary bits.
+
+
+Important:
+
+    BCD is NOT the same as ordinary binary representation.
+
+
+------------------------------------------------------------
+Example:
+------------------------------------------------------------
+
+Decimal:
+
+    59
+
+
+Ordinary binary:
+
+    59₁₀ = 111011₂
+
+
+BCD:
+
+    5 → 0101
+    9 → 1001
+
+Therefore:
+
+    59 in BCD = 0101 1001
+
+
+These are different representations.
+
+
+============================================================
+4.33 BCD EXAMPLE
+============================================================
+
+Decimal:
+
+    247
+
+
+BCD:
+
+    2 = 0010
+    4 = 0100
+    7 = 0111
+
+
+Therefore:
+
+    247₁₀
+    =
+    0010 0100 0111 (BCD)
+
+
+Ordinary binary:
+
+    247₁₀ = 11110111₂
+
+
+Therefore:
+
+    BCD ≠ ordinary binary.
+
+
+============================================================
+4.34 VALID BCD CODES
+============================================================
+
+BCD uses 4 bits for each decimal digit.
+
+Valid combinations:
+
+    0000 → 0
+    0001 → 1
+    0010 → 2
+    0011 → 3
+    0100 → 4
+    0101 → 5
+    0110 → 6
+    0111 → 7
+    1000 → 8
+    1001 → 9
+
+
+Invalid BCD combinations:
+
+    1010
+    1011
+    1100
+    1101
+    1110
+    1111
+
+
+Why?
+
+Because BCD represents decimal digits 0–9 only.
+
+
+============================================================
+4.35 BCD ARITHMETIC
+============================================================
+
+BCD addition is performed digit by digit.
+
+Example:
+
+    5 + 3
+
+BCD:
+
+    5 = 0101
+    3 = 0011
+
+Add:
+
+    0101
+  + 0011
+  ------
+    1000
+
+1000 is valid BCD:
+
+    8
+
+Therefore:
+
+    5 + 3 = 8
+
+
+------------------------------------------------------------
+Example requiring BCD correction:
+------------------------------------------------------------
+
+Add:
+
+    7 + 8
+
+
+BCD:
+
+    7 = 0111
+    8 = 1000
+
+
+Binary addition:
+
+    0111
+  + 1000
+  ------
+    1111
+
+
+1111 is NOT a valid BCD digit.
+
+Therefore correction is needed.
+
+Add:
+
+    0110
+
+because BCD correction is required when:
+
+    • The 4-bit sum is greater than 1001,
+    OR
+    • There is a carry from the digit.
+
+
+    1111
+  + 0110
+  ------
+   1 0101
+
+
+Therefore:
+
+    Result = 0001 0101
+
+BCD:
+
+    0001 = 1
+    0101 = 5
+
+Therefore:
+
+    7 + 8 = 15
+
+
+============================================================
+4.36 WHY BCD IS USED
+============================================================
+
+BCD is useful when decimal digits must be represented
+exactly and manipulated individually.
+
+Applications historically and conceptually include:
+
+    • Digital clocks
+    • Calculators
+    • Decimal displays
+    • Financial systems
+    • Seven-segment displays
+    • Decimal arithmetic hardware
+
+
+Disadvantage:
+
+    BCD uses more bits than ordinary binary.
+
+
+Example:
+
+    Decimal 99:
+
+    Binary:
+        1100011
+        → 7 bits
+
+    BCD:
+        1001 1001
+        → 8 bits
+
+
+============================================================
+4.37 GRAY CODE
+============================================================
+
+Gray code is a binary numeral system in which two consecutive
+values differ in only ONE bit.
+
+
+Example:
+
+    Binary:
+        00
+        01
+        10
+        11
+
+Notice:
+
+    01 → 10
+
+Both bits change.
+
+Gray code avoids this:
+
+    00
+    01
+    11
+    10
+
+
+Now each consecutive pair differs by exactly one bit.
+
+
+============================================================
+4.38 2-BIT GRAY CODE
+============================================================
+
+    Decimal    Gray
+
+       0        00
+       1        01
+       2        11
+       3        10
+
+
+Notice:
+
+    00 → 01
+        one bit changes
+
+    01 → 11
+        one bit changes
+
+    11 → 10
+        one bit changes
+
+
+============================================================
+4.39 WHY GRAY CODE IS USEFUL
+============================================================
+
+Gray code is useful when a system moves from one value
+to the next and we want to minimize errors caused by
+multiple bits changing simultaneously.
+
+Applications include:
+
+    • Rotary encoders
+    • Position sensors
+    • Analog-to-digital conversion concepts
+    • Karnaugh maps
+    • Communication systems
+    • Error reduction in certain digital interfaces
+
+
+============================================================
+4.40 BINARY → GRAY CONVERSION
+============================================================
+
+RULE:
+
+    First Gray bit = First binary bit.
+
+    Every next Gray bit =
+        XOR of the current binary bit and previous binary bit.
+
+
+For binary:
+
+    B₃ B₂ B₁ B₀
+
+
+Gray:
+
+    G₃ G₂ G₁ G₀
+
+
+Formula:
+
+    G₃ = B₃
+
+    G₂ = B₃ XOR B₂
+
+    G₁ = B₂ XOR B₁
+
+    G₀ = B₁ XOR B₀
+
+
+------------------------------------------------------------
+Example:
+------------------------------------------------------------
+
+Convert:
+
+    Binary = 1011
+
+Step 1:
+
+    First Gray bit:
+
+        1
+
+
+Step 2:
+
+    1 XOR 0 = 1
+
+
+Step 3:
+
+    0 XOR 1 = 1
+
+
+Step 4:
+
+    1 XOR 1 = 0
+
+
+Therefore:
+
+    Binary = 1011
+    Gray   = 1110
+
+
+Check:
+
+    G = 1 1 1 0
+
+
+============================================================
+4.41 XOR RULE
+============================================================
+
+Remember:
+
+    0 XOR 0 = 0
+
+    0 XOR 1 = 1
+
+    1 XOR 0 = 1
+
+    1 XOR 1 = 0
+
+
+So XOR gives:
+
+    1 when the two bits are different.
+
+    0 when the two bits are the same.
+
+
+This makes Gray conversion easy.
+
+
+============================================================
+4.42 GRAY → BINARY CONVERSION
+============================================================
+
+RULE:
+
+    First binary bit = First Gray bit.
+
+    Every next binary bit =
+        Previous binary bit XOR current Gray bit.
+
+
+For:
+
+    Gray = G₃ G₂ G₁ G₀
+
+Binary:
+
+    B₃ = G₃
+
+    B₂ = B₃ XOR G₂
+
+    B₁ = B₂ XOR G₁
+
+    B₀ = B₁ XOR G₀
+
+
+------------------------------------------------------------
+Example:
+------------------------------------------------------------
+
+Convert:
+
+    Gray = 1110
+
+Step 1:
+
+    B₃ = 1
+
+
+Step 2:
+
+    B₂ = 1 XOR 1
+       = 0
+
+
+Step 3:
+
+    B₁ = 0 XOR 1
+       = 1
+
+
+Step 4:
+
+    B₀ = 1 XOR 0
+       = 1
+
+
+Therefore:
+
+    Binary = 1011
+
+
+So:
+
+    Gray 1110
+       ↓
+    Binary 1011
+
+
+============================================================
+4.43 GRAY CODE TABLE — 3 BITS
+============================================================
+
+    Decimal   Binary   Gray
+    ------------------------
+       0       000     000
+       1       001     001
+       2       010     011
+       3       011     010
+       4       100     110
+       5       101     111
+       6       110     101
+       7       111     100
+
+
+Notice every consecutive Gray value differs by exactly
+one bit.
+
+
+============================================================
+4.44 DATA REPRESENTATION — BIG PICTURE
+============================================================
+
+A computer represents different kinds of information
+using different encoding schemes.
+
+    DATA
+      |
+      +--------------------+
+      |                    |
+    Numbers             Characters
+      |                    |
+      |              +-----+------+
+      |              |            |
+   Integer        ASCII        Unicode
+      |                         |
+      |                       UTF-8
+      |
+      +----------------+
+      |                |
+   Unsigned         Signed
+                       |
+             +---------+---------+
+             |         |         |
+       Sign-Magnitude  1's      2's
+                     Complement Complement
+
+
+Other representations:
+
+    BCD
+    Gray Code
+
+
+============================================================
+4.45 COMPARISON OF INTEGER REPRESENTATIONS
+============================================================
+
+For n-bit signed integers:
+
+    Sign-Magnitude:
+
+        Range:
+        -(2ⁿ⁻¹ - 1) to +(2ⁿ⁻¹ - 1)
+
+        Two zeros.
+
+
+    1's Complement:
+
+        Range:
+        -(2ⁿ⁻¹ - 1) to +(2ⁿ⁻¹ - 1)
+
+        Two zeros.
+
+
+    2's Complement:
+
+        Range:
+        -2ⁿ⁻¹ to +(2ⁿ⁻¹ - 1)
+
+        One zero.
+
+
+============================================================
+4.46 IMPORTANT NUMERICAL EXAMPLES
+============================================================
+
+------------------------------------------------------------
+PROBLEM 1
+------------------------------------------------------------
+
+Represent +18 using 8-bit 2's complement.
+
+18 in binary:
+
+    00010010
+
+Positive number already has MSB 0.
+
+Answer:
+
+    +18 = 00010010
+
+
+------------------------------------------------------------
+PROBLEM 2
+------------------------------------------------------------
+
+Represent -18 using 8-bit 2's complement.
+
++18:
+
+    00010010
+
+1's complement:
+
+    11101101
+
+Add 1:
+
+    11101110
+
+Answer:
+
+    -18 = 11101110
+
+
+------------------------------------------------------------
+PROBLEM 3
+------------------------------------------------------------
+
+Interpret:
+
+    11110110
+
+as an 8-bit 2's complement number.
+
+MSB = 1
+
+Therefore negative.
+
+1's complement:
+
+    00001001
+
+Add 1:
+
+    00001010
+
+Magnitude = 10
+
+Answer:
+
+    -10
+
+
+------------------------------------------------------------
+PROBLEM 4
+------------------------------------------------------------
+
+Convert decimal 59 to BCD.
+
+Digits:
+
+    5 → 0101
+    9 → 1001
+
+Answer:
+
+    0101 1001
+
+
+------------------------------------------------------------
+PROBLEM 5
+------------------------------------------------------------
+
+Convert binary 1011 to Gray code.
+
+First bit:
+
+    1
+
+Then:
+
+    1 XOR 0 = 1
+    0 XOR 1 = 1
+    1 XOR 1 = 0
+
+Answer:
+
+    1110
+
+
+------------------------------------------------------------
+PROBLEM 6
+------------------------------------------------------------
+
+Convert Gray 1110 to binary.
+
+First bit:
+
+    1
+
+Then:
+
+    1 XOR 1 = 0
+    0 XOR 1 = 1
+    1 XOR 0 = 1
+
+Answer:
+
+    1011
+
+
+============================================================
+4.47 B.TECH EXAM QUESTIONS
+============================================================
+
+Q1.
+Define bit, nibble, byte and word.
+
+Q2.
+What is word length?
+
+Q3.
+Find the range of an 8-bit unsigned integer.
+
+Q4.
+Find the range of a 16-bit signed 2's complement integer.
+
+Q5.
+Represent -25 using 8-bit 2's complement.
+
+Q6.
+Represent -37 using 8-bit 2's complement.
+
+Q7.
+Interpret 11101101 as an 8-bit 2's complement number.
+
+Q8.
+Explain sign-magnitude representation.
+
+Q9.
+Explain 1's complement representation.
+
+Q10.
+Explain 2's complement representation.
+
+Q11.
+Compare sign-magnitude, 1's complement and 2's
+complement.
+
+Q12.
+What is sign extension? Give an example.
+
+Q13.
+What is ASCII?
+
+Q14.
+Differentiate ASCII and Unicode.
+
+Q15.
+What is UTF-8?
+
+Q16.
+Convert decimal 247 into BCD.
+
+Q17.
+Explain BCD arithmetic.
+
+Q18.
+What is Gray code?
+
+Q19.
+Convert binary 1101 to Gray code.
+
+Q20.
+Convert Gray 1011 to binary.
+
+
+============================================================
+4.48 COMPETITIVE EXAM CONCEPTS
+============================================================
+
+HIGH-VALUE TOPICS:
+
+    1. Number ranges
+    2. 2's complement representation
+    3. Sign extension
+    4. Signed vs unsigned interpretation
+    5. BCD vs binary
+    6. ASCII code values
+    7. Unicode vs UTF-8
+    8. Gray code conversion
+    9. Overflow
+   10. Bit-width calculations
+
+
+------------------------------------------------------------
+COMPETITIVE QUESTION 1
+------------------------------------------------------------
+
+What is the range of an 8-bit 2's complement integer?
+
+Formula:
+
+    -2⁷ to 2⁷ - 1
+
+Therefore:
+
+    -128 to +127
+
+
+Answer:
+
+    -128 to +127
+
+
+------------------------------------------------------------
+COMPETITIVE QUESTION 2
+------------------------------------------------------------
+
+Which representation has only one zero?
+
+A. Sign-magnitude
+B. 1's complement
+C. 2's complement
+D. BCD
+
+Answer:
+
+    C. 2's complement
+
+
+------------------------------------------------------------
+COMPETITIVE QUESTION 3
+------------------------------------------------------------
+
+What is the 8-bit 2's complement representation of -1?
+
++1:
+
+    00000001
+
+Invert:
+
+    11111110
+
+Add 1:
+
+    11111111
+
+Answer:
+
+    -1 = 11111111
+
+
+------------------------------------------------------------
+COMPETITIVE QUESTION 4
+------------------------------------------------------------
+
+Which is the BCD representation of decimal 59?
+
+A. 111011
+B. 01011001
+C. 00111011
+D. 1011001
+
+Answer:
+
+    B. 0101 1001
+
+
+------------------------------------------------------------
+COMPETITIVE QUESTION 5
+------------------------------------------------------------
+
+Convert binary 1101 to Gray.
+
+    First bit = 1
+
+    1 XOR 1 = 0
+    1 XOR 0 = 1
+    0 XOR 1 = 1
+
+Answer:
+
+    1011
+
+
+============================================================
+4.49 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    Thinking byte and word mean the same thing.
+
+CORRECT:
+
+    Byte = 8 bits.
+
+    Word = architecture-dependent.
+
+
+MISTAKE 2:
+
+    Thinking 2's complement means simply inverting bits.
+
+CORRECT:
+
+    2's complement = invert + 1.
+
+
+MISTAKE 3:
+
+    Forgetting that 2's complement has an asymmetric range.
+
+For 8 bits:
+
+    -128 to +127
+
+NOT:
+
+    -127 to +127
+
+
+MISTAKE 4:
+
+    Treating BCD as ordinary binary.
+
+Example:
+
+    59 in binary:
+
+        111011
+
+    59 in BCD:
+
+        0101 1001
+
+
+MISTAKE 5:
+
+    Thinking ASCII can represent every Unicode character.
+
+ASCII is a much smaller character system.
+
+
+MISTAKE 6:
+
+    Thinking Unicode and UTF-8 are exactly the same thing.
+
+Unicode:
+
+    Character/code-point standard.
+
+UTF-8:
+
+    Encoding format for Unicode.
+
+
+MISTAKE 7:
+
+    Forgetting sign extension.
+
+Negative signed values require 1s to be added on the left.
+
+
+MISTAKE 8:
+
+    Forgetting that Gray conversion uses XOR.
+
+
+============================================================
+4.50 QUICK REVISION
+============================================================
+
+BASIC UNITS:
+
+    1 bit    = 1 binary digit
+    1 nibble = 4 bits
+    1 byte   = 8 bits
+    1 word   = architecture-dependent
+
+
+UNSIGNED RANGE:
+
+    n bits:
+
+    0 to 2ⁿ - 1
+
+
+2's COMPLEMENT RANGE:
+
+    n bits:
+
+    -2ⁿ⁻¹ to 2ⁿ⁻¹ - 1
+
+
+SIGN-MAGNITUDE:
+
+    MSB = sign
+    Remaining bits = magnitude
+
+    Has +0 and -0.
+
+
+1's COMPLEMENT:
+
+    Negative = invert all bits
+
+    Has +0 and -0.
+
+
+2's COMPLEMENT:
+
+    Negative = invert all bits + 1
+
+    Has only one zero.
+
+    Most commonly used signed integer representation.
+
+
+SIGN EXTENSION:
+
+    Positive:
+        Add 0s.
+
+    Negative:
+        Add 1s.
+
+
+ASCII:
+
+    Traditional ASCII = 7 bits
+    128 possible values.
+
+
+UNICODE:
+
+    Universal character repertoire/code-point system.
+
+
+UTF-8:
+
+    Variable-length Unicode encoding.
+    Uses 1–4 bytes per encoded character.
+
+
+BCD:
+
+    Each decimal digit → 4 bits.
+
+    59:
+
+    0101 1001
+
+
+GRAY CODE:
+
+    Consecutive values differ by one bit.
+
+
+BINARY → GRAY:
+
+    First bit same.
+
+    Remaining:
+        XOR adjacent binary bits.
+
+
+GRAY → BINARY:
+
+    First bit same.
+
+    Each next binary bit:
+        Previous binary bit XOR current Gray bit.
+
+
+============================================================
+4.51 MASTER CHECKPOINT
+============================================================
+
+Before moving to Chapter 5, you should be able to:
+
+[ ] Define bit.
+[ ] Define nibble.
+[ ] Define byte.
+[ ] Explain word and word length.
+[ ] Calculate unsigned ranges.
+[ ] Explain signed integer representation.
+[ ] Explain sign-magnitude.
+[ ] Explain 1's complement.
+[ ] Explain 2's complement.
+[ ] Convert positive numbers to 2's complement.
+[ ] Convert negative 2's complement numbers to decimal.
+[ ] Calculate 2's complement ranges.
+[ ] Perform sign extension.
+[ ] Explain ASCII.
+[ ] Explain Extended ASCII.
+[ ] Explain Unicode.
+[ ] Explain UTF-8.
+[ ] Understand character encoding.
+[ ] Convert decimal numbers to BCD.
+[ ] Perform basic BCD addition.
+[ ] Explain Gray code.
+[ ] Convert Binary → Gray.
+[ ] Convert Gray → Binary.
+[ ] Distinguish BCD from ordinary binary.
+[ ] Solve B.Tech-level data representation problems.
+[ ] Solve competitive-exam-style representation questions.
+
+
+============================================================
+CHAPTER 4 COMPLETE
+============================================================
+
+NEXT:
+
+CHAPTER 5 — FLOATING-POINT REPRESENTATION
+
+Topics:
+    • Why floating point is needed
+    • Integer limitations
+    • Fractional numbers
+    • Scientific notation
+    • Sign
+    • Significand/Mantissa
+    • Exponent
+    • Base
+    • IEEE 754
+    • Single precision
+    • Double precision
+    • Sign bit
+    • Exponent field
+    • Fraction field
+    • Zero
+    • Infinity
+    • NaN
+    • Subnormal numbers
+    • Precision
+    • Rounding
+    • Overflow
+    • Underflow
+============================================================

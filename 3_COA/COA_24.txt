@@ -1,0 +1,1805 @@
+CHAPTER 24 — PROCESSOR ORGANISATION
+
+============================================================
+CHAPTER 24 — PROCESSOR ORGANISATION
+============================================================
+
+LEVEL:
+B.Tech 1st Year
+
+STARTING LEVEL:
+Absolute Beginner
+
+GOAL:
+Understand how the CPU is internally organised, how registers,
+ALU, buses and control signals work together, and how a
+datapath executes instructions.
+
+============================================================
+
+
+------------------------------------------------------------
+24.1 WHAT IS PROCESSOR ORGANISATION?
+------------------------------------------------------------
+
+Processor organisation describes how the internal components
+of a CPU are arranged and connected so that instructions can
+be executed.
+
+A processor mainly contains:
+
+    • Registers
+    • ALU
+    • Control Unit
+    • Internal buses
+    • Datapath
+    • Control signals
+
+Basic idea:
+
+                 +----------------------+
+                 |         CPU          |
+                 |                      |
+                 |  +----------------+  |
+                 |  | Control Unit   |  |
+                 |  +----------------+  |
+                 |          |           |
+                 |    Control Signals   |
+                 |          ↓           |
+                 |  +----------------+  |
+                 |  |    Datapath    |  |
+                 |  |                |  |
+                 |  | Registers      |  |
+                 |  | ALU            |  |
+                 |  | Buses          |  |
+                 |  +----------------+  |
+                 +----------------------+
+
+
+------------------------------------------------------------
+24.2 PROCESSOR VS CPU
+------------------------------------------------------------
+
+CPU = Central Processing Unit.
+
+Processor is commonly used to mean the CPU or processing unit.
+
+The CPU performs:
+
+    • Instruction execution
+    • Arithmetic operations
+    • Logical operations
+    • Data movement
+    • Control operations
+
+
+Example:
+
+    Program:
+        A = B + C
+
+The CPU must:
+
+    1. Fetch instructions.
+    2. Read B.
+    3. Read C.
+    4. Add them.
+    5. Store the result in A.
+
+
+------------------------------------------------------------
+24.3 BASIC CPU STRUCTURE
+------------------------------------------------------------
+
+A simplified CPU:
+
+                 CPU
+                  |
+       +----------+----------+
+       |                     |
+       ↓                     ↓
+ Control Unit             Datapath
+                             |
+              +--------------+--------------+
+              |              |              |
+          Registers         ALU           Buses
+              |
+              ↓
+           Data
+
+
+CONTROL UNIT:
+    Controls what happens.
+
+DATAPATH:
+    Provides the hardware through which data moves and
+    operations are performed.
+
+
+------------------------------------------------------------
+24.4 WHAT IS A DATAPATH?
+------------------------------------------------------------
+
+A datapath is the collection of hardware components and
+connections that move and process data inside the processor.
+
+It usually includes:
+
+    • Registers
+    • ALU
+    • Multiplexers
+    • Internal buses
+    • Shifters
+    • Functional units
+
+
+Example:
+
+    Register A
+        |
+        ↓
+       ALU
+        ↑
+        |
+    Register B
+        |
+        ↓
+    Result Register
+
+
+The datapath is essentially:
+
+    "Where the data travels and gets processed."
+
+
+------------------------------------------------------------
+24.5 WHAT IS THE CONTROL PATH?
+------------------------------------------------------------
+
+The control path generates signals that tell the datapath
+what operations to perform.
+
+Example:
+
+    Control Unit
+         |
+         +----> Select Register A
+         |
+         +----> Select Register B
+         |
+         +----> ALU = ADD
+         |
+         +----> Enable Result Register
+
+
+Therefore:
+
+    DATAPATH
+        = Does the operation.
+
+    CONTROL PATH
+        = Tells the datapath what to do.
+
+
+------------------------------------------------------------
+24.6 DATAPATH VS CONTROL PATH
+------------------------------------------------------------
+
++-------------------+-----------------------------+
+| Datapath          | Control Path               |
++-------------------+-----------------------------+
+| Processes data    | Controls processing        |
++-------------------+-----------------------------+
+| Registers         | Control signals            |
+| ALU               | Control logic              |
+| Buses             | Instruction decoding       |
+| MUXes             | Timing/control generation  |
++-------------------+-----------------------------+
+
+
+MEMORY TRICK:
+
+    Datapath = DATA moves
+
+    Control path = CONTROL happens
+
+
+------------------------------------------------------------
+24.7 PROCESSOR INTERNAL COMPONENTS
+------------------------------------------------------------
+
+Important components:
+
+    1. Register file
+    2. ALU
+    3. Internal buses
+    4. Multiplexers
+    5. Control Unit
+    6. Program Counter
+    7. Instruction Register
+    8. Status/Flag register
+
+
+Conceptual structure:
+
+                CONTROL UNIT
+                     |
+             Control Signals
+                     ↓
+    +--------------------------------+
+    |            DATAPATH            |
+    |                                |
+    | Registers → ALU → Registers    |
+    |      ↑       ↑       ↑         |
+    |      +-------BUS-----+         |
+    +--------------------------------+
+
+
+------------------------------------------------------------
+24.8 REGISTERS
+------------------------------------------------------------
+
+A register is a small, high-speed storage location inside
+the CPU.
+
+Registers hold:
+
+    • Operands
+    • Intermediate results
+    • Addresses
+    • Instructions
+    • CPU state
+
+
+Examples:
+
+    PC
+    IR
+    MAR
+    MDR
+    Accumulator
+    General-purpose registers
+    SP
+    Status register
+
+
+------------------------------------------------------------
+24.9 WHY ARE REGISTERS FAST?
+------------------------------------------------------------
+
+Registers are located inside the processor and are implemented
+using very fast storage circuitry.
+
+Therefore:
+
+    Register access
+        ↓
+    Very fast
+
+    Main memory access
+        ↓
+    Slower
+
+
+Typical data movement:
+
+    Register
+       ↓
+      ALU
+       ↓
+    Register
+
+
+This is much faster than repeatedly accessing external main
+memory.
+
+
+------------------------------------------------------------
+24.10 REGISTER FILE
+------------------------------------------------------------
+
+A register file is a collection of processor registers
+organised as a unit.
+
+Example:
+
+    +------------------+
+    | Register File    |
+    +------------------+
+    | R0               |
+    | R1               |
+    | R2               |
+    | R3               |
+    | R4               |
+    | R5               |
+    | ...              |
+    | R31              |
+    +------------------+
+
+
+Modern processors commonly have multiple general-purpose
+registers.
+
+
+------------------------------------------------------------
+24.11 REGISTER FILE READ AND WRITE
+------------------------------------------------------------
+
+A register file may support:
+
+    • Reading one or more registers
+    • Writing a register
+
+
+Example:
+
+    ADD R3, R1, R2
+
+Conceptually:
+
+    R1 ──────→ ALU input A
+                  +
+    R2 ──────→ ALU input B
+                  |
+                  ↓
+                 ALU
+                  |
+                  ↓
+                 R3
+
+
+Meaning:
+
+    R3 = R1 + R2
+
+
+------------------------------------------------------------
+24.12 ALU
+------------------------------------------------------------
+
+ALU = Arithmetic Logic Unit.
+
+The ALU performs arithmetic and logical operations.
+
+Arithmetic:
+
+    • Addition
+    • Subtraction
+    • Increment
+    • Decrement
+
+Logical:
+
+    • AND
+    • OR
+    • XOR
+    • NOT
+    • Comparisons
+
+
+Example:
+
+    R1 = 10
+    R2 = 5
+
+    ALU ADD:
+
+    10 + 5 = 15
+
+
+------------------------------------------------------------
+24.13 ALU INPUTS AND OUTPUT
+------------------------------------------------------------
+
+Basic ALU:
+
+             Input A
+                |
+                ↓
+          +-----------+
+          |    ALU    |
+          +-----------+
+                ↑
+                |
+             Input B
+
+                |
+                ↓
+             Result
+
+
+The control unit selects the ALU operation.
+
+Example:
+
+    ALU control = ADD
+
+or:
+
+    ALU control = SUB
+
+or:
+
+    ALU control = AND
+
+
+------------------------------------------------------------
+24.14 STATUS FLAGS
+------------------------------------------------------------
+
+Many processors maintain status information after arithmetic
+or logical operations.
+
+Common flags:
+
+    • Zero (Z)
+    • Carry (C)
+    • Sign/Negative (S/N)
+    • Overflow (V/O)
+
+
+Example:
+
+    5 - 5 = 0
+
+The Zero flag may become:
+
+    Z = 1
+
+
+Example:
+
+    An arithmetic operation produces a carry.
+
+    Carry flag may become:
+
+    C = 1
+
+
+------------------------------------------------------------
+24.15 INTERNAL CPU BUS
+------------------------------------------------------------
+
+An internal bus is a communication pathway inside the CPU.
+
+It transfers information between:
+
+    • Registers
+    • ALU
+    • Other functional units
+
+
+Example:
+
+    R1 ──────┐
+             |
+             ↓
+          Internal Bus
+             |
+             ↓
+            ALU
+             |
+             ↓
+          Internal Bus
+             |
+             ↓
+            R2
+
+
+------------------------------------------------------------
+24.16 SINGLE-BUS ORGANISATION
+------------------------------------------------------------
+
+In single-bus organisation, many CPU components share one
+common internal bus.
+
+Example:
+
+        R0 ──┐
+        R1 ──┤
+        R2 ──┤
+        R3 ──┤
+        PC ──┤
+        IR ──┤
+             ↓
+       +-----------+
+       | INTERNAL  |
+       |   BUS     |
+       +-----------+
+             |
+             ↓
+            ALU
+             |
+             ↓
+           Register
+
+
+Only one major transfer can use the shared bus at a time,
+depending on the design.
+
+
+------------------------------------------------------------
+24.17 SINGLE-BUS ORGANISATION EXAMPLE
+------------------------------------------------------------
+
+Suppose:
+
+    R1 = 10
+    R2 = 20
+
+We want:
+
+    R3 = R1 + R2
+
+
+A simplified sequence:
+
+    Step 1:
+        R1 → Bus → ALU input
+
+    Step 2:
+        R2 → Bus → ALU input
+
+    Step 3:
+        ALU performs ADD
+
+    Step 4:
+        ALU result → Bus
+
+    Step 5:
+        Bus → R3
+
+
+Therefore:
+
+    R3 = 30
+
+
+------------------------------------------------------------
+24.18 LIMITATION OF SINGLE-BUS ORGANISATION
+------------------------------------------------------------
+
+Main limitation:
+
+    Only one shared bus is available.
+
+This can create:
+
+    • More transfers
+    • More control complexity
+    • Potential bottlenecks
+    • Lower parallel data movement
+
+
+For example:
+
+    R1 → Bus
+
+then:
+
+    R2 → Bus
+
+then:
+
+    Result → Bus
+
+Transfers cannot all occur simultaneously on the same bus.
+
+
+------------------------------------------------------------
+24.19 MULTI-BUS ORGANISATION
+------------------------------------------------------------
+
+A multi-bus organisation uses multiple internal buses.
+
+A common conceptual design uses three buses:
+
+    Bus A
+    Bus B
+    Bus C
+
+
+Example:
+
+       Register File
+        /         \
+       ↓           ↓
+     Bus A       Bus B
+        \         /
+         \       /
+           ALU
+            |
+            ↓
+          Bus C
+            |
+            ↓
+       Register File
+
+
+This allows multiple data transfers simultaneously.
+
+
+------------------------------------------------------------
+24.20 THREE-BUS ORGANISATION
+------------------------------------------------------------
+
+A typical three-bus datapath:
+
+                 Register File
+                /             \
+               ↓               ↓
+            Bus A             Bus B
+               |               |
+               +------\ /------+
+                       ALU
+                        |
+                        ↓
+                      Bus C
+                        |
+                        ↓
+                 Register File
+
+
+Bus A:
+    First ALU operand
+
+Bus B:
+    Second ALU operand
+
+Bus C:
+    ALU result
+
+
+------------------------------------------------------------
+24.21 THREE-BUS ADDITION EXAMPLE
+------------------------------------------------------------
+
+Instruction:
+
+    R3 = R1 + R2
+
+
+At one stage:
+
+    R1 → Bus A
+    R2 → Bus B
+
+              ↓
+             ALU
+              |
+             ADD
+              |
+              ↓
+           Bus C
+              |
+              ↓
+             R3
+
+
+Thus two operands can reach the ALU simultaneously.
+
+
+------------------------------------------------------------
+24.22 SINGLE-BUS VS MULTI-BUS
+------------------------------------------------------------
+
++----------------------+--------------------------+
+| Single Bus           | Multi-Bus               |
++----------------------+--------------------------+
+| One shared bus       | Multiple buses          |
++----------------------+--------------------------+
+| Simpler              | More complex            |
++----------------------+--------------------------+
+| Lower hardware cost  | More hardware           |
++----------------------+--------------------------+
+| More transfers may   | More parallel transfers |
+| be required          | possible                |
++----------------------+--------------------------+
+| Potential bottleneck | Better data movement    |
++----------------------+--------------------------+
+
+
+MEMORY TRICK:
+
+    Single bus:
+        SIMPLE but SLOWER DATA MOVEMENT
+
+    Multi-bus:
+        COMPLEX but MORE PARALLELISM
+
+
+------------------------------------------------------------
+24.23 MULTIPLEXER (MUX) IN DATAPATH
+------------------------------------------------------------
+
+A multiplexer selects one input from several inputs.
+
+Example:
+
+        R1 ──┐
+        R2 ──┤
+        R3 ──┤→ MUX → ALU
+        R4 ──┘
+
+
+Control signal decides which register is selected.
+
+Example:
+
+    Select = 2
+
+    MUX chooses R2.
+
+
+------------------------------------------------------------
+24.24 WHY ARE MUXES IMPORTANT?
+------------------------------------------------------------
+
+The CPU has many possible data sources.
+
+The ALU may need:
+
+    • Register value
+    • Immediate value
+    • PC
+    • Memory data
+    • Other intermediate value
+
+
+A MUX selects the required source.
+
+Therefore:
+
+    MUX
+      ↓
+    Selects data path
+
+
+------------------------------------------------------------
+24.25 CONTROL SIGNALS
+------------------------------------------------------------
+
+Control signals are signals generated by the control unit
+that direct CPU operations.
+
+Examples:
+
+    • Register read
+    • Register write
+    • ALU operation select
+    • MUX select
+    • Memory read
+    • Memory write
+    • PC update
+    • IR load
+
+
+Conceptually:
+
+               Instruction
+                    |
+                    ↓
+             +-------------+
+             |   Control   |
+             |    Unit     |
+             +-------------+
+                    |
+       +------------+------------+
+       ↓            ↓            ↓
+     MUX         Register       ALU
+    Select        Enable       Control
+
+
+------------------------------------------------------------
+24.26 CONTROL SIGNAL EXAMPLE
+------------------------------------------------------------
+
+Instruction:
+
+    ADD R3, R1, R2
+
+
+The control unit may generate:
+
+    Read register 1
+        ↓
+    Read register 2
+        ↓
+    Select ALU = ADD
+        ↓
+    Enable write to R3
+
+
+Conceptually:
+
+    R1 ──────→
+               \
+                ALU → R3
+               /
+    R2 ──────→
+
+
+------------------------------------------------------------
+24.27 REGISTER TRANSFER
+------------------------------------------------------------
+
+Register transfer means moving data from one register
+to another.
+
+Example:
+
+    R2 ← R1
+
+
+Meaning:
+
+    Copy the contents of R1 into R2.
+
+
+Important:
+
+    R1 is not destroyed.
+
+    R2 receives a copy of R1.
+
+
+------------------------------------------------------------
+24.28 REGISTER TRANSFER LANGUAGE
+------------------------------------------------------------
+
+Register Transfer Language (RTL) is used to describe
+microoperations and data transfers.
+
+Examples:
+
+    R2 ← R1
+
+    R3 ← R1 + R2
+
+    PC ← PC + 1
+
+    IR ← MDR
+
+
+The arrow:
+
+    ←
+
+means:
+
+    "Load the value on the right into the destination
+     on the left."
+
+
+------------------------------------------------------------
+24.29 MICROOPERATIONS
+------------------------------------------------------------
+
+A microoperation is a basic operation performed on data
+stored in registers.
+
+Types:
+
+    1. Register transfer
+    2. Arithmetic
+    3. Logical
+    4. Shift
+
+
+Examples:
+
+REGISTER TRANSFER:
+
+    R2 ← R1
+
+
+ARITHMETIC:
+
+    R3 ← R1 + R2
+
+
+LOGICAL:
+
+    R3 ← R1 AND R2
+
+
+SHIFT:
+
+    R1 ← shl R1
+
+
+------------------------------------------------------------
+24.30 PROCESSOR CLOCK
+------------------------------------------------------------
+
+The CPU uses clock signals to coordinate operations.
+
+Conceptually:
+
+    Clock:
+    ↑   ↑   ↑   ↑   ↑
+    |   |   |   |   |
+    T1  T2  T3  T4  T5
+
+
+Operations occur according to timing/control requirements.
+
+
+Example:
+
+    T1:
+        MAR ← PC
+
+    T2:
+        MDR ← Memory[MAR]
+
+    T3:
+        IR ← MDR
+
+
+This is a simplified illustration.
+
+
+------------------------------------------------------------
+24.31 CLOCK CYCLE
+------------------------------------------------------------
+
+A clock cycle is one period of the processor clock.
+
+If clock frequency is:
+
+    1 GHz
+
+then:
+
+    1 GHz = 1,000,000,000 cycles/sec
+
+
+Clock period:
+
+    T = 1 / f
+
+
+For 1 GHz:
+
+    T = 1 / 10^9
+      = 1 ns
+
+
+------------------------------------------------------------
+24.32 DATAPATH OPERATION
+------------------------------------------------------------
+
+Consider:
+
+    R1 = 5
+    R2 = 7
+
+Instruction:
+
+    R3 = R1 + R2
+
+
+Data movement:
+
+    R1
+     |
+     ↓
+    Bus A
+     |
+     ↓
+    ALU ← Bus B ← R2
+     |
+     | ADD
+     ↓
+    Bus C
+     |
+     ↓
+    R3
+
+
+Result:
+
+    R3 = 12
+
+
+------------------------------------------------------------
+24.33 FETCHING AN INSTRUCTION
+------------------------------------------------------------
+
+Suppose:
+
+    PC contains address of next instruction.
+
+
+Simplified fetch:
+
+    1. MAR ← PC
+
+    2. Memory Read
+
+    3. MDR ← Memory[MAR]
+
+    4. IR ← MDR
+
+    5. PC ← PC + instruction length
+
+
+Conceptually:
+
+    PC
+    ↓
+    MAR
+    ↓
+    Memory
+    ↓
+    MDR
+    ↓
+    IR
+
+
+The control unit coordinates these operations.
+
+
+------------------------------------------------------------
+24.34 EXECUTING AN ADD INSTRUCTION
+------------------------------------------------------------
+
+Suppose:
+
+    ADD R3, R1, R2
+
+
+Meaning:
+
+    R3 = R1 + R2
+
+
+Execution:
+
+    R1 → ALU input A
+    R2 → ALU input B
+
+              ↓
+             ALU
+              |
+             ADD
+              ↓
+             R3
+
+
+Control unit provides:
+
+    • Register selection
+    • ALU operation
+    • Destination register enable
+
+
+------------------------------------------------------------
+24.35 EXECUTING A LOAD INSTRUCTION
+------------------------------------------------------------
+
+Suppose:
+
+    LOAD R1, [address]
+
+
+Conceptually:
+
+    Address
+       ↓
+    Address calculation
+       ↓
+    Memory Read
+       ↓
+    Memory Data
+       ↓
+       R1
+
+
+The datapath must move the address and data appropriately.
+
+
+------------------------------------------------------------
+24.36 EXECUTING A STORE INSTRUCTION
+------------------------------------------------------------
+
+Suppose:
+
+    STORE R1, [address]
+
+
+Conceptually:
+
+    R1
+     |
+     ↓
+    Data
+     |
+     ↓
+    Memory
+     ↑
+     |
+    Address
+
+
+The CPU sends:
+
+    • Memory address
+    • Data to store
+    • Write control signal
+
+
+------------------------------------------------------------
+24.37 DATAPATH AND INSTRUCTION EXECUTION
+------------------------------------------------------------
+
+Instruction execution can be viewed as:
+
+    Instruction
+        ↓
+    Decode
+        ↓
+    Select operands
+        ↓
+    Perform operation
+        ↓
+    Store result
+
+
+Hardware involved:
+
+    Instruction Register
+          ↓
+    Control Unit
+          ↓
+    Register File
+          ↓
+         ALU
+          ↓
+    Register File
+
+
+------------------------------------------------------------
+24.38 PROCESSOR ORGANISATION EXAMPLE
+------------------------------------------------------------
+
+Suppose:
+
+    R1 = 15
+    R2 = 25
+
+Instruction:
+
+    ADD R3, R1, R2
+
+
+Step 1:
+
+    Control unit decodes instruction.
+
+
+Step 2:
+
+    Register file reads R1.
+
+
+Step 3:
+
+    Register file reads R2.
+
+
+Step 4:
+
+    ALU receives:
+
+        A = 15
+        B = 25
+
+
+Step 5:
+
+    ALU performs:
+
+        15 + 25 = 40
+
+
+Step 6:
+
+    Result is written into R3.
+
+
+Final:
+
+    R3 = 40
+
+
+------------------------------------------------------------
+24.39 INTERNAL WORKING OF A SIMPLE PROCESSOR
+------------------------------------------------------------
+
+A simplified flow:
+
+    +----------------------+
+    | Instruction Register |
+    +----------+-----------+
+               |
+               ↓
+        +-------------+
+        | Control Unit|
+        +------+------+ 
+               |
+        Control Signals
+               |
+               ↓
+    +----------------------+
+    |      Register File   |
+    +----------+-----------+
+               |
+          Operands
+               ↓
+             ALU
+               |
+             Result
+               ↓
+    +----------------------+
+    |      Register File   |
+    +----------------------+
+
+
+This forms the basic datapath-control relationship.
+
+
+------------------------------------------------------------
+24.40 SINGLE-BUS DETAILED CONCEPT
+------------------------------------------------------------
+
+A conceptual single-bus processor:
+
+    R0 ──┐
+    R1 ──┤
+    R2 ──┤
+    R3 ──┤
+    PC ──┤
+    IR ──┤
+    MAR ─┤
+    MDR ─┤
+         ↓
+    +-----------+
+    | INTERNAL  |
+    |    BUS    |
+    +-----------+
+         |
+         ↓
+        ALU
+         |
+         ↓
+      Result
+         |
+         ↓
+       Bus
+         |
+         ↓
+      Registers
+
+
+Control signals determine:
+
+    • Which register places data on bus.
+    • Which register receives data.
+    • What ALU operation occurs.
+
+
+------------------------------------------------------------
+24.41 MULTI-BUS DETAILED CONCEPT
+------------------------------------------------------------
+
+A conceptual multi-bus CPU:
+
+              Register File
+             /             \
+            ↓               ↓
+          Bus A           Bus B
+            |               |
+            ↓               ↓
+          +-------------------+
+          |        ALU        |
+          +-------------------+
+                    |
+                    ↓
+                  Bus C
+                    |
+                    ↓
+              Register File
+
+
+Advantages:
+
+    • Two operands can be read simultaneously.
+    • Result can be written efficiently.
+    • Fewer bus conflicts.
+    • Better datapath performance.
+
+
+------------------------------------------------------------
+24.42 SINGLE-BUS DATAPATH EXAMPLE
+------------------------------------------------------------
+
+Instruction:
+
+    R3 ← R1 + R2
+
+
+Possible simplified sequence:
+
+    T1:
+        R1 → Bus
+
+    T2:
+        Bus → temporary register A
+
+    T3:
+        R2 → Bus
+
+    T4:
+        Bus → ALU input B
+
+    T5:
+        ALU performs A + B
+
+    T6:
+        ALU result → Bus
+
+    T7:
+        Bus → R3
+
+
+More clock steps may be required because of the shared bus.
+
+
+------------------------------------------------------------
+24.43 MULTI-BUS DATAPATH EXAMPLE
+------------------------------------------------------------
+
+Instruction:
+
+    R3 ← R1 + R2
+
+
+Possible operation:
+
+    Bus A ← R1
+    Bus B ← R2
+
+             ↓
+            ALU
+             |
+            ADD
+             ↓
+           Bus C
+             |
+             ↓
+            R3
+
+
+Multiple transfers can occur in the same datapath cycle,
+depending on the implementation.
+
+
+------------------------------------------------------------
+24.44 CONTROL UNIT + DATAPATH
+------------------------------------------------------------
+
+The CPU can be divided conceptually into two major sections:
+
+                  PROCESSOR
+                      |
+             +--------+--------+
+             |                 |
+             ↓                 ↓
+        CONTROL UNIT        DATAPATH
+             |                 |
+             |                 |
+      Generates signals    Processes data
+             |                 |
+             +--------+--------+
+                      |
+                 Instruction
+                  execution
+
+
+This is one of the MOST IMPORTANT concepts in COA.
+
+
+------------------------------------------------------------
+24.45 HARDWARE RESPONSIBILITY
+------------------------------------------------------------
+
+CONTROL UNIT:
+
+    Decodes instructions.
+    Generates control signals.
+    Coordinates operations.
+
+
+REGISTER FILE:
+
+    Stores operands and intermediate values.
+
+
+ALU:
+
+    Performs arithmetic and logical operations.
+
+
+BUS:
+
+    Moves data between components.
+
+
+MUX:
+
+    Selects among multiple possible data sources.
+
+
+DATAPATH:
+
+    Provides the physical path for data processing.
+
+
+------------------------------------------------------------
+24.46 COMMON MISTAKES
+------------------------------------------------------------
+
+MISTAKE 1:
+
+    Datapath and control unit are the same.
+
+CORRECT:
+
+    Datapath processes data.
+    Control unit controls the datapath.
+
+
+MISTAKE 2:
+
+    Register = cache.
+
+CORRECT:
+
+    Registers are CPU-internal storage.
+    Cache is a separate memory hierarchy level.
+
+
+MISTAKE 3:
+
+    A bus stores data permanently.
+
+CORRECT:
+
+    A bus primarily transfers information.
+
+
+MISTAKE 4:
+
+    More buses always means a better processor.
+
+CORRECT:
+
+    More buses can increase parallelism but also increase
+    hardware complexity and cost.
+
+
+MISTAKE 5:
+
+    ALU controls the CPU.
+
+CORRECT:
+
+    ALU performs operations.
+    Control unit coordinates operations.
+
+
+MISTAKE 6:
+
+    Register transfer means the source register is erased.
+
+CORRECT:
+
+    R2 ← R1 means R1's value is copied into R2.
+
+
+------------------------------------------------------------
+24.47 B.TECH EXAM QUESTIONS
+------------------------------------------------------------
+
+Q1. Define processor organisation.
+
+Q2. What is a datapath?
+
+Q3. What is a control path?
+
+Q4. Explain the basic structure of a CPU.
+
+Q5. Explain the role of registers in a processor.
+
+Q6. What is a register file?
+
+Q7. Explain the function of the ALU.
+
+Q8. What is an internal CPU bus?
+
+Q9. Explain single-bus processor organisation.
+
+Q10. Explain multi-bus processor organisation.
+
+Q11. Compare single-bus and multi-bus organisation.
+
+Q12. What is a multiplexer?
+
+Q13. Why are multiplexers used in datapaths?
+
+Q14. What are control signals?
+
+Q15. Explain the relationship between datapath and control unit.
+
+Q16. Explain register transfer language.
+
+Q17. Explain microoperations.
+
+Q18. Describe the execution of:
+
+        R3 ← R1 + R2
+
+Q19. Explain instruction fetch using processor registers.
+
+Q20. Explain how a CPU executes an ADD instruction.
+
+
+------------------------------------------------------------
+24.48 COMPETITIVE EXAM HIGH-VALUE CONCEPTS
+------------------------------------------------------------
+
+1.
+
+    DATAPATH
+        =
+    Registers + ALU + buses + selection hardware + other
+    data-processing components.
+
+
+2.
+
+    CONTROL PATH
+        =
+    Generates signals controlling the datapath.
+
+
+3.
+
+    SINGLE BUS
+        =
+    One shared internal data path.
+
+
+4.
+
+    MULTI BUS
+        =
+    Multiple internal data paths allowing greater parallelism.
+
+
+5.
+
+    REGISTER FILE
+        =
+    Collection of processor registers.
+
+
+6.
+
+    ALU
+        =
+    Arithmetic + logical operations.
+
+
+7.
+
+    MUX
+        =
+    Selects one input from multiple inputs.
+
+
+8.
+
+    CONTROL SIGNAL
+        =
+    Directs a hardware component to perform a particular action.
+
+
+9.
+
+    RTL:
+
+        R2 ← R1
+
+    means:
+
+        Copy R1 into R2.
+
+
+10.
+
+    ADD:
+
+        R3 ← R1 + R2
+
+    means:
+
+        ALU receives R1 and R2,
+        performs addition,
+        writes result to R3.
+
+
+============================================================
+24.49 QUICK REVISION
+============================================================
+
+PROCESSOR ORGANISATION
+    ↓
+Internal arrangement of CPU components.
+
+CPU
+    ↓
+Control Unit + Datapath.
+
+DATAPATH
+    ↓
+Moves and processes data.
+
+CONTROL PATH
+    ↓
+Controls datapath.
+
+REGISTER
+    ↓
+Very fast CPU storage.
+
+REGISTER FILE
+    ↓
+Collection of registers.
+
+ALU
+    ↓
+Arithmetic and logical operations.
+
+INTERNAL BUS
+    ↓
+Transfers data inside CPU.
+
+MUX
+    ↓
+Selects one data source.
+
+SINGLE-BUS
+    ↓
+One shared internal bus.
+
+MULTI-BUS
+    ↓
+Multiple internal buses.
+
+CONTROL SIGNAL
+    ↓
+Tells hardware what to do.
+
+RTL
+    ↓
+Describes register-level operations.
+
+
+============================================================
+24.50 MASTER CONCEPT MAP
+============================================================
+
+                    PROCESSOR ORGANISATION
+                            |
+             +--------------+--------------+
+             |                             |
+             ↓                             ↓
+        CONTROL PATH                    DATAPATH
+             |                             |
+      +------+------+              +-------+--------+
+      |             |              |       |        |
+   Control      Instruction     Registers  ALU     Buses
+   Signals        Decode           |        |        |
+      |                            |        |        |
+      +----------------------------+--------+--------+
+                                   |
+                                  MUX
+                                   |
+                              Data Selection
+                                   |
+                              Instruction
+                               Execution
+
+
+============================================================
+24.51 MOST IMPORTANT FORMULAS
+============================================================
+
+CLOCK PERIOD:
+
+    T = 1 / f
+
+
+Example:
+
+    f = 2 GHz
+
+    T = 1 / (2 × 10^9)
+
+      = 0.5 ns
+
+
+SIMPLIFIED BUS BANDWIDTH:
+
+    Bandwidth
+    =
+    Bits per transfer × Transfers per second
+
+
+Convert:
+
+    8 bits = 1 byte
+
+    16 bits = 2 bytes
+
+    32 bits = 4 bytes
+
+    64 bits = 8 bytes
+
+
+============================================================
+24.52 FINAL UNDERSTANDING
+============================================================
+
+Think of the processor as a factory.
+
+    CONTROL UNIT
+        =
+    Manager
+
+    DATAPATH
+        =
+    Factory floor
+
+    REGISTERS
+        =
+    Small work tables
+
+    ALU
+        =
+    Calculator/machine
+
+    BUS
+        =
+    Internal transport system
+
+    MUX
+        =
+    Traffic switch
+
+The control unit tells the datapath:
+
+    "Take this data."
+    "Use this register."
+    "Perform ADD."
+    "Store the result here."
+
+The datapath then physically moves and processes the data.
+
+
+============================================================
+CHAPTER 24 COMPLETE
+============================================================

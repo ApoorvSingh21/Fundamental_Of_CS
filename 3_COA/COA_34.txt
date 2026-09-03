@@ -1,0 +1,2673 @@
+CHAPTER 34 — ADVANCED PROCESSOR CONCEPTS
+
+============================================================
+CHAPTER 34 — ADVANCED PROCESSOR CONCEPTS
+============================================================
+
+LEVEL:
+B.Tech 1st Year → University Foundation → Competitive Exam
+→ Intermediate → Advanced
+
+GOAL:
+Understand how modern CPUs execute multiple instructions,
+reorder instructions, predict branches, rename registers,
+and achieve high Instruction-Level Parallelism (ILP).
+
+TOPICS:
+    34.1 Superscalar Architecture
+    34.2 Dynamic Scheduling
+    34.3 Tomasulo's Algorithm
+    34.4 Register Renaming
+    34.5 Reorder Buffer
+    34.6 Out-of-Order Execution
+    34.7 Speculative Execution
+    34.8 Branch Prediction
+    34.9 Instruction-Level Parallelism
+
+
+============================================================
+34.1 WHY ADVANCED PROCESSORS?
+============================================================
+
+A simple processor may execute instructions one after another:
+
+    I1 → I2 → I3 → I4 → I5
+
+This is sequential execution.
+
+But many instructions are independent.
+
+Example:
+
+    I1: R1 = R2 + R3
+    I2: R4 = R5 + R6
+    I3: R7 = R1 + R8
+
+I1 and I2 do not depend on each other.
+
+Therefore:
+
+    I1 ──────┐
+             ├──→ Can execute in parallel
+    I2 ──────┘
+
+    I3 waits for I1.
+
+
+Modern processors exploit such independence to improve
+performance.
+
+
+============================================================
+34.2 INSTRUCTION-LEVEL PARALLELISM (ILP)
+============================================================
+
+ILP = Instruction-Level Parallelism
+
+It is the ability to execute multiple independent instructions
+at the same time or overlap their execution.
+
+
+Example:
+
+    I1: ADD R1, R2, R3
+    I2: SUB R4, R5, R6
+    I3: AND R7, R8, R9
+
+These instructions are independent.
+
+Therefore:
+
+    ┌───────┐
+    │  I1   │
+    └───────┘
+    ┌───────┐
+    │  I2   │    Execute concurrently
+    └───────┘
+    ┌───────┐
+    │  I3   │
+    └───────┘
+
+
+ILP is different from:
+
+    Thread-Level Parallelism
+    Data-Level Parallelism
+
+
+ILP:
+    Multiple instructions from one instruction stream.
+
+
+============================================================
+34.3 BASIC PIPELINE VS ADVANCED PROCESSOR
+============================================================
+
+Basic pipeline:
+
+    IF → ID → EX → MEM → WB
+
+Usually one instruction enters the pipeline per cycle
+in an ideal scalar pipeline.
+
+
+Advanced processor:
+
+    Multiple instructions may be issued per cycle.
+
+
+Example:
+
+    Cycle 1:
+        I1 + I2
+
+    Cycle 2:
+        I3 + I4
+
+    Cycle 3:
+        I5 + I6
+
+
+This leads to:
+
+    SUPERSCALAR PROCESSING
+
+
+============================================================
+34.4 SUPERSCALAR ARCHITECTURE
+============================================================
+
+A superscalar processor can issue multiple instructions
+during one clock cycle.
+
+
+Example:
+
+    2-wide superscalar:
+
+        Cycle 1 → I1, I2
+        Cycle 2 → I3, I4
+        Cycle 3 → I5, I6
+
+
+A 4-wide processor could potentially issue:
+
+        4 instructions/cycle
+
+
+Important:
+
+    Width = Maximum number of instructions that can be
+            issued/processed per cycle.
+
+
+============================================================
+34.5 SCALAR VS SUPERSCALAR
+============================================================
+
+SCALAR:
+
+    Usually one instruction issued per cycle.
+
+    Example:
+
+        Cycle 1 → I1
+        Cycle 2 → I2
+        Cycle 3 → I3
+
+
+SUPERSCALAR:
+
+    Multiple instructions may be issued per cycle.
+
+    Example:
+
+        Cycle 1 → I1, I2
+        Cycle 2 → I3, I4
+
+
+Therefore:
+
+    Superscalar → exploits ILP.
+
+
+============================================================
+34.6 SUPERSCALAR PROCESSOR STRUCTURE
+============================================================
+
+                    Instructions
+                         |
+                         ↓
+                  Instruction Fetch
+                         |
+                         ↓
+                   Decode / Rename
+                         |
+                         ↓
+                  Instruction Queue
+                         |
+          +--------------+--------------+
+          |              |              |
+          ↓              ↓              ↓
+       Integer         FP Unit       Load/Store
+        Unit             Unit           Unit
+          |              |              |
+          +--------------+--------------+
+                         |
+                         ↓
+                       Commit
+
+
+Multiple execution units allow multiple instructions to
+execute simultaneously.
+
+
+============================================================
+34.7 EXECUTION UNITS
+============================================================
+
+A modern CPU may contain:
+
+    • Integer ALU
+    • Floating-point unit
+    • Load unit
+    • Store unit
+    • Branch unit
+    • Vector/SIMD units
+
+
+Example:
+
+    Integer instruction
+          ↓
+      Integer ALU
+
+
+    Floating-point instruction
+          ↓
+         FPU
+
+
+    Memory instruction
+          ↓
+      Load/Store Unit
+
+
+============================================================
+34.8 SUPERSCALAR LIMITATIONS
+============================================================
+
+Ideal performance is not guaranteed.
+
+Reasons:
+
+    • Data dependencies
+    • Branches
+    • Cache misses
+    • Limited execution units
+    • Structural hazards
+    • Memory dependencies
+    • Limited instruction-level parallelism
+
+
+Therefore:
+
+    4-wide processor
+        does NOT necessarily execute
+    exactly 4 useful instructions every cycle.
+
+
+============================================================
+34.9 ISSUE WIDTH
+============================================================
+
+Issue width = maximum number of instructions that can be
+issued in one cycle.
+
+
+Example:
+
+    2-wide:
+
+        Maximum = 2 instructions/cycle
+
+
+    4-wide:
+
+        Maximum = 4 instructions/cycle
+
+
+    6-wide:
+
+        Maximum = 6 instructions/cycle
+
+
+Actual IPC may be lower.
+
+
+============================================================
+34.10 IPC
+============================================================
+
+IPC = Instructions Per Cycle
+
+
+Formula:
+
+    IPC
+    =
+    Number of instructions executed
+    --------------------------------
+    Number of CPU cycles
+
+
+Example:
+
+    800 instructions
+    executed in
+    400 cycles
+
+
+    IPC = 800 / 400
+
+        = 2
+
+
+Therefore:
+
+    Average IPC = 2 instructions/cycle.
+
+
+IMPORTANT:
+
+    CPI and IPC are approximately reciprocals when defined
+    over the same instruction stream:
+
+        IPC ≈ 1 / CPI
+
+But in advanced architectures, terminology and measurement
+context must be considered carefully.
+
+
+============================================================
+34.11 IDEAL SUPERSCALAR PERFORMANCE
+============================================================
+
+Suppose:
+
+    4-wide processor
+
+
+Ideal maximum:
+
+    4 instructions/cycle
+
+
+If program contains enough independent instructions and
+hardware resources are available.
+
+
+But actual IPC may be:
+
+    1.5
+    2.2
+    3.1
+    etc.
+
+
+depending on workload.
+
+
+============================================================
+34.12 DYNAMIC SCHEDULING
+============================================================
+
+Static scheduling:
+
+    Compiler decides instruction ordering.
+
+
+Dynamic scheduling:
+
+    Hardware decides at runtime when instructions should
+    execute.
+
+
+Why?
+
+Because runtime conditions are not always known by the
+compiler.
+
+
+Examples:
+
+    • Cache hit/miss
+    • Functional unit availability
+    • Instruction dependencies
+    • Branch outcomes
+
+
+Dynamic scheduling allows the CPU to find useful work while
+other instructions are waiting.
+
+
+============================================================
+34.13 STATIC VS DYNAMIC SCHEDULING
+============================================================
+
+STATIC:
+
+    Compiler
+       ↓
+    Scheduling decisions
+       ↓
+    CPU
+
+
+DYNAMIC:
+
+    CPU hardware
+       ↓
+    Runtime scheduling
+       ↓
+    Execution
+
+
+Modern high-performance CPUs heavily use dynamic techniques.
+
+
+============================================================
+34.14 WHY DYNAMIC SCHEDULING?
+============================================================
+
+Consider:
+
+    I1: LOAD R1, [memory]
+    I2: ADD R2, R3, R4
+    I3: SUB R5, R6, R7
+
+Suppose I1 experiences a cache miss.
+
+
+Without dynamic scheduling:
+
+    I1 waits
+    ↓
+    I2 waits
+    ↓
+    I3 waits
+
+
+With dynamic scheduling:
+
+    I1 waits for memory
+
+    Meanwhile:
+
+    I2 → Execute
+    I3 → Execute
+
+
+Therefore:
+
+    Hardware finds independent work.
+
+
+============================================================
+34.15 IN-ORDER EXECUTION
+============================================================
+
+Instructions execute in program order.
+
+
+Example:
+
+    I1
+    I2
+    I3
+    I4
+
+Execution:
+
+    I1 → I2 → I3 → I4
+
+
+Simple but can waste execution resources when an instruction
+is waiting.
+
+
+============================================================
+34.16 OUT-OF-ORDER EXECUTION
+============================================================
+
+Instructions may execute in an order different from the
+original program order when dependencies permit.
+
+
+Example:
+
+    I1: LOAD R1, [memory]     ← slow
+    I2: ADD R2, R3, R4        ← independent
+    I3: SUB R5, R6, R7        ← independent
+
+
+Instead of:
+
+    I1 → I2 → I3
+
+
+CPU may execute:
+
+    I2 → I3 → I1
+
+
+But the processor must preserve the correct architectural
+result.
+
+
+============================================================
+34.17 OUT-OF-ORDER DOES NOT MEAN WRONG ORDER
+============================================================
+
+Very important.
+
+
+Suppose:
+
+    I1: R1 = R2 + R3
+    I2: R4 = R5 + R6
+
+
+They are independent.
+
+CPU can execute I2 before I1.
+
+
+But if:
+
+    I1: R1 = R2 + R3
+    I2: R4 = R1 + R5
+
+
+Then I2 depends on I1.
+
+Therefore:
+
+    I1 must produce R1 before I2 can use it.
+
+
+The CPU reorders only when correctness is preserved.
+
+
+============================================================
+34.18 DATA DEPENDENCIES
+============================================================
+
+Dependencies determine whether instructions can execute
+independently.
+
+
+Three classic dependency types:
+
+    RAW
+    WAR
+    WAW
+
+
+RAW:
+    Read After Write
+
+
+WAR:
+    Write After Read
+
+
+WAW:
+    Write After Write
+
+
+These were introduced with pipeline hazards and become
+especially important in out-of-order processors.
+
+
+============================================================
+34.19 RAW DEPENDENCY
+============================================================
+
+RAW = Read After Write
+
+
+Example:
+
+    I1: R1 = R2 + R3
+
+    I2: R4 = R1 + R5
+
+
+I2 reads R1.
+
+But I1 must write R1 first.
+
+
+Therefore:
+
+    I1 → I2
+
+
+This is a TRUE DATA DEPENDENCY.
+
+
+============================================================
+34.20 WAR DEPENDENCY
+============================================================
+
+WAR = Write After Read
+
+
+Example:
+
+    I1: R4 = R1 + R2
+
+    I2: R1 = R5 + R6
+
+
+I1 must read R1 before I2 overwrites R1.
+
+
+This is an anti-dependency.
+
+
+Register renaming can often remove this false dependency.
+
+
+============================================================
+34.21 WAW DEPENDENCY
+============================================================
+
+WAW = Write After Write
+
+
+Example:
+
+    I1: R1 = R2 + R3
+
+    I2: R1 = R4 + R5
+
+
+Both write R1.
+
+
+The final value of R1 must correspond to the correct program
+order.
+
+
+Register renaming can eliminate the false name dependency.
+
+
+============================================================
+34.22 TRUE VS FALSE DEPENDENCIES
+============================================================
+
+TRUE DEPENDENCY:
+
+    RAW
+
+
+FALSE / NAME DEPENDENCIES:
+
+    WAR
+    WAW
+
+
+Important:
+
+    Register renaming primarily eliminates WAR and WAW
+    dependencies caused by reuse of register names.
+
+
+============================================================
+34.23 REGISTER RENAMING
+============================================================
+
+Register renaming assigns different physical registers to
+instructions that use the same architectural register name.
+
+
+Why?
+
+To eliminate false dependencies.
+
+
+Example:
+
+    I1: R1 = R2 + R3
+
+    I2: R1 = R4 + R5
+
+
+Both use:
+
+    R1
+
+
+The CPU may internally rename them:
+
+    I1 → P10
+    I2 → P15
+
+
+Therefore:
+
+    I1 writes P10
+    I2 writes P15
+
+
+They no longer conflict merely because both use architectural
+register R1.
+
+
+============================================================
+34.24 ARCHITECTURAL VS PHYSICAL REGISTERS
+============================================================
+
+ARCHITECTURAL REGISTER:
+
+    Visible through the ISA.
+
+
+Example:
+
+    R1
+
+
+PHYSICAL REGISTER:
+
+    Internal hardware register used by CPU implementation.
+
+
+Example:
+
+    P10
+    P11
+    P12
+    ...
+
+
+Therefore:
+
+    ISA may define 32 registers
+
+    CPU may internally have many more physical registers.
+
+
+============================================================
+34.25 REGISTER RENAMING EXAMPLE
+============================================================
+
+Original:
+
+    I1: R1 = R2 + R3
+    I2: R4 = R1 + R5
+    I3: R1 = R6 + R7
+
+
+Without renaming:
+
+    I1 writes R1
+    I2 reads R1
+    I3 writes R1
+
+
+With renaming:
+
+    I1 → P10
+    I2 reads P10
+    I3 → P15
+
+
+Thus:
+
+    I1: P10 = R2 + R3
+
+    I2: R4 = P10 + R5
+
+    I3: P15 = R6 + R7
+
+
+The CPU can distinguish the different versions of R1.
+
+
+============================================================
+34.26 PHYSICAL REGISTER FILE
+============================================================
+
+Conceptually:
+
+        Architectural Registers
+                  |
+                  ↓
+           Register Rename
+                  |
+                  ↓
+        Physical Register File
+                  |
+                  ↓
+             Execution Units
+
+
+This enables dynamic execution and register renaming.
+
+
+============================================================
+34.27 TOMASULO'S ALGORITHM
+============================================================
+
+Tomasulo's algorithm is a hardware technique for dynamic
+scheduling of instructions.
+
+
+It was developed to allow instructions to execute when their
+operands become available rather than strictly following
+program order.
+
+
+Main ideas:
+
+    • Dynamic scheduling
+    • Reservation stations
+    • Operand forwarding
+    • Register renaming
+    • Out-of-order execution
+
+
+============================================================
+34.28 TOMASULO'S MAIN COMPONENTS
+============================================================
+
+Important components include:
+
+    1. Reservation Stations
+    2. Functional Units
+    3. Common Data Bus
+    4. Register Status information
+
+
+Modern processors use more advanced structures, but Tomasulo's
+algorithm is a foundational concept.
+
+
+============================================================
+34.29 RESERVATION STATIONS
+============================================================
+
+Reservation stations hold instructions waiting for their
+operands and execution unit availability.
+
+
+Conceptually:
+
+    Instruction
+        ↓
+    Reservation Station
+        ↓
+    Wait for operands
+        ↓
+    Execute when ready
+
+
+Example:
+
+    ADD R1, R2, R3
+
+
+If R2 is unavailable:
+
+    ADD waits in reservation station.
+
+
+When R2 becomes available:
+
+    ADD can execute if the required execution unit is free.
+
+
+============================================================
+34.30 WHY RESERVATION STATIONS?
+============================================================
+
+Without dynamic scheduling:
+
+    Instruction waits because an earlier instruction is
+    waiting.
+
+
+With reservation stations:
+
+    Instructions can wait independently.
+
+
+Example:
+
+    I1 → waiting for memory
+
+    I2 → operands ready
+    I3 → operands ready
+
+
+Then:
+
+    I2 and I3 can execute while I1 waits.
+
+
+============================================================
+34.31 COMMON DATA BUS
+============================================================
+
+In the classic Tomasulo model, a Common Data Bus (CDB)
+broadcasts completed results to waiting reservation stations.
+
+
+Concept:
+
+    Functional Unit
+          |
+          ↓
+        Result
+          |
+          ↓
+         CDB
+       /  |  \
+      /   |   \
+    RS1  RS2  RS3
+
+
+Instructions waiting for that result can capture it.
+
+
+============================================================
+34.32 TOMASULO — BASIC FLOW
+============================================================
+
+    Instruction Fetch
+          ↓
+       Decode
+          ↓
+    Issue to Reservation Station
+          ↓
+     Wait for operands
+          ↓
+       Execute
+          ↓
+     Broadcast result
+          ↓
+    Update dependent instructions
+          ↓
+       Continue
+
+
+============================================================
+34.33 TOMASULO EXAMPLE
+============================================================
+
+Suppose:
+
+    I1: R1 = R2 + R3
+
+    I2: R4 = R1 + R5
+
+
+Initially:
+
+    I1 operands available.
+
+    I2 waits for R1.
+
+
+Execution:
+
+    I1
+     ↓
+    ADD
+     ↓
+    result = R1
+     ↓
+    broadcast
+     ↓
+    I2 receives result
+     ↓
+    I2 executes
+
+
+Therefore:
+
+    Dependency is handled dynamically.
+
+
+============================================================
+34.34 TOMASULO AND REGISTER RENAMING
+============================================================
+
+One major advantage of Tomasulo's approach is that it can
+remove false dependencies by associating instructions with
+different result tags.
+
+
+Example:
+
+    I1 produces:
+        Tag A
+
+
+    I2 produces:
+        Tag B
+
+
+Consumers know which result they need.
+
+
+Therefore:
+
+    WAR and WAW hazards can be eliminated through renaming.
+
+
+============================================================
+34.35 TOMASULO'S ALGORITHM — KEY FEATURES
+============================================================
+
+Remember:
+
+    RESERVATION STATIONS
+        ↓
+    Hold waiting instructions
+
+
+    REGISTER RENAMING
+        ↓
+    Removes false dependencies
+
+
+    COMMON DATA BUS
+        ↓
+    Broadcasts completed results
+
+
+    DYNAMIC SCHEDULING
+        ↓
+    Executes instructions when ready
+
+
+============================================================
+34.36 LIMITATION OF CLASSIC TOMASULO
+============================================================
+
+The classic algorithm does not by itself provide all the
+machinery needed for precise architectural state in modern
+processors.
+
+
+Modern processors commonly combine:
+
+    • Register renaming
+    • Reservation stations / issue queues
+    • Reorder buffer
+    • Retirement/commit logic
+
+
+This allows out-of-order execution while preserving
+in-order architectural completion.
+
+
+============================================================
+34.37 REORDER BUFFER (ROB)
+============================================================
+
+ROB = Reorder Buffer
+
+
+It keeps track of instructions that have been executed
+out of order but have not yet been committed architecturally.
+
+
+Main purpose:
+
+    Preserve correct program order at retirement.
+
+
+Example:
+
+    Program order:
+
+        I1
+        I2
+        I3
+
+
+Execution order:
+
+        I2
+        I3
+        I1
+
+
+ROB maintains:
+
+        I1
+        I2
+        I3
+
+
+and commits results in the correct order.
+
+
+============================================================
+34.38 WHY REORDER BUFFER?
+============================================================
+
+Suppose:
+
+    I1 = slow
+    I2 = fast
+
+
+CPU executes:
+
+    I2 first
+
+
+But if I2 changes architectural state before I1 completes,
+an exception or interrupt could make the machine state
+incorrect.
+
+
+ROB allows:
+
+    Execute out of order
+
+    BUT
+
+    Commit in order
+
+
+This provides precise architectural state.
+
+
+============================================================
+34.39 IN-ORDER COMMIT
+============================================================
+
+Typical modern design:
+
+    Fetch
+      ↓
+    Decode
+      ↓
+    Rename
+      ↓
+    Dispatch
+      ↓
+    Execute out of order
+      ↓
+    Write results internally
+      ↓
+    ROB
+      ↓
+    Commit in program order
+
+
+Key principle:
+
+    OUT-OF-ORDER EXECUTION
+
+    +
+    
+    IN-ORDER RETIREMENT
+
+
+============================================================
+34.40 RETIREMENT / COMMIT
+============================================================
+
+Retirement means making an instruction's result part of the
+architectural state.
+
+
+Example:
+
+    I1
+    I2
+    I3
+
+
+Even if:
+
+    I3 finishes first,
+
+it may not retire before:
+
+    I1 and I2
+
+
+if they are earlier in program order.
+
+
+============================================================
+34.41 PRECISE EXCEPTIONS
+============================================================
+
+A precise exception means the CPU can present a consistent
+architectural state corresponding to a precise instruction
+boundary.
+
+
+Conceptually:
+
+    Instructions before fault:
+        completed
+
+    Faulting instruction:
+        identified
+
+    Instructions after fault:
+        not architecturally committed
+
+
+ROB helps provide this behavior.
+
+
+============================================================
+34.42 OUT-OF-ORDER EXECUTION — COMPLETE IDEA
+============================================================
+
+Program:
+
+    I1 → I2 → I3 → I4
+
+
+Suppose:
+
+    I1 = slow
+    I2 = independent
+    I3 = independent
+    I4 = depends on I1
+
+
+CPU can:
+
+    Execute I2
+    Execute I3
+    Wait for I1
+    Execute I4 after I1
+
+
+But retirement:
+
+    I1 → I2 → I3 → I4
+
+
+This increases hardware utilization without changing the
+program's visible behavior.
+
+
+============================================================
+34.43 SPECULATIVE EXECUTION
+============================================================
+
+Speculative execution means the CPU executes instructions
+before it is certain that those instructions are actually
+needed.
+
+
+Most commonly associated with:
+
+    Branch prediction
+
+
+Example:
+
+    if (condition)
+        A
+    else
+        B
+
+
+CPU may predict:
+
+    condition = TRUE
+
+
+Then begin executing A before the condition is fully known.
+
+
+If prediction is correct:
+
+    Work is useful.
+
+
+If prediction is wrong:
+
+    Speculative work is discarded.
+
+
+============================================================
+34.44 WHY SPECULATIVE EXECUTION?
+============================================================
+
+Without speculation:
+
+    Branch
+      ↓
+    Wait for condition
+      ↓
+    Determine target
+      ↓
+    Fetch next instruction
+
+
+Pipeline may stall.
+
+
+With speculation:
+
+    Branch
+      ↓
+    Predict
+      ↓
+    Continue fetching/executing
+
+
+This keeps the pipeline busy.
+
+
+============================================================
+34.45 SPECULATION FLOW
+============================================================
+
+                 Branch
+                    |
+                    ↓
+             Predict outcome
+                /       \
+              Taken    Not Taken
+                |          |
+                ↓          ↓
+           Execute A   Execute B
+                \          /
+                 \        /
+                  ↓      ↓
+                 Verify
+                    |
+          +---------+---------+
+          |                   |
+       Correct             Incorrect
+          |                   |
+          ↓                   ↓
+       Keep work          Flush work
+
+
+============================================================
+34.46 BRANCH PREDICTION
+============================================================
+
+A branch instruction changes the normal flow of execution.
+
+
+Example:
+
+    if (x > 0)
+        A
+    else
+        B
+
+
+CPU must determine which path to fetch.
+
+
+Branch prediction guesses:
+
+    Taken
+
+or:
+
+    Not Taken
+
+
+Good prediction:
+
+    Keeps pipeline full.
+
+
+Bad prediction:
+
+    Causes wasted work and pipeline flush.
+
+
+============================================================
+34.47 STATIC BRANCH PREDICTION
+============================================================
+
+Static prediction uses a fixed rule or information determined
+without learning from recent runtime branch behavior.
+
+
+Examples:
+
+    • Always predict taken
+    • Always predict not taken
+    • Compiler-based prediction
+    • Backward branches predicted taken in some designs
+
+
+Simple but limited.
+
+
+============================================================
+34.48 DYNAMIC BRANCH PREDICTION
+============================================================
+
+Dynamic prediction uses runtime history.
+
+
+CPU records information about previous branch behavior.
+
+
+Example:
+
+    Branch was taken many times.
+
+Predict:
+
+    Taken
+
+
+If behavior changes:
+
+    Predictor adapts.
+
+
+Dynamic prediction is generally more sophisticated than simple
+static rules.
+
+
+============================================================
+34.49 ONE-BIT PREDICTOR
+============================================================
+
+A simple dynamic predictor can use one bit.
+
+
+Possible states:
+
+    0 → Predict Not Taken
+
+    1 → Predict Taken
+
+
+After branch execution:
+
+    Update the bit based on actual outcome.
+
+
+Problem:
+
+    A loop branch may be mispredicted at both loop entry/exit
+    transitions depending on initialization and update policy.
+
+
+============================================================
+34.50 TWO-BIT PREDICTOR
+============================================================
+
+A two-bit saturating counter provides four states.
+
+
+Conceptually:
+
+    Strongly Not Taken
+          ↓
+    Weakly Not Taken
+          ↓
+    Weakly Taken
+          ↓
+    Strongly Taken
+
+
+The predictor changes state gradually.
+
+
+This avoids changing prediction after one unusual branch result.
+
+
+============================================================
+34.51 BRANCH TARGET BUFFER (BTB)
+============================================================
+
+BTB = Branch Target Buffer
+
+
+It stores information about previously encountered branches,
+including predicted target addresses.
+
+
+Conceptually:
+
+    Branch PC
+       ↓
+      BTB
+       ↓
+    Target address
+
+
+This can allow the processor to quickly fetch from the predicted
+target.
+
+
+============================================================
+34.52 BRANCH PREDICTION ACCURACY
+============================================================
+
+Suppose:
+
+    1,000 branches
+
+    900 correctly predicted
+
+
+Accuracy:
+
+    = 900 / 1000 × 100
+
+    = 90%
+
+
+Misprediction rate:
+
+    = 100 - 90
+
+    = 10%
+
+
+============================================================
+34.53 BRANCH MIS-PREDICTION
+============================================================
+
+Suppose:
+
+    Branch prediction says:
+        Taken
+
+
+Actual:
+
+    Not Taken
+
+
+Then:
+
+    Prediction = WRONG
+
+
+CPU may need to:
+
+    • Discard speculative instructions
+    • Flush pipeline
+    • Redirect instruction fetch
+    • Recover correct state
+
+
+This causes:
+
+    Branch misprediction penalty.
+
+
+============================================================
+34.54 BRANCH PENALTY
+============================================================
+
+Branch penalty = additional cycles lost due to branch
+resolution/misprediction.
+
+
+Simplified average penalty:
+
+    Branch penalty contribution
+    =
+    Branch Frequency
+    ×
+    Misprediction Rate
+    ×
+    Misprediction Penalty
+
+
+Example:
+
+    Branch frequency = 20%
+
+    Misprediction rate = 5%
+
+    Penalty = 10 cycles
+
+
+Additional CPI:
+
+    = 0.20 × 0.05 × 10
+
+    = 0.10
+
+
+If ideal CPI = 1:
+
+    Actual CPI ≈ 1.10
+
+
+============================================================
+34.55 SPECULATIVE EXECUTION + BRANCH PREDICTION
+============================================================
+
+These work together:
+
+    Branch
+      ↓
+    Predictor
+      ↓
+    Predicted path
+      ↓
+    Speculative execution
+      ↓
+    Branch resolved
+      ↓
+    Correct?
+      |
+    +--+--+
+    |     |
+   YES    NO
+    |      |
+  Keep    Flush
+  work    wrong-path work
+
+
+============================================================
+34.56 SQUASH / FLUSH
+============================================================
+
+When speculative execution follows the wrong path:
+
+    Wrong-path instructions must be discarded.
+
+
+This is called:
+
+    Squashing
+    or
+    Pipeline flushing
+
+
+Correct instruction stream is then fetched.
+
+
+============================================================
+34.57 INSTRUCTION-LEVEL PARALLELISM
+============================================================
+
+ILP can be increased using:
+
+    • Pipelining
+    • Superscalar issue
+    • Out-of-order execution
+    • Register renaming
+    • Speculative execution
+    • Branch prediction
+    • Multiple execution units
+
+
+All of these help the CPU exploit independent instructions.
+
+
+============================================================
+34.58 ILP EXAMPLE
+============================================================
+
+Instructions:
+
+    I1: ADD R1, R2, R3
+    I2: MUL R4, R5, R6
+    I3: SUB R7, R8, R9
+    I4: ADD R10, R1, R11
+
+
+Dependencies:
+
+    I1 → I4
+
+
+But:
+
+    I2 and I3 are independent.
+
+
+Therefore:
+
+    I1 ─────────→ I4
+
+    I2 ───────── independent
+
+    I3 ───────── independent
+
+
+A superscalar CPU may execute:
+
+    I1 + I2 + I3
+
+in overlapping time.
+
+
+I4 waits for I1.
+
+
+============================================================
+34.59 ILP LIMIT
+============================================================
+
+Real programs contain dependencies.
+
+
+Therefore:
+
+    Available ILP < Infinite
+
+
+Sources of limited ILP:
+
+    • RAW dependencies
+    • Branches
+    • Memory dependencies
+    • Resource conflicts
+    • Cache misses
+    • Synchronization
+
+
+Therefore:
+
+    Making a CPU wider does not guarantee proportional
+    performance improvement.
+
+
+============================================================
+34.60 SUPERSCALAR + OUT-OF-ORDER
+============================================================
+
+These concepts are related but different.
+
+
+SUPERSCALAR:
+
+    Multiple instructions can be issued/executed per cycle.
+
+
+OUT-OF-ORDER:
+
+    Instructions may execute in an order different from
+    program order.
+
+
+A processor can be:
+
+    Superscalar + Out-of-Order
+
+
+This is common in high-performance CPUs.
+
+
+============================================================
+34.61 REGISTER RENAMING + OUT-OF-ORDER
+============================================================
+
+Out-of-order execution can encounter:
+
+    WAR
+    WAW
+
+
+Register renaming removes these false name dependencies.
+
+
+RAW remains a true dependency.
+
+
+Therefore:
+
+    Register Renaming
+          ↓
+    Removes false dependencies
+          ↓
+    More ILP
+          ↓
+    Better utilization of execution units
+
+
+============================================================
+34.62 ROB + SPECULATION
+============================================================
+
+Speculative instructions cannot always immediately update
+architectural state.
+
+
+ROB helps track them.
+
+
+Conceptually:
+
+    Speculative instruction
+           ↓
+          ROB
+           ↓
+    Wait until safe
+           ↓
+        Commit
+
+
+If wrong:
+
+    Squash/discard.
+
+
+If correct:
+
+    Retire.
+
+
+============================================================
+34.63 MODERN CPU EXECUTION FLOW
+============================================================
+
+A simplified modern CPU:
+
+    Program
+      ↓
+    Fetch
+      ↓
+    Branch Prediction
+      ↓
+    Decode
+      ↓
+    Register Renaming
+      ↓
+    Dispatch
+      ↓
+    Instruction Queue / Reservation Stations
+      ↓
+    Out-of-Order Scheduling
+      ↓
+    Multiple Execution Units
+      ↓
+    Results
+      ↓
+    Reorder Buffer
+      ↓
+    In-Order Commit
+      ↓
+    Architectural State
+
+
+============================================================
+34.64 EXAMPLE — COMPLETE MODERN EXECUTION
+============================================================
+
+Program:
+
+    I1: LOAD R1, [A]
+
+    I2: ADD R2, R3, R4
+
+    I3: MUL R5, R6, R7
+
+    I4: ADD R8, R1, R9
+
+
+Suppose I1 causes a cache miss.
+
+
+Then:
+
+    I1 → waits for memory
+
+    I2 → execute
+
+    I3 → execute
+
+    I4 → waits for I1
+
+
+This is:
+
+    Out-of-order execution.
+
+
+Results are tracked internally.
+
+
+ROB ensures:
+
+    I1
+    I2
+    I3
+    I4
+
+retire in correct program order.
+
+
+============================================================
+34.65 DYNAMIC SCHEDULING VS SPECULATION
+============================================================
+
+DYNAMIC SCHEDULING:
+
+    Decides when instructions execute based on runtime
+    availability.
+
+
+SPECULATIVE EXECUTION:
+
+    Executes instructions whose usefulness depends on an
+    unresolved prediction.
+
+
+They solve different problems but often work together.
+
+
+============================================================
+34.66 BRANCH PREDICTION VS SPECULATION
+============================================================
+
+Branch prediction:
+
+    Predicts which path will be taken.
+
+
+Speculative execution:
+
+    Executes instructions along the predicted path.
+
+
+Therefore:
+
+    Prediction → tells CPU WHAT to expect.
+
+    Speculation → allows CPU to ACT before certainty.
+
+
+============================================================
+34.67 HARDWARE COST
+============================================================
+
+Advanced processor techniques require significant hardware.
+
+
+Examples:
+
+    • More registers
+    • Register rename tables
+    • Reservation stations
+    • Instruction queues
+    • Reorder buffers
+    • Branch predictors
+    • Multiple ALUs
+    • Load/store queues
+
+
+Advantages:
+
+    Higher performance
+
+
+Disadvantages:
+
+    • More area
+    • More power
+    • More complexity
+    • More verification difficulty
+
+
+============================================================
+34.68 PERFORMANCE TRADE-OFF
+============================================================
+
+Suppose:
+
+    Simple CPU:
+        Low complexity
+        Low power
+        Lower peak performance
+
+
+    Advanced CPU:
+        High complexity
+        Higher power
+        Higher peak performance
+
+
+Computer architecture balances:
+
+    Performance
+    Power
+    Area
+    Cost
+    Complexity
+
+
+============================================================
+34.69 IMPORTANT TERMS
+============================================================
+
+SUPERSCALAR:
+
+    Multiple instructions can be issued per cycle.
+
+
+DYNAMIC SCHEDULING:
+
+    Hardware schedules instructions at runtime.
+
+
+OUT-OF-ORDER EXECUTION:
+
+    Instructions execute when ready rather than strictly in
+    program order.
+
+
+REGISTER RENAMING:
+
+    Maps architectural registers to physical registers to
+    remove false dependencies.
+
+
+TOMASULO:
+
+    Dynamic scheduling technique using reservation stations
+    and result forwarding/broadcast.
+
+
+REORDER BUFFER:
+
+    Tracks in-flight instructions and supports in-order
+    retirement.
+
+
+SPECULATIVE EXECUTION:
+
+    Execute predicted instructions before certainty.
+
+
+BRANCH PREDICTION:
+
+    Predict branch direction/target.
+
+
+ILP:
+
+    Parallelism among instructions.
+
+
+============================================================
+34.70 MOST IMPORTANT COMPARISONS
+============================================================
+
+------------------------------------------------------------
+SUPERSCALAR vs PIPELINING
+------------------------------------------------------------
+
+PIPELINING:
+
+    Multiple instructions occupy different pipeline stages.
+
+
+SUPERSCALAR:
+
+    Multiple instructions may be issued in the same cycle.
+
+
+They can be used together.
+
+
+------------------------------------------------------------
+IN-ORDER vs OUT-OF-ORDER
+------------------------------------------------------------
+
+IN-ORDER:
+
+    Execute according to program order.
+
+
+OUT-OF-ORDER:
+
+    Execute ready instructions earlier.
+
+
+------------------------------------------------------------
+STATIC vs DYNAMIC SCHEDULING
+------------------------------------------------------------
+
+STATIC:
+
+    Compiler decides.
+
+
+DYNAMIC:
+
+    Hardware decides at runtime.
+
+
+------------------------------------------------------------
+PREDICTION vs SPECULATION
+------------------------------------------------------------
+
+PREDICTION:
+
+    Guess future behavior.
+
+
+SPECULATION:
+
+    Execute based on that guess.
+
+
+------------------------------------------------------------
+ARCHITECTURAL vs PHYSICAL REGISTERS
+------------------------------------------------------------
+
+ARCHITECTURAL:
+
+    ISA-visible.
+
+
+PHYSICAL:
+
+    Internal CPU resources.
+
+
+============================================================
+34.71 B.TECH NUMERICAL — IPC
+============================================================
+
+A processor executes:
+
+    2 billion instructions
+
+in:
+
+    1 billion cycles.
+
+
+IPC:
+
+    = 2 billion / 1 billion
+
+    = 2
+
+
+ANSWER:
+
+    IPC = 2 instructions/cycle.
+
+
+============================================================
+34.72 B.TECH NUMERICAL — CPI
+============================================================
+
+Given:
+
+    Instructions = 3 billion
+
+    Cycles = 6 billion
+
+
+CPI:
+
+    = 6 billion / 3 billion
+
+    = 2
+
+
+ANSWER:
+
+    CPI = 2.
+
+
+============================================================
+34.73 B.TECH NUMERICAL — BRANCH PENALTY
+============================================================
+
+Given:
+
+    Branch frequency = 20%
+
+    Misprediction rate = 10%
+
+    Penalty = 5 cycles
+
+
+Additional CPI:
+
+    = 0.20 × 0.10 × 5
+
+    = 0.10
+
+
+If ideal CPI = 1:
+
+    Actual CPI = 1 + 0.10
+
+               = 1.10
+
+
+ANSWER:
+
+    Actual CPI = 1.10
+
+
+============================================================
+34.74 B.TECH NUMERICAL — AMDAHL CONNECTION
+============================================================
+
+Suppose:
+
+    75% of execution can be accelerated.
+
+    P = 0.75
+
+
+Improved portion:
+
+    3× faster
+
+    S = 3
+
+
+Overall speedup:
+
+    = 1 / [(1 - 0.75) + (0.75/3)]
+
+    = 1 / [0.25 + 0.25]
+
+    = 2×
+
+
+ANSWER:
+
+    Overall speedup = 2×
+
+
+============================================================
+34.75 COMPETITIVE EXAM MCQs
+============================================================
+
+Q1. A superscalar processor primarily allows:
+
+    A. Multiple instructions to be issued per cycle
+    B. Only one instruction per cycle
+    C. Only sequential execution
+    D. No pipelining
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q2. Which dependency is a true data dependency?
+
+    A. WAR
+    B. WAW
+    C. RAW
+    D. None
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q3. Register renaming primarily helps eliminate:
+
+    A. RAW dependencies
+    B. WAR and WAW dependencies
+    C. Cache misses
+    D. Branch instructions
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q4. Tomasulo's algorithm is associated with:
+
+    A. Static memory allocation
+    B. Dynamic instruction scheduling
+    C. Disk scheduling
+    D. Virtual memory
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q5. Reservation stations are used to:
+
+    A. Store operating-system files
+    B. Hold instructions waiting for operands/resources
+    C. Store cache blocks
+    D. Store page tables
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q6. The Reorder Buffer primarily helps:
+
+    A. Increase RAM size
+    B. Maintain in-order retirement
+    C. Replace cache
+    D. Predict memory addresses
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q7. Out-of-order execution means:
+
+    A. Instructions are always retired out of order
+    B. Instructions may execute in an order different from
+       program order
+    C. Instructions are randomly executed
+    D. Program order is ignored completely
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q8. Speculative execution is closely associated with:
+
+    A. Branch prediction
+    B. Disk formatting
+    C. RAM refresh
+    D. I/O addressing
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q9. A branch predictor predicts:
+
+    A. Cache size
+    B. Branch behavior
+    C. Register size
+    D. RAM capacity
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q10. A BTB is mainly used to remember:
+
+    A. Memory contents
+    B. Branch target information
+    C. Cache replacement bits
+    D. Page table entries only
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q11. If 1000 instructions execute in 500 cycles, IPC is:
+
+    A. 0.5
+    B. 1
+    C. 2
+    D. 5
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q12. Which structure is associated with preserving program-order
+retirement?
+
+    A. Reorder Buffer
+    B. ALU
+    C. Cache line
+    D. DMA controller
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q13. Which technique maps architectural registers to physical
+registers?
+
+    A. Branch prediction
+    B. Register renaming
+    C. Pipelining
+    D. Caching
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q14. Which is NOT a classic data dependency category?
+
+    A. RAW
+    B. WAR
+    C. WAW
+    D. RAR
+
+ANSWER:
+    D
+
+
+------------------------------------------------------------
+
+Q15. If a branch prediction is incorrect, the processor may:
+
+    A. Flush speculative instructions
+    B. Increase RAM capacity
+    C. Disable the ALU
+    D. Remove the instruction set
+
+ANSWER:
+    A
+
+
+============================================================
+34.76 COMMON EXAM TRAPS
+============================================================
+
+TRAP 1:
+
+    "Superscalar means pipelining."
+
+FALSE.
+
+Superscalar means multiple instructions may be issued
+per cycle.
+
+
+------------------------------------------------------------
+
+TRAP 2:
+
+    "Out-of-order means retirement is also out-of-order."
+
+FALSE.
+
+Modern processors generally execute out of order but retire
+in program order.
+
+
+------------------------------------------------------------
+
+TRAP 3:
+
+    "Register renaming removes RAW."
+
+FALSE.
+
+RAW is a true dependency.
+
+
+------------------------------------------------------------
+
+TRAP 4:
+
+    "Register renaming removes WAR and WAW."
+
+TRUE.
+
+
+------------------------------------------------------------
+
+TRAP 5:
+
+    "Branch prediction executes instructions."
+
+FALSE.
+
+Prediction predicts; speculation executes based on prediction.
+
+
+------------------------------------------------------------
+
+TRAP 6:
+
+    "Tomasulo is simply branch prediction."
+
+FALSE.
+
+Tomasulo is primarily a dynamic scheduling technique.
+
+
+------------------------------------------------------------
+
+TRAP 7:
+
+    "A 4-wide CPU always executes exactly 4 instructions/cycle."
+
+FALSE.
+
+4 is the maximum issue width under the relevant conditions.
+
+
+============================================================
+34.77 HIGH-VALUE EXAM POINTS
+============================================================
+
+Remember:
+
+    Superscalar
+        ↓
+    Multiple instructions/cycle
+
+
+    Dynamic Scheduling
+        ↓
+    Hardware schedules at runtime
+
+
+    RAW
+        ↓
+    True dependency
+
+
+    WAR/WAW
+        ↓
+    False/name dependencies
+
+
+    Register Renaming
+        ↓
+    Eliminates WAR/WAW
+
+
+    Tomasulo
+        ↓
+    Reservation Stations + Dynamic Scheduling +
+    Operand forwarding/broadcast + Renaming concept
+
+
+    ROB
+        ↓
+    In-order retirement
+
+
+    Branch Prediction
+        ↓
+    Predict branch behavior
+
+
+    Speculation
+        ↓
+    Execute predicted path
+
+
+    Misprediction
+        ↓
+    Flush/squash wrong-path work
+
+
+    ILP
+        ↓
+    Exploit independent instructions
+
+
+============================================================
+34.78 MASTER CONCEPT MAP
+============================================================
+
+                    MODERN CPU
+                        |
+        +---------------+---------------+
+        |               |               |
+    Superscalar      Pipeline       Multiple Units
+        |               |               |
+        +---------------+---------------+
+                        |
+                        ↓
+                       ILP
+                        |
+       +----------------+----------------+
+       |                |                |
+ Dynamic Scheduling  Renaming       Branch Prediction
+       |                |                |
+       ↓                ↓                ↓
+ Reservation       Physical        Speculation
+ Stations          Registers           |
+       |                |               |
+       +----------------+---------------+
+                        |
+                        ↓
+               Out-of-Order Execution
+                        |
+                        ↓
+                Reorder Buffer
+                        |
+                        ↓
+                 In-Order Commit
+                        |
+                        ↓
+               Correct Architecture
+
+
+============================================================
+34.79 ONE-LINE REVISION
+============================================================
+
+SUPERSCALAR:
+    Multiple instructions per cycle.
+
+DYNAMIC SCHEDULING:
+    Hardware schedules instructions at runtime.
+
+TOMASULO:
+    Dynamic scheduling using reservation stations and
+    result forwarding/broadcast.
+
+REGISTER RENAMING:
+    Removes false register dependencies.
+
+OUT-OF-ORDER:
+    Execute ready instructions without waiting unnecessarily
+    for earlier independent instructions.
+
+REORDER BUFFER:
+    Helps preserve in-order retirement and precise state.
+
+SPECULATION:
+    Execute predicted instructions before certainty.
+
+BRANCH PREDICTION:
+    Predict branch direction/target.
+
+ILP:
+    Parallelism among instructions.
+
+============================================================
+CHAPTER 34 COMPLETE
+============================================================

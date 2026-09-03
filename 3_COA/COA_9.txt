@@ -1,0 +1,2090 @@
+============================================================
+CHAPTER 9 — CPU REGISTERS
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner
+
+OBJECTIVE:
+Understand CPU registers, why they are extremely fast,
+general-purpose and special-purpose registers, and how
+data is transferred between registers.
+
+
+============================================================
+9.1 WHAT IS A REGISTER?
+============================================================
+
+A REGISTER is a small, very fast storage location inside
+the CPU.
+
+Registers temporarily hold information needed by the CPU.
+
+They can store:
+
+    • Data
+    • Instructions
+    • Memory addresses
+    • Intermediate results
+    • Control information
+    • CPU status
+
+
+Simple idea:
+
+    Register = Small + Very Fast CPU storage
+
+
+Example:
+
+    R1 = 25
+    R2 = 10
+
+The CPU can use:
+
+    R1 + R2
+
+The ALU performs:
+
+    25 + 10 = 35
+
+
+============================================================
+9.2 REAL-WORLD ANALOGY
+============================================================
+
+Imagine a student solving a mathematics problem.
+
+There are:
+
+    Bookshelf → Main Memory
+    Study table → Cache
+    Calculator/working area → Registers
+    Student → CPU
+
+
+The student keeps frequently used numbers on the table
+instead of repeatedly going to the bookshelf.
+
+Similarly:
+
+    CPU keeps frequently needed information in registers.
+
+
+Therefore:
+
+    Registers are used for very fast temporary storage.
+
+
+============================================================
+9.3 REGISTER VS MAIN MEMORY
+============================================================
+
+                    REGISTER       MAIN MEMORY
+                    --------       -----------
+Location:           CPU            Outside CPU
+Speed:              Very fast      Slower
+Capacity:           Very small     Much larger
+Cost/bit:           High           Lower
+Purpose:            CPU operations Program/data storage
+Access:             Immediate CPU  Memory access required
+
+
+Simplified speed hierarchy:
+
+    Registers
+        ↓
+    Cache
+        ↓
+    RAM
+        ↓
+    SSD/HDD
+
+As we move downward:
+
+    Speed generally decreases
+    Capacity generally increases
+
+
+============================================================
+9.4 WHY ARE REGISTERS SO FAST?
+============================================================
+
+Registers are fast because:
+
+    1. They are located inside the processor/datapath.
+    2. They use fast storage circuits.
+    3. There are relatively few of them.
+    4. CPU instructions are designed to access them directly.
+    5. They are close to the ALU and control logic.
+
+
+Concept:
+
+        REGISTER
+            │
+            ▼
+           ALU
+            │
+            ▼
+        REGISTER
+
+
+The CPU can perform operations on register contents
+extremely quickly.
+
+
+============================================================
+9.5 REGISTER SIZE
+============================================================
+
+Register size means the number of bits a register can hold.
+
+Examples:
+
+    8-bit register
+        → stores 8 bits
+
+    16-bit register
+        → stores 16 bits
+
+    32-bit register
+        → stores 32 bits
+
+    64-bit register
+        → stores 64 bits
+
+
+Example:
+
+    8-bit register:
+
+        10110101
+
+
+A 64-bit register can contain:
+
+        64 bits
+        = 8 bytes
+
+
+Formula:
+
+    Bytes = Bits / 8
+
+
+============================================================
+9.6 REGISTER NAME
+============================================================
+
+Registers are usually given names.
+
+Examples:
+
+    R0
+    R1
+    R2
+    R3
+    AX
+    BX
+    PC
+    IR
+    SP
+
+
+The exact names depend on the processor architecture.
+
+
+For example:
+
+    R1 = 25
+
+means:
+
+    Register R1 contains the value 25.
+
+
+============================================================
+9.7 TYPES OF CPU REGISTERS
+============================================================
+
+CPU registers can broadly be classified as:
+
+    1. General-Purpose Registers
+    2. Special-Purpose Registers
+
+
+                    CPU REGISTERS
+                         │
+              ┌──────────┴──────────┐
+              ▼                     ▼
+       General-Purpose       Special-Purpose
+         Registers              Registers
+
+
+============================================================
+9.8 GENERAL-PURPOSE REGISTERS
+============================================================
+
+General-Purpose Registers (GPRs) are used for many
+different operations.
+
+They can hold:
+
+    • Operands
+    • Intermediate results
+    • Addresses
+    • Temporary data
+
+
+Example:
+
+    R1 = 20
+    R2 = 30
+
+Instruction:
+
+    ADD R1, R2
+
+
+The ALU may use these registers to perform:
+
+    20 + 30 = 50
+
+
+Depending on the ISA, the result may be placed in one
+of the registers.
+
+
+============================================================
+9.9 WHY GENERAL-PURPOSE REGISTERS?
+============================================================
+
+Without enough registers, the CPU would frequently need
+to access memory.
+
+With registers:
+
+    Memory
+       ↓
+    Register
+       ↓
+      ALU
+       ↓
+    Register
+
+
+This reduces unnecessary memory accesses and can improve
+performance.
+
+
+============================================================
+9.10 REGISTER FILE
+============================================================
+
+A REGISTER FILE is a collection of registers in a CPU.
+
+Example:
+
+        REGISTER FILE
+
+    ┌───────────────┐
+    │ R0            │
+    │ R1            │
+    │ R2            │
+    │ R3            │
+    │ R4            │
+    │ R5            │
+    │ R6            │
+    │ R7            │
+    └───────────────┘
+
+
+A processor may have many general-purpose registers.
+
+Modern ISAs commonly provide a register file that supports
+fast reads and writes.
+
+
+============================================================
+9.11 SPECIAL-PURPOSE REGISTERS
+============================================================
+
+Special-purpose registers have specific roles.
+
+Important registers include:
+
+    • PC  → Program Counter
+    • IR  → Instruction Register
+    • MAR → Memory Address Register
+    • MDR → Memory Data Register
+    • ACC → Accumulator
+    • Flag/Status Register
+    • SP  → Stack Pointer
+    • Base Register
+    • Index Register
+
+
+These are essential for understanding instruction
+execution.
+
+
+============================================================
+9.12 PROGRAM COUNTER — PC
+============================================================
+
+PC = Program Counter
+
+
+The PC stores the address of the instruction that the CPU
+will fetch next.
+
+Simplified:
+
+        PC
+         │
+         ▼
+    Memory Address
+         │
+         ▼
+    Instruction
+
+
+Example:
+
+    PC = 1000
+
+This means the CPU will fetch an instruction associated
+with address 1000.
+
+
+After fetching, the PC normally advances to the next
+instruction, unless a branch/jump/exception changes the
+flow.
+
+
+============================================================
+9.13 PC EXAMPLE
+============================================================
+
+Suppose instructions are stored at:
+
+    100
+    104
+    108
+    112
+
+
+Initially:
+
+    PC = 100
+
+
+CPU fetches instruction at 100.
+
+Then, assuming each instruction is 4 bytes:
+
+    PC = 104
+
+
+Next:
+
+    PC = 108
+
+
+Then:
+
+    PC = 112
+
+
+IMPORTANT:
+
+The exact increment depends on the instruction size and
+the architecture.
+
+
+============================================================
+9.14 INSTRUCTION REGISTER — IR
+============================================================
+
+IR = Instruction Register
+
+
+The IR holds the instruction currently being processed
+by the CPU.
+
+
+Basic sequence:
+
+    Memory
+       │
+       │ Instruction
+       ▼
+      IR
+       │
+       ▼
+    Decode
+       │
+       ▼
+    Execute
+
+
+Example:
+
+    Memory contains:
+
+        ADD R1, R2
+
+The fetched instruction is placed in the IR.
+
+
+The Control Unit examines/decodes it.
+
+
+============================================================
+9.15 PC VS IR
+============================================================
+
+PC:
+
+    Holds the address of the next instruction to fetch.
+
+
+IR:
+
+    Holds the current instruction being processed.
+
+
+Easy memory trick:
+
+    PC → WHERE is the next instruction?
+
+    IR → WHAT is the current instruction?
+
+
+============================================================
+9.16 MEMORY ADDRESS REGISTER — MAR
+============================================================
+
+MAR = Memory Address Register
+
+
+MAR holds the address of the memory location that the CPU
+wants to access.
+
+
+Example:
+
+    CPU wants to read address 5000.
+
+    MAR = 5000
+
+
+Then the memory system uses that address to perform
+the access.
+
+
+Concept:
+
+    CPU
+     │
+     ▼
+    MAR
+     │
+     ▼
+    Address
+     │
+     ▼
+    Memory
+
+
+Easy memory trick:
+
+    MAR → Memory Address
+
+
+============================================================
+9.17 MEMORY DATA REGISTER — MDR
+============================================================
+
+MDR = Memory Data Register
+
+
+The MDR temporarily holds data being transferred
+between CPU and memory.
+
+For a READ:
+
+    Memory
+       │
+       │ Data
+       ▼
+      MDR
+       │
+       ▼
+      CPU
+
+
+For a WRITE:
+
+      CPU
+       │
+       ▼
+      MDR
+       │
+       │ Data
+       ▼
+    Memory
+
+
+Easy memory trick:
+
+    MAR → Address
+
+    MDR → Data
+
+
+NOTE:
+
+Some architectures/textbooks may use the term MBR
+(Memory Buffer Register) for a similar role.
+
+
+============================================================
+9.18 MAR + MDR DURING MEMORY READ
+============================================================
+
+Suppose CPU wants data from memory address 5000.
+
+
+Step 1:
+
+    MAR ← 5000
+
+
+Step 2:
+
+    READ signal
+
+
+Step 3:
+
+    Memory[5000] → MDR
+
+
+Step 4:
+
+    MDR → CPU register/required destination
+
+
+Concept:
+
+    CPU
+     │
+     │ Address
+     ▼
+    MAR
+     │
+     ▼
+    Memory
+     │
+     │ Data
+     ▼
+    MDR
+     │
+     ▼
+    CPU
+
+
+============================================================
+9.19 MAR + MDR DURING MEMORY WRITE
+============================================================
+
+Suppose CPU wants to store value 75 at address 5000.
+
+
+Step 1:
+
+    MAR ← 5000
+
+
+Step 2:
+
+    MDR ← 75
+
+
+Step 3:
+
+    WRITE signal
+
+
+Step 4:
+
+    Memory[5000] ← 75
+
+
+Concept:
+
+    CPU ──► MAR ──► Address
+     │
+     └────► MDR ──► Data
+                    │
+                    ▼
+                  Memory
+
+
+============================================================
+9.20 ACCUMULATOR
+============================================================
+
+ACC = Accumulator
+
+
+The accumulator is a register traditionally used to hold:
+
+    • Intermediate arithmetic results
+    • Operands
+    • Results of ALU operations
+
+
+Example:
+
+    ACC = 10
+
+    ADD 5
+
+    ALU performs:
+
+        10 + 5 = 15
+
+    ACC = 15
+
+
+Accumulator-based architectures rely heavily on the
+accumulator.
+
+
+Modern processors may use many general-purpose registers
+instead of relying on one accumulator.
+
+
+============================================================
+9.21 STATUS / FLAG REGISTER
+============================================================
+
+The Status Register stores information about the result
+of operations or the current CPU state.
+
+
+Common flags include:
+
+    • Zero Flag (Z)
+    • Carry Flag (C)
+    • Sign/Negative Flag (S/N)
+    • Overflow Flag (V/O)
+    • Interrupt enable/status bits
+    • Other architecture-specific flags
+
+
+Example:
+
+    5 - 5 = 0
+
+
+The result is zero.
+
+Therefore:
+
+    Zero Flag = 1
+
+
+The exact flags and names depend on the ISA.
+
+
+============================================================
+9.22 ZERO FLAG
+============================================================
+
+Zero Flag indicates whether an operation produced zero.
+
+
+Example:
+
+    10 - 10 = 0
+
+
+Therefore:
+
+    Z = 1
+
+
+If:
+
+    10 - 5 = 5
+
+then:
+
+    Z = 0
+
+
+Simple rule:
+
+    Result = 0
+        → Zero Flag set
+
+
+============================================================
+9.23 CARRY FLAG
+============================================================
+
+Carry Flag indicates a carry out from the most significant
+bit in an addition, or other architecture-defined
+carry/borrow behavior.
+
+
+Example using 4-bit unsigned arithmetic:
+
+      1111
+    + 0001
+    ------
+     10000
+
+
+The 4-bit result is:
+
+    0000
+
+with carry:
+
+    1
+
+
+So:
+
+    Carry Flag = 1
+
+
+============================================================
+9.24 OVERFLOW FLAG
+============================================================
+
+Overflow occurs when a signed result cannot be represented
+within the available number of bits.
+
+
+Example with 4-bit signed two's complement:
+
+    Maximum = +7
+
+    +7 = 0111
+
+    +1 = 0001
+
+    0111
+  + 0001
+  ------
+    1000
+
+
+1000 represents -8 in 4-bit two's complement.
+
+But:
+
+    +7 + +1 = +8
+
+and +8 cannot be represented in 4-bit signed
+two's complement.
+
+Therefore:
+
+    Signed overflow occurs.
+
+
+============================================================
+9.25 SIGN / NEGATIVE FLAG
+============================================================
+
+The Sign/Negative Flag generally reflects the sign of
+the result according to the architecture.
+
+For two's-complement integers:
+
+    MSB = 1
+        → negative result
+
+    MSB = 0
+        → non-negative result
+
+
+Example:
+
+    1111
+
+In 4-bit two's complement:
+
+    1111 = -1
+
+
+Therefore the negative/sign flag is set.
+
+
+============================================================
+9.26 STACK POINTER — SP
+============================================================
+
+SP = Stack Pointer
+
+
+The Stack Pointer stores information used to identify the
+current top of the stack.
+
+
+A stack follows:
+
+    LIFO
+
+    Last In
+    First Out
+
+
+Example:
+
+    PUSH A
+    PUSH B
+    PUSH C
+
+
+Stack:
+
+        C  ← Top
+        B
+        A
+
+
+POP:
+
+    C comes out first.
+
+
+============================================================
+9.27 STACK POINTER CONCEPT
+============================================================
+
+Conceptually:
+
+              Stack
+        ┌─────────────┐
+        │     C       │ ← SP
+        ├─────────────┤
+        │     B       │
+        ├─────────────┤
+        │     A       │
+        └─────────────┘
+
+
+SP identifies the current stack position according to
+the architecture's stack convention.
+
+
+IMPORTANT:
+
+The stack may grow toward higher or lower addresses
+depending on the architecture.
+
+
+============================================================
+9.28 BASE REGISTER
+============================================================
+
+A Base Register stores a base address used to calculate
+an effective address.
+
+
+Example:
+
+    Base Register = 1000
+
+    Displacement = 40
+
+
+Effective Address:
+
+    EA = Base + Displacement
+
+    EA = 1000 + 40
+
+    EA = 1040
+
+
+This is useful for:
+
+    • Arrays
+    • Data structures
+    • Relocation
+    • Memory management
+
+
+============================================================
+9.29 INDEX REGISTER
+============================================================
+
+An Index Register stores an index used in address
+calculation.
+
+
+Example:
+
+    Base Address = 1000
+
+    Index = 5
+
+    Element size = 4 bytes
+
+
+Address:
+
+    EA = Base + Index × Element Size
+
+    EA = 1000 + 5 × 4
+
+    EA = 1020
+
+
+Index registers are especially useful when accessing
+arrays.
+
+
+============================================================
+9.30 BASE REGISTER VS INDEX REGISTER
+============================================================
+
+BASE REGISTER:
+
+    Usually represents a starting/base address.
+
+
+INDEX REGISTER:
+
+    Usually represents an offset/index used to locate
+    an element.
+
+
+Example:
+
+    Base = beginning of array
+
+    Index = element number
+
+
+Concept:
+
+    Effective Address
+        =
+    Base + Index × Element Size
+
+
+Exact addressing capabilities depend on the ISA.
+
+
+============================================================
+9.31 IMPORTANT REGISTER SUMMARY
+============================================================
+
+    ┌────────────┬─────────────────────────────────────┐
+    │ Register   │ Main Purpose                        │
+    ├────────────┼─────────────────────────────────────┤
+    │ PC         │ Address of next instruction         │
+    │ IR         │ Current instruction                 │
+    │ MAR        │ Memory address being accessed      │
+    │ MDR        │ Data moving to/from memory         │
+    │ ACC        │ Intermediate ALU results            │
+    │ Flag Reg.  │ Status/result information           │
+    │ SP         │ Top/current stack position          │
+    │ Base Reg.  │ Base address                        │
+    │ Index Reg. │ Index/offset for address calculation│
+    │ GPR        │ General data/operand storage        │
+    └────────────┴─────────────────────────────────────┘
+
+
+============================================================
+9.32 REGISTER TRANSFER
+============================================================
+
+Register transfer means moving information from one
+register to another.
+
+
+Example:
+
+    R2 ← R1
+
+
+Meaning:
+
+    Copy the contents of R1 into R2.
+
+
+If:
+
+    R1 = 25
+
+then:
+
+    R2 ← R1
+
+After transfer:
+
+    R2 = 25
+
+
+IMPORTANT:
+
+The original R1 value normally remains unchanged.
+
+
+After:
+
+    R2 ← R1
+
+we have:
+
+    R1 = 25
+    R2 = 25
+
+
+============================================================
+9.33 REGISTER TRANSFER LANGUAGE — RTL
+============================================================
+
+RTL = Register Transfer Language
+
+
+RTL is a symbolic notation used to describe data
+transfers and microoperations.
+
+
+Example:
+
+    R2 ← R1
+
+
+Meaning:
+
+    Contents of R1 are transferred to R2.
+
+
+Another example:
+
+    R3 ← R1 + R2
+
+
+Meaning:
+
+    Add contents of R1 and R2,
+    then place result in R3.
+
+
+Example:
+
+    R1 ← R1 + 1
+
+
+Meaning:
+
+    Increment R1 by 1.
+
+
+============================================================
+9.34 REGISTER TRANSFER DOES NOT MEAN PHYSICAL MOVEMENT
+============================================================
+
+When we write:
+
+    R2 ← R1
+
+
+It means:
+
+    The value in R1 is made available as the value
+    stored in R2.
+
+It does NOT mean that the physical register R1 itself
+moves to R2.
+
+
+Example:
+
+    R1 = 1010
+
+    R2 = 0011
+
+
+After:
+
+    R2 ← R1
+
+
+    R1 = 1010
+    R2 = 1010
+
+
+============================================================
+9.35 REGISTER-TO-REGISTER TRANSFER
+============================================================
+
+A simplified datapath:
+
+        R1
+        │
+        │ data
+        ▼
+    ┌────────┐
+    │  BUS   │
+    └────┬───┘
+         │
+         ▼
+        R2
+
+
+Control logic enables:
+
+    R1 → Bus
+
+and:
+
+    Bus → R2
+
+
+Therefore:
+
+    R2 ← R1
+
+
+============================================================
+9.36 CONDITIONAL REGISTER TRANSFER
+============================================================
+
+A transfer can be conditional.
+
+
+Example:
+
+    If P = 1:
+
+        R2 ← R1
+
+
+Meaning:
+
+    If control condition P is active,
+    transfer R1 into R2.
+
+
+Symbolically:
+
+    P : R2 ← R1
+
+
+This means:
+
+    When P = 1,
+    execute R2 ← R1.
+
+
+============================================================
+9.37 MICROOPERATIONS
+============================================================
+
+A microoperation is a basic operation performed on
+data stored in registers.
+
+
+Major categories:
+
+    1. Register transfer
+    2. Arithmetic
+    3. Logic
+    4. Shift
+
+
+These are fundamental internal CPU operations.
+
+
+============================================================
+9.38 REGISTER-TRANSFER MICROOPERATIONS
+============================================================
+
+Examples:
+
+    R2 ← R1
+
+    R3 ← R2
+
+    MAR ← PC
+
+    IR ← MDR
+
+
+These transfer information between registers.
+
+
+============================================================
+9.39 ARITHMETIC MICROOPERATIONS
+============================================================
+
+Arithmetic microoperations perform arithmetic on
+register contents.
+
+
+Examples:
+
+    R1 ← R2 + R3
+
+    R1 ← R1 + 1
+
+    R2 ← R2 - 1
+
+    R3 ← R1 - R2
+
+
+Common arithmetic microoperations:
+
+    ADD
+    SUBTRACT
+    INCREMENT
+    DECREMENT
+
+
+============================================================
+9.40 LOGICAL MICROOPERATIONS
+============================================================
+
+Logical microoperations perform bitwise operations.
+
+
+Examples:
+
+    R1 ← R2 AND R3
+
+    R1 ← R2 OR R3
+
+    R1 ← R2 XOR R3
+
+    R1 ← NOT R2
+
+
+Example:
+
+    R1 = 1010
+    R2 = 1100
+
+    R3 ← R1 AND R2
+
+
+        1010
+    AND 1100
+        ----
+        1000
+
+
+Therefore:
+
+    R3 = 1000
+
+
+============================================================
+9.41 SHIFT MICROOPERATIONS
+============================================================
+
+Shift operations move bits left or right.
+
+
+Example:
+
+    R1 = 00110100
+
+
+Left shift by 1:
+
+    01101000
+
+
+Right shift by 1:
+
+    00011010
+
+
+Types include:
+
+    • Logical shift
+    • Arithmetic shift
+    • Rotate
+
+
+These are important in arithmetic and bit manipulation.
+
+
+============================================================
+9.42 FETCH-RELATED REGISTER TRANSFERS
+============================================================
+
+A simplified instruction fetch can involve:
+
+    MAR ← PC
+
+    MDR ← Memory[MAR]
+
+    IR ← MDR
+
+    PC ← PC + instruction_length
+
+
+Conceptual meaning:
+
+    1. PC contains next instruction address.
+    2. Address is sent to memory.
+    3. Instruction is read.
+    4. Instruction enters IR.
+    5. PC advances.
+
+
+The exact microoperations depend on the architecture.
+
+
+============================================================
+9.43 EXAMPLE: SIMPLE INSTRUCTION EXECUTION
+============================================================
+
+Suppose:
+
+    PC = 1000
+
+Memory:
+
+    Memory[1000] = ADD R1, R2
+
+
+Simplified sequence:
+
+    Step 1:
+
+        MAR ← PC
+
+        MAR = 1000
+
+
+    Step 2:
+
+        MDR ← Memory[MAR]
+
+        MDR = ADD R1, R2
+
+
+    Step 3:
+
+        IR ← MDR
+
+        IR = ADD R1, R2
+
+
+    Step 4:
+
+        PC ← next instruction address
+
+
+    Step 5:
+
+        Control Unit decodes IR.
+
+
+    Step 6:
+
+        R1 and R2 provide operands.
+
+
+    Step 7:
+
+        ALU performs addition.
+
+
+    Step 8:
+
+        Result is written to destination register.
+
+
+============================================================
+9.44 COMPLETE REGISTER INTERACTION
+============================================================
+
+                         CPU
+                          │
+          ┌───────────────┼───────────────┐
+          │               │               │
+          ▼               ▼               ▼
+      Control Unit       ALU         Register File
+          │               │               │
+          │               │          ┌────┼────┐
+          │               │          ▼    ▼    ▼
+          │               │         R1   R2   R3
+          │               │
+          └───────┬───────┘
+                  │
+             Control Signals
+                  │
+                  ▼
+                Datapath
+                  │
+            ┌─────┴─────┐
+            ▼           ▼
+           MAR         MDR
+            │           │
+            └─────┬─────┘
+                  │
+                  ▼
+                MEMORY
+
+
+============================================================
+9.45 NUMERICAL PROBLEMS
+============================================================
+
+------------------------------------------------------------
+PROBLEM 1
+------------------------------------------------------------
+
+A CPU has 16-bit registers.
+
+How many bytes can one register hold?
+
+
+    16 bits / 8
+    = 2 bytes
+
+
+ANSWER:
+
+    2 bytes
+
+
+------------------------------------------------------------
+PROBLEM 2
+------------------------------------------------------------
+
+A CPU has 32-bit registers.
+
+How many bytes can one register hold?
+
+
+    32 / 8 = 4 bytes
+
+
+ANSWER:
+
+    4 bytes
+
+
+------------------------------------------------------------
+PROBLEM 3
+------------------------------------------------------------
+
+A 64-bit register contains:
+
+    1010 1100 1111 0001 0011 0101 1001 0110
+
+How many bits does it contain?
+
+
+ANSWER:
+
+    64 bits
+
+
+How many bytes?
+
+    64 / 8 = 8 bytes
+
+
+ANSWER:
+
+    8 bytes
+
+
+------------------------------------------------------------
+PROBLEM 4
+------------------------------------------------------------
+
+Base Register = 4000
+
+Offset = 250
+
+Find effective address.
+
+
+    EA = Base + Offset
+
+    EA = 4000 + 250
+
+    EA = 4250
+
+
+ANSWER:
+
+    4250
+
+
+------------------------------------------------------------
+PROBLEM 5
+------------------------------------------------------------
+
+Base address = 2000
+
+Index = 6
+
+Element size = 4 bytes
+
+Find the address of element 6.
+
+
+    EA = Base + Index × Element Size
+
+    EA = 2000 + 6 × 4
+
+    EA = 2000 + 24
+
+    EA = 2024
+
+
+ANSWER:
+
+    2024
+
+
+============================================================
+9.46 IMPORTANT CONCEPTUAL QUESTIONS
+============================================================
+
+Q1. What is a register?
+
+Q2. Why are registers faster than main memory?
+
+Q3. What is a general-purpose register?
+
+Q4. What is a special-purpose register?
+
+Q5. What is a register file?
+
+Q6. What is the function of PC?
+
+Q7. What is the function of IR?
+
+Q8. What is MAR?
+
+Q9. What is MDR?
+
+Q10. Differentiate MAR and MDR.
+
+Q11. What is an accumulator?
+
+Q12. What is a status register?
+
+Q13. What is a Zero Flag?
+
+Q14. What is a Carry Flag?
+
+Q15. What is an Overflow Flag?
+
+Q16. What is a Stack Pointer?
+
+Q17. What is a Base Register?
+
+Q18. What is an Index Register?
+
+Q19. What is Register Transfer Language?
+
+Q20. What are microoperations?
+
+Q21. Explain arithmetic microoperations.
+
+Q22. Explain logical microoperations.
+
+Q23. Explain shift microoperations.
+
+Q24. Explain register-to-register transfer.
+
+Q25. Explain the role of registers during instruction fetch.
+
+
+============================================================
+9.47 B.TECH EXAM QUESTIONS
+============================================================
+
+1. Define CPU registers and explain their importance.
+
+2. Explain general-purpose and special-purpose registers.
+
+3. Explain the functions of PC, IR, MAR and MDR.
+
+4. Differentiate between MAR and MDR.
+
+5. Explain accumulator and status registers.
+
+6. Explain the functions of stack pointer, base register
+   and index register.
+
+7. Explain register transfer language with examples.
+
+8. What are microoperations? Explain their types.
+
+9. Explain register-transfer microoperations.
+
+10. Explain arithmetic microoperations with examples.
+
+11. Explain logical microoperations with examples.
+
+12. Explain shift microoperations.
+
+13. Explain the role of registers during instruction fetch.
+
+14. Explain the relationship between registers and ALU.
+
+15. Explain register file organisation.
+
+16. Why are registers faster than main memory?
+
+17. Explain the complete interaction between CPU registers
+    and memory during a read operation.
+
+
+============================================================
+9.48 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. Which register contains the address of the next
+    instruction to be fetched?
+
+A. IR
+B. PC
+C. MAR
+D. MDR
+
+
+Q2. Which register contains the currently fetched
+    instruction?
+
+A. PC
+B. MAR
+C. IR
+D. SP
+
+
+Q3. Which register stores a memory address being accessed?
+
+A. MDR
+B. MAR
+C. IR
+D. ACC
+
+
+Q4. Which register temporarily holds data transferred
+    between CPU and memory?
+
+A. PC
+B. IR
+C. MDR
+D. SP
+
+
+Q5. If:
+
+    R1 = 25
+
+and:
+
+    R2 ← R1
+
+then after the operation:
+
+A. R1 = 0
+B. R2 = 0
+C. R2 = 25
+D. R1 = R2 = 0
+
+
+Q6. Which register points to the top/current position
+    of a stack?
+
+A. PC
+B. SP
+C. IR
+D. MAR
+
+
+Q7. Which flag is generally set when an arithmetic result
+    is zero?
+
+A. Carry
+B. Overflow
+C. Zero
+D. Sign
+
+
+Q8. Which is normally used to store general operands?
+
+A. General-purpose register
+B. Control Unit
+C. MAR only
+D. PC only
+
+
+Q9. RTL expression:
+
+    R3 ← R1 + R2
+
+means:
+
+A. Copy R3 to R1
+B. Add R1 and R2 and store result in R3
+C. Add R3 and R2
+D. Copy R2 to R1
+
+
+Q10. Which is NOT a major category of microoperation?
+
+A. Register transfer
+B. Arithmetic
+C. Logical
+D. Printing
+
+
+Q11. A 32-bit register can hold:
+
+A. 2 bytes
+B. 4 bytes
+C. 8 bytes
+D. 32 bytes
+
+
+Q12. Which register is most directly associated with
+     calculating memory addresses using a starting address?
+
+A. Base Register
+B. IR
+C. MDR
+D. Flag Register
+
+
+Q13. Which register is commonly useful for array indexing?
+
+A. Index Register
+B. IR
+C. PC
+D. MDR
+
+
+Q14. Which statement is correct?
+
+A. PC stores the current instruction itself.
+B. IR stores the address of the next instruction.
+C. PC stores an instruction address.
+D. MDR stores only instructions.
+
+
+Q15. During a simplified memory read, which sequence
+     is most appropriate?
+
+A. MDR ← PC, IR ← MAR
+B. MAR ← address, MDR ← Memory[MAR]
+C. IR ← PC, MAR ← MDR
+D. PC ← MDR, MAR ← IR
+
+
+============================================================
+ANSWERS
+============================================================
+
+    Q1  → B
+    Q2  → C
+    Q3  → B
+    Q4  → C
+    Q5  → C
+    Q6  → B
+    Q7  → C
+    Q8  → A
+    Q9  → B
+    Q10 → D
+    Q11 → B
+    Q12 → A
+    Q13 → A
+    Q14 → C
+    Q15 → B
+
+
+============================================================
+9.49 MOST IMPORTANT DIFFERENCES
+============================================================
+
+PC vs IR:
+
+    PC → address of next instruction
+    IR → current instruction
+
+
+MAR vs MDR:
+
+    MAR → memory address
+    MDR → memory data
+
+
+GPR vs Special-Purpose Register:
+
+    GPR:
+        General data/operand use
+
+    Special-purpose:
+        Specific CPU function
+
+
+Register vs RAM:
+
+    Register:
+        Smaller and faster
+
+    RAM:
+        Larger and slower
+
+
+Base vs Index:
+
+    Base:
+        Starting/base address
+
+    Index:
+        Offset/index used in address calculation
+
+
+============================================================
+9.50 EASY MEMORY TRICKS
+============================================================
+
+PC:
+
+    P = Program
+    C = Counter
+
+    → next instruction address
+
+
+IR:
+
+    I = Instruction
+    R = Register
+
+    → current instruction
+
+
+MAR:
+
+    M = Memory
+    A = Address
+    R = Register
+
+    → memory address
+
+
+MDR:
+
+    M = Memory
+    D = Data
+    R = Register
+
+    → memory data
+
+
+SP:
+
+    S = Stack
+    P = Pointer
+
+    → stack position
+
+
+ACC:
+
+    ACC = Accumulator
+
+    → accumulates/intermediate results
+
+
+============================================================
+9.51 QUICK REVISION
+============================================================
+
+REGISTER:
+
+    Small, very fast storage location in CPU.
+
+
+GENERAL-PURPOSE REGISTER:
+
+    Stores operands, data, addresses, intermediate values.
+
+
+PC:
+
+    Address of next instruction.
+
+
+IR:
+
+    Current instruction.
+
+
+MAR:
+
+    Address involved in memory access.
+
+
+MDR:
+
+    Data being transferred to/from memory.
+
+
+ACC:
+
+    Traditional register for intermediate ALU results.
+
+
+STATUS/FLAG REGISTER:
+
+    Stores result/state information.
+
+
+SP:
+
+    Identifies current stack position.
+
+
+BASE REGISTER:
+
+    Provides a base address.
+
+
+INDEX REGISTER:
+
+    Provides an index/offset.
+
+
+REGISTER TRANSFER:
+
+    R2 ← R1
+
+
+RTL:
+
+    Symbolic notation describing register transfers and
+    microoperations.
+
+
+MICROOPERATIONS:
+
+    Basic CPU operations such as:
+
+        Register transfer
+        Arithmetic
+        Logic
+        Shift
+
+
+============================================================
+9.52 MASTER CHECKPOINT
+============================================================
+
+Before considering Chapter 9 mastered:
+
+[ ] Define a register.
+[ ] Explain why registers are fast.
+[ ] Compare registers and main memory.
+[ ] Explain register size.
+[ ] Explain general-purpose registers.
+[ ] Explain register file.
+[ ] Explain PC.
+[ ] Explain IR.
+[ ] Explain MAR.
+[ ] Explain MDR.
+[ ] Differentiate MAR and MDR.
+[ ] Explain accumulator.
+[ ] Explain status/flag register.
+[ ] Explain Zero Flag.
+[ ] Explain Carry Flag.
+[ ] Explain Overflow Flag.
+[ ] Explain Stack Pointer.
+[ ] Explain Base Register.
+[ ] Explain Index Register.
+[ ] Calculate effective addresses.
+[ ] Understand register transfer.
+[ ] Understand RTL.
+[ ] Understand arithmetic microoperations.
+[ ] Understand logical microoperations.
+[ ] Understand shift microoperations.
+[ ] Explain a simplified instruction-fetch sequence.
+
+
+============================================================
+CHAPTER 9 COMPLETE
+============================================================
+
+CORE IDEA:
+
+                    CPU
+                     │
+          ┌──────────┼──────────┐
+          ▼          ▼          ▼
+      Registers     ALU    Control Unit
+          │
+          │
+    ┌─────┼─────────────────────────┐
+    │     │                         │
+    ▼     ▼                         ▼
+   PC     IR                       GPRs
+    │
+    ├── MAR ──► Memory Address
+    │
+    └── MDR ◄─► Memory Data
+
+Registers provide the CPU with very fast access to the
+information required for instruction execution.
+
+
+NEXT CHAPTER:
+
+============================================================
+CHAPTER 10 — MACHINE INSTRUCTIONS
+============================================================
+
+10.1 Instruction Basics
+    • What is an instruction?
+    • Machine instruction
+    • Opcode
+    • Operand
+
+10.2 Instruction Format
+    • Opcode field
+    • Operand field
+    • Address field
+    • Instruction length
+
+10.3 Types of Instructions
+    • Data transfer
+    • Arithmetic
+    • Logical
+    • Shift
+    • Branch
+    • Control
+    • I/O instructions
+
+10.4 Instruction Set
+    • Instruction set concept
+    • ISA
+    • RISC
+    • CISC
+============================================================3s

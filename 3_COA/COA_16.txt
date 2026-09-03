@@ -1,0 +1,2720 @@
+============================================================
+CHAPTER 16 — MEMORY FUNDAMENTALS
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner
+
+OBJECTIVE:
+Understand what computer memory is, how memory stores data,
+how memory locations are addressed, how READ and WRITE work,
+and the important terminology used in Computer Organisation
+and Architecture.
+
+
+============================================================
+16.1 WHAT IS MEMORY?
+============================================================
+
+Memory is a hardware component used to store:
+
+    • Data
+    • Instructions
+    • Intermediate results
+    • Final results
+
+
+When a program is running, the CPU needs a place from which
+it can quickly obtain instructions and data.
+
+That place is mainly:
+
+    MAIN MEMORY / PRIMARY MEMORY
+
+
+Simple idea:
+
+    CPU
+     │
+     │ needs instructions/data
+     ▼
+    MEMORY
+
+
+Example:
+
+Suppose you open a calculator program.
+
+The instructions and data needed by the program are loaded
+into memory so that the CPU can access them.
+
+
+============================================================
+16.2 REAL-WORLD ANALOGY
+============================================================
+
+Think of memory as a large collection of numbered lockers.
+
+
+    Locker 0  → Data
+    Locker 1  → Data
+    Locker 2  → Data
+    Locker 3  → Data
+       ...
+    Locker N  → Data
+
+
+Each locker has:
+
+    1. An ADDRESS
+    2. Stored DATA
+
+
+The CPU says:
+
+    "Give me the data stored at address 1000."
+
+
+Memory responds:
+
+    "Here is the data."
+
+
+Therefore:
+
+    ADDRESS → tells WHERE
+    DATA    → tells WHAT
+
+
+MEMORY TRICK:
+
+    Address = Location
+    Data    = Content
+
+
+============================================================
+16.3 BASIC MEMORY MODEL
+============================================================
+
+A memory can be visualized as:
+
+             MEMORY
+    ┌───────────────────────┐
+    │ Address │   Data      │
+    ├─────────┼─────────────┤
+    │   0000  │  10101100   │
+    │   0001  │  11001010   │
+    │   0010  │  00011101   │
+    │   0011  │  10110001   │
+    │   0100  │  01101010   │
+    │    ...  │    ...      │
+    └───────────────────────┘
+
+
+Each row represents a memory location.
+
+
+============================================================
+16.4 MEMORY LOCATION
+============================================================
+
+A memory location is a specific place in memory where data
+can be stored.
+
+
+For example:
+
+    Address 1000 → 25
+    Address 1001 → 50
+    Address 1002 → 75
+
+
+Here:
+
+    1000, 1001, 1002
+
+are addresses.
+
+
+And:
+
+    25, 50, 75
+
+are stored data values.
+
+
+============================================================
+16.5 MEMORY CELL
+============================================================
+
+A memory cell is a storage element capable of storing data.
+
+
+At the hardware level, memory is constructed from many
+storage elements.
+
+
+Conceptually:
+
+    Memory
+       │
+       ├── Cell 0
+       ├── Cell 1
+       ├── Cell 2
+       ├── Cell 3
+       ├── ...
+       └── Cell N
+
+
+The exact physical implementation depends on the type of
+memory.
+
+
+============================================================
+16.6 BIT
+============================================================
+
+A BIT is the smallest basic unit of digital information.
+
+
+BIT:
+
+    Binary Digit
+
+
+A bit can have one of two values:
+
+    0
+    1
+
+
+Example:
+
+    10110101
+
+contains:
+
+    8 bits
+
+
+============================================================
+16.7 NIBBLE
+============================================================
+
+A nibble contains:
+
+    4 bits
+
+
+Example:
+
+    1010
+
+
+Therefore:
+
+    1 nibble = 4 bits
+
+
+Two nibbles:
+
+    1010 1100
+
+form:
+
+    8 bits
+
+
+============================================================
+16.8 BYTE
+============================================================
+
+A byte contains:
+
+    8 bits
+
+
+Therefore:
+
+    1 Byte = 8 bits
+
+
+Example:
+
+    10101100
+
+
+is:
+
+    1 byte
+
+
+IMPORTANT:
+
+    1 Byte ≠ 1 bit
+
+
+Capital B:
+
+    B = Byte
+
+
+Small b:
+
+    b = bit
+
+
+============================================================
+16.9 WORD
+============================================================
+
+A WORD is a processor/system-dependent group of bits that
+the architecture handles as a unit.
+
+
+Examples:
+
+    16-bit word
+    32-bit word
+    64-bit word
+
+
+If a processor has a 64-bit word size, many architectural
+operations naturally operate on 64-bit values.
+
+
+IMPORTANT:
+
+    Word size is architecture-dependent.
+
+
+Unlike a byte, "word" does not universally mean one fixed
+number of bits.
+
+
+============================================================
+16.10 WORD LENGTH
+============================================================
+
+Word length is the number of bits in a processor's word.
+
+
+Examples:
+
+    8-bit processor
+    16-bit processor
+    32-bit processor
+    64-bit processor
+
+
+A larger word size can allow the processor to naturally
+handle larger integer values and wider data paths.
+
+
+============================================================
+16.11 MEMORY CAPACITY
+============================================================
+
+Memory capacity is the total amount of data that a memory
+system can store.
+
+
+Common units:
+
+    1 bit
+    1 Byte
+    1 KB
+    1 MB
+    1 GB
+    1 TB
+    1 PB
+
+
+In computer architecture, powers of 2 are extremely important.
+
+
+Binary-based quantities:
+
+    1 KiB = 1024 bytes
+    1 MiB = 1024 KiB
+    1 GiB = 1024 MiB
+    1 TiB = 1024 GiB
+
+
+Decimal storage units are also commonly used by manufacturers:
+
+    1 kB = 1000 bytes
+    1 MB = 1000 kB
+    1 GB = 1000 MB
+    1 TB = 1000 GB
+
+
+For exam problems, always check which convention is being used.
+
+
+============================================================
+16.12 MEMORY ORGANISATION
+============================================================
+
+Memory is commonly described using:
+
+    Number of locations × bits per location
+
+
+Example:
+
+    1024 × 8 memory
+
+
+means:
+
+    1024 locations
+
+and each location stores:
+
+    8 bits
+
+
+Total capacity:
+
+    1024 × 8 bits
+
+    = 8192 bits
+
+    = 1024 bytes
+
+    = 1 KB
+
+
+============================================================
+16.13 MEMORY ORGANISATION EXAMPLE
+============================================================
+
+Suppose memory is:
+
+    4096 × 16
+
+
+This means:
+
+    Number of locations = 4096
+
+    Bits per location = 16
+
+
+Total:
+
+    4096 × 16 bits
+
+    = 65536 bits
+
+    = 8192 bytes
+
+    = 8 KB
+
+
+Therefore:
+
+    4096 × 16 memory = 8 KB
+
+
+============================================================
+16.14 MEMORY ADDRESS
+============================================================
+
+Every addressable memory location has a unique address.
+
+
+Example:
+
+    Address     Data
+    ─────────────────
+    000         1010
+    001         1110
+    010         0011
+    011         1001
+
+
+The CPU uses the address to select the desired location.
+
+
+============================================================
+16.15 ADDRESS SPACE
+============================================================
+
+Address space is the complete set of addresses that a CPU or
+memory system can potentially use.
+
+
+Suppose a system has:
+
+    n address bits
+
+
+Then the number of possible addresses is:
+
+    2ⁿ
+
+
+Therefore:
+
+    n address bits
+          ↓
+    2ⁿ addresses
+
+
+============================================================
+16.16 ADDRESS SPACE EXAMPLE
+============================================================
+
+Suppose a processor uses:
+
+    8 address bits
+
+
+Number of possible addresses:
+
+    2⁸
+    = 256
+
+
+Addresses are:
+
+    00000000
+    through
+    11111111
+
+
+In decimal:
+
+    0 through 255
+
+
+Therefore:
+
+    8-bit address → 256 possible addresses
+
+
+============================================================
+16.17 ADDRESS SPACE EXAMPLE — 16 BITS
+============================================================
+
+Suppose:
+
+    Address bus = 16 bits
+
+
+Number of addresses:
+
+    2¹⁶
+
+    = 65,536
+
+
+Therefore:
+
+    65,536 addressable locations
+
+
+If each location stores one byte:
+
+    Memory capacity = 65,536 bytes
+
+                  = 64 KiB
+
+
+============================================================
+16.18 ADDRESS SPACE EXAMPLE — 32 BITS
+============================================================
+
+Suppose:
+
+    Address = 32 bits
+
+
+Number of possible addresses:
+
+    2³²
+
+    = 4,294,967,296
+
+
+If memory is byte-addressable:
+
+    Capacity = 2³² bytes
+
+            = 4 GiB
+
+
+Therefore:
+
+    32-bit address space
+            ↓
+        4 GiB
+    byte-addressable
+
+
+============================================================
+16.19 ADDRESS SPACE EXAMPLE — 64 BITS
+============================================================
+
+With:
+
+    64 address bits
+
+
+The theoretical address space is:
+
+    2⁶⁴ addresses
+
+
+If byte-addressable:
+
+    2⁶⁴ bytes
+
+
+This is an enormous theoretical address space.
+
+
+IMPORTANT:
+
+A real processor may implement fewer physical address bits
+than the full 64-bit address width.
+
+
+============================================================
+16.20 ADDRESSABLE MEMORY
+============================================================
+
+Addressable memory refers to the memory locations that can be
+uniquely identified using the available address bits.
+
+
+If a system has:
+
+    n address bits
+
+
+then it can identify:
+
+    2ⁿ locations
+
+
+assuming every possible address is used.
+
+
+============================================================
+16.21 BYTE ADDRESSING
+============================================================
+
+In a byte-addressable system, each address identifies:
+
+    1 BYTE
+
+
+Example:
+
+    Address     Byte
+    ─────────────────
+    1000        AA
+    1001        BB
+    1002        CC
+    1003        DD
+
+
+Each address points to one byte.
+
+
+Therefore:
+
+    Address 1000 → 1 byte
+    Address 1001 → 1 byte
+    Address 1002 → 1 byte
+    Address 1003 → 1 byte
+
+
+============================================================
+16.22 BYTE-ADDRESSABLE MEMORY EXAMPLE
+============================================================
+
+Suppose:
+
+    Address width = 16 bits
+
+    Memory is byte-addressable
+
+
+Number of addresses:
+
+    2¹⁶ = 65,536
+
+
+Each address stores:
+
+    1 byte
+
+
+Therefore total memory:
+
+    65,536 bytes
+
+    = 64 KiB
+
+
+============================================================
+16.23 WORD ADDRESSING
+============================================================
+
+In a word-addressable system, each address identifies:
+
+    1 WORD
+
+
+Suppose:
+
+    Word size = 32 bits
+
+
+Then:
+
+    1 word = 32 bits
+          = 4 bytes
+
+
+If memory is word-addressable:
+
+    Address 0 → 4 bytes
+    Address 1 → 4 bytes
+    Address 2 → 4 bytes
+    ...
+
+
+Each address refers to an entire 32-bit word.
+
+
+============================================================
+16.24 BYTE ADDRESSING VS WORD ADDRESSING
+============================================================
+
+BYTE ADDRESSING:
+
+    Address → 1 byte
+
+
+WORD ADDRESSING:
+
+    Address → 1 word
+
+
+Example with 32-bit word:
+
+    1 word = 4 bytes
+
+
+Byte-addressable:
+
+    Address 0 → Byte 0
+    Address 1 → Byte 1
+    Address 2 → Byte 2
+    Address 3 → Byte 3
+    Address 4 → Byte 4
+
+
+Word-addressable:
+
+    Address 0 → Word 0 = 4 bytes
+    Address 1 → Word 1 = 4 bytes
+    Address 2 → Word 2 = 4 bytes
+
+
+============================================================
+16.25 IMPORTANT EXAM CONCEPT
+============================================================
+
+If:
+
+    Address bits = n
+
+
+Then:
+
+    Number of addressable units = 2ⁿ
+
+
+But the TOTAL MEMORY CAPACITY depends on the size of each
+addressable unit.
+
+
+Formula:
+
+    Memory capacity
+    =
+    Number of addresses × Size of each addressable unit
+
+
+============================================================
+16.26 CAPACITY FORMULA
+============================================================
+
+If:
+
+    n = number of address bits
+
+    w = bits per addressable location
+
+
+Then:
+
+    Number of locations = 2ⁿ
+
+
+Total capacity:
+
+    2ⁿ × w bits
+
+
+Or:
+
+    (2ⁿ × w) / 8 bytes
+
+
+============================================================
+16.27 NUMERICAL EXAMPLE
+============================================================
+
+A memory has:
+
+    12 address lines
+
+    8 data bits per location
+
+
+Find capacity.
+
+
+Step 1:
+
+    Number of locations:
+
+    2¹²
+    = 4096
+
+
+Step 2:
+
+    Each location:
+
+    8 bits
+    = 1 byte
+
+
+Step 3:
+
+    Capacity:
+
+    4096 × 1 byte
+
+    = 4096 bytes
+
+    = 4 KB
+
+
+ANSWER:
+
+    4 KB
+
+
+============================================================
+16.28 NUMERICAL EXAMPLE
+============================================================
+
+A memory has:
+
+    10 address lines
+
+    16 bits per location
+
+
+Number of locations:
+
+    2¹⁰
+    = 1024
+
+
+Each location:
+
+    16 bits
+    = 2 bytes
+
+
+Capacity:
+
+    1024 × 2
+
+    = 2048 bytes
+
+    = 2 KB
+
+
+ANSWER:
+
+    2 KB
+
+
+============================================================
+16.29 NUMERICAL EXAMPLE
+============================================================
+
+A memory has:
+
+    20 address lines
+
+    32 bits per location
+
+
+Locations:
+
+    2²⁰
+
+
+Each location:
+
+    32 bits
+    = 4 bytes
+
+
+Capacity:
+
+    2²⁰ × 4 bytes
+
+    = 2²² bytes
+
+    = 4 MiB
+
+
+ANSWER:
+
+    4 MiB
+
+
+============================================================
+16.30 READ OPERATION
+============================================================
+
+A READ operation means:
+
+    CPU obtains data from memory.
+
+
+Conceptually:
+
+    CPU
+     │
+     │ Address
+     ▼
+    MEMORY
+     │
+     │ Data
+     ▼
+    CPU
+
+
+Example:
+
+    CPU wants data at address 1000.
+
+    CPU → Address 1000 → Memory
+
+    Memory → Data → CPU
+
+
+The original memory content normally remains unchanged during
+a read.
+
+
+============================================================
+16.31 READ OPERATION — STEPS
+============================================================
+
+STEP 1:
+
+    CPU places the desired address on the address bus.
+
+
+STEP 2:
+
+    Control logic indicates:
+
+    READ
+
+
+STEP 3:
+
+    Memory decodes the address.
+
+
+STEP 4:
+
+    Selected memory location is accessed.
+
+
+STEP 5:
+
+    Data is placed on the data bus.
+
+
+STEP 6:
+
+    CPU receives the data.
+
+
+Flow:
+
+    Address
+       ↓
+    Memory selection
+       ↓
+    Data retrieval
+       ↓
+    CPU
+
+
+============================================================
+16.32 WRITE OPERATION
+============================================================
+
+A WRITE operation means:
+
+    CPU stores data into memory.
+
+
+Conceptually:
+
+    CPU
+     │
+     ├── Address ───────→ MEMORY
+     │
+     └── Data ──────────→ MEMORY
+                            │
+                            ▼
+                         Stored
+
+
+============================================================
+16.33 WRITE OPERATION — STEPS
+============================================================
+
+STEP 1:
+
+    CPU places the destination address on the address bus.
+
+
+STEP 2:
+
+    CPU places the data on the data bus.
+
+
+STEP 3:
+
+    Control logic indicates:
+
+    WRITE
+
+
+STEP 4:
+
+    Memory selects the specified location.
+
+
+STEP 5:
+
+    Data is stored in that location.
+
+
+Flow:
+
+    Address + Data
+          ↓
+        Memory
+          ↓
+       Storage
+
+
+============================================================
+16.34 READ VS WRITE
+============================================================
+
+READ:
+
+    Memory → CPU
+
+
+WRITE:
+
+    CPU → Memory
+
+
+TABLE:
+
+    ┌──────────────┬─────────────────────┐
+    │ Operation    │ Data Direction       │
+    ├──────────────┼─────────────────────┤
+    │ READ         │ Memory → CPU        │
+    │ WRITE        │ CPU → Memory        │
+    └──────────────┴─────────────────────┘
+
+
+MEMORY TRICK:
+
+    READ  = Take data OUT
+    WRITE = Put data IN
+
+
+============================================================
+16.35 MEMORY BUS CONNECTION
+============================================================
+
+A typical memory interface uses:
+
+    Address bus
+    Data bus
+    Control signals
+
+
+Conceptually:
+
+                   CPU
+                    │
+          ┌─────────┼─────────┐
+          │         │         │
+          ▼         ▼         ▼
+      Address      Data     Control
+       Bus          Bus       Bus
+          │         │         │
+          └─────────┼─────────┘
+                    │
+                    ▼
+                  MEMORY
+
+
+============================================================
+16.36 ADDRESS BUS
+============================================================
+
+The address bus carries:
+
+    Address information
+
+
+It tells memory:
+
+    "Which location do I want?"
+
+
+If the address bus has n bits:
+
+    Number of possible addresses = 2ⁿ
+
+
+Example:
+
+    16 address lines
+        ↓
+    2¹⁶ addresses
+
+
+============================================================
+16.37 DATA BUS
+============================================================
+
+The data bus carries:
+
+    Actual data
+
+
+Depending on the operation:
+
+    READ:
+
+        Memory → CPU
+
+
+    WRITE:
+
+        CPU → Memory
+
+
+Example:
+
+    32-bit data bus
+
+means the bus can carry:
+
+    32 bits of data at a time
+
+
+A wider data bus can transfer more bits per transfer.
+
+
+============================================================
+16.38 CONTROL BUS
+============================================================
+
+Control signals coordinate operations.
+
+
+Examples:
+
+    READ
+    WRITE
+    MEMORY ENABLE
+    CLOCK
+    INTERRUPT-related signals
+    Other control signals
+
+
+The exact signals depend on the system architecture.
+
+
+============================================================
+16.39 ADDRESS BUS VS DATA BUS
+============================================================
+
+ADDRESS BUS:
+
+    Carries location.
+
+
+DATA BUS:
+
+    Carries information.
+
+
+Example:
+
+    CPU wants to read data from address 500.
+
+
+    Address bus:
+        500
+
+
+    Data bus:
+        actual data stored at 500
+
+
+MEMORY TRICK:
+
+    Address bus = WHERE
+
+    Data bus = WHAT
+
+
+============================================================
+16.40 MEMORY ADDRESS DECODING
+============================================================
+
+Memory must determine which location corresponds to a given
+address.
+
+
+This is called:
+
+    ADDRESS DECODING
+
+
+Conceptually:
+
+    Address
+       │
+       ▼
+    Decoder
+       │
+       ├── Select location 0
+       ├── Select location 1
+       ├── Select location 2
+       ├── Select location 3
+       └── ...
+
+
+Only the required location is selected.
+
+
+============================================================
+16.41 MEMORY DECODER
+============================================================
+
+Suppose we have:
+
+    2 address bits
+
+
+Possible addresses:
+
+    00
+    01
+    10
+    11
+
+
+A 2-to-4 decoder can select one of four locations.
+
+
+    A1 A0
+     │  │
+     ▼  ▼
+    ┌───────────┐
+    │ 2-to-4    │
+    │ Decoder   │
+    └─────┬─────┘
+          │
+     ┌────┼────┬────┐
+     ▼    ▼    ▼    ▼
+    M0   M1   M2   M3
+
+
+============================================================
+16.42 MEMORY ACCESS TIME
+============================================================
+
+Memory access time is the time between:
+
+    Requesting a memory operation
+
+and:
+
+    Obtaining the required data
+
+
+For a READ:
+
+    Address provided
+         ↓
+    Memory access
+         ↓
+    Data becomes available
+
+
+The time required is:
+
+    ACCESS TIME
+
+
+Generally:
+
+    Smaller access time → Faster memory
+
+
+============================================================
+16.43 MEMORY CYCLE TIME
+============================================================
+
+Memory cycle time is the minimum time required between
+successive memory operations.
+
+
+It may include:
+
+    Access time
+    Recovery/internal time
+
+
+Therefore:
+
+    Access time
+
+and:
+
+    Cycle time
+
+
+are not necessarily identical.
+
+
+IMPORTANT:
+
+    Access time = time to complete/access an operation
+
+    Cycle time = minimum time before the next operation can
+                 begin
+
+
+============================================================
+16.44 ACCESS TIME VS CYCLE TIME
+============================================================
+
+Suppose:
+
+    Access time = 50 ns
+
+    Cycle time = 70 ns
+
+
+The memory may produce the requested result in:
+
+    50 ns
+
+
+but may require:
+
+    70 ns
+
+before another memory cycle can safely begin.
+
+
+Therefore:
+
+    Cycle time ≥ access time
+
+in many conventional memory contexts.
+
+
+============================================================
+16.45 MEMORY LATENCY
+============================================================
+
+Latency means the delay before the requested data becomes
+available.
+
+
+For memory:
+
+    Request
+       ↓
+    Waiting
+       ↓
+    Data available
+
+
+The waiting period is related to:
+
+    Memory latency
+
+
+Lower latency generally means faster response.
+
+
+============================================================
+16.46 MEMORY BANDWIDTH
+============================================================
+
+Memory bandwidth is the amount of data that can be transferred
+per unit time.
+
+
+For example:
+
+    GB/s
+
+
+A memory system can have:
+
+    High bandwidth
+
+but still have:
+
+    Significant latency.
+
+
+Therefore:
+
+    LATENCY ≠ BANDWIDTH
+
+
+Latency:
+
+    How quickly a transfer starts/completes.
+
+
+Bandwidth:
+
+    How much data can be transferred per second.
+
+
+============================================================
+16.47 MEMORY HIERARCHY
+============================================================
+
+Computer systems use multiple levels of storage because no
+single storage technology provides:
+
+    Extremely high speed
+    Huge capacity
+    Very low cost
+
+all at the same time.
+
+
+Typical hierarchy:
+
+             FASTEST
+                ▲
+                │
+            Registers
+                │
+             Cache
+                │
+           Main Memory
+                │
+          Secondary Storage
+                │
+                ▼
+            SLOWEST
+
+
+Generally:
+
+    Going DOWN:
+        Capacity ↑
+        Cost/bit ↓
+        Speed ↓
+
+
+============================================================
+16.48 MEMORY HIERARCHY — BASIC IDEA
+============================================================
+
+Near CPU:
+
+    Fast
+    Small
+    Expensive per bit
+
+
+Far from CPU:
+
+    Slower
+    Large
+    Cheaper per bit
+
+
+Example:
+
+    Registers
+        ↓
+    Cache
+        ↓
+    RAM
+        ↓
+    SSD/HDD
+
+
+This topic will be studied deeply in later chapters.
+
+
+============================================================
+16.49 PRIMARY VS SECONDARY STORAGE
+============================================================
+
+PRIMARY MEMORY:
+
+    Mainly directly used by CPU during program execution.
+
+Examples:
+
+    RAM
+    Cache
+    Registers
+
+
+SECONDARY STORAGE:
+
+    Long-term storage.
+
+Examples:
+
+    SSD
+    HDD
+
+
+Secondary storage is generally:
+
+    Larger
+    Non-volatile
+    Slower than main memory
+
+
+============================================================
+16.50 VOLATILE MEMORY
+============================================================
+
+Volatile memory loses its stored contents when power is
+removed.
+
+
+Example:
+
+    RAM
+
+
+Conceptually:
+
+    Power ON
+       ↓
+    Data retained
+
+
+    Power OFF
+       ↓
+    Data lost
+
+
+============================================================
+16.51 NON-VOLATILE MEMORY
+============================================================
+
+Non-volatile storage retains data even after power is removed.
+
+
+Examples:
+
+    SSD
+    HDD
+    Flash memory
+    ROM
+
+
+Conceptually:
+
+    Power ON  → Data retained
+
+    Power OFF → Data retained
+
+
+============================================================
+16.52 MEMORY READ EXAMPLE
+============================================================
+
+Suppose:
+
+    Address 1000 contains:
+
+    11010110
+
+
+CPU performs READ 1000.
+
+
+Step 1:
+
+    CPU sends:
+
+        Address = 1000
+
+
+Step 2:
+
+    CPU sends:
+
+        READ
+
+
+Step 3:
+
+    Memory locates address 1000.
+
+
+Step 4:
+
+    Memory places:
+
+        11010110
+
+    on the data bus.
+
+
+Step 5:
+
+    CPU receives:
+
+        11010110
+
+
+============================================================
+16.53 MEMORY WRITE EXAMPLE
+============================================================
+
+Suppose CPU wants to store:
+
+    10101010
+
+at address:
+
+    2000
+
+
+CPU sends:
+
+    Address = 2000
+
+    Data = 10101010
+
+    Control = WRITE
+
+
+Memory stores:
+
+    Address 2000 → 10101010
+
+
+============================================================
+16.54 MEMORY CAPACITY PROBLEM
+============================================================
+
+Question:
+
+A memory has:
+
+    16 address lines
+    8 data lines
+
+
+Find total capacity.
+
+
+Number of locations:
+
+    2¹⁶
+    = 65,536
+
+
+Each location:
+
+    8 bits
+    = 1 byte
+
+
+Capacity:
+
+    65,536 bytes
+
+    = 64 KiB
+
+
+ANSWER:
+
+    64 KiB
+
+
+============================================================
+16.55 MEMORY CAPACITY PROBLEM
+============================================================
+
+Question:
+
+A memory has:
+
+    18 address lines
+    16-bit word per location
+
+
+Number of locations:
+
+    2¹⁸
+
+
+Each location:
+
+    16 bits
+    = 2 bytes
+
+
+Capacity:
+
+    2¹⁸ × 2 bytes
+
+    = 2¹⁹ bytes
+
+    = 512 KiB
+
+
+ANSWER:
+
+    512 KiB
+
+
+============================================================
+16.56 FIND ADDRESS LINES
+============================================================
+
+Question:
+
+How many address lines are required for a memory containing:
+
+    4096 locations?
+
+
+We know:
+
+    Number of locations = 2ⁿ
+
+
+Therefore:
+
+    4096 = 2¹²
+
+
+Hence:
+
+    n = 12
+
+
+ANSWER:
+
+    12 address lines
+
+
+============================================================
+16.57 FIND ADDRESS LINES — ANOTHER EXAMPLE
+============================================================
+
+Question:
+
+How many address lines are required for:
+
+    1 MiB byte-addressable memory?
+
+
+1 MiB:
+
+    = 2²⁰ bytes
+
+
+Because each address identifies:
+
+    1 byte
+
+
+Number of addresses:
+
+    2²⁰
+
+
+Therefore:
+
+    Address lines = 20
+
+
+ANSWER:
+
+    20 address lines
+
+
+============================================================
+16.58 FIND MEMORY CAPACITY FROM ADDRESS LINES
+============================================================
+
+Question:
+
+A byte-addressable memory has:
+
+    24 address lines.
+
+
+Capacity:
+
+    2²⁴ bytes
+
+
+    = 16 MiB
+
+
+ANSWER:
+
+    16 MiB
+
+
+============================================================
+16.59 FIND MEMORY CAPACITY FROM ADDRESS LINES
+============================================================
+
+Question:
+
+A word-addressable memory has:
+
+    20 address lines
+
+and:
+
+    32-bit words.
+
+
+Number of words:
+
+    2²⁰
+
+
+Each word:
+
+    32 bits
+    = 4 bytes
+
+
+Capacity:
+
+    2²⁰ × 4
+
+    = 2²² bytes
+
+    = 4 MiB
+
+
+ANSWER:
+
+    4 MiB
+
+
+============================================================
+16.60 MEMORY CHIP NOTATION
+============================================================
+
+A memory chip may be described as:
+
+    1K × 8
+    4K × 8
+    16K × 8
+    64K × 8
+    1M × 8
+    1M × 16
+
+
+Example:
+
+    4K × 8
+
+
+means:
+
+    4K locations
+
+with:
+
+    8 bits per location.
+
+
+This notation is extremely important in memory-design
+questions.
+
+
+============================================================
+16.61 MEMORY CHIP: 1K × 8
+============================================================
+
+    1K × 8
+
+
+Number of locations:
+
+    1K = 1024 = 2¹⁰
+
+
+Therefore:
+
+    Address lines = 10
+
+
+Data lines:
+
+    8
+
+
+Capacity:
+
+    1024 × 8 bits
+
+    = 8192 bits
+
+    = 1 KB
+
+
+Therefore:
+
+    1K × 8
+    = 1 KB
+
+
+============================================================
+16.62 MEMORY CHIP: 4K × 8
+============================================================
+
+    4K × 8
+
+
+4K:
+
+    = 4096
+    = 2¹²
+
+
+Therefore:
+
+    Address lines = 12
+
+
+Data lines:
+
+    8
+
+
+Capacity:
+
+    4 KB
+
+
+============================================================
+16.63 MEMORY CHIP: 64K × 16
+============================================================
+
+    64K × 16
+
+
+64K:
+
+    = 2¹⁶
+
+
+Therefore:
+
+    Address lines = 16
+
+
+Each location:
+
+    16 bits
+    = 2 bytes
+
+
+Capacity:
+
+    64K × 2 bytes
+
+    = 128 KB
+
+
+ANSWER:
+
+    128 KB
+
+
+============================================================
+16.64 MEMORY ORGANISATION TERMS
+============================================================
+
+IMPORTANT TERMS:
+
+    Memory cell
+        ↓
+    Small storage element
+
+
+    Memory location
+        ↓
+    Addressable storage unit
+
+
+    Address
+        ↓
+    Identifies location
+
+
+    Word
+        ↓
+    Architecture-dependent data unit
+
+
+    Capacity
+        ↓
+    Total storage
+
+
+    Access time
+        ↓
+    Time to obtain/access data
+
+
+    Cycle time
+        ↓
+    Minimum interval between memory operations
+
+
+============================================================
+16.65 IMPORTANT FORMULAS
+============================================================
+
+NUMBER OF ADDRESSES:
+
+    2ⁿ
+
+
+where:
+
+    n = number of address bits
+
+
+MEMORY CAPACITY:
+
+    Number of locations × bits/location
+
+
+Therefore:
+
+    Capacity = 2ⁿ × bits/location
+
+
+If using bytes:
+
+    Capacity in bytes
+    =
+    2ⁿ × bytes/location
+
+
+ADDRESS LINES:
+
+    log₂(number of locations)
+
+
+============================================================
+16.66 VERY IMPORTANT RELATIONSHIPS
+============================================================
+
+If:
+
+    Address lines ↑
+
+then:
+
+    Number of addressable locations ↑
+
+
+If:
+
+    Data bus width ↑
+
+then:
+
+    More data can be transferred per bus transfer.
+
+
+If:
+
+    Memory access time ↓
+
+then:
+
+    Memory becomes faster.
+
+
+If:
+
+    Memory capacity ↑
+
+then:
+
+    More data can be stored.
+
+
+But:
+
+    Capacity ≠ Speed
+
+
+A large memory is not automatically faster.
+
+
+============================================================
+16.67 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    Thinking 1 KB always means 1000 bytes in every
+    architecture exam.
+
+
+REMEMBER:
+
+    Binary convention:
+        1 KiB = 1024 bytes
+
+
+    Decimal convention:
+        1 kB = 1000 bytes
+
+
+Use the convention specified by the question.
+
+
+------------------------------------------------------------
+
+MISTAKE 2:
+
+    Confusing address bits with data bits.
+
+
+ADDRESS BITS:
+
+    Determine number of locations.
+
+
+DATA BITS:
+
+    Determine size of data transferred/stored per location.
+
+
+------------------------------------------------------------
+
+MISTAKE 3:
+
+    Thinking 16 address lines means 16 bytes of memory.
+
+
+WRONG.
+
+
+16 address lines:
+
+    2¹⁶ addresses
+
+
+------------------------------------------------------------
+
+MISTAKE 4:
+
+    Confusing address and data.
+
+
+Address:
+
+    WHERE
+
+
+Data:
+
+    WHAT
+
+
+------------------------------------------------------------
+
+MISTAKE 5:
+
+    Thinking READ changes memory contents.
+
+
+Normally:
+
+    READ → obtains data
+
+
+WRITE:
+
+    changes/stores data
+
+
+------------------------------------------------------------
+
+MISTAKE 6:
+
+    Confusing access time and cycle time.
+
+
+They are related but not necessarily identical.
+
+
+------------------------------------------------------------
+
+MISTAKE 7:
+
+    Assuming word always means 32 bits.
+
+
+WRONG.
+
+
+Word size depends on architecture.
+
+
+============================================================
+16.68 B.TECH EXAM QUESTIONS
+============================================================
+
+1. Define computer memory.
+
+2. Explain the memory hierarchy.
+
+3. What is a memory cell?
+
+4. What is a memory location?
+
+5. Define memory address.
+
+6. What is address space?
+
+7. Explain byte-addressable memory.
+
+8. Explain word-addressable memory.
+
+9. Differentiate byte and word addressing.
+
+10. Explain memory READ operation.
+
+11. Explain memory WRITE operation.
+
+12. Differentiate READ and WRITE operations.
+
+13. What is memory access time?
+
+14. What is memory cycle time?
+
+15. Differentiate access time and cycle time.
+
+16. What is memory capacity?
+
+17. Explain address bus and data bus.
+
+18. What is address decoding?
+
+19. Explain memory organisation notation such as 4K × 8.
+
+20. Find the capacity of a memory with 12 address lines and
+    16-bit locations.
+
+21. Find the number of address lines required for 64 KB of
+    byte-addressable memory.
+
+22. Explain volatile and non-volatile memory.
+
+23. Explain latency and bandwidth.
+
+24. Differentiate primary and secondary storage.
+
+
+============================================================
+16.69 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. If a memory has n address lines, the number of
+    addressable locations is:
+
+A. n
+B. 2n
+C. 2ⁿ
+D. n²
+
+
+Q2. A 16-bit address bus can address:
+
+A. 16 locations
+B. 256 locations
+C. 65,536 locations
+D. 1,048,576 locations
+
+
+Q3. In byte-addressable memory, each address refers to:
+
+A. 1 bit
+B. 4 bits
+C. 8 bits
+D. 32 bits
+
+
+Q4. A 32-bit word contains:
+
+A. 2 bytes
+B. 4 bytes
+C. 8 bytes
+D. 32 bytes
+
+
+Q5. A 4K × 8 memory has:
+
+A. 4 locations
+B. 4096 locations
+C. 8192 locations
+D. 32768 locations
+
+
+Q6. The number of address lines required for 4K locations is:
+
+A. 8
+B. 10
+C. 12
+D. 16
+
+
+Q7. Which bus carries the actual data?
+
+A. Address bus
+B. Data bus
+C. Control bus
+D. Instruction bus
+
+
+Q8. Which bus identifies a memory location?
+
+A. Address bus
+B. Data bus
+C. Control bus
+D. ALU bus
+
+
+Q9. During a READ operation:
+
+A. CPU → Memory
+B. Memory → CPU
+C. ALU → Memory
+D. Cache → Storage only
+
+
+Q10. During a WRITE operation:
+
+A. Memory → CPU
+B. CPU → Memory
+C. RAM → CPU only
+D. ROM → CPU
+
+
+Q11. Access time refers approximately to:
+
+A. Total memory capacity
+B. Time required to access data
+C. Number of address lines
+D. Number of data bits
+
+
+Q12. A 20-bit address bus can represent:
+
+A. 20 addresses
+B. 2⁰ addresses
+C. 2²⁰ addresses
+D. 20² addresses
+
+
+Q13. If a memory has 10 address lines and 8 bits/location,
+    its capacity is:
+
+A. 80 bits
+B. 80 bytes
+C. 1 KB
+D. 8 KB
+
+
+Q14. Which is generally volatile?
+
+A. SSD
+B. HDD
+C. RAM
+D. ROM
+
+
+Q15. Which generally provides the lowest latency?
+
+A. Secondary storage
+B. Main memory
+C. Cache
+D. Registers
+
+
+============================================================
+ANSWERS
+============================================================
+
+    Q1  → C
+    Q2  → C
+    Q3  → C
+    Q4  → B
+    Q5  → B
+    Q6  → C
+    Q7  → B
+    Q8  → A
+    Q9  → B
+    Q10 → B
+    Q11 → B
+    Q12 → C
+    Q13 → C
+    Q14 → C
+    Q15 → D
+
+
+============================================================
+16.70 QUICK REVISION
+============================================================
+
+MEMORY:
+
+    Stores data and instructions.
+
+
+BIT:
+
+    0 or 1
+
+
+NIBBLE:
+
+    4 bits
+
+
+BYTE:
+
+    8 bits
+
+
+WORD:
+
+    Architecture-dependent unit.
+
+
+ADDRESS:
+
+    Identifies a memory location.
+
+
+ADDRESS SPACE:
+
+    Set of possible addresses.
+
+
+n ADDRESS BITS:
+
+    2ⁿ addresses
+
+
+BYTE ADDRESSING:
+
+    One address → one byte
+
+
+WORD ADDRESSING:
+
+    One address → one word
+
+
+READ:
+
+    Memory → CPU
+
+
+WRITE:
+
+    CPU → Memory
+
+
+ADDRESS BUS:
+
+    Carries address
+
+
+DATA BUS:
+
+    Carries data
+
+
+CONTROL BUS:
+
+    Carries control signals
+
+
+ACCESS TIME:
+
+    Time to access requested data.
+
+
+CYCLE TIME:
+
+    Minimum interval between memory operations.
+
+
+CAPACITY:
+
+    Number of locations × size/location
+
+
+MEMORY CHIP:
+
+    4K × 8
+    =
+    4096 locations × 8 bits/location
+
+
+============================================================
+16.71 MASTER MEMORY MAP
+============================================================
+
+                       MEMORY
+                          │
+         ┌────────────────┼────────────────┐
+         │                │                │
+         ▼                ▼                ▼
+      ADDRESS            DATA           CONTROL
+         │                │                │
+         ▼                ▼                ▼
+       WHERE            WHAT            HOW
+         │
+         ▼
+     2ⁿ LOCATIONS
+         │
+         ▼
+    ADDRESS SPACE
+         │
+         ▼
+   ┌───────────────┐
+   │ Memory Cell   │
+   │ Memory Word   │
+   └───────────────┘
+         │
+         ▼
+      OPERATIONS
+       ┌───────┐
+       │ READ  │
+       │ WRITE │
+       └───────┘
+         │
+         ▼
+     PERFORMANCE
+       ┌───────────────┐
+       │ Access Time   │
+       │ Cycle Time    │
+       │ Latency       │
+       │ Bandwidth     │
+       └───────────────┘
+
+
+============================================================
+16.72 MASTER FORMULA SHEET
+============================================================
+
+If:
+
+    n = address bits
+
+
+Then:
+
+    Number of locations = 2ⁿ
+
+
+If:
+
+    m = bits per location
+
+
+Then:
+
+    Capacity = 2ⁿ × m bits
+
+
+Capacity in bytes:
+
+    Capacity = (2ⁿ × m) / 8 bytes
+
+
+If each location is one byte:
+
+    Capacity = 2ⁿ bytes
+
+
+If each location is one word:
+
+    Capacity = 2ⁿ × word_size
+
+
+Address lines needed:
+
+    n = log₂(number of locations)
+
+
+============================================================
+16.73 FINAL CHECKPOINT
+============================================================
+
+You should now be able to:
+
+[ ] Define memory.
+[ ] Explain memory cells and locations.
+[ ] Explain bits, bytes and words.
+[ ] Explain word length.
+[ ] Calculate memory capacity.
+[ ] Explain memory addresses.
+[ ] Calculate address space.
+[ ] Explain byte addressing.
+[ ] Explain word addressing.
+[ ] Differentiate byte and word addressing.
+[ ] Explain READ operation.
+[ ] Explain WRITE operation.
+[ ] Explain address bus.
+[ ] Explain data bus.
+[ ] Explain control bus.
+[ ] Explain address decoding.
+[ ] Explain access time.
+[ ] Explain cycle time.
+[ ] Differentiate access time and cycle time.
+[ ] Explain latency.
+[ ] Explain bandwidth.
+[ ] Calculate capacity from address lines.
+[ ] Calculate address lines from capacity.
+[ ] Understand memory-chip notation.
+[ ] Solve B.Tech memory numerical problems.
+[ ] Solve competitive-exam memory questions.
+
+
+============================================================
+CHAPTER 16 COMPLETE
+============================================================
+
+CORE IDEA:
+
+    CPU wants data
+          │
+          ▼
+       ADDRESS
+          │
+          ▼
+       MEMORY
+          │
+     ┌────┴────┐
+     │         │
+    READ     WRITE
+     │         │
+     ▼         ▼
+   Data      Store
+     │         │
+     └────┬────┘
+          ▼
+        CPU
+
+
+MOST IMPORTANT RULE:
+
+    ADDRESS BITS → NUMBER OF LOCATIONS
+
+    DATA BITS → SIZE OF EACH LOCATION
+
+    CAPACITY =
+    NUMBER OF LOCATIONS × SIZE OF EACH LOCATION
+
+
+============================================================
+NEXT:
+CHAPTER 17 — MEMORY HIERARCHY
+============================================================
+
+17.1 Why Memory Hierarchy?
+    • Speed vs capacity vs cost
+
+17.2 Levels of Memory
+    • Registers
+    • Cache
+    • Main memory
+    • Secondary storage
+
+17.3 Locality of Reference
+    • Temporal locality
+    • Spatial locality
+
+17.4 Memory Performance
+    • Access time
+    • Hit
+    • Miss
+    • Hit ratio
+    • Miss penalty
+============================================================

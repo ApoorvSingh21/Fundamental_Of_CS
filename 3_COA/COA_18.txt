@@ -1,0 +1,3230 @@
+============================================================
+CHAPTER 18 — CACHE MEMORY
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner → Exam Ready
+
+OBJECTIVE:
+Understand cache memory from basic concepts to cache mapping,
+replacement policies, write policies, cache performance,
+AMAT, and multi-level caches.
+
+
+============================================================
+18.1 WHAT IS CACHE MEMORY?
+============================================================
+
+Cache is a small, very fast memory placed between the CPU and
+main memory.
+
+Its main purpose is:
+
+    Reduce the average time required by the CPU to access data
+    and instructions.
+
+
+Basic structure:
+
+        CPU
+         │
+         ▼
+      CACHE
+         │
+         ▼
+        RAM
+
+
+Without cache:
+
+        CPU ───────────────► RAM
+
+With cache:
+
+        CPU ───► CACHE ───► RAM
+                  │
+              Fast access
+
+
+============================================================
+18.2 WHY DO WE NEED CACHE?
+============================================================
+
+CPU is much faster than main memory.
+
+If the CPU had to wait for RAM for every access, CPU
+performance would be reduced.
+
+Cache helps by keeping frequently/recently needed information
+close to the CPU.
+
+
+The basic idea:
+
+    Frequently used data
+           ↓
+        Cache
+           ↓
+      Faster access
+
+
+============================================================
+18.3 REAL-WORLD ANALOGY
+============================================================
+
+Imagine studying.
+
+You have:
+
+    • A pen in your hand
+    • Notes on your desk
+    • Books on a shelf
+    • Books in another room
+
+
+You keep frequently used things nearby.
+
+Similarly:
+
+    CPU
+      ↓
+    Cache
+      ↓
+    RAM
+      ↓
+    Storage
+
+
+Cache is like the material kept directly on your desk.
+
+
+============================================================
+18.4 CACHE AND LOCALITY
+============================================================
+
+Cache works mainly because programs exhibit:
+
+    1. Temporal locality
+    2. Spatial locality
+
+
+TEMPORAL LOCALITY:
+
+    Recently used data is likely to be used again soon.
+
+
+SPATIAL LOCALITY:
+
+    Nearby data is likely to be used soon.
+
+
+Therefore cache stores recently/frequently useful blocks.
+
+
+============================================================
+18.5 BASIC CACHE OPERATION
+============================================================
+
+Suppose CPU needs data at address:
+
+    1000
+
+
+CPU first checks cache.
+
+
+CASE 1:
+
+    Data is present.
+
+    → CACHE HIT
+
+
+CASE 2:
+
+    Data is absent.
+
+    → CACHE MISS
+
+
+On a miss, the system obtains the required block from a lower
+memory level and normally places it into cache.
+
+
+============================================================
+18.6 CACHE HIT
+============================================================
+
+A cache hit occurs when the requested data is found in cache.
+
+
+Flow:
+
+       CPU
+        │
+        ▼
+      CACHE
+        │
+     Found
+        │
+        ▼
+      DATA
+        │
+        ▼
+       CPU
+
+
+Advantages:
+
+    • Low latency
+    • Fast access
+    • Better CPU performance
+
+
+============================================================
+18.7 CACHE MISS
+============================================================
+
+A cache miss occurs when the requested data is not present in
+cache.
+
+
+Flow:
+
+       CPU
+        │
+        ▼
+      CACHE
+        │
+      Not found
+        │
+        ▼
+       RAM
+        │
+        ▼
+      CACHE
+        │
+        ▼
+       CPU
+
+
+A miss causes additional delay.
+
+
+This additional delay is related to:
+
+    MISS PENALTY
+
+
+============================================================
+18.8 CACHE BLOCK
+============================================================
+
+Cache does not usually transfer one individual byte at a time.
+
+Instead, data is transferred in groups called:
+
+    BLOCKS
+
+
+A block is a contiguous group of memory locations.
+
+
+Example:
+
+    Block size = 16 bytes
+
+
+A block may contain:
+
+    Address 1000
+    Address 1001
+    ...
+    Address 1015
+
+
+Why transfer a whole block?
+
+Because of:
+
+    SPATIAL LOCALITY
+
+
+If CPU needs address 1000, it may soon need nearby addresses.
+
+
+============================================================
+18.9 CACHE LINE
+============================================================
+
+A cache line is the location in cache that stores one memory
+block.
+
+In many cache designs:
+
+    Cache line ≈ block + metadata
+
+
+Metadata can include:
+
+    • Tag
+    • Valid bit
+    • Dirty bit
+    • Other status information
+
+
+IMPORTANT:
+
+    Memory block = unit of data from memory
+
+    Cache line = place in cache holding that block
+
+
+============================================================
+18.10 TAG, INDEX AND OFFSET
+============================================================
+
+A memory address is divided into fields.
+
+Conceptually:
+
+    ┌────────────┬────────────┬────────────┐
+    │    TAG     │   INDEX    │   OFFSET   │
+    └────────────┴────────────┴────────────┘
+
+
+These fields have different purposes.
+
+
+TAG:
+
+    Identifies which memory block is stored.
+
+
+INDEX:
+
+    Identifies which cache location/set to look in.
+
+
+OFFSET:
+
+    Identifies the exact byte/word within the block.
+
+
+This division is fundamental to cache mapping.
+
+
+============================================================
+18.11 CACHE ADDRESS
+============================================================
+
+Suppose an address has:
+
+    TAG | INDEX | OFFSET
+
+
+When CPU gives an address:
+
+    1. INDEX selects cache location/set.
+    2. TAG is compared.
+    3. OFFSET selects the required byte/word.
+
+
+Simplified:
+
+    Address
+       │
+       ▼
+    ┌─────────────────────┐
+    │ TAG | INDEX | OFFSET│
+    └─────────────────────┘
+       │      │       │
+       │      │       └──► Select data inside block
+       │      └──────────► Select cache location/set
+       └─────────────────► Identify memory block
+
+
+============================================================
+18.12 VALID BIT
+============================================================
+
+A cache line needs to indicate whether it contains valid data.
+
+
+This is done using:
+
+    VALID BIT
+
+
+Typically:
+
+    Valid = 1
+        → Line contains valid cached data.
+
+
+    Valid = 0
+        → Line does not currently contain valid data.
+
+
+Without a valid bit, the cache could mistakenly treat
+uninitialized information as useful data.
+
+
+============================================================
+18.13 DIRTY BIT
+============================================================
+
+A dirty bit is important for write-back caches.
+
+
+It indicates whether the cached block has been modified after
+being loaded from lower memory.
+
+
+Typically:
+
+    Dirty = 0
+        → Cache copy agrees with lower memory.
+
+
+    Dirty = 1
+        → Cache copy has been modified.
+
+
+When a dirty block is replaced, it must generally be written
+back to the lower memory level.
+
+
+============================================================
+18.14 CACHE MAPPING
+============================================================
+
+Mapping determines:
+
+    Where a memory block can be placed in cache.
+
+
+There are three major methods:
+
+    1. Direct mapping
+    2. Fully associative mapping
+    3. Set-associative mapping
+
+
+============================================================
+18.15 DIRECT MAPPING
+============================================================
+
+In direct mapping:
+
+    Each memory block can go to exactly ONE cache line.
+
+
+Basic formula:
+
+    Cache Line
+    =
+    Memory Block Number MOD
+    Number of Cache Lines
+
+
+Example:
+
+    Number of cache lines = 8
+
+    Memory block = 21
+
+
+Then:
+
+    21 MOD 8 = 5
+
+
+Therefore:
+
+    Block 21 → Cache line 5
+
+
+============================================================
+18.16 DIRECT MAPPING ANALOGY
+============================================================
+
+Imagine 8 lockers:
+
+    0 1 2 3 4 5 6 7
+
+
+Every student is assigned a locker using a fixed rule.
+
+
+Student/block 21:
+
+    21 MOD 8 = 5
+
+
+So:
+
+    Block 21 → Locker 5
+
+
+The block has no choice.
+
+This is why direct mapping is simple but can cause conflicts.
+
+
+============================================================
+18.17 DIRECT-MAPPED CACHE STRUCTURE
+============================================================
+
+Example:
+
+    Cache has 8 lines.
+
+Memory blocks map as:
+
+    Block 0  → Line 0
+    Block 1  → Line 1
+    Block 2  → Line 2
+    Block 3  → Line 3
+    Block 4  → Line 4
+    Block 5  → Line 5
+    Block 6  → Line 6
+    Block 7  → Line 7
+
+    Block 8  → Line 0
+    Block 9  → Line 1
+    Block 10 → Line 2
+    Block 11 → Line 3
+    ...
+
+
+Therefore:
+
+    0, 8, 16, 24, ... → Line 0
+
+    1, 9, 17, 25, ... → Line 1
+
+
+============================================================
+18.18 DIRECT MAPPING CONFLICT
+============================================================
+
+Suppose:
+
+    Block 0 → Line 0
+
+Then CPU accesses:
+
+    Block 8 → Line 0
+
+
+Block 8 replaces Block 0.
+
+
+If CPU then needs Block 0:
+
+    Block 0 replaces Block 8.
+
+
+This can cause repeated misses.
+
+
+This is called:
+
+    CONFLICT MISS
+
+
+============================================================
+18.19 DIRECT MAPPING FORMULA
+============================================================
+
+Let:
+
+    B = memory block number
+
+    N = number of cache lines
+
+
+Then:
+
+    Line = B MOD N
+
+
+This formula is extremely important for exams.
+
+
+============================================================
+18.20 FULLY ASSOCIATIVE MAPPING
+============================================================
+
+In fully associative mapping:
+
+    A memory block can be placed in ANY cache line.
+
+
+Example:
+
+    Cache lines:
+
+    0 1 2 3 4 5 6 7
+
+
+Block 25 can be placed in:
+
+    Line 0
+    OR
+    Line 1
+    OR
+    Line 2
+    ...
+    OR
+    Line 7
+
+
+There is no fixed line.
+
+
+============================================================
+18.21 FULLY ASSOCIATIVE ANALOGY
+============================================================
+
+Imagine a parking area with 8 spaces.
+
+Any car can use any empty parking space.
+
+
+Unlike direct mapping:
+
+    No fixed parking space.
+
+
+This provides flexibility.
+
+
+But the cache must search/compare tags across possible lines,
+which makes hardware more complex.
+
+
+============================================================
+18.22 ADVANTAGES OF FULLY ASSOCIATIVE MAPPING
+============================================================
+
+Advantages:
+
+    • Very flexible
+    • Fewer conflict misses
+    • Any block can use any line
+
+
+Disadvantages:
+
+    • More hardware complexity
+    • More tag comparisons
+    • More expensive
+    • More difficult to implement for large caches
+
+
+============================================================
+18.23 SET-ASSOCIATIVE MAPPING
+============================================================
+
+Set-associative mapping combines ideas from:
+
+    Direct mapping
+             +
+    Fully associative mapping
+
+
+Cache is divided into:
+
+    SETS
+
+
+Each set contains multiple:
+
+    WAYS
+
+
+A memory block maps to exactly ONE set.
+
+Within that set, it can occupy ANY way.
+
+
+============================================================
+18.24 SET-ASSOCIATIVE EXAMPLE
+============================================================
+
+Suppose cache has:
+
+    8 lines
+
+and it is:
+
+    2-way set associative.
+
+
+Number of sets:
+
+    8 / 2
+
+    = 4 sets
+
+
+So:
+
+    Set 0 → 2 lines
+    Set 1 → 2 lines
+    Set 2 → 2 lines
+    Set 3 → 2 lines
+
+
+A memory block maps to one set.
+
+Inside that set, it can occupy either of the 2 ways.
+
+
+============================================================
+18.25 SET MAPPING FORMULA
+============================================================
+
+For set-associative cache:
+
+    Set Number
+    =
+    Memory Block Number MOD
+    Number of Sets
+
+
+Example:
+
+    Block = 13
+
+    Number of sets = 4
+
+
+Then:
+
+    13 MOD 4 = 1
+
+
+Therefore:
+
+    Block 13 → Set 1
+
+
+Within Set 1:
+
+    It may occupy either available way.
+
+
+============================================================
+18.26 DIRECT VS FULLY ASSOCIATIVE VS SET ASSOCIATIVE
+============================================================
+
+DIRECT:
+
+    Block → Exactly one line
+
+
+FULLY ASSOCIATIVE:
+
+    Block → Any line
+
+
+SET-ASSOCIATIVE:
+
+    Block → Exactly one set
+          → Any way within that set
+
+
+Memory trick:
+
+    Direct:
+        One place
+
+
+    Fully associative:
+        Anywhere
+
+
+    Set associative:
+        One group, anywhere inside group
+
+
+============================================================
+18.27 CACHE MAPPING COMPARISON
+============================================================
+
+    ┌────────────────────┬─────────────┬──────────────┐
+    │ Mapping            │ Flexibility │ Complexity   │
+    ├────────────────────┼─────────────┼──────────────┤
+    │ Direct             │ Low         │ Low          │
+    │ Fully associative  │ Very high   │ Very high    │
+    │ Set associative    │ Medium      │ Medium       │
+    └────────────────────┴─────────────┴──────────────┘
+
+
+Generally:
+
+    Direct mapping:
+        Simple + fast hardware + more conflicts
+
+
+    Fully associative:
+        Flexible + fewer conflicts + expensive
+
+
+    Set associative:
+        Balance between both
+
+
+============================================================
+18.28 CACHE ADDRESS FIELDS
+============================================================
+
+For a byte-addressable memory:
+
+    Address bits =
+        TAG + INDEX + OFFSET
+
+
+OFFSET bits depend on:
+
+    Block size
+
+
+If block size is:
+
+    2^b bytes
+
+
+Then:
+
+    Offset bits = b
+
+
+INDEX bits depend on:
+
+    Number of cache lines/sets.
+
+
+If number of sets is:
+
+    2^s
+
+
+Then:
+
+    Index bits = s
+
+
+TAG:
+
+    Remaining address bits.
+
+
+============================================================
+18.29 DIRECT-MAPPED CACHE FORMULA
+============================================================
+
+Suppose:
+
+    Address size = m bits
+
+    Block size = 2^b bytes
+
+    Number of cache lines = 2^l
+
+
+Then:
+
+    Offset bits = b
+
+    Index bits = l
+
+    Tag bits = m - b - l
+
+
+Therefore:
+
+    Address:
+
+    ┌──────────────┬───────────┬──────────┐
+    │     TAG      │   INDEX   │  OFFSET  │
+    └──────────────┴───────────┴──────────┘
+       m-b-l bits     l bits     b bits
+
+
+============================================================
+18.30 EXAMPLE — ADDRESS BREAKDOWN
+============================================================
+
+Given:
+
+    Address size = 16 bits
+
+    Cache size = 256 bytes
+
+    Block size = 16 bytes
+
+Find:
+
+    Number of cache lines
+    Offset bits
+    Index bits
+    Tag bits
+
+
+Step 1:
+
+    Number of cache lines
+    =
+    Cache size / Block size
+
+    = 256 / 16
+
+    = 16 lines
+
+
+Step 2:
+
+    16 = 2^4
+
+Therefore:
+
+    Index bits = 4
+
+
+Step 3:
+
+    Block size = 16 bytes
+               = 2^4 bytes
+
+
+Therefore:
+
+    Offset bits = 4
+
+
+Step 4:
+
+    Tag bits
+    = 16 - 4 - 4
+    = 8
+
+
+Answer:
+
+    TAG    = 8 bits
+    INDEX  = 4 bits
+    OFFSET = 4 bits
+
+
+============================================================
+18.31 EXAMPLE — DIRECT MAPPING
+============================================================
+
+Given:
+
+    Main memory block = 37
+
+    Cache lines = 8
+
+
+Line:
+
+    37 MOD 8
+
+    = 5
+
+
+Therefore:
+
+    Block 37 → Line 5
+
+
+============================================================
+18.32 EXAMPLE — SET ASSOCIATIVE
+============================================================
+
+Given:
+
+    Cache lines = 16
+
+    4-way set associative
+
+
+Number of sets:
+
+    16 / 4
+
+    = 4 sets
+
+
+Given block:
+
+    29
+
+
+Set:
+
+    29 MOD 4
+
+    = 1
+
+
+Therefore:
+
+    Block 29 → Set 1
+
+    It may occupy any of the 4 ways in Set 1.
+
+
+============================================================
+18.33 WHY ASSOCIATIVITY MATTERS
+============================================================
+
+Higher associativity generally reduces:
+
+    Conflict misses
+
+
+But higher associativity generally requires:
+
+    More comparison hardware
+    More complexity
+    Potentially more lookup cost/energy
+
+
+Therefore real systems choose practical associativities such as:
+
+    Direct mapped
+    2-way
+    4-way
+    8-way
+
+
+depending on design goals.
+
+
+============================================================
+18.34 CACHE REPLACEMENT
+============================================================
+
+Replacement becomes important when multiple blocks can occupy
+the same set.
+
+
+This is especially relevant for:
+
+    Fully associative cache
+    Set-associative cache
+
+
+If all possible locations are occupied, the cache must decide:
+
+    Which block should be removed?
+
+
+This is called:
+
+    REPLACEMENT POLICY
+
+
+Common policies:
+
+    1. LRU
+    2. FIFO
+    3. Random
+
+
+============================================================
+18.35 LRU
+============================================================
+
+LRU means:
+
+    LEAST RECENTLY USED
+
+
+The cache removes the block that has not been used for the
+longest time.
+
+
+Example:
+
+    Cache contains:
+
+    A  B  C  D
+
+
+Suppose recent usage order is:
+
+    D → B → A → C
+
+
+If another block must enter:
+
+    C
+
+is the least recently used.
+
+
+Therefore:
+
+    C is replaced.
+
+
+============================================================
+18.36 LRU ANALOGY
+============================================================
+
+Imagine four books on your desk.
+
+You have not opened Book C for the longest time.
+
+
+When there is no space:
+
+    Remove Book C.
+
+
+That is:
+
+    LRU
+
+
+Memory trick:
+
+    LRU = Least Recently Used
+
+
+============================================================
+18.37 FIFO
+============================================================
+
+FIFO means:
+
+    FIRST IN, FIRST OUT
+
+
+The block that entered cache first is removed first.
+
+
+Example:
+
+    Arrival order:
+
+    A → B → C → D
+
+
+If a replacement is required:
+
+    A is removed.
+
+
+Regardless of how recently A was used.
+
+
+============================================================
+18.38 FIFO ANALOGY
+============================================================
+
+Imagine people standing in a queue.
+
+Order:
+
+    A
+    B
+    C
+    D
+
+
+The person who entered first leaves first.
+
+
+That is:
+
+    FIFO
+
+
+Memory trick:
+
+    FIFO = First In, First Out
+
+
+============================================================
+18.39 RANDOM REPLACEMENT
+============================================================
+
+Random replacement selects a cache block randomly for
+replacement.
+
+
+Advantages:
+
+    • Simple
+    • Low hardware overhead
+
+
+Disadvantage:
+
+    • May remove a useful block
+
+
+It does not attempt to track usage history like LRU.
+
+
+============================================================
+18.40 REPLACEMENT POLICY COMPARISON
+============================================================
+
+    LRU:
+
+        Remove least recently used block.
+
+
+    FIFO:
+
+        Remove oldest block.
+
+
+    RANDOM:
+
+        Choose a block randomly.
+
+
+Important:
+
+    LRU ≠ FIFO
+
+
+A block can be:
+
+    Oldest
+
+but still:
+
+    Recently used.
+
+
+============================================================
+18.41 WRITE OPERATION
+============================================================
+
+Reading from cache is only part of cache behavior.
+
+We also need to handle:
+
+    WRITE operations.
+
+
+When CPU modifies data, the cache and lower memory level
+must remain appropriately coordinated.
+
+
+Two major write strategies:
+
+    1. Write-through
+    2. Write-back
+
+
+============================================================
+18.42 WRITE-THROUGH
+============================================================
+
+In write-through cache:
+
+    Data is written to cache AND lower memory at the time of
+    the write, according to the system's policy.
+
+
+Conceptually:
+
+       CPU
+        │
+        ▼
+      CACHE
+        │
+        ▼
+       RAM
+
+
+Advantages:
+
+    • Lower memory stays up-to-date
+    • Simpler consistency concept
+    • Easier recovery
+
+
+Disadvantage:
+
+    • More writes to lower memory
+    • Can increase memory traffic
+
+
+============================================================
+18.43 WRITE-BACK
+============================================================
+
+In write-back cache:
+
+    CPU writes modify the cache copy first.
+
+Lower memory is updated later, usually when the modified block
+is evicted.
+
+
+Conceptually:
+
+       CPU
+        │
+        ▼
+      CACHE
+        │
+      modified
+        │
+        ▼
+    write later
+        │
+        ▼
+       RAM
+
+
+A:
+
+    DIRTY BIT
+
+
+is commonly used to indicate whether the cache copy has been
+modified.
+
+
+Advantages:
+
+    • Fewer writes to lower memory
+    • Lower memory traffic
+    • Often better performance
+
+
+Disadvantages:
+
+    • More complex
+    • Requires dirty-bit management
+    • Lower memory may temporarily contain an older copy
+
+
+============================================================
+18.44 WRITE-THROUGH VS WRITE-BACK
+============================================================
+
+WRITE-THROUGH:
+
+    CPU
+     │
+     ├──► Cache
+     │
+     └──► Lower memory
+
+
+WRITE-BACK:
+
+    CPU
+     │
+     ▼
+    Cache
+     │
+     │ later, if modified block is evicted
+     ▼
+    Lower memory
+
+
+Memory trick:
+
+    Write-through:
+        Write through immediately.
+
+
+    Write-back:
+        Write back later.
+
+
+============================================================
+18.45 WRITE ALLOCATE
+============================================================
+
+Suppose CPU performs a WRITE to an address that is NOT
+currently in cache.
+
+This is a:
+
+    WRITE MISS
+
+
+With:
+
+    WRITE ALLOCATE
+
+
+the system first brings the block into cache and then performs
+the write to that cache block.
+
+
+Conceptually:
+
+    Write miss
+       │
+       ▼
+    Fetch block
+       │
+       ▼
+     Cache
+       │
+       ▼
+      Write
+
+
+Write allocate is commonly associated with write-back caches,
+though implementations can vary.
+
+
+============================================================
+18.46 NO-WRITE ALLOCATE
+============================================================
+
+With:
+
+    NO-WRITE ALLOCATE
+
+
+a write miss does not bring the block into cache.
+
+
+Instead, the write goes directly to the lower memory level
+according to the cache's write policy.
+
+
+Conceptually:
+
+    Write miss
+       │
+       ▼
+    Lower memory
+
+
+No new cache block is allocated.
+
+
+============================================================
+18.47 WRITE ALLOCATE VS NO-WRITE ALLOCATE
+============================================================
+
+WRITE ALLOCATE:
+
+    Write miss
+       ↓
+    Bring block to cache
+       ↓
+    Write
+
+
+NO-WRITE ALLOCATE:
+
+    Write miss
+       ↓
+    Do not bring block to cache
+       ↓
+    Write to lower level
+
+
+Memory trick:
+
+    Allocate = Bring into cache
+
+
+============================================================
+18.48 COMMON COMBINATIONS
+============================================================
+
+A common combination is:
+
+    WRITE-BACK + WRITE-ALLOCATE
+
+
+Another common combination is:
+
+    WRITE-THROUGH + NO-WRITE-ALLOCATE
+
+
+But actual processors can use different designs.
+
+
+Do not assume a combination unless the question specifies it.
+
+
+============================================================
+18.49 WRITE POLICIES TABLE
+============================================================
+
+    ┌──────────────────────┬──────────────────────────────┐
+    │ Policy               │ Meaning                      │
+    ├──────────────────────┼──────────────────────────────┤
+    │ Write-through        │ Update lower level promptly   │
+    │ Write-back           │ Update lower level later     │
+    │ Write-allocate       │ Bring block into cache       │
+    │ No-write-allocate    │ Do not bring block on miss   │
+    └──────────────────────┴──────────────────────────────┘
+
+
+IMPORTANT:
+
+    Write-through/write-back
+
+and:
+
+    Write-allocate/no-write-allocate
+
+describe different aspects of write handling.
+
+
+============================================================
+18.50 CACHE PERFORMANCE
+============================================================
+
+Important performance terms:
+
+    • Hit time
+    • Hit ratio
+    • Miss ratio
+    • Miss penalty
+    • AMAT
+
+
+Higher hit ratio generally improves performance.
+
+
+Lower:
+
+    Hit time
+
+and:
+
+    Miss penalty
+
+
+also improve performance.
+
+
+============================================================
+18.51 HIT RATIO
+============================================================
+
+Formula:
+
+    Hit Ratio
+    =
+    Number of Hits
+    --------------------
+    Total Accesses
+
+
+Example:
+
+    Total accesses = 1000
+
+    Hits = 950
+
+
+    Hit Ratio
+    = 950 / 1000
+    = 0.95
+    = 95%
+
+
+============================================================
+18.52 MISS RATIO
+============================================================
+
+Formula:
+
+    Miss Ratio
+    =
+    Number of Misses
+    ----------------------
+    Total Accesses
+
+
+Also:
+
+    Miss Ratio = 1 − Hit Ratio
+
+
+Example:
+
+    Hit ratio = 95%
+
+
+    Miss ratio = 5%
+
+
+============================================================
+18.53 AMAT
+============================================================
+
+Average Memory Access Time:
+
+
+    AMAT
+    =
+    Hit Time
+    +
+    Miss Rate × Miss Penalty
+
+
+Example:
+
+    Hit time = 2 ns
+    Miss rate = 5%
+    Miss penalty = 40 ns
+
+
+    AMAT
+    = 2 + (0.05 × 40)
+
+    = 2 + 2
+
+    = 4 ns
+
+
+============================================================
+18.54 AMAT — IMPORTANT WARNING
+============================================================
+
+Always determine what the problem means by:
+
+    Miss penalty.
+
+
+If miss penalty already includes lower-level access time,
+do not add it again.
+
+
+For multi-level cache problems, carefully identify:
+
+    L1 hit time
+    L1 miss rate
+    L2 hit time
+    L2 miss rate
+    Main memory penalty
+
+
+============================================================
+18.55 TWO-LEVEL CACHE
+============================================================
+
+Modern CPUs often use multiple cache levels.
+
+
+Example:
+
+       CPU
+        │
+        ▼
+       L1
+        │
+       miss
+        ▼
+       L2
+        │
+       miss
+        ▼
+       L3
+        │
+       miss
+        ▼
+       RAM
+
+
+Generally:
+
+    L1:
+        Smallest + fastest
+
+
+    L2:
+        Larger + slower
+
+
+    L3:
+        Larger + slower still
+
+
+============================================================
+18.56 L1 CACHE
+============================================================
+
+L1:
+
+    Level 1 cache
+
+
+Usually:
+
+    • Very small
+    • Very fast
+    • Closest to CPU execution units
+
+
+Many CPUs use:
+
+    L1 Instruction Cache
+
+and:
+
+    L1 Data Cache
+
+
+This is called:
+
+    Split L1 cache
+
+
+============================================================
+18.57 L2 CACHE
+============================================================
+
+L2:
+
+    Level 2 cache
+
+
+Generally:
+
+    Larger than L1
+    Slower than L1
+    Faster than main memory
+
+
+Depending on the CPU design, L2 may be private to a core or
+shared in different ways.
+
+
+============================================================
+18.58 L3 CACHE
+============================================================
+
+L3:
+
+    Level 3 cache
+
+
+Generally:
+
+    Larger than L2
+    Slower than L2
+    Often shared among CPU cores
+
+
+Example:
+
+    Core 1 ─┐
+    Core 2 ─┼──► Shared L3
+    Core 3 ─┤
+    Core 4 ─┘
+
+
+The exact organization depends on processor architecture.
+
+
+============================================================
+18.59 MULTI-LEVEL CACHE OPERATION
+============================================================
+
+Suppose CPU requests data.
+
+
+Step 1:
+
+    Check L1.
+
+
+If hit:
+
+    Return data.
+
+
+If miss:
+
+    Check L2.
+
+
+If L2 hit:
+
+    Bring data toward L1 and provide it to CPU.
+
+
+If L2 miss:
+
+    Continue to the next level.
+
+
+Eventually:
+
+    RAM is accessed if necessary.
+
+
+Conceptually:
+
+    CPU
+     │
+     ▼
+    L1
+     │
+    miss
+     ▼
+    L2
+     │
+    miss
+     ▼
+    L3
+     │
+    miss
+     ▼
+    RAM
+
+
+============================================================
+18.60 MULTI-LEVEL CACHE AMAT
+============================================================
+
+For two levels, one common form is:
+
+    AMAT
+    =
+    L1 Hit Time
+    +
+    L1 Miss Rate × L2 Miss Cost
+
+
+If L2 itself can miss, then its cost includes the additional
+time associated with the next level.
+
+
+A simplified conceptual form:
+
+    AMAT
+    =
+    L1 time
+    +
+    L1 miss rate ×
+    (L2 time
+     +
+     L2 miss rate ×
+     lower-level penalty)
+
+
+Exact formulas depend on the timing convention in the question.
+
+
+============================================================
+18.61 MULTI-LEVEL AMAT EXAMPLE
+============================================================
+
+Given:
+
+    L1 hit time = 1 ns
+
+    L1 miss rate = 10%
+
+    L2 access time = 5 ns
+
+    L2 miss rate = 20%
+
+    Main memory penalty = 50 ns
+
+
+Assume the stated times are additional costs.
+
+L2 miss cost:
+
+    = 5 + (0.20 × 50)
+
+    = 5 + 10
+
+    = 15 ns
+
+
+Then:
+
+    AMAT
+    = 1 + (0.10 × 15)
+
+    = 1 + 1.5
+
+    = 2.5 ns
+
+
+ANSWER:
+
+    AMAT = 2.5 ns
+
+Note:
+    Exact answers depend on whether the given lower-level
+    access times are defined as total or additional times.
+
+
+============================================================
+18.62 CACHE MISS TYPES
+============================================================
+
+Three important classical cache miss categories are:
+
+    1. Compulsory miss
+    2. Capacity miss
+    3. Conflict miss
+
+
+These are commonly called:
+
+    THE THREE C'S
+
+
+============================================================
+18.63 COMPULSORY MISS
+============================================================
+
+A compulsory miss occurs when a block is accessed for the
+first time.
+
+
+There is no copy in cache yet.
+
+
+Example:
+
+    First access to a new memory block.
+
+
+This is also called:
+
+    Cold-start miss
+
+
+============================================================
+18.64 CAPACITY MISS
+============================================================
+
+A capacity miss occurs because the cache is not large enough
+to hold all the blocks needed by the program.
+
+
+Example:
+
+    Program needs 100 blocks.
+
+    Cache can hold only 10.
+
+
+Some useful blocks must be removed.
+
+
+This can produce capacity misses.
+
+
+============================================================
+18.65 CONFLICT MISS
+============================================================
+
+A conflict miss occurs when multiple blocks compete for the
+same cache location/set even though the cache may have enough
+total capacity.
+
+
+This is particularly associated with restricted mapping such
+as direct mapping.
+
+
+Example:
+
+    Block 0 → Line 0
+
+    Block 8 → Line 0
+
+
+They conflict.
+
+
+============================================================
+18.66 THREE C'S SUMMARY
+============================================================
+
+    COMPULSORY:
+        First access.
+
+
+    CAPACITY:
+        Cache too small.
+
+
+    CONFLICT:
+        Blocks compete for same location/set.
+
+
+Memory trick:
+
+    First
+      ↓
+    Compulsory
+
+    Too small
+      ↓
+    Capacity
+
+    Same place
+      ↓
+    Conflict
+
+
+============================================================
+18.67 CACHE SIZE
+============================================================
+
+Increasing cache size can:
+
+    • Reduce capacity misses
+    • Increase hardware cost
+    • Potentially increase access time depending on design
+
+
+Therefore bigger cache is not automatically better in every
+respect.
+
+
+============================================================
+18.68 BLOCK SIZE
+============================================================
+
+Larger blocks can exploit spatial locality better.
+
+
+Advantages:
+
+    • More nearby data fetched
+    • Can reduce some compulsory misses
+
+
+Disadvantages:
+
+    • More data transferred
+    • Can increase miss penalty
+    • Can waste cache space if nearby data is never used
+    • Fewer total blocks fit in a fixed-size cache
+
+
+Therefore block size is a trade-off.
+
+
+============================================================
+18.69 ASSOCIATIVITY
+============================================================
+
+Increasing associativity generally:
+
+    Reduces conflict misses.
+
+
+But:
+
+    Hardware complexity increases.
+
+
+Common designs:
+
+    Direct mapped
+    2-way
+    4-way
+    8-way
+    Higher associativity
+
+
+============================================================
+18.70 CACHE DESIGN TRADE-OFFS
+============================================================
+
+Important parameters:
+
+    Cache size
+    Block size
+    Associativity
+    Replacement policy
+    Write policy
+
+
+Changing one can affect:
+
+    • Hit rate
+    • Hit time
+    • Miss penalty
+    • Power
+    • Cost
+    • Hardware complexity
+
+
+Therefore cache design is a trade-off problem.
+
+
+============================================================
+18.71 CACHE NUMERICAL — DIRECT MAPPING
+============================================================
+
+Given:
+
+    Cache lines = 16
+
+    Memory block = 45
+
+
+Find cache line.
+
+
+Formula:
+
+    Line = Block MOD Number of lines
+
+
+    = 45 MOD 16
+
+    = 13
+
+
+ANSWER:
+
+    Block 45 → Cache line 13
+
+
+============================================================
+18.72 CACHE NUMERICAL — SET ASSOCIATIVE
+============================================================
+
+Given:
+
+    Cache size = 32 KB
+
+    Block size = 64 bytes
+
+    4-way set associative
+
+
+Find number of sets.
+
+
+Step 1:
+
+    32 KB = 32 × 1024 bytes
+
+         = 32768 bytes
+
+
+Step 2:
+
+    Number of cache lines:
+
+    32768 / 64
+
+    = 512 lines
+
+
+Step 3:
+
+    4 lines per set.
+
+
+Therefore:
+
+    Number of sets:
+
+    512 / 4
+
+    = 128 sets
+
+
+ANSWER:
+
+    128 sets
+
+
+============================================================
+18.73 CACHE ADDRESS NUMERICAL
+============================================================
+
+Given:
+
+    Address size = 32 bits
+
+    Cache size = 16 KB
+
+    Block size = 64 bytes
+
+    Direct mapped
+
+
+Find:
+
+    Tag bits
+    Index bits
+    Offset bits
+
+
+Step 1:
+
+    Cache size = 16 KB
+               = 16384 bytes
+
+
+Step 2:
+
+    Number of lines:
+
+    16384 / 64
+    = 256
+
+
+Step 3:
+
+    256 = 2^8
+
+Therefore:
+
+    Index bits = 8
+
+
+Step 4:
+
+    64 = 2^6
+
+
+Therefore:
+
+    Offset bits = 6
+
+
+Step 5:
+
+    Tag bits:
+
+    32 - 8 - 6
+
+    = 18
+
+
+ANSWER:
+
+    Tag    = 18 bits
+    Index  = 8 bits
+    Offset = 6 bits
+
+
+============================================================
+18.74 SET-ASSOCIATIVE ADDRESS NUMERICAL
+============================================================
+
+Given:
+
+    Address size = 32 bits
+
+    Cache size = 64 KB
+
+    Block size = 64 bytes
+
+    4-way set associative
+
+
+Find:
+
+    Tag
+    Set index
+    Offset
+
+
+Step 1:
+
+    Cache size:
+
+    64 KB = 65536 bytes
+
+
+Step 2:
+
+    Number of lines:
+
+    65536 / 64
+
+    = 1024 lines
+
+
+Step 3:
+
+    Number of sets:
+
+    1024 / 4
+
+    = 256 sets
+
+
+Step 4:
+
+    Sets = 256 = 2^8
+
+Therefore:
+
+    Set index = 8 bits
+
+
+Step 5:
+
+    Block size = 64 = 2^6
+
+
+Therefore:
+
+    Offset = 6 bits
+
+
+Step 6:
+
+    Tag:
+
+    32 - 8 - 6
+
+    = 18 bits
+
+
+ANSWER:
+
+    Tag       = 18 bits
+    Set index = 8 bits
+    Offset    = 6 bits
+
+
+============================================================
+18.75 CACHE TAG COMPARISON
+============================================================
+
+Suppose index selects:
+
+    Set 3
+
+
+The cache then checks tags of the possible lines in Set 3.
+
+
+If one tag matches and valid bit = 1:
+
+    CACHE HIT
+
+
+If no valid tag matches:
+
+    CACHE MISS
+
+
+Therefore cache lookup involves:
+
+    INDEX
+       ↓
+    Select set
+       ↓
+    TAG comparison
+       ↓
+    Match?
+     /   \
+   YES    NO
+    │      │
+   HIT    MISS
+
+
+============================================================
+18.76 OFFSET
+============================================================
+
+Suppose:
+
+    Block size = 16 bytes
+
+
+Then:
+
+    16 = 2^4
+
+
+Therefore:
+
+    Offset = 4 bits
+
+
+Why?
+
+Because 4 bits can identify:
+
+    2^4 = 16
+
+different byte positions within the block.
+
+
+============================================================
+18.77 INDEX
+============================================================
+
+Suppose:
+
+    Number of cache sets = 64
+
+
+Then:
+
+    64 = 2^6
+
+
+Therefore:
+
+    Index bits = 6
+
+
+The index identifies one of:
+
+    64 sets
+
+
+============================================================
+18.78 TAG
+============================================================
+
+Tag identifies which memory block is currently stored in the
+selected cache location/set.
+
+
+If:
+
+    Address = TAG | INDEX | OFFSET
+
+
+then:
+
+    INDEX
+        selects location/set
+
+
+    TAG
+        confirms identity
+
+
+    OFFSET
+        selects byte within block
+
+
+============================================================
+18.79 CACHE LOOKUP — COMPLETE
+============================================================
+
+CPU generates address:
+
+    ┌─────────┬─────────┬─────────┐
+    │   TAG   │  INDEX  │ OFFSET  │
+    └─────────┴─────────┴─────────┘
+         │         │         │
+         │         ▼         │
+         │      Select       │
+         │      line/set     │
+         │         │         │
+         ▼         ▼         │
+      Compare   Cache line   │
+         │                   │
+         └───────┬───────────┘
+                 ▼
+              MATCH?
+             /      \
+           YES       NO
+            │         │
+            ▼         ▼
+           HIT       MISS
+            │         │
+            ▼         ▼
+         OFFSET     Lower level
+         selects     access
+         data
+
+
+============================================================
+18.80 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    Using number of cache lines instead of number of sets in
+    set-associative mapping.
+
+CORRECT:
+
+    Set = Block MOD Number of Sets
+
+
+------------------------------------------------------------
+
+MISTAKE 2:
+
+    Confusing block size with cache size.
+
+Example:
+
+    Cache size = 16 KB
+
+    Block size = 64 bytes
+
+
+They are NOT the same.
+
+
+------------------------------------------------------------
+
+MISTAKE 3:
+
+    Forgetting:
+
+    Number of lines =
+    Cache size / Block size
+
+
+------------------------------------------------------------
+
+MISTAKE 4:
+
+    Forgetting:
+
+    Number of sets =
+    Number of lines / Associativity
+
+
+------------------------------------------------------------
+
+MISTAKE 5:
+
+    Confusing:
+
+    Tag
+    Index
+    Offset
+
+
+Remember:
+
+    TAG    → Which block?
+    INDEX  → Where to look?
+    OFFSET → Which byte?
+
+
+------------------------------------------------------------
+
+MISTAKE 6:
+
+    Confusing LRU with FIFO.
+
+
+LRU:
+
+    Least recently used.
+
+
+FIFO:
+
+    First entered.
+
+
+------------------------------------------------------------
+
+MISTAKE 7:
+
+    Confusing write-back and write-through.
+
+
+Write-through:
+
+    Lower level updated promptly.
+
+
+Write-back:
+
+    Lower level updated later.
+
+
+------------------------------------------------------------
+
+MISTAKE 8:
+
+    Confusing write-allocate with write-back.
+
+
+They describe different things.
+
+Write-allocate:
+
+    What happens on a write miss.
+
+
+Write-back:
+
+    When modified data is propagated to lower memory.
+
+
+============================================================
+18.81 B.TECH IMPORTANT QUESTIONS
+============================================================
+
+1. What is cache memory?
+
+2. Why is cache memory required?
+
+3. Explain cache organization.
+
+4. Explain cache hit and cache miss.
+
+5. What is a cache block?
+
+6. What is a cache line?
+
+7. Explain tag, index and offset.
+
+8. Explain direct mapping.
+
+9. Explain fully associative mapping.
+
+10. Explain set-associative mapping.
+
+11. Compare direct, associative and set-associative mapping.
+
+12. Explain LRU replacement.
+
+13. Explain FIFO replacement.
+
+14. Explain random replacement.
+
+15. Explain write-through cache.
+
+16. Explain write-back cache.
+
+17. Explain write allocate.
+
+18. Explain no-write allocate.
+
+19. Compare write-through and write-back.
+
+20. Compare write-allocate and no-write-allocate.
+
+21. Explain cache hit ratio and miss ratio.
+
+22. Derive/explain AMAT.
+
+23. Explain L1, L2 and L3 cache.
+
+24. Explain compulsory, capacity and conflict misses.
+
+25. Solve direct-mapping numerical problems.
+
+26. Solve set-associative cache problems.
+
+27. Calculate tag, index and offset bits.
+
+28. Solve AMAT problems.
+
+29. Explain the effect of cache size.
+
+30. Explain the effect of block size.
+
+31. Explain the effect of associativity.
+
+
+============================================================
+18.82 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. In a direct-mapped cache, a memory block can map to:
+
+A. Any cache line
+B. Exactly one cache line
+C. Any set and any way
+D. Only RAM
+
+
+Q2. The formula for direct mapping is:
+
+A. Block × Lines
+B. Block + Lines
+C. Block MOD Number of Lines
+D. Block / Lines
+
+
+Q3. In a fully associative cache, a block can be placed:
+
+A. In exactly one line
+B. In exactly one set
+C. In any cache line
+D. Only in RAM
+
+
+Q4. In a set-associative cache, a block maps to:
+
+A. Any set
+B. Exactly one set
+C. Any cache line
+D. Only one byte
+
+
+Q5. Which policy removes the least recently used block?
+
+A. FIFO
+B. LRU
+C. Random
+D. MRU
+
+
+Q6. FIFO removes the block that:
+
+A. Was used least recently
+B. Was inserted first
+C. Has the largest tag
+D. Has the smallest address
+
+
+Q7. Which bit is commonly used to indicate that a cache block
+     has been modified?
+
+A. Index bit
+B. Offset bit
+C. Dirty bit
+D. Sign bit
+
+
+Q8. Which policy updates lower memory promptly on a write?
+
+A. Write-back
+B. Write-through
+C. Write-allocate
+D. LRU
+
+
+Q9. In write-back cache, modified data is generally written to
+     lower memory:
+
+A. Immediately on every write
+B. When the modified block is evicted
+C. Never
+D. Before every read
+
+
+Q10. Write allocate means:
+
+A. Never store data in cache
+B. Bring a block into cache on a write miss
+C. Delete the cache
+D. Increase cache size
+
+
+Q11. A compulsory miss occurs:
+
+A. Because cache is too small
+B. Because of a mapping conflict
+C. On the first access to a block
+D. Only in RAM
+
+
+Q12. Capacity miss occurs because:
+
+A. Cache is too small for the working set
+B. Tag is always zero
+C. RAM is faster
+D. CPU has no registers
+
+
+Q13. Conflict misses are especially associated with:
+
+A. Direct mapping
+B. Infinite cache
+C. Registers
+D. Hard disks
+
+
+Q14. If block size = 32 bytes, offset bits are:
+
+A. 4
+B. 5
+C. 6
+D. 8
+
+
+Q15. If a cache has 64 sets, index bits are:
+
+A. 4
+B. 5
+C. 6
+D. 8
+
+
+Q16. A 32-bit address, 4 KB direct-mapped cache, and 16-byte
+     blocks has how many index bits?
+
+A. 6
+B. 8
+C. 10
+D. 12
+
+
+Q17. Cache size = 16 KB and block size = 64 bytes.
+     Number of cache lines is:
+
+A. 64
+B. 128
+C. 256
+D. 512
+
+
+Q18. A 2-way set-associative cache has 128 cache lines.
+     Number of sets is:
+
+A. 32
+B. 64
+C. 128
+D. 256
+
+
+Q19. If block number = 37 and cache has 8 direct-mapped lines,
+     the block maps to:
+
+A. Line 3
+B. Line 4
+C. Line 5
+D. Line 6
+
+
+Q20. If hit time = 2 ns, miss rate = 10%, and miss penalty =
+     30 ns, AMAT is:
+
+A. 2 ns
+B. 3 ns
+C. 5 ns
+D. 32 ns
+
+
+============================================================
+ANSWERS
+============================================================
+
+    Q1  → B
+    Q2  → C
+    Q3  → C
+    Q4  → B
+    Q5  → B
+    Q6  → B
+    Q7  → C
+    Q8  → B
+    Q9  → B
+    Q10 → B
+    Q11 → C
+    Q12 → A
+    Q13 → A
+    Q14 → B
+    Q15 → C
+    Q16 → C
+    Q17 → C
+    Q18 → B
+    Q19 → C
+    Q20 → C
+
+
+============================================================
+18.83 MCQ NUMERICAL CHECKS
+============================================================
+
+Q14:
+
+    Block size = 32 bytes
+
+    32 = 2^5
+
+    Offset = 5 bits
+
+
+Q16:
+
+    Cache = 4 KB
+          = 4096 bytes
+
+
+    Block = 16 bytes
+
+
+    Lines = 4096 / 16
+          = 256
+          = 2^8
+
+
+    Index = 8 bits
+
+    Wait!
+
+    Therefore Q16 answer should be:
+
+        B. 8
+
+
+Corrected answer:
+
+    Q16 → B
+
+
+Q17:
+
+    16 KB = 16384 bytes
+
+    Lines = 16384 / 64
+          = 256
+
+
+    Q17 → C
+
+
+Q18:
+
+    Sets = 128 / 2
+         = 64
+
+
+    Q18 → B
+
+
+Q19:
+
+    37 MOD 8 = 5
+
+
+    Q19 → C
+
+
+Q20:
+
+    AMAT
+    = 2 + (0.10 × 30)
+
+    = 5 ns
+
+
+    Q20 → C
+
+
+============================================================
+18.84 MASTER FORMULA SHEET
+============================================================
+
+NUMBER OF CACHE LINES:
+
+    Number of Lines
+    =
+    Cache Size / Block Size
+
+
+NUMBER OF SETS:
+
+    Number of Sets
+    =
+    Number of Lines / Associativity
+
+
+DIRECT MAPPING:
+
+    Line
+    =
+    Block Number MOD Number of Lines
+
+
+SET-ASSOCIATIVE:
+
+    Set
+    =
+    Block Number MOD Number of Sets
+
+
+OFFSET BITS:
+
+    Offset bits
+    =
+    log2(Block Size)
+
+
+INDEX BITS:
+
+    Index bits
+    =
+    log2(Number of Lines)
+
+    for direct mapping
+
+
+    Index bits
+    =
+    log2(Number of Sets)
+
+    for set-associative mapping
+
+
+TAG BITS:
+
+    Tag bits
+    =
+    Address bits
+    − Index bits
+    − Offset bits
+
+
+HIT RATIO:
+
+    Hit Ratio
+    =
+    Hits / Total Accesses
+
+
+MISS RATIO:
+
+    Miss Ratio
+    =
+    Misses / Total Accesses
+
+
+RELATION:
+
+    Miss Ratio
+    =
+    1 − Hit Ratio
+
+
+AMAT:
+
+    AMAT
+    =
+    Hit Time
+    +
+    Miss Rate × Miss Penalty
+
+
+============================================================
+18.85 ONE-PAGE MEMORY MAP
+============================================================
+
+                         CACHE MEMORY
+                              │
+              ┌───────────────┴───────────────┐
+              │                               │
+              ▼                               ▼
+          CACHE HIT                       CACHE MISS
+              │                               │
+              ▼                               ▼
+            DATA                         LOWER LEVEL
+                                              │
+                                              ▼
+                                           BLOCK
+                                              │
+                                              ▼
+                                            CACHE
+
+
+CACHE ADDRESS:
+
+    ┌─────────────┬──────────────┬──────────────┐
+    │     TAG     │    INDEX     │    OFFSET    │
+    └─────────────┴──────────────┴──────────────┘
+         │              │               │
+         ▼              ▼               ▼
+     Identify       Find line/      Find byte/
+      block             set           word
+
+
+MAPPING:
+
+    Direct:
+        Block → One line
+
+
+    Fully associative:
+        Block → Any line
+
+
+    Set associative:
+        Block → One set → Any way
+
+
+REPLACEMENT:
+
+    LRU:
+        Least recently used
+
+
+    FIFO:
+        First in, first out
+
+
+    Random:
+        Random block
+
+
+WRITE:
+
+    Write-through:
+        Update lower level promptly
+
+
+    Write-back:
+        Update lower level later
+
+
+    Write-allocate:
+        Bring block into cache on write miss
+
+
+    No-write-allocate:
+        Do not bring block into cache
+
+
+MISSES:
+
+    Compulsory
+    Capacity
+    Conflict
+
+
+PERFORMANCE:
+
+    AMAT =
+    Hit Time + Miss Rate × Miss Penalty
+
+
+============================================================
+18.86 FINAL CHECKPOINT
+============================================================
+
+You should now be able to:
+
+[ ] Define cache memory.
+[ ] Explain why cache is needed.
+[ ] Explain cache hit.
+[ ] Explain cache miss.
+[ ] Explain cache block.
+[ ] Explain cache line.
+[ ] Explain tag.
+[ ] Explain index.
+[ ] Explain offset.
+[ ] Explain valid bit.
+[ ] Explain dirty bit.
+[ ] Explain direct mapping.
+[ ] Calculate direct mapping.
+[ ] Explain fully associative mapping.
+[ ] Explain set-associative mapping.
+[ ] Calculate number of cache lines.
+[ ] Calculate number of cache sets.
+[ ] Calculate tag/index/offset bits.
+[ ] Explain LRU.
+[ ] Explain FIFO.
+[ ] Explain random replacement.
+[ ] Explain write-through.
+[ ] Explain write-back.
+[ ] Explain write-allocate.
+[ ] Explain no-write-allocate.
+[ ] Identify compulsory misses.
+[ ] Identify capacity misses.
+[ ] Identify conflict misses.
+[ ] Calculate hit ratio.
+[ ] Calculate miss ratio.
+[ ] Calculate AMAT.
+[ ] Understand L1 cache.
+[ ] Understand L2 cache.
+[ ] Understand L3 cache.
+[ ] Solve B.Tech cache numericals.
+[ ] Solve competitive-exam cache problems.
+
+
+============================================================
+CHAPTER 18 COMPLETE
+============================================================
+
+CORE IDEA:
+
+    CPU needs data
+         │
+         ▼
+       CACHE
+         │
+     ┌───┴───┐
+     │       │
+    HIT     MISS
+     │       │
+     ▼       ▼
+    FAST   LOWER LEVEL
+             │
+             ▼
+           CACHE
+
+
+CACHE ORGANIZATION:
+
+    Address
+       │
+       ▼
+    TAG + INDEX + OFFSET
+       │      │       │
+       │      │       └──► Byte/word
+       │      └──────────► Line/set
+       └─────────────────► Block identity
+
+
+MAPPING:
+
+    Direct       → One line
+    Associative  → Any line
+    Set-assoc.   → One set, any way
+
+
+PERFORMANCE:
+
+    High hit ratio
+         +
+    Low hit time
+         +
+    Low miss penalty
+         ↓
+    Better performance
+
+
+============================================================
+NEXT:
+CHAPTER 19 — MAIN MEMORY
+============================================================
+
+19.1 RAM
+    • SRAM
+    • DRAM
+
+19.2 ROM
+    • PROM
+    • EPROM
+    • EEPROM
+    • Flash memory
+
+19.3 SRAM vs DRAM
+
+19.4 Memory Organisation
+    • Memory chips
+    • Memory modules
+    • Address lines
+    • Data lines
+
+19.5 Memory Expansion
+    • Increasing word size
+    • Increasing memory capacity
+    • Chip selection
+============================================================

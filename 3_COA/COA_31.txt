@@ -1,0 +1,2102 @@
+CHAPTER 31 — ADVANCED MEMORY SYSTEMS
+
+============================================================
+CHAPTER 31 — ADVANCED MEMORY SYSTEMS
+============================================================
+
+LEVEL:
+B.Tech 1st Year → Intermediate → Advanced Foundation
+
+PREREQUISITES:
+Chapter 17 — Memory Hierarchy
+Chapter 18 — Cache Memory
+Chapter 20 — Virtual Memory
+Chapter 30 — Multicore Processors
+
+GOAL:
+Understand advanced memory systems, multi-level memory,
+cache coherence, memory consistency, NUMA, and shared vs
+distributed memory architectures.
+
+============================================================
+31.1 WHAT IS AN ADVANCED MEMORY SYSTEM?
+============================================================
+
+A computer's memory system is not simply:
+
+    CPU → RAM
+
+Modern systems contain multiple levels:
+
+    CPU Registers
+          ↓
+        L1 Cache
+          ↓
+        L2 Cache
+          ↓
+        L3 Cache
+          ↓
+        Main Memory
+          ↓
+      Secondary Storage
+
+
+In multicore systems, memory becomes more complicated because
+many cores may access memory simultaneously.
+
+
+Therefore an advanced memory system must handle:
+
+    • Speed
+    • Capacity
+    • Cost
+    • Multiple cores
+    • Cache coherence
+    • Memory consistency
+    • Memory bandwidth
+    • Scalability
+    • Access latency
+
+
+============================================================
+31.2 WHY ADVANCED MEMORY SYSTEMS ARE NEEDED
+============================================================
+
+CPU speed has increased much faster than main-memory speed.
+
+This creates a:
+
+    MEMORY WALL
+
+
+Conceptually:
+
+    CPU
+    ████████████████████  Very fast
+
+    Cache
+    ███████████████
+
+    RAM
+    ███████
+
+    Storage
+    ██
+
+
+Therefore computer designers use:
+
+    • Multiple cache levels
+    • Prefetching
+    • Memory controllers
+    • Multiple memory channels
+    • Cache coherence protocols
+    • NUMA
+    • Advanced interconnects
+
+
+============================================================
+31.3 MULTI-LEVEL MEMORY SYSTEM
+============================================================
+
+A modern multicore system may look like:
+
+                 +---------+
+                 | Core 1  |
+                 +----+----+
+                      |
+                     L1
+                      |
+                     L2
+                      |
+                 +----+----+
+                 |        |
+                 | Shared |
+                 |   L3   |
+                 |        |
+                 +----+----+
+                      |
+              Memory Controller
+                      |
+                     RAM
+
+
+Another core may have:
+
+                 +---------+
+                 | Core 2  |
+                 +----+----+
+                      |
+                     L1
+                      |
+                     L2
+                      |
+                      +------→ Shared L3
+
+
+============================================================
+31.4 CACHE LEVELS
+============================================================
+
+L1 CACHE:
+
+    • Closest to CPU core
+    • Very fast
+    • Small
+    • Often private to each core
+
+
+L2 CACHE:
+
+    • Larger than L1
+    • Slower than L1
+    • Often private to a core, but design-dependent
+
+
+L3 CACHE:
+
+    • Larger
+    • Slower than L2
+    • Often shared among multiple cores
+
+
+Typical relationship:
+
+    L1 < L2 < L3 < RAM
+
+in terms of latency.
+
+Usually:
+
+    L1 > L2 > L3 > RAM
+
+in terms of capacity.
+
+
+============================================================
+31.5 MULTI-LEVEL CACHE ACCESS
+============================================================
+
+Suppose CPU requests data.
+
+
+Step 1:
+
+    Check L1
+
+
+If L1 hit:
+
+    Return data
+
+
+If L1 miss:
+
+    Check L2
+
+
+If L2 hit:
+
+    Return data
+
+
+If L2 miss:
+
+    Check L3
+
+
+If L3 miss:
+
+    Access RAM
+
+
+Conceptually:
+
+    CPU
+     |
+     ↓
+    L1
+     |
+    miss
+     ↓
+    L2
+     |
+    miss
+     ↓
+    L3
+     |
+    miss
+     ↓
+    RAM
+
+
+============================================================
+31.6 MULTI-LEVEL CACHE PERFORMANCE
+============================================================
+
+Let:
+
+    L1 hit time = T1
+
+    L1 hit ratio = H1
+
+
+If L1 misses:
+
+    L2 is checked.
+
+
+If L2 also misses:
+
+    L3 is checked.
+
+
+Finally:
+
+    Main memory
+
+
+The average access time depends on:
+
+    • Hit rates
+    • Cache access times
+    • Miss penalties
+    • Number of cache levels
+
+
+Higher hit rates generally reduce average memory access time.
+
+
+============================================================
+31.7 LOCALITY IN ADVANCED MEMORY SYSTEMS
+============================================================
+
+Programs tend to access memory with locality.
+
+
+TEMPORAL LOCALITY:
+
+    Recently used data is likely to be used again.
+
+
+SPATIAL LOCALITY:
+
+    Nearby memory locations are likely to be accessed.
+
+
+Example:
+
+    for(i = 0; i < 100; i++)
+        A[i] = A[i] + 1;
+
+
+Array elements are stored near one another.
+
+This creates:
+
+    Spatial locality
+
+
+============================================================
+31.8 HARDWARE PREFETCHING
+============================================================
+
+A processor may predict what data will be needed next and
+load it into cache before the CPU explicitly requests it.
+
+
+Without prefetch:
+
+    CPU request
+       ↓
+    Cache miss
+       ↓
+    RAM access
+       ↓
+    Wait
+
+
+With prefetch:
+
+    Hardware predicts future access
+             ↓
+       Data loaded
+             ↓
+          Cache
+             ↓
+       CPU requests it
+             ↓
+          Cache hit
+
+
+Prefetching can reduce effective memory latency.
+
+
+============================================================
+31.9 PREFETCHING PROBLEM
+============================================================
+
+Incorrect prediction can cause:
+
+    • Wasted bandwidth
+    • Cache pollution
+    • Extra memory traffic
+
+
+Therefore prefetching must be accurate enough to be useful.
+
+
+============================================================
+31.10 MEMORY BANDWIDTH
+============================================================
+
+Memory bandwidth is the amount of data that can be transferred
+between memory and the processor/system per unit time.
+
+
+Example:
+
+    20 GB/s
+
+
+means approximately:
+
+    20 gigabytes per second
+
+
+Bandwidth is different from latency.
+
+
+LATENCY:
+
+    How long one access takes.
+
+
+BANDWIDTH:
+
+    How much data can be transferred per unit time.
+
+
+============================================================
+31.11 LATENCY VS BANDWIDTH
+============================================================
+
+LATENCY:
+
+    "How long do I wait for the first data?"
+
+
+BANDWIDTH:
+
+    "How much data can I transfer per second?"
+
+
+Analogy:
+
+    Water pipe
+
+
+Latency:
+
+    Time before water starts arriving.
+
+
+Bandwidth:
+
+    Amount of water that can flow per second.
+
+
+A system can have:
+
+    Low latency + low bandwidth
+
+or:
+
+    High latency + high bandwidth
+
+
+============================================================
+31.12 MEMORY CHANNELS
+============================================================
+
+Modern systems may use multiple memory channels.
+
+
+Single channel:
+
+    CPU
+     |
+    RAM
+
+
+Dual channel:
+
+              +→ RAM Channel 1
+    CPU/MC ---+
+              +→ RAM Channel 2
+
+
+Multiple channels can increase memory bandwidth.
+
+
+============================================================
+31.13 MULTICORE MEMORY SYSTEM
+============================================================
+
+Consider:
+
+    Core 1 ── Cache ──┐
+                      |
+    Core 2 ── Cache ──┤
+                      |
+    Core 3 ── Cache ──┼──→ Memory System
+                      |
+    Core 4 ── Cache ──┘
+
+
+All cores may request memory simultaneously.
+
+
+Therefore memory system must handle:
+
+    • Multiple requests
+    • Ordering
+    • Arbitration
+    • Coherence
+    • Bandwidth
+
+
+============================================================
+31.14 CACHE COHERENCE
+============================================================
+
+Cache coherence is especially important in multicore systems.
+
+
+Suppose:
+
+    X = 10
+
+
+Core 1:
+
+    Cache → X = 10
+
+
+Core 2:
+
+    Cache → X = 10
+
+
+Core 1 writes:
+
+    X = 20
+
+
+Now:
+
+    Core 1 → X = 20
+    Core 2 → X = 10
+
+
+Core 2's copy is stale.
+
+
+The coherence system must detect and manage this situation.
+
+
+============================================================
+31.15 COHERENCE PROTOCOL
+============================================================
+
+A coherence protocol defines rules for maintaining coherent
+copies of cache blocks.
+
+
+Examples:
+
+    • MSI
+    • MESI
+    • MOESI
+
+
+MESI states:
+
+    M → Modified
+    E → Exclusive
+    S → Shared
+    I → Invalid
+
+
+These states describe the status of a cache line.
+
+
+============================================================
+31.16 MESI QUICK REVISION
+============================================================
+
+MODIFIED:
+
+    Cache has modified data.
+    Memory may be stale.
+
+
+EXCLUSIVE:
+
+    One cache has the clean copy.
+
+
+SHARED:
+
+    Multiple caches may have the clean copy.
+
+
+INVALID:
+
+    Cache line is not valid.
+
+
+============================================================
+31.17 COHERENCE TRAFFIC
+============================================================
+
+Suppose:
+
+    Core 1 modifies X.
+
+The coherence mechanism may need to:
+
+    • Notify other cores
+    • Invalidate their copies
+    • Transfer data if necessary
+    • Update ownership information
+
+
+This creates:
+
+    COHERENCE TRAFFIC
+
+
+Too much coherence traffic can reduce performance.
+
+
+============================================================
+31.18 DIRECTORY-BASED COHERENCE
+============================================================
+
+Snooping works well for certain smaller/shared-medium systems,
+but a directory can be used to track which caches hold copies.
+
+
+Concept:
+
+              DIRECTORY
+                  |
+       +----------+----------+
+       |          |          |
+     Core 1     Core 2     Core 3
+       |          |          |
+     Cache      Cache      Cache
+
+
+Directory information might conceptually say:
+
+    Block X:
+        Core 1 → Shared
+        Core 2 → Shared
+        Core 3 → Not present
+
+
+If Core 1 wants to modify X:
+
+    Directory identifies other sharers.
+
+
+Their copies can then be invalidated.
+
+
+============================================================
+31.19 SNOOPING VS DIRECTORY
+============================================================
+
+SNOOPING:
+
+    Caches monitor coherence transactions.
+
+
+DIRECTORY:
+
+    A directory tracks which caches have copies.
+
+
+General comparison:
+
++----------------------+---------------------------+
+| Snooping             | Directory                |
++----------------------+---------------------------+
+| Watches transactions | Tracks sharers           |
+| Simple concept       | More scalable concept    |
+| Broadcast traffic    | Targeted communication   |
+| Good for smaller     | Useful for larger        |
+| systems              | systems                  |
++----------------------+---------------------------+
+
+
+============================================================
+31.20 MEMORY CONSISTENCY
+============================================================
+
+Memory consistency defines the ordering rules for memory
+operations observed by different processors/cores.
+
+
+Consider:
+
+Core 1:
+
+    X = 1
+    Y = 1
+
+
+Core 2:
+
+    Read Y
+    Read X
+
+
+The memory model determines which observations are allowed.
+
+
+Memory consistency is therefore about:
+
+    ORDERING
+
+
+Cache coherence is primarily about:
+
+    CONSISTENT HANDLING OF A MEMORY LOCATION
+
+
+============================================================
+31.21 COHERENCE VS CONSISTENCY
+============================================================
+
+IMPORTANT EXAM POINT.
+
+
+COHERENCE:
+
+    "What value should I see for this memory location?"
+
+
+CONSISTENCY:
+
+    "In what order can memory operations become visible?"
+
+
+Memory trick:
+
+    COHERENCE → SAME LOCATION
+
+    CONSISTENCY → ORDER
+
+
+============================================================
+31.22 MEMORY CONSISTENCY MODELS
+============================================================
+
+Different architectures can use different memory models.
+
+
+Examples/concepts:
+
+    • Sequential consistency
+    • Weak consistency
+    • Release consistency
+    • Relaxed memory ordering
+
+
+The exact rules are architecture-dependent.
+
+
+============================================================
+31.23 SEQUENTIAL CONSISTENCY
+============================================================
+
+Sequential consistency means, conceptually:
+
+    The result is as if all memory operations were executed
+    in one global order while preserving each thread/core's
+    program order.
+
+
+Example:
+
+Core 1:
+
+    A = 1
+    B = 2
+
+
+Core 2:
+
+    C = 3
+    D = 4
+
+
+A sequentially consistent execution can interleave these
+operations, but cannot reverse the order within Core 1 or
+within Core 2.
+
+
+============================================================
+31.24 WEAK/RELAXED MEMORY ORDERING
+============================================================
+
+Modern processors may allow certain memory operations to be
+reordered for performance, subject to the architecture's
+rules.
+
+
+Why?
+
+    To improve:
+
+    • Instruction-level parallelism
+    • Memory-level parallelism
+    • Throughput
+
+
+Software uses synchronization and memory barriers/fences when
+specific ordering is required.
+
+
+============================================================
+31.25 MEMORY FENCE
+============================================================
+
+A memory fence/barrier is an operation that imposes ordering
+constraints on memory operations.
+
+
+Conceptually:
+
+    Store A
+       ↓
+    MEMORY FENCE
+       ↓
+    Store B
+
+
+The fence ensures specified ordering/visibility requirements
+according to the architecture.
+
+
+============================================================
+31.26 MULTIPROCESSOR MEMORY ACCESS
+============================================================
+
+Consider multiple CPUs/cores:
+
+    CPU 1 ──┐
+    CPU 2 ──┤
+    CPU 3 ──┼──→ Memory
+    CPU 4 ──┘
+
+
+If all CPUs access the same memory with approximately similar
+access characteristics:
+
+    UNIFORM MEMORY ACCESS
+
+
+But not all systems work this way.
+
+
+============================================================
+31.27 UMA
+============================================================
+
+UMA = UNIFORM MEMORY ACCESS
+
+
+In UMA systems:
+
+    Memory access time is approximately uniform for processors.
+
+
+Conceptual:
+
+         CPU 1
+           |
+         CPU 2
+           |
+         CPU 3
+           |
+         CPU 4
+           |
+        Shared Memory
+
+
+The processors have relatively similar access latency to
+the shared memory.
+
+
+============================================================
+31.28 NUMA
+============================================================
+
+NUMA = NON-UNIFORM MEMORY ACCESS
+
+
+In NUMA systems, memory is physically distributed among
+different processor nodes.
+
+
+Each processor/node has:
+
+    • Local memory
+    • Access to remote memory
+
+
+Example:
+
+          NODE 1
+      +-------------+
+      | CPU 1       |
+      | Local RAM 1 |
+      +------+------+
+             |
+             |
+       Interconnect
+             |
+             |
+      +------+------+
+      | CPU 2       |
+      | Local RAM 2 |
+      +-------------+
+          NODE 2
+
+
+CPU 1 accessing RAM 1:
+
+    LOCAL ACCESS
+
+
+CPU 1 accessing RAM 2:
+
+    REMOTE ACCESS
+
+
+Remote access is generally slower.
+
+
+============================================================
+31.29 WHY NUMA?
+============================================================
+
+A single shared memory system can become a bottleneck as the
+number of processors increases.
+
+
+NUMA distributes memory:
+
+    Node 1 → Local memory
+    Node 2 → Local memory
+    Node 3 → Local memory
+    Node 4 → Local memory
+
+
+This can improve scalability and memory bandwidth.
+
+
+============================================================
+31.30 NUMA MEMORY ACCESS
+============================================================
+
+Suppose:
+
+    CPU 1 has local memory M1.
+
+    CPU 2 has local memory M2.
+
+
+CPU 1 → M1
+
+    LOCAL
+    Faster
+
+
+CPU 1 → M2
+
+    REMOTE
+    Usually slower
+
+
+Therefore:
+
+    NUMA performance depends strongly on data placement.
+
+
+============================================================
+31.31 NUMA ANALOGY
+============================================================
+
+Imagine a university with four departments.
+
+
+Each department has:
+
+    • Students
+    • Books
+    • Computers
+
+
+If a student uses a book in their own department:
+
+    Fast
+
+
+If they travel to another department:
+
+    Slower
+
+
+Similarly:
+
+    Local memory → Fast
+
+    Remote memory → Slower
+
+
+============================================================
+31.32 NUMA ARCHITECTURE
+============================================================
+
+A simplified NUMA system:
+
+       +------------------+
+       |      NODE 0      |
+       | CPU + Local RAM  |
+       +--------+---------+
+                |
+           Interconnect
+                |
+       +--------+---------+
+       |      NODE 1      |
+       | CPU + Local RAM  |
+       +--------+---------+
+
+
+Larger systems:
+
+       NODE 0 ←→ NODE 1
+         ↕          ↕
+       NODE 2 ←→ NODE 3
+
+
+The interconnect connects processor/memory nodes.
+
+
+============================================================
+31.33 NUMA CHARACTERISTICS
+============================================================
+
+NUMA:
+
+    • Memory is physically distributed.
+    • Each node has local memory.
+    • Nodes can access remote memory.
+    • Local memory is generally faster.
+    • Remote memory access incurs additional latency.
+    • Designed for scalability.
+
+
+============================================================
+31.34 NUMA ADVANTAGES
+============================================================
+
+Advantages:
+
+    • Better scalability
+    • More aggregate memory bandwidth
+    • Distributed memory traffic
+    • Large memory capacity
+    • Useful for large multiprocessor systems
+
+
+============================================================
+31.35 NUMA DISADVANTAGES
+============================================================
+
+Disadvantages:
+
+    • More complex architecture
+    • Remote memory is slower
+    • Data placement matters
+    • Operating system must be NUMA-aware
+    • Poor placement can reduce performance
+
+
+============================================================
+31.36 NUMA-AWARE SOFTWARE
+============================================================
+
+Good NUMA performance requires intelligent placement of:
+
+    • Threads
+    • Data
+    • Memory allocations
+
+
+Ideal:
+
+    Thread runs on Node 1
+          ↓
+    Mostly accesses Node 1 memory
+
+
+Poor:
+
+    Thread runs on Node 1
+          ↓
+    Frequently accesses Node 4 memory
+
+
+The second case creates many remote accesses.
+
+
+============================================================
+31.37 FIRST-TOUCH PRINCIPLE
+============================================================
+
+Many NUMA systems use a policy often called:
+
+    FIRST TOUCH
+
+
+Conceptually:
+
+    The node/core that first accesses or initializes memory
+    may determine where the memory is allocated.
+
+
+Example:
+
+    Thread on Node 1 initializes data.
+
+Possible result:
+
+    Data → Node 1 local memory
+
+
+This can improve locality if threads are placed appropriately.
+
+
+============================================================
+31.38 SHARED MEMORY
+============================================================
+
+In a shared-memory system:
+
+    Multiple processors/cores can access a common logical
+    address space.
+
+
+Example:
+
+    Core 1 ─┐
+    Core 2 ─┼──→ Shared Address Space
+    Core 3 ─┤
+    Core 4 ─┘
+
+
+Programs can communicate through shared variables.
+
+
+Advantages:
+
+    • Easier communication
+    • Common address space
+    • Convenient programming model
+
+
+Problems:
+
+    • Synchronization
+    • Coherence
+    • Contention
+    • Scalability
+
+
+============================================================
+31.39 DISTRIBUTED MEMORY
+============================================================
+
+In distributed-memory systems, each processor/node has its
+own local memory.
+
+
+Example:
+
+    Node 1:
+       CPU + RAM
+
+    Node 2:
+       CPU + RAM
+
+    Node 3:
+       CPU + RAM
+
+
+Nodes communicate through an interconnect/network.
+
+
+Diagram:
+
+       Node 1                 Node 2
+    +---------+             +---------+
+    | CPU RAM | ←─────────→ | CPU RAM |
+    +---------+             +---------+
+         ↕                       ↕
+              Network
+                 |
+       +---------+
+       | Node 3  |
+       | CPU RAM |
+       +---------+
+
+
+============================================================
+31.40 SHARED VS DISTRIBUTED MEMORY
+------------------------------------------------------------
+
++-------------------+-----------------------------+
+| Shared Memory     | Distributed Memory         |
++-------------------+-----------------------------+
+| Common address    | Separate local memories   |
+| space             |                           |
+| Easier sharing    | Explicit communication   |
+| Coherence needed  | Usually no global cache  |
+|                   | coherence requirement    |
+| Can face shared   | Scales well across many  |
+| resource limits   | nodes                     |
++-------------------+-----------------------------+
+
+
+============================================================
+31.41 COMMUNICATION IN DISTRIBUTED MEMORY
+============================================================
+
+Since memory is local to each node, one node cannot simply
+read another node's RAM as if it were its own local memory.
+
+
+Communication occurs using:
+
+    • Messages
+    • Network transfers
+    • Communication libraries
+    • Interconnects
+
+
+Example:
+
+    Node 1 wants data from Node 2.
+
+    Node 1
+       |
+       | Request
+       ↓
+    Network
+       |
+       ↓
+    Node 2
+       |
+       | Data
+       ↓
+    Network
+       |
+       ↓
+    Node 1
+
+
+============================================================
+31.42 SHARED MEMORY VS DISTRIBUTED MEMORY ANALOGY
+============================================================
+
+SHARED MEMORY:
+
+    One large library shared by all students.
+
+
+DISTRIBUTED MEMORY:
+
+    Each student has their own collection of books.
+
+If Student A needs Student B's book:
+
+    They must request/transfer it.
+
+
+============================================================
+31.43 HYBRID MEMORY ARCHITECTURE
+============================================================
+
+Modern high-performance systems may combine both ideas.
+
+
+Example:
+
+    Node 1:
+       CPU cores
+       Shared local memory
+
+
+    Node 2:
+       CPU cores
+       Shared local memory
+
+
+    Node 3:
+       CPU cores
+       Shared local memory
+
+
+Nodes communicate through a high-speed network.
+
+
+Within a node:
+
+    Shared memory
+
+
+Between nodes:
+
+    Distributed memory
+
+
+This is a HYBRID architecture.
+
+
+============================================================
+31.44 NUMA VS DISTRIBUTED MEMORY
+============================================================
+
+NUMA:
+
+    A single global address space can often expose both local
+    and remote memory with different access costs.
+
+
+Distributed memory:
+
+    Each node has its own separate address space/memory,
+    and explicit communication is typically required.
+
+
+Simplified:
+
+    NUMA:
+        Shared logical address space
+        + Local/remote memory
+
+
+    Distributed:
+        Separate memory spaces
+        + Explicit communication
+
+
+============================================================
+31.45 MEMORY INTERLEAVING
+============================================================
+
+Memory interleaving distributes consecutive memory locations
+across multiple memory banks/channels.
+
+
+Example:
+
+    Bank 0 → Address 0
+    Bank 1 → Address 1
+    Bank 2 → Address 2
+    Bank 3 → Address 3
+
+
+Then:
+
+    Address 4 → Bank 0
+
+
+Multiple banks can operate in parallel or overlap accesses.
+
+
+Purpose:
+
+    Increase memory bandwidth.
+
+
+============================================================
+31.46 BANKED MEMORY
+============================================================
+
+Instead of one large memory unit:
+
+          Memory
+             |
+      +------+------+------+
+      |      |      |      |
+    Bank0  Bank1  Bank2  Bank3
+
+
+Different banks may service different requests.
+
+
+This can improve parallel memory access.
+
+
+============================================================
+31.47 MEMORY-LEVEL PARALLELISM
+============================================================
+
+Modern processors can have multiple outstanding memory
+operations simultaneously.
+
+
+Example:
+
+    Load A ──────────────→
+    Load B ──────────────→
+    Load C ──────────────→
+    Load D ──────────────→
+
+
+Instead of:
+
+    Load A → wait → Load B → wait → Load C
+
+
+Memory-level parallelism can hide some memory latency.
+
+
+============================================================
+31.48 OUTSTANDING MEMORY REQUESTS
+============================================================
+
+A processor may issue multiple memory requests before earlier
+requests complete.
+
+
+This helps exploit:
+
+    • Multiple memory banks
+    • Multiple channels
+    • DRAM parallelism
+    • Cache-level parallelism
+
+
+But it requires sophisticated memory controllers.
+
+
+============================================================
+31.49 MEMORY CONTROLLER
+============================================================
+
+The memory controller manages communication between CPU/system
+interconnect and main memory.
+
+
+Conceptually:
+
+    CPU
+     |
+    Cache
+     |
+    Memory Controller
+     |
+    DRAM
+
+
+Responsibilities can include:
+
+    • Scheduling memory requests
+    • Managing channels
+    • DRAM timing
+    • Refresh-related operations
+    • Arbitration
+
+
+============================================================
+31.50 MEMORY REQUEST SCHEDULING
+============================================================
+
+Suppose many requests arrive:
+
+    R1
+    R2
+    R3
+    R4
+    R5
+
+
+The memory controller decides the order in which requests
+are serviced, subject to correctness and memory timing rules.
+
+
+Good scheduling can improve:
+
+    • Throughput
+    • Row-buffer locality
+    • Fairness
+
+
+============================================================
+31.51 DRAM ROW BUFFER — BASIC CONCEPT
+============================================================
+
+DRAM is organised into:
+
+    • Banks
+    • Rows
+    • Columns
+
+
+A row may be activated and kept in a row buffer.
+
+
+If a subsequent request accesses the currently open row:
+
+    ROW HIT
+
+
+If it accesses another row:
+
+    ROW CONFLICT
+
+
+Row hits can generally be serviced more efficiently than
+row conflicts.
+
+
+============================================================
+31.52 MEMORY SYSTEM BOTTLENECKS
+============================================================
+
+Advanced memory systems can suffer from:
+
+    1. High latency
+    2. Limited bandwidth
+    3. Cache misses
+    4. Coherence traffic
+    5. Contention
+    6. Poor locality
+    7. NUMA remote accesses
+    8. False sharing
+
+
+============================================================
+31.53 MEMORY SYSTEM OPTIMISATION
+============================================================
+
+Performance can be improved through:
+
+    • Larger/better caches
+    • Better cache replacement
+    • Prefetching
+    • Memory interleaving
+    • Multiple channels
+    • Better scheduling
+    • Data locality
+    • NUMA-aware placement
+    • Reduced synchronization
+    • Avoiding false sharing
+
+
+============================================================
+31.54 IMPORTANT COMPARISON
+============================================================
+
+LATENCY:
+
+    Time for a memory request.
+
+
+BANDWIDTH:
+
+    Amount of data transferred per unit time.
+
+
+COHERENCE:
+
+    Coordination of cached copies.
+
+
+CONSISTENCY:
+
+    Ordering rules for memory operations.
+
+
+UMA:
+
+    Approximately uniform memory access.
+
+
+NUMA:
+
+    Local and remote memory have different access costs.
+
+
+SHARED MEMORY:
+
+    Common logical address space.
+
+
+DISTRIBUTED MEMORY:
+
+    Separate local memories.
+
+
+============================================================
+31.55 B.TECH EXAM QUESTIONS
+============================================================
+
+Q1. Explain advanced memory systems.
+
+Q2. Explain multi-level memory systems.
+
+Q3. Why are multiple levels of cache required?
+
+Q4. Explain cache coherence.
+
+Q5. Explain MESI protocol.
+
+Q6. Differentiate cache coherence and memory consistency.
+
+Q7. Explain snooping-based coherence.
+
+Q8. Explain directory-based coherence.
+
+Q9. Compare snooping and directory-based coherence.
+
+Q10. What is memory bandwidth?
+
+Q11. Differentiate latency and bandwidth.
+
+Q12. What is memory interleaving?
+
+Q13. Explain memory-level parallelism.
+
+Q14. Explain UMA architecture.
+
+Q15. Explain NUMA architecture with a diagram.
+
+Q16. What are the advantages of NUMA?
+
+Q17. What are the disadvantages of NUMA?
+
+Q18. Differentiate UMA and NUMA.
+
+Q19. Explain shared-memory architecture.
+
+Q20. Explain distributed-memory architecture.
+
+Q21. Differentiate shared and distributed memory.
+
+Q22. What is false sharing?
+
+Q23. Explain memory consistency models.
+
+Q24. Explain sequential consistency.
+
+Q25. What is memory fence?
+
+Q26. What is memory controller?
+
+Q27. Explain memory interleaving.
+
+Q28. Explain memory-level parallelism.
+
+Q29. What is hybrid memory architecture?
+
+Q30. Explain the importance of locality in advanced memory
+    systems.
+
+
+============================================================
+31.56 COMPETITIVE EXAM MCQs
+============================================================
+
+Q1. NUMA stands for:
+
+    A. Non-Uniform Memory Access
+    B. New Uniform Memory Architecture
+    C. Non-Universal Memory Access
+    D. New Unified Memory Architecture
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q2. In NUMA architecture:
+
+    A. All memory accesses always have exactly equal latency
+    B. Local and remote memory accesses can have different
+       latencies
+    C. There is no local memory
+    D. There are no processor caches
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q3. Which is generally closest to the CPU?
+
+    A. RAM
+    B. SSD
+    C. L1 cache
+    D. HDD
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q4. Cache coherence is primarily concerned with:
+
+    A. Disk scheduling
+    B. Multiple cached copies of memory data
+    C. Compiler optimisation
+    D. Network routing
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q5. Memory consistency mainly concerns:
+
+    A. Cache size
+    B. Ordering and visibility of memory operations
+    C. Disk capacity
+    D. RAM packaging
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q6. Which architecture has approximately uniform memory
+access time for processors?
+
+    A. NUMA
+    B. UMA
+    C. Distributed-only
+    D. Virtual memory
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q7. In NUMA, access to a processor's local memory is usually:
+
+    A. Slower than remote access
+    B. Faster than remote access
+    C. Impossible
+    D. Unrelated to performance
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q8. Which technique distributes memory accesses across
+multiple banks?
+
+    A. Memory interleaving
+    B. Branch prediction
+    C. Paging
+    D. Spooling
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q9. Which of the following is a memory-coherence protocol?
+
+    A. MESI
+    B. TCP
+    C. HTTP
+    D. FTP
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q10. Which of the following can reduce effective memory
+latency by predicting future accesses?
+
+    A. Prefetching
+    B. Compilation
+    C. Encryption
+    D. Spooling
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q11. Which is generally larger?
+
+    A. L1 cache
+    B. L2 cache
+    C. Register
+    D. CPU flag register
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q12. A memory system with separate local memories attached
+to nodes is characteristic of:
+
+    A. Distributed memory
+    B. Pure shared memory
+    C. Register memory
+    D. Cache-only memory
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q13. Which problem can occur when independent variables share
+a cache line?
+
+    A. False sharing
+    B. Page fault
+    C. Dead code
+    D. Overflow
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q14. Which of the following is a major benefit of multiple
+memory channels?
+
+    A. Increased memory bandwidth
+    B. Elimination of cache
+    C. Elimination of registers
+    D. Elimination of CPU cores
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q15. A memory fence is primarily used to:
+
+    A. Increase disk capacity
+    B. Impose memory-ordering constraints
+    C. Increase cache size
+    D. Convert virtual addresses
+
+ANSWER:
+    B
+
+
+============================================================
+31.57 NUMERICAL PROBLEM — AVERAGE MEMORY ACCESS
+============================================================
+
+Suppose:
+
+    L1 access time = 1 ns
+
+    L1 hit ratio = 95%
+
+    L2 access time = 5 ns
+
+    L2 hit ratio among L1 misses = 90%
+
+    Main memory penalty = 50 ns
+
+
+For a simplified model:
+
+    AMAT
+    =
+    L1 time
+    + L1 miss rate × L2 time
+    + L1 miss rate × L2 miss rate × memory penalty
+
+
+Given:
+
+    L1 miss rate = 1 - 0.95
+                 = 0.05
+
+
+    L2 miss rate = 1 - 0.90
+                 = 0.10
+
+
+Therefore:
+
+    AMAT
+    =
+    1
+    + (0.05 × 5)
+    + (0.05 × 0.10 × 50)
+
+
+    = 1
+    + 0.25
+    + 0.25
+
+
+    = 1.50 ns
+
+
+ANSWER:
+
+    AMAT = 1.5 ns
+
+NOTE:
+    Real processors can use more complicated timing and
+    overlap, so this is an educational simplified model.
+
+
+============================================================
+31.58 NUMERICAL PROBLEM — NUMA
+============================================================
+
+Suppose:
+
+    Local memory latency  = 80 ns
+
+    Remote memory latency = 140 ns
+
+
+A program performs:
+
+    70% local accesses
+    30% remote accesses
+
+
+Average latency:
+
+    =
+    (0.70 × 80)
+    +
+    (0.30 × 140)
+
+
+    = 56 + 42
+
+    = 98 ns
+
+
+ANSWER:
+
+    Average memory access latency = 98 ns
+
+
+============================================================
+31.59 NUMERICAL PROBLEM — BANDWIDTH
+============================================================
+
+A memory channel transfers:
+
+    8 bytes per transfer
+
+at:
+
+    2 billion transfers/second
+
+
+Bandwidth:
+
+    = 8 × 2,000,000,000 bytes/sec
+
+    = 16,000,000,000 bytes/sec
+
+    ≈ 16 GB/s
+
+
+ANSWER:
+
+    ≈ 16 GB/s
+
+
+============================================================
+31.60 QUICK REVISION
+============================================================
+
+ADVANCED MEMORY SYSTEM:
+
+    Multiple techniques used to provide high-performance,
+    scalable memory access.
+
+
+MULTI-LEVEL CACHE:
+
+    L1 → L2 → L3 → RAM
+
+
+LATENCY:
+
+    Time for an access.
+
+
+BANDWIDTH:
+
+    Data transferred per second.
+
+
+CACHE COHERENCE:
+
+    Coordinates cached copies.
+
+
+MEMORY CONSISTENCY:
+
+    Defines ordering/visibility of memory operations.
+
+
+SNOOPING:
+
+    Caches monitor coherence traffic.
+
+
+DIRECTORY:
+
+    Tracks which caches hold blocks.
+
+
+UMA:
+
+    Approximately uniform memory access.
+
+
+NUMA:
+
+    Local memory faster than remote memory.
+
+
+SHARED MEMORY:
+
+    Common logical address space.
+
+
+DISTRIBUTED MEMORY:
+
+    Separate local memories.
+
+
+MEMORY INTERLEAVING:
+
+    Distributes accesses across memory banks.
+
+
+PREFETCHING:
+
+    Fetches predicted data before it is requested.
+
+
+FALSE SHARING:
+
+    Independent variables sharing one cache line cause
+    unnecessary coherence traffic.
+
+
+============================================================
+31.61 CHAPTER 31 MASTER MAP
+============================================================
+
+                 ADVANCED MEMORY SYSTEMS
+                          |
+       +------------------+------------------+
+       |                  |                  |
+   Multi-Level         Coherence        Memory Models
+     Memory                |                  |
+       |             +-----+-----+            |
+   L1/L2/L3          |           |            |
+       |           Snooping   Directory       |
+       |                  |                  |
+       |                 MESI                |
+       |                                     |
+       +----------------+--------------------+
+                        |
+                   NUMA / UMA
+                        |
+              +---------+---------+
+              |                   |
+          Shared Memory     Distributed Memory
+              |
+        Memory Bandwidth
+              |
+        Memory Interleaving
+              |
+      Memory-Level Parallelism
+              |
+         Prefetching
+
+
+============================================================
+31.62 FINAL TAKEAWAY
+============================================================
+
+A modern memory system must solve several problems:
+
+    CPU is faster than RAM
+          ↓
+    Use caches
+          ↓
+    Multiple cores have multiple caches
+          ↓
+    Need cache coherence
+          ↓
+    Memory operations need ordering rules
+          ↓
+    Need memory consistency
+          ↓
+    Many processors create scalability problems
+          ↓
+    Use NUMA / distributed architectures
+          ↓
+    Need efficient memory bandwidth
+          ↓
+    Use channels, interleaving and parallel memory access
+
+
+THE CORE IDEA:
+
+    High-performance computing requires not just a fast CPU,
+    but a fast, scalable and well-organised memory system.
+
+
+============================================================
+CHAPTER 31 COMPLETE
+============================================================	

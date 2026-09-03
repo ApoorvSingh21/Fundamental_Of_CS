@@ -1,0 +1,1831 @@
+CHAPTER 36 — GPU ARCHITECTURE BASICS
+
+============================================================
+CHAPTER 36 — GPU ARCHITECTURE BASICS
+============================================================
+
+LEVEL:
+B.Tech 1st Year → Foundation → Intermediate → Advanced
+
+GOAL:
+Understand what a GPU is, how GPU architecture differs from
+CPU architecture, how GPU cores/threads/warps/blocks work,
+how SIMD/SIMT works, how GPU memory is organized, and where
+GPUs are used.
+
+TOPICS:
+    36.1 CPU vs GPU
+    36.2 GPU Architecture
+    36.3 Streaming Multiprocessors
+    36.4 CUDA Cores Concept
+    36.5 Warps
+    36.6 Threads
+    36.7 Blocks
+    36.8 Grid
+    36.9 SIMD
+    36.10 SIMT
+    36.11 GPU Memory Hierarchy
+    36.12 GPU Memory Types
+    36.13 GPU Applications
+
+
+============================================================
+36.1 WHAT IS A GPU?
+============================================================
+
+GPU = Graphics Processing Unit
+
+A GPU is a processor designed to perform a very large number
+of operations in parallel.
+
+Originally, GPUs were mainly designed for graphics.
+
+Today, GPUs are also used for:
+
+    • Machine learning
+    • Artificial intelligence
+    • Scientific computing
+    • Image processing
+    • Video processing
+    • Cryptography
+    • Data analytics
+    • Simulation
+
+
+BASIC IDEA:
+
+    CPU:
+        Few powerful general-purpose processing units
+
+    GPU:
+        Large number of simpler parallel processing units
+
+
+============================================================
+36.2 CPU VS GPU — BASIC IDEA
+============================================================
+
+CPU:
+
+                  +----------------+
+                  |      CPU       |
+                  |                |
+                  |  Core 0        |
+                  |  Core 1        |
+                  |  Core 2        |
+                  |  Core 3        |
+                  +----------------+
+
+GPU:
+
+          +-----------------------------+
+          |             GPU             |
+          |                             |
+          |  +----+ +----+ +----+       |
+          |  | P1 | | P2 | | P3 | ...   |
+          |  +----+ +----+ +----+       |
+          |  +----+ +----+ +----+       |
+          |  | P4 | | P5 | | P6 | ...   |
+          |  +----+ +----+ +----+       |
+          |        MANY PROCESSORS      |
+          +-----------------------------
+
+
+The exact implementation differs between GPU architectures,
+but the fundamental idea is massive parallelism.
+
+
+============================================================
+36.3 CPU DESIGN PHILOSOPHY
+============================================================
+
+CPU architecture generally focuses on:
+
+    • Low latency
+    • Complex control flow
+    • Branch-heavy programs
+    • Large caches
+    • Fast response to individual tasks
+    • General-purpose computation
+
+
+Example:
+
+    if (x > 10)
+        A();
+    else
+        B();
+
+
+CPUs are very good at handling complicated control flow.
+
+
+============================================================
+36.4 GPU DESIGN PHILOSOPHY
+============================================================
+
+GPU architecture generally focuses on:
+
+    • High throughput
+    • Massive parallelism
+    • Data-parallel operations
+    • Many simultaneous threads
+
+
+Example:
+
+    Add two arrays:
+
+        C[i] = A[i] + B[i]
+
+
+For:
+
+        i = 0, 1, 2, 3, ... 999999
+
+
+Many elements can be processed in parallel.
+
+
+============================================================
+36.5 CPU VS GPU
+============================================================
+
++----------------------+---------------------------+
+| CPU                  | GPU                       |
++----------------------+---------------------------+
+| Few powerful cores  | Many parallel processors  |
+| Low-latency focus   | High-throughput focus     |
+| Complex control     | Data-parallel workloads   |
+| Strong branch logic | Branch divergence issue   |
+| Large cache focus   | Massive parallelism      |
+| General purpose     | Parallel workloads       |
++----------------------+---------------------------+
+
+
+IMPORTANT:
+
+GPU is not simply a collection of "small CPUs."
+
+GPU architecture uses specialized organization for executing
+large numbers of threads efficiently.
+
+
+============================================================
+36.6 GPU ARCHITECTURE — HIGH LEVEL
+============================================================
+
+A simplified GPU:
+
+                    GPU
+                     |
+        +------------+------------+
+        |            |            |
+       SM 0         SM 1         SM 2
+        |            |            |
+    Threads      Threads      Threads
+        |            |            |
+        +------------+------------+
+                     |
+               GPU Memory
+                     |
+                    RAM
+
+
+SM = Streaming Multiprocessor
+
+Different GPU vendors use different terminology and
+architectures, but the SM concept is important for learning.
+
+
+============================================================
+36.7 STREAMING MULTIPROCESSOR (SM)
+============================================================
+
+An SM is a major processing unit inside many modern GPUs.
+
+A simplified SM may contain:
+
+    • Arithmetic execution resources
+    • Registers
+    • Shared memory
+    • Scheduling hardware
+    • Load/store resources
+    • Special-function resources
+
+
+Conceptually:
+
+             +----------------------+
+             |         SM           |
+             |                      |
+             | Thread Scheduler     |
+             |                      |
+             | +----+ +----+ +----+ |
+             | |ALU | |ALU | |ALU | |
+             | +----+ +----+ +----+ |
+             |                      |
+             | Registers            |
+             | Shared Memory        |
+             +----------------------+
+
+Actual hardware organization varies by GPU generation.
+
+
+============================================================
+36.8 WHY MULTIPLE SMs?
+============================================================
+
+A GPU contains multiple SMs so that many groups of threads
+can execute concurrently.
+
+Example:
+
+    GPU
+     |
+     +-- SM 0 → Thread group
+     +-- SM 1 → Thread group
+     +-- SM 2 → Thread group
+     +-- SM 3 → Thread group
+
+
+This allows massive parallel execution.
+
+
+============================================================
+36.9 CUDA CORES — CONCEPT
+============================================================
+
+The term "CUDA core" is commonly used in NVIDIA GPU
+descriptions.
+
+Conceptually, CUDA cores are arithmetic execution resources
+within NVIDIA GPU architecture.
+
+
+Example conceptual view:
+
+                  SM
+                   |
+        +----------+----------+
+        |          |          |
+      CUDA       CUDA       CUDA
+      Core       Core       Core
+        |          |          |
+        +----------+----------+
+
+
+IMPORTANT:
+
+A CUDA core should NOT be thought of as exactly equivalent
+to a complete CPU core.
+
+
+A CPU core and a GPU CUDA core have very different roles and
+architectural complexity.
+
+
+============================================================
+36.10 GPU THREAD
+============================================================
+
+A thread is an individual execution instance.
+
+
+Suppose:
+
+    C[i] = A[i] + B[i]
+
+
+We can assign:
+
+    Thread 0 → C[0] = A[0] + B[0]
+    Thread 1 → C[1] = A[1] + B[1]
+    Thread 2 → C[2] = A[2] + B[2]
+    Thread 3 → C[3] = A[3] + B[3]
+
+
+Thousands or millions of threads may be created for a
+large GPU workload.
+
+
+============================================================
+36.11 THREAD ID
+============================================================
+
+Each thread can have an identifier.
+
+Example:
+
+    Thread ID = 0
+    Thread ID = 1
+    Thread ID = 2
+    ...
+
+
+This allows the thread to determine which data element
+it should process.
+
+
+Example:
+
+    C[i] = A[i] + B[i]
+
+where:
+
+    i = thread ID
+
+
+Therefore:
+
+    Thread 5 → C[5]
+    Thread 6 → C[6]
+    Thread 7 → C[7]
+
+
+============================================================
+36.12 THREAD BLOCK
+============================================================
+
+GPU programming groups threads into blocks.
+
+Example:
+
+             BLOCK
+    +-----------------------+
+    | T0 T1 T2 T3 T4 T5... |
+    | T6 T7 T8 T9...       |
+    +-----------------------+
+
+
+A block is a group of threads that can cooperate.
+
+
+Threads in a block can commonly:
+
+    • Share shared memory
+    • Synchronize
+    • Cooperate on a task
+
+
+============================================================
+36.13 WHY BLOCKS?
+============================================================
+
+Suppose we have:
+
+    1,000,000 threads
+
+
+Managing them as one huge group would not be practical.
+
+Instead:
+
+    Grid
+      |
+      +-- Block 0
+      +-- Block 1
+      +-- Block 2
+      +-- ...
+      +-- Block N
+
+
+Each block contains a manageable group of threads.
+
+
+============================================================
+36.14 GRID
+============================================================
+
+A grid is the collection of blocks launched for a GPU
+computation in CUDA's programming model.
+
+
+Concept:
+
+                  GRID
+                    |
+        +-----------+-----------+
+        |           |           |
+      Block 0     Block 1     Block 2
+        |           |           |
+      Threads     Threads     Threads
+
+
+For example:
+
+    Grid
+      |
+      +-- Block 0 → 256 threads
+      +-- Block 1 → 256 threads
+      +-- Block 2 → 256 threads
+      +-- ...
+
+
+============================================================
+36.15 GPU EXECUTION HIERARCHY
+============================================================
+
+Important hierarchy:
+
+    GRID
+      |
+      +-- BLOCK
+      |     |
+      |     +-- THREAD
+      |     +-- THREAD
+      |     +-- THREAD
+      |
+      +-- BLOCK
+            |
+            +-- THREAD
+            +-- THREAD
+            +-- THREAD
+
+
+Remember:
+
+    Grid → Blocks → Threads
+
+
+============================================================
+36.16 WARPS
+============================================================
+
+A warp is a group of threads that a GPU executes together
+according to the SIMT execution model.
+
+In NVIDIA CUDA, a warp traditionally contains:
+
+    32 threads
+
+
+Conceptually:
+
+    Warp
+    +--------------------------------+
+    | T0 T1 T2 T3 ... T30 T31        |
+    +--------------------------------+
+
+
+IMPORTANT:
+
+    Warp size is architecture/platform dependent in the
+    general GPU world.
+
+For NVIDIA CUDA programming, 32-thread warps are fundamental.
+
+
+============================================================
+36.17 WHY WARPS?
+============================================================
+
+A GPU needs an efficient mechanism for executing many
+threads.
+
+Instead of independently scheduling every thread at every
+moment, the architecture groups threads into execution units
+such as warps.
+
+
+Example:
+
+    1024 threads
+       ↓
+    32 threads per warp
+       ↓
+    32 warps
+
+
+So:
+
+    Number of warps = 1024 / 32 = 32
+
+
+============================================================
+36.18 WARP EXECUTION
+============================================================
+
+Suppose a warp contains:
+
+    T0 T1 T2 T3 ... T31
+
+
+And executes:
+
+    C[i] = A[i] + B[i]
+
+
+The same instruction is applied to multiple threads while
+each thread works on different data.
+
+
+Conceptually:
+
+             ADD instruction
+                   |
+       +-----------+-----------+
+       |           |           |
+      T0          T1          T2 ... T31
+       |           |           |
+    A[0]+B[0]   A[1]+B[1]   A[2]+B[2]
+
+
+This is the fundamental idea behind SIMT.
+
+
+============================================================
+36.19 SIMT
+============================================================
+
+SIMT = Single Instruction, Multiple Threads
+
+
+SIMT is a GPU execution model.
+
+One instruction stream can control execution of many threads,
+with each thread having its own:
+
+    • Registers
+    • Thread ID
+    • Data
+    • Execution state
+
+
+Concept:
+
+                Instruction
+                     |
+       +-------------+-------------+
+       |             |             |
+      T0            T1            T2 ... T31
+       |             |             |
+     Data0         Data1         Data2
+
+
+============================================================
+36.20 SIMD
+============================================================
+
+SIMD = Single Instruction, Multiple Data
+
+
+One instruction operates on multiple data elements.
+
+
+Example:
+
+    Vector A:
+        [1 2 3 4]
+
+    Vector B:
+        [5 6 7 8]
+
+    ADD:
+
+        [6 8 10 12]
+
+
+One instruction performs multiple operations.
+
+
+============================================================
+36.21 SIMD VS SIMT
+============================================================
+
+SIMD:
+
+    Single instruction
+         ↓
+    Multiple data elements
+
+
+SIMT:
+
+    Single instruction
+         ↓
+    Multiple threads
+         ↓
+    Each thread has its own data/state
+
+
+Simplified:
+
+    SIMD:
+
+       Instruction
+           |
+       Vector data
+
+
+    SIMT:
+
+       Instruction
+           |
+       +---+---+---+
+       |   |   |   |
+      T0  T1  T2  T3
+
+
+SIMT is particularly associated with GPU programming models.
+
+
+============================================================
+36.22 THREADS HAVE INDIVIDUAL STATE
+============================================================
+
+Although threads execute in groups, each thread logically has
+its own:
+
+    • Registers
+    • Thread ID
+    • Program state
+    • Data
+
+
+Example:
+
+    T0 → R0 = 10
+    T1 → R0 = 20
+    T2 → R0 = 30
+
+
+The threads can execute the same instruction on different
+values.
+
+
+============================================================
+36.23 BRANCH DIVERGENCE
+============================================================
+
+Consider:
+
+    if (x > 0)
+        A
+    else
+        B
+
+
+Suppose a warp has:
+
+    T0 → condition TRUE
+    T1 → condition TRUE
+    T2 → condition FALSE
+    T3 → condition FALSE
+
+
+The threads want to follow different paths.
+
+
+This is called:
+
+    BRANCH DIVERGENCE
+
+
+It can reduce parallel efficiency.
+
+
+============================================================
+36.24 BRANCH DIVERGENCE EXAMPLE
+============================================================
+
+Suppose:
+
+    T0 → TRUE
+    T1 → TRUE
+    T2 → FALSE
+    T3 → FALSE
+
+
+Conceptually, the GPU may execute:
+
+    Path A:
+        T0, T1
+
+    then
+
+    Path B:
+        T2, T3
+
+
+Some execution resources may therefore be underutilized.
+
+
+IMPORTANT:
+
+Branch divergence is particularly important for
+SIMT-based GPU performance.
+
+
+============================================================
+36.25 GPU MEMORY HIERARCHY
+============================================================
+
+GPU memory is hierarchical.
+
+Simplified:
+
+                 Fastest
+                    ↑
+                 Registers
+                    |
+              Shared Memory
+                    |
+                 L1 Cache
+                    |
+                 L2 Cache
+                    |
+             Global Memory
+                    |
+                    ↓
+                 Slower
+
+
+Actual GPU memory organization varies by architecture.
+
+
+============================================================
+36.26 GPU REGISTERS
+============================================================
+
+Registers are very fast storage locations associated with
+threads.
+
+
+Each thread may have its own registers.
+
+
+Example:
+
+    Thread 0 → Registers
+    Thread 1 → Registers
+    Thread 2 → Registers
+    ...
+
+
+Registers are useful for frequently used values.
+
+
+Limitation:
+
+    Register capacity is limited.
+
+
+============================================================
+36.27 SHARED MEMORY
+============================================================
+
+Shared memory is a fast memory region that can be shared by
+threads within a block in CUDA-style GPU programming.
+
+
+Concept:
+
+             BLOCK
+               |
+       +-------+-------+
+       |               |
+      T0              T1
+       |               |
+       +-------+-------+
+               |
+         Shared Memory
+
+
+Useful for:
+
+    • Thread cooperation
+    • Data reuse
+    • Reducing expensive global-memory accesses
+
+
+============================================================
+36.28 GLOBAL MEMORY
+============================================================
+
+Global memory is the large memory space accessible by GPU
+threads.
+
+It is typically backed by the GPU's external memory such as
+high-bandwidth DRAM.
+
+
+Concept:
+
+       Thread 0 ─┐
+       Thread 1 ─┤
+       Thread 2 ─┼──→ Global Memory
+       Thread 3 ─┤
+       Thread 4 ─┘
+
+
+It has much greater capacity than registers/shared memory,
+but significantly higher latency.
+
+
+============================================================
+36.29 CONSTANT MEMORY
+============================================================
+
+Some GPU architectures/programming models provide constant
+memory.
+
+It is intended for data that:
+
+    • Does not change during kernel execution
+    • Is read by many threads
+
+
+Example:
+
+    Mathematical constants
+    Lookup tables
+
+
+Constant memory behavior depends on access patterns and
+architecture.
+
+
+============================================================
+36.30 TEXTURE MEMORY
+============================================================
+
+Graphics-oriented GPU architectures historically provide
+specialized texture memory mechanisms.
+
+Texture-oriented hardware is optimized for certain spatial
+access patterns and graphics workloads.
+
+Modern GPU architectures have unified many memory mechanisms,
+but texture operations remain useful in graphics and some
+compute workloads.
+
+
+============================================================
+36.31 GPU MEMORY SUMMARY
+============================================================
+
++------------------+------------------------------+
+| Memory           | Main Characteristic         |
++------------------+------------------------------+
+| Registers        | Very fast, per-thread       |
+| Shared Memory    | Fast, shared within block   |
+| L1 Cache         | Fast cache                  |
+| L2 Cache         | Larger shared cache         |
+| Global Memory    | Large, higher latency       |
+| Constant Memory  | Read-only style usage       |
++------------------+------------------------------+
+
+
+============================================================
+36.32 MEMORY ACCESS AND COALESCING
+============================================================
+
+GPU performance depends heavily on memory access patterns.
+
+When neighboring threads access neighboring memory locations,
+the hardware can often combine accesses efficiently.
+
+This is commonly called:
+
+    MEMORY COALESCING
+
+
+Example:
+
+    T0 → A[0]
+    T1 → A[1]
+    T2 → A[2]
+    T3 → A[3]
+
+
+This is generally a good access pattern for many GPU
+architectures.
+
+
+Poor access patterns can reduce memory efficiency.
+
+
+============================================================
+36.33 GPU KERNEL
+============================================================
+
+A GPU kernel is a function/program launched to execute on
+the GPU in parallel.
+
+Concept:
+
+    CPU
+     |
+     | Launch kernel
+     ↓
+    GPU
+     |
+     +-- Thread 0
+     +-- Thread 1
+     +-- Thread 2
+     +-- ...
+     +-- Thread N
+
+
+Example:
+
+    vector_add(A, B, C)
+
+
+GPU executes many instances of the computation.
+
+
+============================================================
+36.34 VECTOR ADDITION EXAMPLE
+============================================================
+
+Suppose:
+
+    A = [1, 2, 3, 4]
+    B = [5, 6, 7, 8]
+
+We want:
+
+    C = A + B
+
+
+Result:
+
+    C = [6, 8, 10, 12]
+
+
+GPU mapping:
+
+    Thread 0:
+        C[0] = A[0] + B[0]
+
+    Thread 1:
+        C[1] = A[1] + B[1]
+
+    Thread 2:
+        C[2] = A[2] + B[2]
+
+    Thread 3:
+        C[3] = A[3] + B[3]
+
+
+Each thread handles one element.
+
+
+============================================================
+36.35 MATRIX MULTIPLICATION
+============================================================
+
+GPU is particularly useful for matrix operations.
+
+Example:
+
+    C = A × B
+
+
+A large matrix contains many elements.
+
+Many calculations can be performed in parallel.
+
+
+Concept:
+
+        Matrix A        Matrix B
+            \             /
+             \           /
+              \         /
+               ↓       ↓
+                  GPU
+                   |
+             Parallel computation
+                   |
+                   ↓
+               Matrix C
+
+
+This is one reason GPUs are important in machine learning.
+
+
+============================================================
+36.36 GPU IN MACHINE LEARNING
+============================================================
+
+Machine-learning workloads often involve:
+
+    • Matrix multiplication
+    • Vector operations
+    • Convolution
+    • Tensor operations
+
+
+These contain large amounts of parallel computation.
+
+
+Therefore:
+
+    GPU
+     ↓
+    Massive parallelism
+     ↓
+    High throughput
+     ↓
+    Faster ML workloads
+
+
+Specialized hardware such as tensor/matrix acceleration units
+may also exist in modern GPUs.
+
+
+============================================================
+36.37 GPU IN GRAPHICS
+============================================================
+
+Graphics rendering involves huge numbers of calculations.
+
+For example:
+
+    • Transform vertices
+    • Process pixels
+    • Apply textures
+    • Lighting calculations
+    • Shading
+
+
+Many operations can be performed independently.
+
+
+Therefore GPU parallelism is highly useful.
+
+
+============================================================
+36.38 GPU APPLICATIONS
+============================================================
+
+Major applications:
+
+    1. Computer graphics
+    2. Gaming
+    3. Machine learning
+    4. Deep learning
+    5. Scientific simulations
+    6. Image processing
+    7. Video encoding/decoding
+    8. Computer vision
+    9. Data analytics
+   10. Cryptographic workloads
+   11. Physics simulation
+   12. High-performance computing
+
+
+============================================================
+36.39 GPU COMPUTING WORKFLOW
+============================================================
+
+Typical heterogeneous program:
+
+    CPU
+     |
+     | Prepare data
+     ↓
+    Memory
+     |
+     | Transfer / make accessible
+     ↓
+    GPU
+     |
+     | Launch kernel
+     ↓
+    Many threads
+     |
+     ↓
+    Parallel computation
+     |
+     ↓
+    Result
+     |
+     ↓
+    CPU
+
+
+Modern systems may use unified memory or shared-memory
+mechanisms, so the exact data movement depends on the platform.
+
+
+============================================================
+36.40 GPU VS CPU — EXAMPLE
+============================================================
+
+TASK:
+
+    Add 10 million array elements.
+
+
+CPU approach:
+
+    One or several CPU threads process the data.
+
+
+GPU approach:
+
+    Thousands of GPU threads process different elements.
+
+
+For a highly parallel workload:
+
+    GPU can provide very high throughput.
+
+
+But for:
+
+    Complex branching
+    Small workloads
+    Low-latency sequential tasks
+
+
+CPU may be more suitable.
+
+
+============================================================
+36.41 GPU DOES NOT ALWAYS WIN
+============================================================
+
+GPU may perform poorly when:
+
+    • Workload is very small
+    • Workload is highly sequential
+    • Heavy branch divergence occurs
+    • Data transfer overhead dominates
+    • Parallelism is insufficient
+
+
+Therefore:
+
+    GPU performance depends on workload characteristics.
+
+
+============================================================
+36.42 CPU + GPU SYSTEM
+============================================================
+
+Modern computer:
+
+              +----------------+
+              |      CPU       |
+              |                |
+              | Core Core Core |
+              +-------+--------+
+                      |
+                Interconnect
+                      |
+              +-------+--------+
+              |      GPU       |
+              |                |
+              | SM SM SM SM... |
+              +-------+--------+
+                      |
+                GPU Memory
+                      |
+                    Storage
+
+
+Both processors can cooperate.
+
+
+============================================================
+36.43 DISCRETE GPU VS INTEGRATED GPU
+============================================================
+
+DISCRETE GPU:
+
+    Separate GPU device.
+
+    CPU
+     |
+    PCIe
+     |
+    GPU
+     |
+    Dedicated GPU memory
+
+
+INTEGRATED GPU:
+
+    GPU integrated into the processor/system.
+
+    +-----------------------+
+    | CPU + GPU             |
+    +-----------------------+
+             |
+            RAM
+
+
+General comparison:
+
++----------------------+----------------------------+
+| Discrete GPU        | Integrated GPU             |
++----------------------+----------------------------+
+| Separate device     | Integrated into system     |
+| Often dedicated VRAM| Often shares system RAM   |
+| Higher performance  | Lower power/cost in many  |
+| More power          | More power efficient      |
++----------------------+----------------------------+
+
+
+============================================================
+36.44 GPU MEMORY BANDWIDTH
+============================================================
+
+GPUs often require very high memory bandwidth.
+
+Why?
+
+Because thousands of threads may continuously process data.
+
+
+Example:
+
+    Many threads
+         ↓
+    Huge number of memory accesses
+         ↓
+    High bandwidth requirement
+
+
+Therefore GPUs often use high-bandwidth memory systems.
+
+
+============================================================
+36.45 THROUGHPUT VS LATENCY
+============================================================
+
+CPU:
+
+    Often optimized for low latency.
+
+
+GPU:
+
+    Often optimized for high throughput.
+
+
+THROUGHPUT:
+
+    Amount of work completed per unit time.
+
+
+LATENCY:
+
+    Time required for a particular operation/request.
+
+
+Example:
+
+    GPU may tolerate memory latency by switching between
+    many ready threads while waiting for data.
+
+
+============================================================
+36.46 GPU OCCUPANCY — BASIC CONCEPT
+============================================================
+
+GPU occupancy refers broadly to how many active warps/threads
+can be resident on an SM relative to its hardware limits.
+
+Higher occupancy can help hide latency, but:
+
+    Higher occupancy ≠ automatically higher performance.
+
+
+Performance also depends on:
+
+    • Memory access
+    • Instruction mix
+    • Register usage
+    • Shared-memory usage
+    • Scheduling
+    • Arithmetic intensity
+
+
+============================================================
+36.47 ARITHMETIC INTENSITY
+============================================================
+
+Arithmetic intensity describes the amount of computation
+performed relative to memory traffic.
+
+High arithmetic intensity:
+
+    Lots of computation
+    relatively little memory traffic
+
+
+Low arithmetic intensity:
+
+    Lots of memory traffic
+    relatively little computation
+
+
+GPU workloads often benefit from enough computation to keep
+their execution resources busy.
+
+
+============================================================
+36.48 IMPORTANT GPU TERMS
+============================================================
+
+GPU:
+    Graphics Processing Unit
+
+
+SM:
+    Streaming Multiprocessor
+
+
+Thread:
+    Individual execution instance
+
+
+Block:
+    Group of threads
+
+
+Grid:
+    Collection of blocks
+
+
+Warp:
+    Group of threads executed together in the SIMT model
+
+
+SIMT:
+    Single Instruction, Multiple Threads
+
+
+SIMD:
+    Single Instruction, Multiple Data
+
+
+Kernel:
+    Function executed on GPU
+
+
+Global memory:
+    Large GPU memory space
+
+
+Shared memory:
+    Fast memory shared by threads of a block
+
+
+============================================================
+36.49 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    "CUDA core = CPU core."
+
+FALSE.
+
+
+MISTAKE 2:
+
+    "GPU always executes every thread independently."
+
+Oversimplified.
+
+Threads are grouped and scheduled according to the GPU's
+execution model.
+
+
+MISTAKE 3:
+
+    "GPU is always faster than CPU."
+
+FALSE.
+
+
+MISTAKE 4:
+
+    "SIMD and SIMT are exactly the same."
+
+FALSE.
+
+They are related parallel-execution concepts but have
+different abstractions.
+
+
+MISTAKE 5:
+
+    "More GPU cores automatically means proportional
+    performance."
+
+FALSE.
+
+
+MISTAKE 6:
+
+    "Shared memory means all GPU threads in the entire GPU
+    share it."
+
+FALSE.
+
+In CUDA's model, shared memory is associated with a block/SM
+and is not one universal memory shared by every thread.
+
+
+MISTAKE 7:
+
+    "GPU memory and system RAM are always identical."
+
+FALSE.
+
+Discrete GPUs commonly have separate memory; integrated GPUs
+often use system memory.
+
+
+============================================================
+36.50 B.TECH IMPORTANT QUESTIONS
+============================================================
+
+Q1. What is a GPU? Explain its architecture.
+
+Q2. Compare CPU and GPU architectures.
+
+Q3. What is a Streaming Multiprocessor?
+
+Q4. Explain the concept of CUDA cores.
+
+Q5. Explain threads, blocks and grids.
+
+Q6. What is a warp?
+
+Q7. Explain SIMT execution.
+
+Q8. Differentiate SIMD and SIMT.
+
+Q9. Explain branch divergence.
+
+Q10. Explain GPU memory hierarchy.
+
+Q11. Explain shared memory and global memory.
+
+Q12. Explain memory coalescing.
+
+Q13. Explain CPU-GPU heterogeneous computing.
+
+Q14. Compare integrated and discrete GPUs.
+
+Q15. Explain GPU applications in machine learning.
+
+
+============================================================
+36.51 COMPETITIVE EXAM MCQs
+============================================================
+
+Q1. GPU architecture is primarily designed to provide:
+
+    A. Massive parallelism
+    B. Only sequential execution
+    C. Only storage
+    D. Network routing
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q2. SM in many GPU architectures stands for:
+
+    A. Storage Module
+    B. Streaming Multiprocessor
+    C. System Memory
+    D. Software Machine
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q3. In CUDA's traditional execution model, a warp contains:
+
+    A. 4 threads
+    B. 8 threads
+    C. 16 threads
+    D. 32 threads
+
+ANSWER:
+    D
+
+
+------------------------------------------------------------
+
+Q4. SIMT stands for:
+
+    A. Single Instruction Multiple Threads
+    B. Single Instruction Memory Transfer
+    C. Sequential Instruction Multiple Threads
+    D. Single Integrated Memory Technology
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q5. Which is generally shared among threads of a block?
+
+    A. Shared memory
+    B. Each thread's private registers
+    C. CPU registers
+    D. HDD cache
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q6. A grid contains:
+
+    A. Only one instruction
+    B. Blocks
+    C. Only registers
+    D. CPU cores
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q7. A block contains:
+
+    A. Threads
+    B. CPUs
+    C. SSDs
+    D. RAM modules
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q8. Which is a typical GPU workload?
+
+    A. Matrix multiplication
+    B. BIOS configuration only
+    C. Keyboard polling only
+    D. File naming only
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q9. Branch divergence occurs when:
+
+    A. Threads in an execution group take different control paths
+    B. RAM becomes full
+    C. CPU clock stops
+    D. Cache size increases
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q10. Which GPU memory is typically very fast and associated
+with individual threads?
+
+    A. Registers
+    B. HDD
+    C. SSD
+    D. System storage
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q11. Which memory can be shared by threads within a CUDA
+thread block?
+
+    A. Shared memory
+    B. HDD
+    C. CPU cache only
+    D. BIOS ROM
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q12. Coalesced memory access generally means:
+
+    A. Efficiently combining neighboring memory accesses
+    B. Random memory access
+    C. Disabling cache
+    D. Disabling parallelism
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q13. Which is generally more suitable for highly sequential
+and branch-heavy workloads?
+
+    A. CPU
+    B. GPU
+    C. VRAM
+    D. Cache
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q14. Which is generally optimized for high throughput?
+
+    A. GPU
+    B. Register
+    C. HDD
+    D. Keyboard
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q15. In the basic CUDA programming hierarchy:
+
+    A. Thread → Block → Grid
+    B. Grid → Thread → Block
+    C. Block → Grid → Thread
+    D. Core → RAM → Grid
+
+ANSWER:
+    A
+
+
+============================================================
+36.52 QUICK REVISION
+============================================================
+
+GPU:
+    Processor optimized for highly parallel workloads.
+
+
+SM:
+    Major GPU execution unit.
+
+
+CUDA CORE:
+    NVIDIA terminology for arithmetic execution resources.
+
+
+THREAD:
+    Individual execution instance.
+
+
+BLOCK:
+    Group of threads.
+
+
+GRID:
+    Collection of blocks.
+
+
+WARP:
+    Group of threads executed together.
+
+
+SIMD:
+    Single Instruction, Multiple Data.
+
+
+SIMT:
+    Single Instruction, Multiple Threads.
+
+
+REGISTERS:
+    Very fast per-thread storage.
+
+
+SHARED MEMORY:
+    Fast memory shared within a thread block.
+
+
+GLOBAL MEMORY:
+    Large, relatively high-latency GPU memory.
+
+
+BRANCH DIVERGENCE:
+    Threads in an execution group follow different branches.
+
+
+MEMORY COALESCING:
+    Efficient organization of neighboring memory accesses.
+
+
+CPU:
+    General-purpose, low-latency processing.
+
+
+GPU:
+    Parallel, high-throughput processing.
+
+
+============================================================
+36.53 MASTER CONCEPT MAP
+============================================================
+
+                         GPU
+                          |
+              +-----------+-----------+
+              |                       |
+             SM                      SM
+              |                       |
+        +-----+-----+           +-----+-----+
+        |     |     |           |     |     |
+      Warp  Warp  Warp         Warp  Warp  Warp
+        |     |     |           |     |     |
+      Threads Threads          Threads Threads
+        |     |     |           |     |     |
+        +-----+-----+           +-----+-----+
+              |                       |
+          Registers               Registers
+              |                       |
+         Shared Memory          Shared Memory
+              \                       /
+               \                     /
+                    L2 Cache
+                       |
+                Global Memory
+                       |
+                  GPU DRAM
+
+
+============================================================
+36.54 FINAL CHAPTER SUMMARY
+============================================================
+
+The central idea of GPU architecture is:
+
+    MASSIVE PARALLELISM
+
+A GPU divides work into:
+
+    Grid
+      ↓
+    Blocks
+      ↓
+    Threads
+      ↓
+    Warps
+      ↓
+    Execution resources
+
+
+Memory hierarchy:
+
+    Registers
+       ↓
+    Shared Memory
+       ↓
+    L1/L2 Cache
+       ↓
+    Global Memory
+
+
+Execution model:
+
+    SIMT
+
+
+Major advantage:
+
+    HIGH THROUGHPUT FOR PARALLEL WORKLOADS
+
+
+Major limitation:
+
+    PERFORMANCE DEPENDS ON AVAILABLE PARALLELISM,
+    MEMORY ACCESS PATTERNS, AND CONTROL FLOW.
+
+
+============================================================
+CHAPTER 36 COMPLETE
+============================================================

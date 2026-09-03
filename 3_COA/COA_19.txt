@@ -1,0 +1,1631 @@
+CHAPTER 19 — MAIN MEMORY
+
+============================================================
+CHAPTER 19 — MAIN MEMORY
+============================================================
+
+LEVEL: B.Tech 1st Year
+STARTING LEVEL: Absolute Beginner
+GOAL: Understand RAM, ROM, memory chips, memory organisation,
+      and memory expansion from basic to exam level.
+============================================================
+
+
+------------------------------------------------------------
+19.1 WHAT IS MAIN MEMORY?
+------------------------------------------------------------
+
+Main Memory is the primary memory directly accessible by
+the CPU.
+
+It stores:
+    • Programs currently being executed
+    • Data currently being processed
+    • Intermediate results
+    • Information needed by the CPU
+
+Main memory is also called:
+    • Primary memory
+    • Main storage
+    • Primary storage
+
+Basic relationship:
+
+        CPU
+         |
+         | Read / Write
+         ↓
+   +-------------+
+   | Main Memory |
+   +-------------+
+         |
+         ↓
+     Programs
+     Data
+
+
+REAL-WORLD ANALOGY
+------------------
+Think of a student studying at a desk.
+
+    Bookshelf → Secondary Storage
+    Study table → Main Memory
+    Notebook in hand → Cache
+    Brain's immediate attention → Registers
+
+The CPU needs data quickly, so frequently needed information
+is brought from storage into main memory.
+
+
+FORMAL DEFINITION
+-----------------
+Main memory is the primary storage unit of a computer that
+holds instructions and data currently required by the CPU.
+
+
+IMPORTANT:
+----------
+Main memory is generally implemented using semiconductor
+memory technologies such as:
+
+    • RAM
+    • ROM / Flash-related technologies
+
+
+------------------------------------------------------------
+19.2 RAM
+------------------------------------------------------------
+
+RAM = Random Access Memory
+
+"Random access" means that any memory location can be accessed
+directly using its address.
+
+Example:
+
+    Address     Data
+    -------     ----
+    1000        45
+    1001        72
+    1002        19
+    1003        88
+
+If CPU wants address 1002, it can directly access it.
+
+It does NOT need to read 1000 and 1001 first.
+
+
+KEY CHARACTERISTICS OF RAM
+--------------------------
+
+1. Random access
+2. Usually read/write memory
+3. Volatile
+4. Used for currently running programs
+5. Faster than secondary storage
+6. Slower and larger than CPU registers/cache in typical
+   systems
+
+
+WHAT DOES VOLATILE MEAN?
+------------------------
+
+Volatile memory loses its contents when power is removed.
+
+Example:
+
+    Computer ON
+        ↓
+    RAM contains data
+        ↓
+    Power OFF
+        ↓
+    RAM contents are lost
+
+
+------------------------------------------------------------
+19.3 TYPES OF RAM
+------------------------------------------------------------
+
+RAM is broadly divided into:
+
+             RAM
+              |
+        +-----+-----+
+        |           |
+       SRAM        DRAM
+        |           |
+    Static RAM   Dynamic RAM
+
+
+------------------------------------------------------------
+19.3.1 SRAM
+------------------------------------------------------------
+
+SRAM = Static Random Access Memory
+
+SRAM stores each bit using a circuit called a flip-flop/latch
+structure.
+
+Conceptually:
+
+        +----------------+
+        | SRAM Cell      |
+        |                |
+        | Flip-flop      |
+        | based storage  |
+        +----------------+
+
+SRAM does not need periodic refresh while powered.
+
+
+CHARACTERISTICS OF SRAM
+-----------------------
+
+• Very fast
+• Expensive
+• Lower storage density
+• Requires more hardware per bit
+• Does not require refresh
+• Commonly used for CPU cache
+
+
+ANALOGY
+-------
+
+SRAM is like writing something on a whiteboard that remains
+there without repeatedly rewriting it.
+
+
+APPLICATION
+-----------
+
+CPU Cache:
+
+    CPU
+     |
+     ↓
+   L1 Cache ← commonly SRAM
+     |
+     ↓
+   L2 Cache ← commonly SRAM
+     |
+     ↓
+   L3 Cache ← commonly SRAM
+     |
+     ↓
+   DRAM Main Memory
+
+
+------------------------------------------------------------
+19.3.2 DRAM
+------------------------------------------------------------
+
+DRAM = Dynamic Random Access Memory
+
+A DRAM cell traditionally stores one bit using:
+
+    • Capacitor
+    • Access transistor
+
+Conceptual structure:
+
+        Word Line
+            |
+          Switch
+            |
+         Capacitor
+            |
+          Ground
+
+The capacitor stores electrical charge representing the bit.
+
+
+WHY "DYNAMIC"?
+--------------
+
+The charge stored in the capacitor gradually leaks away.
+
+Therefore, DRAM must periodically be REFRESHED.
+
+    Store charge
+         ↓
+    Charge leaks
+         ↓
+       Refresh
+         ↓
+    Restore charge
+         ↓
+       Repeat
+
+
+CHARACTERISTICS OF DRAM
+-----------------------
+
+• Slower than SRAM
+• Cheaper than SRAM
+• Higher density
+• Lower cost per bit
+• Requires refresh
+• Used as main memory
+
+
+APPLICATION
+-----------
+
+Main RAM in computers is typically based on DRAM technology.
+
+
+------------------------------------------------------------
+19.4 SRAM VS DRAM
+------------------------------------------------------------
+
++----------------------+----------------------+----------------------+
+| Feature              | SRAM                 | DRAM                 |
++----------------------+----------------------+----------------------+
+| Full form            | Static RAM           | Dynamic RAM          |
+| Storage mechanism    | Flip-flop/latch      | Capacitor +          |
+|                      | based                | transistor           |
+| Refresh required     | No                   | Yes                  |
+| Speed                | Faster               | Slower               |
+| Cost/bit             | Higher               | Lower                |
+| Density               | Lower                | Higher               |
+| Hardware/cell        | More                 | Less                 |
+| Typical use          | Cache                | Main memory          |
++----------------------+----------------------+----------------------+
+
+
+EASY MEMORY TRICK:
+
+    SRAM → SPEED → CACHE
+
+    DRAM → DENSITY → MAIN MEMORY
+
+
+------------------------------------------------------------
+19.5 ROM
+------------------------------------------------------------
+
+ROM = Read Only Memory
+
+ROM is a type of non-volatile memory.
+
+Non-volatile means:
+
+    Power OFF
+        ↓
+    Data remains stored
+
+
+TRADITIONAL PURPOSE
+-------------------
+
+ROM is used to store information that should remain available
+even when power is removed.
+
+Examples include:
+    • Firmware
+    • Boot-related code
+    • Device initialization information
+
+
+IMPORTANT NOTE
+--------------
+
+Modern systems often use forms of electrically programmable
+non-volatile memory such as Flash instead of traditional
+fixed ROM.
+
+But in COA, ROM is still studied as a major memory category.
+
+
+------------------------------------------------------------
+19.6 TYPES OF ROM
+------------------------------------------------------------
+
+Common ROM categories:
+
+                    ROM
+                     |
+       +-------------+-------------+
+       |             |             |
+      PROM         EPROM         EEPROM
+       |
+   Programmable
+   once
+
+
+------------------------------------------------------------
+19.6.1 PROM
+------------------------------------------------------------
+
+PROM = Programmable Read Only Memory
+
+PROM is initially unprogrammed.
+
+The user/manufacturer can program it ONCE.
+
+After programming:
+
+    PROM
+      ↓
+   Programmed
+      ↓
+   Cannot normally
+   be erased/reprogrammed
+
+
+ANALOGY
+-------
+
+Like writing with permanent ink.
+
+You can write once, but cannot normally erase it.
+
+
+------------------------------------------------------------
+19.6.2 EPROM
+------------------------------------------------------------
+
+EPROM = Erasable Programmable Read Only Memory
+
+EPROM can be:
+    • Programmed
+    • Erased
+    • Programmed again
+
+
+Traditional EPROM erasure uses ultraviolet (UV) light.
+
+Process:
+
+    Program
+       ↓
+    EPROM
+       ↓
+    UV exposure
+       ↓
+    Erase
+       ↓
+    Reprogram
+
+
+ANALOGY
+-------
+
+Like a reusable board that requires a special cleaning method
+before you can write again.
+
+
+------------------------------------------------------------
+19.6.3 EEPROM
+------------------------------------------------------------
+
+EEPROM = Electrically Erasable Programmable Read Only Memory
+
+EEPROM can be erased electrically.
+
+Advantages over traditional EPROM:
+
+    • No UV light required
+    • Electrically erasable
+    • More convenient to reprogram
+
+
+EEPROM is non-volatile.
+
+
+------------------------------------------------------------
+19.7 FLASH MEMORY
+------------------------------------------------------------
+
+Flash memory is a type of non-volatile semiconductor memory
+related to EEPROM technology.
+
+It can be electrically erased and reprogrammed.
+
+Common applications:
+
+    • SSDs
+    • USB flash drives
+    • Memory cards
+    • Firmware storage
+
+
+IMPORTANT:
+
+    Flash memory is NON-VOLATILE.
+
+
+------------------------------------------------------------
+19.8 ROM TYPES COMPARISON
+------------------------------------------------------------
+
++-----------+----------------------+--------------------------+
+| Type      | Programmable?         | Erasable?               |
++-----------+----------------------+--------------------------+
+| ROM       | Normally fixed        | No                      |
+| PROM      | Yes, once             | No                      |
+| EPROM     | Yes                   | Yes, using UV           |
+| EEPROM    | Yes                   | Yes, electrically      |
+| Flash     | Yes                   | Yes, electrically      |
++-----------+----------------------+--------------------------+
+
+
+MEMORY TRICK:
+
+    PROM  → Program Once
+    EPROM → Erase using UV
+    EEPROM → Electrical Erase
+    Flash → Fast/block-oriented electrical erase concept
+
+
+------------------------------------------------------------
+19.9 RAM VS ROM
+------------------------------------------------------------
+
++------------------+----------------------+----------------------+
+| Feature          | RAM                  | ROM                  |
++------------------+----------------------+----------------------+
+| Volatility       | Volatile             | Non-volatile         |
+| Normal use       | Read + Write         | Mainly read          |
+| Data retention   | Lost without power  | Retained without     |
+|                  |                      | power                |
+| Typical use      | Running programs     | Firmware             |
+| Main examples    | SRAM, DRAM           | PROM, EPROM, EEPROM |
++------------------+----------------------+----------------------+
+
+
+------------------------------------------------------------
+19.10 MEMORY CELL
+------------------------------------------------------------
+
+A memory cell is the basic storage element of a memory device.
+
+At the simplest conceptual level:
+
+    One memory cell
+          ↓
+       Stores
+          ↓
+        1 bit
+
+
+A collection of cells forms memory.
+
+Example:
+
+    8 cells
+       ↓
+    8 bits
+       ↓
+    1 byte
+
+
+------------------------------------------------------------
+19.11 MEMORY ORGANISATION
+------------------------------------------------------------
+
+Memory is commonly represented as:
+
+              MEMORY
+                |
+       +--------+--------+
+       |                 |
+    Addresses           Data
+       |                 |
+       ↓                 ↓
+    Location         Stored value
+
+
+Example:
+
+Suppose we have:
+
+    4 memory locations
+    Each location = 8 bits
+
+Then:
+
+    Memory organization = 4 × 8
+
+Meaning:
+
+    4 words/locations
+    8 bits per location
+
+
+Diagram:
+
+ Address       8-bit Data
+ -------       ----------
+   00          10101010
+   01          11001100
+   10          11110000
+   11          00001111
+
+
+Total capacity:
+
+    4 × 8 = 32 bits
+
+    32 bits = 4 bytes
+
+
+------------------------------------------------------------
+19.12 ADDRESS LINES
+------------------------------------------------------------
+
+Address lines select a particular memory location.
+
+If there are n address lines:
+
+    Number of addressable locations = 2^n
+
+
+Example:
+
+    2 address lines
+
+    2² = 4 locations
+
+
+Diagram:
+
+        A1 A0
+         | |
+         ↓ ↓
+      +--------+
+      | Decoder|
+      +--------+
+       | | | |
+       ↓ ↓ ↓ ↓
+      M0 M1 M2 M3
+
+
+------------------------------------------------------------
+19.13 DATA LINES
+------------------------------------------------------------
+
+Data lines carry the actual data between CPU and memory.
+
+Example:
+
+    8 data lines
+        ↓
+    Can transfer
+    8 bits at a time
+
+
+Therefore:
+
+    Address lines → SELECT location
+
+    Data lines → TRANSFER data
+
+
+------------------------------------------------------------
+19.14 ADDRESS LINES VS DATA LINES
+------------------------------------------------------------
+
++------------------+----------------------------+
+| Address Lines    | Data Lines                 |
++------------------+----------------------------+
+| Select location  | Carry data                 |
+| Determine number | Determine data width       |
+| of locations     |                            |
++------------------+----------------------------+
+
+
+IMPORTANT FORMULAS
+------------------
+
+If:
+
+    n = number of address lines
+
+Then:
+
+    Locations = 2^n
+
+
+If:
+
+    m = number of data lines
+
+Then:
+
+    Word size = m bits
+
+
+Total memory capacity:
+
+    Capacity = 2^n × m bits
+
+
+------------------------------------------------------------
+19.15 MEMORY CHIP
+------------------------------------------------------------
+
+A memory chip is an integrated circuit containing many memory
+cells.
+
+Example:
+
+    1K × 8 memory chip
+
+means:
+
+    1K = 1024 locations
+
+and
+
+    Each location stores 8 bits.
+
+
+Therefore:
+
+    Capacity = 1024 × 8 bits
+             = 8192 bits
+             = 1024 bytes
+             = 1 KB
+
+
+------------------------------------------------------------
+19.16 EXAMPLE: 4K × 8 MEMORY CHIP
+------------------------------------------------------------
+
+Given:
+
+    Memory = 4K × 8
+
+Step 1:
+    4K = 4096 locations
+
+Step 2:
+    Each location = 8 bits
+
+Step 3:
+    Capacity:
+
+    4096 × 8
+    = 32768 bits
+
+    = 4096 bytes
+
+    = 4 KB
+
+
+Address lines:
+
+    4096 = 2^12
+
+Therefore:
+
+    12 address lines
+
+
+Data lines:
+
+    8 data lines
+
+
+FINAL:
+
+    4K × 8 memory chip
+
+    Address lines = 12
+    Data lines    = 8
+    Capacity      = 4 KB
+
+
+------------------------------------------------------------
+19.17 MEMORY MODULE
+------------------------------------------------------------
+
+A memory module contains multiple memory chips.
+
+Example:
+
+        Memory Module
+       +-------------+
+       | Chip 1      |
+       | Chip 2      |
+       | Chip 3      |
+       | Chip 4      |
+       +-------------+
+
+Multiple chips work together to provide the required:
+
+    • Capacity
+    • Word size
+
+
+------------------------------------------------------------
+19.18 MEMORY EXPANSION
+------------------------------------------------------------
+
+Sometimes one memory chip is not enough.
+
+We may need to increase:
+
+    1. Word size
+    2. Number of memory locations
+    3. Both
+
+
+There are two major types:
+
+    A. Increasing word size
+    B. Increasing memory capacity
+
+
+------------------------------------------------------------
+19.19 INCREASING WORD SIZE
+------------------------------------------------------------
+
+Suppose we have:
+
+    1K × 4 memory chips
+
+But we need:
+
+    1K × 8 memory
+
+Each chip provides:
+
+    4 bits
+
+We need:
+
+    8 bits
+
+Therefore:
+
+    Number of chips = 8 / 4
+                    = 2
+
+
+Connect them in parallel.
+
+              Address
+                 |
+          +------+------+
+          |             |
+       +------+      +------+
+       | Chip |      | Chip |
+       | 1K×4 |      | 1K×4 |
+       +------+      +------+
+          |             |
+         4 bits        4 bits
+          \             /
+           \           /
+            \         /
+              8 bits
+
+
+Important:
+
+    Address lines are shared.
+
+    Data lines are combined.
+
+
+------------------------------------------------------------
+19.20 INCREASING MEMORY CAPACITY
+------------------------------------------------------------
+
+Suppose:
+
+    Available chip = 1K × 8
+
+Required:
+
+    4K × 8
+
+
+Word size is already correct.
+
+We need more locations.
+
+Required locations:
+
+    4K
+
+Available:
+
+    1K
+
+
+Number of chips:
+
+    4K / 1K = 4 chips
+
+
+Conceptually:
+
+              Address lines
+                   |
+                Decoder
+             /    |    |    \
+            ↓     ↓     ↓     ↓
+          Chip1 Chip2 Chip3 Chip4
+          1K×8  1K×8  1K×8  1K×8
+
+
+Lower address bits select the location inside a chip.
+
+Higher address bits select which chip is active.
+
+
+------------------------------------------------------------
+19.21 CHIP SELECT
+------------------------------------------------------------
+
+CS = Chip Select
+
+Chip Select determines which memory chip should respond.
+
+Suppose there are 4 chips:
+
+    Chip 0
+    Chip 1
+    Chip 2
+    Chip 3
+
+A decoder can use higher-order address bits to select one
+chip.
+
+Example:
+
+    A11 A10
+      |
+      ↓
+    2-to-4 Decoder
+      |
+      +---- Chip 0
+      +---- Chip 1
+      +---- Chip 2
+      +---- Chip 3
+
+
+Only the selected chip responds.
+
+
+------------------------------------------------------------
+19.22 MEMORY ADDRESS DECODING
+------------------------------------------------------------
+
+Address decoding determines which memory location or chip
+should be accessed.
+
+Two major concepts:
+
+    1. Location selection
+    2. Chip selection
+
+
+Example:
+
+For a 4K memory:
+
+    12 address bits are needed.
+
+If multiple 1K chips are used:
+
+    10 lower bits → location inside selected chip
+
+    2 upper bits → select one of four chips
+
+
+Therefore:
+
+    A11 A10 | A9 ... A0
+    --------+-----------
+    Chip    | Location
+    Select  |
+
+
+------------------------------------------------------------
+19.23 MEMORY READ OPERATION
+------------------------------------------------------------
+
+During a READ:
+
+    CPU
+     |
+     | Address
+     ↓
+    Memory
+     |
+     | Data
+     ↓
+    CPU
+
+
+Basic sequence:
+
+    1. CPU places address on address bus.
+    2. Memory decoder selects location.
+    3. Memory reads stored data.
+    4. Data appears on data bus.
+    5. CPU receives data.
+
+
+Conceptually:
+
+    CPU
+     |
+     | Address
+     ↓
+    [Memory]
+     |
+     | Data
+     ↓
+    CPU
+
+
+------------------------------------------------------------
+19.24 MEMORY WRITE OPERATION
+------------------------------------------------------------
+
+During a WRITE:
+
+    CPU
+     |
+     | Address + Data + Write Control
+     ↓
+    Memory
+
+
+Basic sequence:
+
+    1. CPU places address.
+    2. CPU places data.
+    3. Write control signal is activated.
+    4. Memory stores data at selected address.
+
+
+Conceptually:
+
+       Address
+          ↓
+    +-----------+
+    |           |
+    |  MEMORY   |
+    |           |
+    +-----------+
+          ↑
+          |
+         Data
+
+    Write control signal
+          ↓
+    Store data
+
+
+------------------------------------------------------------
+19.25 MEMORY CONTROL SIGNALS
+------------------------------------------------------------
+
+Common conceptual control signals include:
+
+    • Read
+    • Write
+    • Chip Select / Enable
+
+
+READ:
+
+    CPU → Memory
+    "Give me the data."
+
+
+WRITE:
+
+    CPU → Memory
+    "Store this data."
+
+
+CHIP SELECT:
+
+    "This particular chip is active."
+
+
+------------------------------------------------------------
+19.26 MEMORY CAPACITY CALCULATIONS
+------------------------------------------------------------
+
+FORMULA:
+
+    Capacity = Number of locations × Bits per location
+
+
+Example:
+
+    2K × 16
+
+    2K = 2048 locations
+
+    Capacity:
+    2048 × 16
+    = 32768 bits
+
+    = 4096 bytes
+
+    = 4 KB
+
+
+Therefore:
+
+    2K × 16 = 4 KB
+
+
+------------------------------------------------------------
+19.27 EXAM NUMERICAL 1
+------------------------------------------------------------
+
+QUESTION:
+
+A memory has 10 address lines and 8 data lines.
+Find its capacity.
+
+SOLUTION:
+
+    Address lines = 10
+
+    Number of locations:
+    = 2^10
+    = 1024
+
+    Data width = 8 bits
+
+    Capacity:
+    = 1024 × 8 bits
+    = 8192 bits
+    = 1024 bytes
+    = 1 KB
+
+
+ANSWER:
+
+    1 KB
+
+
+------------------------------------------------------------
+19.28 EXAM NUMERICAL 2
+------------------------------------------------------------
+
+QUESTION:
+
+How many address lines are required for a 64 KB byte-addressable
+memory?
+
+SOLUTION:
+
+    64 KB = 64 × 1024 bytes
+          = 65536 bytes
+
+    65536 = 2^16
+
+Therefore:
+
+    Address lines = 16
+
+
+ANSWER:
+
+    16 address lines
+
+
+------------------------------------------------------------
+19.29 EXAM NUMERICAL 3
+------------------------------------------------------------
+
+QUESTION:
+
+How many 1K × 8 chips are required to construct
+8K × 8 memory?
+
+SOLUTION:
+
+Required capacity:
+
+    8K × 8
+
+Available:
+
+    1K × 8
+
+Since word size is same:
+
+    Number of chips
+    = 8K / 1K
+    = 8
+
+
+ANSWER:
+
+    8 chips
+
+
+------------------------------------------------------------
+19.30 EXAM NUMERICAL 4
+------------------------------------------------------------
+
+QUESTION:
+
+How many 4K × 4 chips are needed to construct
+8K × 8 memory?
+
+SOLUTION:
+
+Required:
+
+    8K × 8
+
+Available:
+
+    4K × 4
+
+First increase word size:
+
+    4 bits → 8 bits
+
+    8/4 = 2 chips
+
+So:
+
+    2 chips create 4K × 8.
+
+Now increase locations:
+
+    8K / 4K = 2 groups
+
+Each group needs 2 chips.
+
+Therefore:
+
+    Total chips = 2 × 2
+                = 4
+
+
+ANSWER:
+
+    4 chips
+
+
+------------------------------------------------------------
+19.31 MEMORY ORGANISATION EXAMPLE
+------------------------------------------------------------
+
+Suppose a memory is:
+
+    16K × 8
+
+
+Then:
+
+    16K = 16384 locations
+
+    16384 = 2^14
+
+Therefore:
+
+    Address lines = 14
+
+    Data lines = 8
+
+
+Capacity:
+
+    16384 × 8 bits
+    = 131072 bits
+    = 16384 bytes
+    = 16 KB
+
+
+FINAL:
+
+    16K × 8
+
+    Address lines = 14
+    Data lines    = 8
+    Capacity      = 16 KB
+
+
+------------------------------------------------------------
+19.32 IMPORTANT DISTINCTION
+------------------------------------------------------------
+
+Do NOT confuse:
+
+    16K × 8
+
+with:
+
+    16 KB
+
+They are equivalent in capacity here, but notation means
+different things.
+
+    16K × 8
+       ↓
+    16K locations
+    each containing 8 bits
+
+Therefore:
+
+    16K × 8 bits
+    = 16 KB
+
+
+------------------------------------------------------------
+19.33 MEMORY HIERARCHY CONNECTION
+------------------------------------------------------------
+
+Memory organisation fits into the larger memory hierarchy:
+
+             FASTEST
+                ↑
+            Registers
+                |
+             L1 Cache
+                |
+             L2 Cache
+                |
+             L3 Cache
+                |
+          Main Memory
+             (DRAM)
+                |
+          SSD / HDD
+                ↓
+             SLOWEST
+
+
+General trend moving downward:
+
+    Speed        ↓
+    Cost/bit     ↓
+    Capacity     ↑
+    Distance     ↑
+
+
+------------------------------------------------------------
+19.34 SRAM, DRAM AND CPU
+------------------------------------------------------------
+
+A simplified modern system:
+
+            CPU
+             |
+      +------+------+
+      |             |
+   Registers       Cache
+                    |
+                  SRAM
+                    |
+                  DRAM
+                    |
+              Main Memory
+                    |
+             SSD / HDD
+
+
+Remember:
+
+    Registers → fastest
+    Cache → usually SRAM
+    Main memory → usually DRAM
+    Secondary storage → non-volatile
+
+
+------------------------------------------------------------
+19.35 COMMON MISTAKES
+------------------------------------------------------------
+
+MISTAKE 1:
+    Thinking RAM is non-volatile.
+
+CORRECT:
+    RAM is normally volatile.
+
+
+MISTAKE 2:
+    Thinking SRAM needs refresh.
+
+CORRECT:
+    SRAM does not require periodic refresh.
+
+
+MISTAKE 3:
+    Thinking DRAM is faster than SRAM.
+
+CORRECT:
+    SRAM is generally faster.
+
+
+MISTAKE 4:
+    Thinking ROM can never be modified.
+
+CORRECT:
+    Traditional ROM is fixed, but PROM, EPROM, EEPROM and
+    Flash provide different forms of programmability.
+
+
+MISTAKE 5:
+    Confusing address lines with data lines.
+
+CORRECT:
+    Address lines → select location.
+    Data lines → carry data.
+
+
+MISTAKE 6:
+    Forgetting that:
+
+        n address lines → 2^n locations
+
+
+MISTAKE 7:
+    Confusing:
+
+        1K × 8
+
+    with:
+
+        1 KB
+
+    They represent the same capacity but different notation:
+    the first describes organisation, the second describes
+    total storage capacity.
+
+
+------------------------------------------------------------
+19.36 HIGH-VALUE FORMULAS
+------------------------------------------------------------
+
+1. Number of locations:
+
+       Locations = 2^(number of address lines)
+
+
+2. Capacity:
+
+       Capacity = Locations × bits/location
+
+
+3. Address lines:
+
+       Address lines = log2(number of locations)
+
+
+4. Data lines:
+
+       Data lines = bits per memory location
+
+
+5. Number of chips for same word size:
+
+       Chips = Required locations / Chip locations
+
+
+6. Number of parallel chips for word expansion:
+
+       Chips = Required word size / Chip word size
+
+
+------------------------------------------------------------
+19.37 B.TECH EXAM QUESTIONS
+------------------------------------------------------------
+
+Q1. Define RAM.
+
+Q2. Explain SRAM and DRAM.
+
+Q3. Why does DRAM require refreshing?
+
+Q4. Compare SRAM and DRAM.
+
+Q5. What is ROM?
+
+Q6. Explain PROM, EPROM and EEPROM.
+
+Q7. What is Flash memory?
+
+Q8. Explain memory organisation.
+
+Q9. What are address lines and data lines?
+
+Q10. Derive the relationship between address lines and
+    number of memory locations.
+
+Q11. Explain chip selection.
+
+Q12. Explain memory read and write operations.
+
+Q13. Construct a 4K × 8 memory using 1K × 8 chips.
+
+Q14. Construct an 8K × 8 memory using 4K × 4 chips.
+
+Q15. Find the number of address lines required for a given
+    memory capacity.
+
+
+------------------------------------------------------------
+19.38 COMPETITIVE-EXAM HIGH-VALUE CONCEPTS
+------------------------------------------------------------
+
+Remember these immediately:
+
+    n address lines
+          ↓
+    2^n locations
+
+
+    m data lines
+          ↓
+    m bits/location
+
+
+    1 byte = 8 bits
+
+
+    SRAM
+       ↓
+    Faster
+       ↓
+    More expensive
+       ↓
+    Cache
+
+
+    DRAM
+       ↓
+    Slower
+       ↓
+    Dense
+       ↓
+    Cheaper
+       ↓
+    Main memory
+
+
+    PROM
+       ↓
+    Program once
+
+
+    EPROM
+       ↓
+    UV erase
+
+
+    EEPROM
+       ↓
+    Electrical erase
+
+
+    Flash
+       ↓
+    Non-volatile semiconductor storage
+
+
+------------------------------------------------------------
+19.39 QUICK REVISION
+------------------------------------------------------------
+
+MAIN MEMORY
+    ↓
+Primary memory directly accessible by CPU.
+
+RAM
+    ↓
+Usually volatile read/write memory.
+
+SRAM
+    ↓
+Fast + expensive + no refresh + cache.
+
+DRAM
+    ↓
+Dense + cheaper + refresh + main memory.
+
+ROM
+    ↓
+Non-volatile memory traditionally used for fixed/firmware data.
+
+PROM
+    ↓
+Programmable once.
+
+EPROM
+    ↓
+UV erasable.
+
+EEPROM
+    ↓
+Electrically erasable.
+
+FLASH
+    ↓
+Non-volatile + electrically erasable/reprogrammable.
+
+ADDRESS LINES
+    ↓
+Select memory locations.
+
+DATA LINES
+    ↓
+Carry data.
+
+n ADDRESS LINES
+    ↓
+2^n LOCATIONS.
+
+MEMORY CAPACITY
+    ↓
+Number of locations × bits/location.
+
+CHIP SELECT
+    ↓
+Selects the required memory chip.
+
+MEMORY EXPANSION
+    ↓
+Increase word size
+OR
+Increase number of locations
+OR
+Both.
+
+
+============================================================
+CHAPTER 19 MASTER MAP
+============================================================
+
+                  MAIN MEMORY
+                       |
+        +--------------+--------------+
+        |                             |
+       RAM                           ROM
+        |                             |
+    +---+---+                 +-------+-------+
+    |       |                 |       |       |
+  SRAM    DRAM              PROM    EPROM   EEPROM
+    |       |                                 |
+  Cache   Main RAM                            |
+                                              Flash
+        |
+        ↓
+  MEMORY ORGANISATION
+        |
+   +----+----+
+   |         |
+Address     Data
+ Lines      Lines
+   |         |
+Select      Carry
+location    data
+   |
+   ↓
+2^n locations
+   |
+   ↓
+Memory chips
+   |
+   ↓
+Chip selection
+   |
+   ↓
+Memory expansion
+   |
+   +------------------+
+   |                  |
+Word-size expansion  Capacity expansion
+
+
+============================================================
+CHAPTER 19 COMPLETE
+============================================================

@@ -1,0 +1,1951 @@
+CHAPTER 27 — RISC ARCHITECTURE
+
+============================================================
+CHAPTER 27 — RISC ARCHITECTURE
+============================================================
+
+LEVEL:
+B.Tech 1st Year → Intermediate
+
+PREREQUISITE:
+Chapter 10 — Machine Instructions
+Chapter 11 — Addressing Modes
+Chapter 25 — Instruction Pipelining
+Chapter 26 — Advanced Pipelining
+
+GOAL:
+Understand RISC architecture, its characteristics,
+load/store design, instruction formats, registers,
+advantages, limitations, and major RISC examples such as
+ARM, RISC-V and MIPS.
+
+============================================================
+
+
+------------------------------------------------------------
+27.1 WHAT IS RISC?
+------------------------------------------------------------
+
+RISC stands for:
+
+    Reduced Instruction Set Computer
+
+
+RISC is a processor/ISA design philosophy that generally
+uses a relatively simple set of instructions designed to
+execute efficiently.
+
+
+The basic idea is:
+
+    Keep instructions simple
+    +
+    Make them fast and regular
+    +
+    Use registers heavily
+    +
+    Make pipelining easier
+
+
+Simple conceptual view:
+
+    SIMPLE INSTRUCTIONS
+           ↓
+    REGULAR INSTRUCTION FORMAT
+           ↓
+    EASY DECODING
+           ↓
+    EFFICIENT PIPELINING
+           ↓
+    HIGH PERFORMANCE
+
+
+============================================================
+27.2 WHY WAS RISC DEVELOPED?
+============================================================
+
+Early processor designers observed that:
+
+    • Many complex instructions were rarely used.
+    • Simple instructions were used frequently.
+    • Complex instructions could require complicated control
+      logic.
+    • Simpler instructions could be easier to pipeline.
+    • Compilers could combine simple instructions to perform
+      more complex operations.
+
+
+This led to the RISC design philosophy.
+
+
+============================================================
+27.3 BASIC RISC IDEA
+============================================================
+
+RISC tries to make the commonly used instructions:
+
+    • Simple
+    • Fast
+    • Regular
+    • Easy to decode
+    • Easy to pipeline
+
+
+Example conceptual instruction:
+
+    ADD R1, R2, R3
+
+
+Meaning:
+
+    R1 ← R2 + R3
+
+
+This is a simple register-to-register arithmetic operation.
+
+
+============================================================
+27.4 REAL-WORLD ANALOGY
+============================================================
+
+Imagine two workers.
+
+WORKER A:
+
+    Knows 100 complicated tasks.
+
+WORKER B:
+
+    Knows 20 simple tasks but performs them extremely
+    efficiently.
+
+
+For repetitive work, Worker B may be very efficient.
+
+Similarly, RISC focuses on a smaller/simple instruction
+design with efficient execution.
+
+
+IMPORTANT:
+
+    "Reduced" does NOT simply mean "very few instructions."
+
+It means the instruction set and execution model are designed
+around simpler, regular operations.
+
+
+============================================================
+27.5 RISC CHARACTERISTICS
+============================================================
+
+Major RISC characteristics:
+
+    1. Simple instructions
+    2. Load/store architecture
+    3. Large register set
+    4. Fixed-length or relatively regular instructions
+    5. Few/simple addressing modes
+    6. Simple instruction decoding
+    7. Easy pipelining
+    8. Register-based operations
+    9. Compiler-oriented optimisation
+    10. High instruction regularity
+
+
+============================================================
+27.6 CHARACTERISTIC 1 — SIMPLE INSTRUCTIONS
+============================================================
+
+RISC instructions are generally designed to perform
+relatively simple operations.
+
+
+Example:
+
+    ADD R1, R2, R3
+
+
+Instead of having one extremely complex instruction that
+performs many unrelated operations, the processor can use
+multiple simpler instructions.
+
+
+Example:
+
+    LOAD
+    ADD
+    STORE
+
+
+This makes hardware implementation more regular.
+
+
+============================================================
+27.7 CHARACTERISTIC 2 — LOAD/STORE ARCHITECTURE
+============================================================
+
+This is one of the MOST IMPORTANT characteristics of RISC.
+
+
+In a load/store architecture:
+
+    Only LOAD and STORE instructions access memory.
+
+
+Arithmetic and logical instructions operate on registers.
+
+
+Example:
+
+    LOAD R1, [1000]
+
+    ADD R3, R1, R2
+
+    STORE [1004], R3
+
+
+Flow:
+
+    Memory
+       ↓
+     LOAD
+       ↓
+    Registers
+       ↓
+    ALU operation
+       ↓
+    Registers
+       ↓
+     STORE
+       ↓
+    Memory
+
+
+============================================================
+27.8 WHY LOAD/STORE?
+============================================================
+
+Separating memory access from computation makes the
+instruction behaviour more regular.
+
+
+Arithmetic instruction:
+
+    ADD R1, R2, R3
+
+
+does not need to perform a memory access.
+
+
+Memory instruction:
+
+    LOAD R1, [address]
+
+
+is responsible for reading memory.
+
+
+This separation simplifies:
+
+    • Instruction decoding
+    • Datapath design
+    • Pipeline design
+    • Hazard handling
+    • Scheduling
+
+
+============================================================
+27.9 EXAMPLE — RISC LOAD/STORE
+============================================================
+
+Suppose:
+
+    Memory[1000] = 10
+    Memory[1004] = 20
+
+
+We want:
+
+    Memory[1008] = 30
+
+
+Possible sequence:
+
+    LOAD R1, [1000]
+    LOAD R2, [1004]
+    ADD  R3, R1, R2
+    STORE [1008], R3
+
+
+Execution:
+
+    R1 = 10
+    R2 = 20
+
+    R3 = 10 + 20
+
+    R3 = 30
+
+    Memory[1008] = 30
+
+
+Notice:
+
+    ADD operates on registers.
+
+It does not directly add values from memory.
+
+
+============================================================
+27.10 RISC VS MEMORY-TO-MEMORY OPERATION
+============================================================
+
+RISC style:
+
+    LOAD → REGISTER
+    COMPUTE → REGISTER
+    STORE → MEMORY
+
+
+Conceptually:
+
+    Memory
+      ↓
+    Register
+      ↓
+      ALU
+      ↓
+    Register
+      ↓
+    Memory
+
+
+This is called:
+
+    LOAD/STORE ARCHITECTURE
+
+
+============================================================
+27.11 CHARACTERISTIC 3 — LARGE REGISTER SET
+============================================================
+
+RISC processors generally make extensive use of registers.
+
+
+Why?
+
+Registers are much faster to access than main memory.
+
+
+Example:
+
+    R1
+    R2
+    R3
+    R4
+    ...
+    R31
+
+
+Programs can keep frequently used values in registers.
+
+
+Advantages:
+
+    • Less memory access
+    • Faster computation
+    • Better pipeline utilisation
+    • Better compiler optimisation
+
+
+============================================================
+27.12 REGISTER-BASED COMPUTATION
+============================================================
+
+Example:
+
+    ADD R1, R2, R3
+
+
+Conceptually:
+
+    R1 ← R2 + R3
+
+
+The ALU receives:
+
+    R2
+    R3
+
+
+and produces:
+
+    R1
+
+
+Diagram:
+
+       R2 ──────┐
+                ↓
+              +-----+
+       R3 ───→ | ALU | ───→ R1
+              +-----+
+
+
+============================================================
+27.13 CHARACTERISTIC 4 — FIXED-LENGTH INSTRUCTIONS
+============================================================
+
+Many RISC ISAs use fixed-length instructions or highly
+regular instruction formats.
+
+
+Example:
+
+    Every basic instruction = 32 bits
+
+
+This makes:
+
+    Instruction fetching easier
+    +
+    Instruction alignment easier
+    +
+    Decoding simpler
+    +
+    Pipelining easier
+
+
+IMPORTANT:
+
+    Not every architecture traditionally labelled RISC has
+    only one fixed instruction length.
+
+Modern RISC ISAs can have extensions or variable-length
+features.
+
+
+============================================================
+27.14 EXAMPLE OF FIXED-LENGTH INSTRUCTIONS
+============================================================
+
+Suppose:
+
+    Each instruction = 32 bits
+
+
+Memory:
+
+    Address 1000 → Instruction 1
+    Address 1004 → Instruction 2
+    Address 1008 → Instruction 3
+    Address 1012 → Instruction 4
+
+
+Instruction size is predictable.
+
+
+The CPU can easily calculate the next instruction address.
+
+
+============================================================
+27.15 CHARACTERISTIC 5 — FEWER/SIMPLER ADDRESSING MODES
+============================================================
+
+Traditional RISC designs generally use fewer and simpler
+addressing modes than classic CISC designs.
+
+
+Common examples:
+
+    Register
+    Immediate
+    Register + offset
+
+
+Example:
+
+    ADD R1, R2, R3
+
+    ADDI R1, R2, 10
+
+    LOAD R1, 8(R2)
+
+
+Simple addressing modes make decoding and execution more
+regular.
+
+
+============================================================
+27.16 CHARACTERISTIC 6 — SIMPLE DECODING
+============================================================
+
+Because instructions are relatively regular:
+
+    Instruction
+        ↓
+    Decode
+        ↓
+    Control signals
+
+
+The control unit can determine the instruction operation
+efficiently.
+
+
+This supports:
+
+    High-speed pipelines
+    +
+    Predictable instruction behaviour
+
+
+============================================================
+27.17 CHARACTERISTIC 7 — PIPELINE FRIENDLINESS
+============================================================
+
+RISC instruction regularity makes pipelining easier.
+
+
+Typical pipeline:
+
+    IF → ID → EX → MEM → WB
+
+
+A simple instruction can move through these stages
+predictably.
+
+
+Therefore:
+
+    RISC design philosophy and pipelining often work well
+    together.
+
+
+============================================================
+27.18 CHARACTERISTIC 8 — COMPILER IMPORTANCE
+============================================================
+
+RISC architectures rely heavily on compiler optimisation.
+
+
+The compiler decides how to combine simple instructions.
+
+
+Example high-level operation:
+
+    C = A + B + D
+
+
+Compiler may generate:
+
+    LOAD R1, A
+    LOAD R2, B
+    ADD  R1, R1, R2
+    LOAD R2, D
+    ADD  R1, R1, R2
+    STORE C, R1
+
+
+The compiler converts complex high-level operations into
+appropriate simple instructions.
+
+
+============================================================
+27.19 RISC INSTRUCTION TYPES
+============================================================
+
+Common categories:
+
+    1. Data transfer
+    2. Arithmetic
+    3. Logical
+    4. Shift
+    5. Comparison
+    6. Branch
+    7. Control/system
+
+
+Examples:
+
+    LOAD
+    STORE
+    ADD
+    SUB
+    AND
+    OR
+    XOR
+    SHIFT
+    BRANCH
+
+
+============================================================
+27.20 RISC ARITHMETIC INSTRUCTIONS
+============================================================
+
+Examples:
+
+    ADD R1, R2, R3
+
+    SUB R4, R5, R6
+
+    ADDI R1, R2, 10
+
+
+Meaning:
+
+    ADD:
+
+        R1 ← R2 + R3
+
+
+    SUB:
+
+        R4 ← R5 - R6
+
+
+    ADDI:
+
+        R1 ← R2 + immediate value
+
+
+============================================================
+27.21 RISC LOGICAL INSTRUCTIONS
+============================================================
+
+Examples:
+
+    AND
+    OR
+    XOR
+    NOT
+    SHIFT
+
+
+Example:
+
+    AND R1, R2, R3
+
+
+Meaning:
+
+    R1 ← R2 AND R3
+
+
+These operations are generally performed using registers.
+
+
+============================================================
+27.22 RISC BRANCH INSTRUCTIONS
+============================================================
+
+RISC processors also need control-flow instructions.
+
+
+Examples:
+
+    BEQ
+    BNE
+    BLT
+    BGE
+    JUMP
+
+
+Example:
+
+    BEQ R1, R2, TARGET
+
+
+Meaning:
+
+    If R1 == R2:
+
+        branch to TARGET
+
+
+Otherwise:
+
+    continue with the next sequential instruction.
+
+
+============================================================
+27.23 RISC INSTRUCTION FORMAT
+============================================================
+
+A typical RISC instruction may contain fields such as:
+
+    +--------+--------+--------+--------+
+    | Opcode |  Reg1  |  Reg2  |  Reg3  |
+    +--------+--------+--------+--------+
+
+
+Fields can represent:
+
+    Opcode
+    Source register
+    Destination register
+    Immediate
+    Function/sub-operation
+    Address information
+
+
+Exact formats depend on the ISA.
+
+
+============================================================
+27.24 RISC REGISTERS
+============================================================
+
+Registers are central to RISC design.
+
+
+Typical register categories:
+
+    • General-purpose registers
+    • Program counter
+    • Stack pointer
+    • Status/control registers
+    • Special-purpose registers
+
+
+Many RISC architectures provide a relatively large set of
+general-purpose registers.
+
+
+============================================================
+27.25 RISC DATAPATH
+============================================================
+
+Simplified RISC datapath:
+
+                   +----------------+
+                   | Register File  |
+                   +----------------+
+                    |             |
+                    ↓             ↓
+                   Operand A    Operand B
+                    |             |
+                    +------┬------+
+                           ↓
+                         +-----+
+                         | ALU |
+                         +-----+
+                           |
+                           ↓
+                       Result
+                           |
+                           ↓
+                   +----------------+
+                   | Register File  |
+                   +----------------+
+
+
+For memory operations:
+
+    Register
+       ↓
+    Address calculation
+       ↓
+    Memory
+
+
+============================================================
+27.26 RISC LOAD PATH
+============================================================
+
+Example:
+
+    LOAD R1, 8(R2)
+
+
+Meaning:
+
+    Effective Address = R2 + 8
+
+Then:
+
+    R1 ← Memory[Effective Address]
+
+
+Diagram:
+
+    R2 + 8
+      ↓
+    Address
+      ↓
+    Memory
+      ↓
+      R1
+
+
+============================================================
+27.27 RISC STORE PATH
+============================================================
+
+Example:
+
+    STORE R1, 8(R2)
+
+
+Meaning:
+
+    Effective Address = R2 + 8
+
+    Memory[Effective Address] ← R1
+
+
+Diagram:
+
+      R2 + 8
+         ↓
+       Address
+         ↓
+      Memory
+         ↑
+         |
+         R1
+
+
+============================================================
+27.28 RISC PIPELINE
+============================================================
+
+A classic RISC pipeline:
+
+    IF → ID → EX → MEM → WB
+
+
+IF:
+
+    Fetch instruction
+
+
+ID:
+
+    Decode + register read
+
+
+EX:
+
+    ALU operation/address calculation
+
+
+MEM:
+
+    Memory access
+
+
+WB:
+
+    Write result to register
+
+
+The regularity of RISC instructions helps make this pipeline
+efficient.
+
+
+============================================================
+27.29 RISC PIPELINE EXAMPLE
+============================================================
+
+Instructions:
+
+    I1: ADD R1, R2, R3
+    I2: SUB R4, R5, R6
+    I3: AND R7, R8, R9
+
+
+Timing:
+
+    Cycle →   1    2    3    4    5    6    7
+
+    I1        IF   ID   EX   MEM  WB
+    I2             IF   ID   EX   MEM  WB
+    I3                  IF   ID   EX   MEM  WB
+
+
+The instructions overlap.
+
+
+============================================================
+27.30 RISC AND PIPELINE HAZARDS
+============================================================
+
+RISC does NOT eliminate hazards.
+
+
+Example:
+
+    I1:
+        ADD R1, R2, R3
+
+    I2:
+        SUB R4, R1, R5
+
+
+I2 depends on I1.
+
+
+This creates:
+
+    RAW hazard
+
+
+Possible solutions:
+
+    • Forwarding
+    • Stall
+    • Compiler scheduling
+
+
+============================================================
+27.31 DELAYED BRANCH — HISTORICAL CONCEPT
+============================================================
+
+Some classic RISC designs used:
+
+    Delayed branching
+
+
+The instruction immediately following a branch could execute
+before the branch took effect.
+
+
+Example:
+
+    BEQ R1, R2, TARGET
+    ADD R3, R4, R5
+
+
+The ADD may execute in the branch delay slot.
+
+
+This could reduce wasted pipeline cycles.
+
+
+Modern processors often use dynamic branch prediction and
+other techniques instead.
+
+
+============================================================
+27.32 ADVANTAGES OF RISC
+============================================================
+
+1. SIMPLE HARDWARE
+
+    Simpler instruction behaviour can simplify control logic.
+
+
+2. EASY PIPELINING
+
+    Regular instructions support efficient pipelines.
+
+
+3. FAST INSTRUCTION DECODE
+
+    Regular formats can simplify decoding.
+
+
+4. LARGE REGISTER USAGE
+
+    More computation can happen without frequent memory
+    accesses.
+
+
+5. GOOD PERFORMANCE/WATT
+
+    Efficient designs can provide strong performance per
+    unit of energy.
+
+
+6. COMPILER OPTIMISATION
+
+    Compilers can schedule and optimise simple instructions.
+
+
+7. SCALABILITY
+
+    RISC principles can be applied to small embedded
+    processors as well as powerful CPUs.
+
+
+============================================================
+27.33 LIMITATIONS OF RISC
+============================================================
+
+1. MORE INSTRUCTIONS MAY BE REQUIRED
+
+    A complex operation may require several simple
+    instructions.
+
+
+2. PROGRAM SIZE MAY INCREASE
+
+    More instructions can sometimes mean more code.
+
+
+3. GREATER COMPILER DEPENDENCE
+
+    Efficient code generation is important.
+
+
+4. MORE MEMORY TRAFFIC IN SOME CASES
+
+    Because memory operations are explicitly separated,
+    poorly optimised code may require more loads/stores.
+
+
+IMPORTANT:
+
+    Modern processors have narrowed many historical
+    RISC/CISC differences.
+
+
+============================================================
+27.34 RISC CODE SIZE
+============================================================
+
+Suppose a complex operation can be performed using one
+complex instruction in another ISA.
+
+
+RISC may use:
+
+    LOAD
+    ADD
+    SHIFT
+    STORE
+
+
+Therefore:
+
+    Number of instructions ↑
+
+
+But:
+
+    Individual instructions can be simpler.
+
+
+This creates a trade-off between:
+
+    Instruction count
+
+and:
+
+    Instruction complexity.
+
+
+============================================================
+27.35 RISC PERFORMANCE
+============================================================
+
+A simplified CPU performance relationship is:
+
+    CPU Time
+      =
+    Instruction Count
+    × CPI
+    × Clock Cycle Time
+
+
+RISC tries to achieve good performance through:
+
+    • Efficient instruction execution
+    • Low/controlled CPI
+    • Good pipelining
+    • High clock frequency
+    • Effective compiler optimisation
+
+
+But:
+
+    Lower instruction complexity does NOT automatically
+    guarantee lower total execution time.
+
+
+============================================================
+27.36 RISC EXAMPLE — MIPS
+============================================================
+
+MIPS is a classic RISC instruction set architecture.
+
+
+Important characteristics historically associated with MIPS:
+
+    • Load/store design
+    • Register-based operations
+    • Regular instruction formats
+    • 32-bit and 64-bit variants
+    • Strong educational importance
+
+
+MIPS is commonly used in textbooks to explain:
+
+    • Datapaths
+    • Control units
+    • Pipelining
+    • RISC architecture
+
+
+============================================================
+27.37 MIPS EXAMPLE
+============================================================
+
+Suppose:
+
+    R1 = 10
+    R2 = 20
+
+
+Instruction:
+
+    ADD R3, R1, R2
+
+
+Result:
+
+    R3 = 30
+
+
+For memory:
+
+    LW R3, 0(R1)
+
+
+means conceptually:
+
+    R3 ← Memory[R1 + 0]
+
+
+Store:
+
+    SW R3, 4(R1)
+
+
+means:
+
+    Memory[R1 + 4] ← R3
+
+
+============================================================
+27.38 ARM
+============================================================
+
+ARM is a major RISC-based ISA family.
+
+
+ARM has been widely used in:
+
+    • Smartphones
+    • Tablets
+    • Embedded systems
+    • Microcontrollers
+    • Laptops
+    • Servers
+    • Other computing systems
+
+
+ARM designs are strongly associated with:
+
+    • Energy efficiency
+    • Load/store principles
+    • Large-scale embedded/mobile use
+
+
+Modern ARM architectures include many advanced features,
+so they should not be thought of as only simple textbook
+RISC processors.
+
+
+============================================================
+27.39 WHY ARM IS IMPORTANT
+============================================================
+
+ARM became extremely important because of its combination of:
+
+    • Performance
+    • Power efficiency
+    • Compact implementations
+    • Broad ecosystem
+
+
+It is especially important in:
+
+    Mobile computing
+    Embedded computing
+    System-on-Chip designs
+
+
+============================================================
+27.40 RISC-V
+============================================================
+
+RISC-V is an open-standard instruction set architecture.
+
+
+Important characteristics:
+
+    • RISC design philosophy
+    • Load/store architecture
+    • Modular ISA
+    • Open standard
+    • Extensible design
+
+
+RISC-V is used in:
+
+    • Education
+    • Embedded systems
+    • Research
+    • Custom processors
+    • Increasingly diverse computing systems
+
+
+RISC-V will be studied in much greater detail in:
+
+    CHAPTER 38
+
+
+============================================================
+27.41 RISC-V EXAMPLE
+============================================================
+
+Conceptual RISC-V instruction:
+
+    ADD x5, x6, x7
+
+
+Meaning:
+
+    x5 ← x6 + x7
+
+
+Load:
+
+    LW x5, 0(x6)
+
+
+Store:
+
+    SW x5, 0(x6)
+
+
+Again:
+
+    Arithmetic → Registers
+
+    Memory access → Load/Store
+
+
+============================================================
+27.42 RISC FAMILY SUMMARY
+============================================================
+
+MIPS:
+
+    Classic educational RISC ISA.
+
+
+ARM:
+
+    Major commercial RISC-based ISA family.
+
+
+RISC-V:
+
+    Open-standard, modular RISC ISA.
+
+
+All demonstrate important RISC principles.
+
+
+============================================================
+27.43 RISC VS CISC — BASIC IDEA
+============================================================
+
+RISC:
+
+    Reduced Instruction Set Computer
+
+
+CISC:
+
+    Complex Instruction Set Computer
+
+
+Basic philosophy:
+
+    RISC:
+        Simple, regular instructions
+
+
+    CISC:
+        More complex and feature-rich instructions
+
+
+However:
+
+    Modern RISC and CISC processors have adopted techniques
+    from each other.
+
+
+============================================================
+27.44 RISC VS CISC TABLE
+============================================================
+
++----------------------+-----------------------------+
+| RISC                 | CISC                        |
++----------------------+-----------------------------+
+| Simple instructions  | Complex instructions        |
++----------------------+-----------------------------+
+| Load/store style     | Memory operands may be      |
+|                      | supported by instructions   |
++----------------------+-----------------------------+
+| Generally fewer/     | Often more addressing      |
+| simpler modes        | modes                       |
++----------------------+-----------------------------+
+| Often fixed/regular  | Often variable-length      |
+| formats              | formats                     |
++----------------------+-----------------------------+
+| Easier decoding      | More complex decoding       |
++----------------------+-----------------------------+
+| Strong pipeline      | Pipeline can be more        |
+| friendliness         | complex                     |
++----------------------+-----------------------------+
+| More work may be     | One instruction may perform |
+| done by multiple     | more complex operations    |
+| instructions         |                             |
++----------------------+-----------------------------+
+
+
+============================================================
+27.45 IMPORTANT RISC/CISC CAVEAT
+============================================================
+
+Do NOT memorize:
+
+    RISC = always faster
+    CISC = always slower
+
+
+That is incorrect.
+
+
+Modern processors are highly sophisticated.
+
+
+For example:
+
+    x86 is a CISC ISA,
+
+but modern x86 processors internally use techniques such as:
+
+    • Instruction decoding
+    • Micro-operations
+    • Pipelining
+    • Out-of-order execution
+    • Register renaming
+    • Speculation
+    • Superscalar execution
+
+
+Therefore:
+
+    ISA philosophy ≠ complete description of internal
+    processor implementation.
+
+
+============================================================
+27.46 RISC ISA VS RISC IMPLEMENTATION
+============================================================
+
+Very important distinction:
+
+
+ISA:
+
+    Defines what software sees.
+
+Implementation:
+
+    Defines how the processor actually executes it.
+
+
+A RISC ISA can be implemented using a highly advanced
+superscalar, out-of-order processor.
+
+
+Similarly:
+
+    A CISC ISA can be implemented using sophisticated
+    internal RISC-like micro-operations.
+
+
+============================================================
+27.47 RISC AND COMPILER
+============================================================
+
+The compiler plays an important role.
+
+
+Suppose:
+
+    High-level code:
+
+        C = A + B
+
+
+Compiler may produce:
+
+        LOAD R1, A
+        LOAD R2, B
+        ADD  R3, R1, R2
+        STORE C, R3
+
+
+The compiler performs:
+
+    • Register allocation
+    • Instruction selection
+    • Instruction scheduling
+    • Optimisation
+
+
+Good compiler optimisation can significantly improve RISC
+performance.
+
+
+============================================================
+27.48 RISC AND REGISTER ALLOCATION
+============================================================
+
+Registers are limited.
+
+
+Suppose a processor has:
+
+    32 general-purpose registers
+
+
+The compiler must decide:
+
+    Which variables stay in registers?
+
+
+Frequently used values:
+
+    → Registers
+
+
+Less frequently used values:
+
+    → Memory
+
+
+This process is called:
+
+    REGISTER ALLOCATION
+
+
+============================================================
+27.49 RISC AND PIPELINE SCHEDULING
+============================================================
+
+Compiler can sometimes rearrange independent instructions
+to reduce stalls.
+
+
+Example:
+
+    I1:
+        ADD R1, R2, R3
+
+    I2:
+        SUB R4, R1, R5
+
+    I3:
+        ADD R6, R7, R8
+
+
+I2 depends on I1.
+
+But I3 is independent.
+
+
+Compiler may arrange:
+
+    I1
+    I3
+    I2
+
+
+if this is valid for the ISA and program semantics.
+
+
+This can reduce pipeline waiting.
+
+
+============================================================
+27.50 RISC ARCHITECTURE — COMPLETE FLOW
+============================================================
+
+              HIGH-LEVEL PROGRAM
+                      |
+                      ↓
+                   COMPILER
+                      |
+                      ↓
+               RISC INSTRUCTIONS
+                      |
+                      ↓
+                   FETCH
+                      |
+                      ↓
+                   DECODE
+                      |
+                      ↓
+               REGISTER READ
+                      |
+                      ↓
+                     ALU
+                      |
+             +--------+--------+
+             |                 |
+             ↓                 ↓
+           MEMORY          REGISTER
+             |                 |
+             +--------+--------+
+                      |
+                      ↓
+                    RESULT
+
+
+============================================================
+27.51 RISC DESIGN PHILOSOPHY
+============================================================
+
+The central RISC philosophy can be remembered as:
+
+    SIMPLE
+      ↓
+    REGULAR
+      ↓
+    REGISTER-BASED
+      ↓
+    LOAD/STORE
+      ↓
+    PIPELINE-FRIENDLY
+      ↓
+    EFFICIENT
+
+
+============================================================
+27.52 EXAM-IMPORTANT CHARACTERISTICS
+============================================================
+
+For university and competitive exams, remember:
+
+    ✔ RISC = Reduced Instruction Set Computer
+
+    ✔ Load/store architecture
+
+    ✔ Register-based arithmetic and logic
+
+    ✔ Large register set
+
+    ✔ Simple instructions
+
+    ✔ Fewer/simple addressing modes
+
+    ✔ Regular instruction formats
+
+    ✔ Pipeline-friendly
+
+    ✔ Compiler optimisation is important
+
+    ✔ ARM, MIPS and RISC-V are important RISC examples
+
+
+============================================================
+27.53 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    RISC means the processor has very few instructions.
+
+CORRECTION:
+
+    "Reduced" refers to a design philosophy favouring
+    simpler, regular instructions, not merely a tiny number
+    of instructions.
+
+
+MISTAKE 2:
+
+    RISC instructions cannot access memory.
+
+CORRECTION:
+
+    LOAD and STORE instructions access memory.
+
+
+MISTAKE 3:
+
+    ADD can directly add two memory locations in a pure
+    load/store design.
+
+CORRECTION:
+
+    Values normally need to be loaded into registers first.
+
+
+MISTAKE 4:
+
+    RISC always uses exactly 32-bit instructions.
+
+CORRECTION:
+
+    Many RISC ISAs use fixed or regular formats, but exact
+    instruction lengths depend on the ISA.
+
+
+MISTAKE 5:
+
+    RISC is always faster than CISC.
+
+CORRECTION:
+
+    Modern performance depends on the entire implementation,
+    compiler, workload, memory system, microarchitecture,
+    and many other factors.
+
+
+MISTAKE 6:
+
+    RISC does not use complex hardware.
+
+CORRECTION:
+
+    A modern RISC processor can be extremely sophisticated
+    internally.
+
+
+============================================================
+27.54 B.TECH QUESTIONS
+============================================================
+
+Q1. Define RISC.
+
+Q2. Explain the RISC design philosophy.
+
+Q3. List the major characteristics of RISC.
+
+Q4. Explain load/store architecture.
+
+Q5. Why are registers important in RISC?
+
+Q6. Explain the relationship between RISC and pipelining.
+
+Q7. Explain the advantages of RISC.
+
+Q8. Explain the limitations of RISC.
+
+Q9. Explain RISC instruction formats.
+
+Q10. Explain RISC addressing modes.
+
+Q11. Explain RISC datapath.
+
+Q12. Explain the role of compiler optimisation in RISC.
+
+Q13. Explain MIPS as a RISC architecture.
+
+Q14. Explain ARM as a RISC-based architecture.
+
+Q15. Explain the basic features of RISC-V.
+
+Q16. Compare RISC and CISC.
+
+Q17. Explain why RISC instructions are generally
+     pipeline-friendly.
+
+Q18. Explain the importance of load/store architecture.
+
+Q19. Explain register allocation in RISC.
+
+Q20. Explain instruction scheduling in RISC.
+
+
+============================================================
+27.55 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. RISC stands for:
+
+    A. Reduced Instruction Set Computer
+    B. Rapid Instruction System Computer
+    C. Reduced Internal System Computer
+    D. Register Instruction Set Computer
+
+ANSWER:
+
+    A
+
+
+------------------------------------------------------------
+
+Q2. Which architecture typically follows a load/store model?
+
+    A. RISC
+    B. Only CISC
+    C. Analog computer
+    D. None
+
+ANSWER:
+
+    A
+
+
+------------------------------------------------------------
+
+Q3. In a load/store architecture, arithmetic instructions
+normally operate on:
+
+    A. Main memory directly
+    B. Registers
+    C. Disk
+    D. I/O devices
+
+ANSWER:
+
+    B
+
+
+------------------------------------------------------------
+
+Q4. Which is a classic RISC ISA?
+
+    A. MIPS
+    B. x86
+    C. 8086
+    D. None
+
+ANSWER:
+
+    A
+
+
+------------------------------------------------------------
+
+Q5. Which is an open-standard RISC ISA?
+
+    A. x86
+    B. RISC-V
+    C. 8086
+    D. CISC-V
+
+ANSWER:
+
+    B
+
+
+------------------------------------------------------------
+
+Q6. ARM is primarily associated with which design philosophy?
+
+    A. RISC
+    B. Pure CISC
+    C. Analog processing
+    D. Vacuum-tube computing
+
+ANSWER:
+
+    A
+
+
+------------------------------------------------------------
+
+Q7. Which is generally a characteristic of RISC?
+
+    A. Complex variable-length instructions only
+    B. Large register usage
+    C. Memory-to-memory arithmetic as the central model
+    D. Extremely complex addressing modes
+
+ANSWER:
+
+    B
+
+
+------------------------------------------------------------
+
+Q8. Which feature helps RISC pipelines?
+
+    A. Highly irregular instructions
+    B. Regular instruction formats
+    C. Unlimited memory operands
+    D. No registers
+
+ANSWER:
+
+    B
+
+
+------------------------------------------------------------
+
+Q9. In RISC, memory is normally accessed using:
+
+    A. Every arithmetic instruction
+    B. Load/store instructions
+    C. Only branch instructions
+    D. ALU instructions
+
+ANSWER:
+
+    B
+
+
+------------------------------------------------------------
+
+Q10. Which statement is TRUE?
+
+    A. RISC always executes one instruction per program
+    B. RISC cannot be superscalar
+    C. Modern RISC processors can use out-of-order execution
+    D. RISC cannot use branch prediction
+
+ANSWER:
+
+    C
+
+
+============================================================
+27.56 QUICK REVISION
+============================================================
+
+RISC
+    ↓
+Reduced Instruction Set Computer
+
+
+CORE IDEA
+    ↓
+Simple + regular + efficient instructions
+
+
+LOAD/STORE
+    ↓
+Only memory instructions access memory.
+
+
+ARITHMETIC
+    ↓
+Usually register-to-register.
+
+
+REGISTERS
+    ↓
+Central to computation.
+
+
+ADDRESSING
+    ↓
+Generally simple/few modes.
+
+
+INSTRUCTION FORMAT
+    ↓
+Often fixed/regular.
+
+
+PIPELINING
+    ↓
+RISC design is generally pipeline-friendly.
+
+
+COMPILER
+    ↓
+Important for instruction selection,
+register allocation and scheduling.
+
+
+ADVANTAGES
+    ↓
+Simple control
+Efficient pipelining
+High register usage
+Regular instructions
+
+
+LIMITATIONS
+    ↓
+May require more instructions
+Potentially larger code
+Compiler optimisation important
+
+
+EXAMPLES
+    ↓
+MIPS
+ARM
+RISC-V
+
+
+IMPORTANT:
+    RISC ≠ automatically faster than CISC.
+
+
+============================================================
+27.57 FINAL MASTER CONCEPT
+============================================================
+
+The easiest way to remember RISC is:
+
+             RISC
+              |
+      +-------+-------+
+      |       |       |
+      ↓       ↓       ↓
+   SIMPLE   REGISTERS LOAD/STORE
+      |       |       |
+      +-------+-------+
+              |
+              ↓
+       REGULAR INSTRUCTIONS
+              |
+              ↓
+        EASY DECODING
+              |
+              ↓
+        EASY PIPELINING
+              |
+              ↓
+        HIGH PERFORMANCE
+
+
+Example:
+
+    Memory
+       ↓
+      LOAD
+       ↓
+    Registers
+       ↓
+      ALU
+       ↓
+    Registers
+       ↓
+     STORE
+       ↓
+    Memory
+
+
+This load → compute → store model is the heart of the
+traditional RISC approach.
+
+
+============================================================
+CHAPTER 27 COMPLETE
+============================================================

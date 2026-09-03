@@ -1,0 +1,1632 @@
+CHAPTER 21 — I/O ORGANISATION
+
+============================================================
+CHAPTER 21 — INPUT/OUTPUT (I/O) ORGANISATION
+============================================================
+
+LEVEL: B.Tech 1st Year
+STARTING LEVEL: Absolute Beginner
+GOAL: Understand how CPU communicates with input/output devices,
+      I/O interfaces, programmed I/O, interrupt-driven I/O,
+      DMA and their comparison.
+============================================================
+
+
+------------------------------------------------------------
+21.1 WHAT IS INPUT/OUTPUT?
+------------------------------------------------------------
+
+I/O = Input/Output
+
+A computer needs to communicate with the outside world.
+
+INPUT:
+    Data entering the computer.
+
+OUTPUT:
+    Data leaving the computer.
+
+Examples:
+
+INPUT DEVICES:
+    Keyboard
+    Mouse
+    Microphone
+    Camera
+    Scanner
+    Sensors
+
+OUTPUT DEVICES:
+    Monitor
+    Printer
+    Speaker
+    Projector
+    Actuators
+
+
+Basic idea:
+
+        +-------------+
+        |     CPU     |
+        +-------------+
+          ↑         ↓
+        Input     Output
+          ↑         ↓
+      +-------------------+
+      |   I/O Devices     |
+      +-------------------+
+
+
+------------------------------------------------------------
+21.2 WHY DO WE NEED I/O ORGANISATION?
+------------------------------------------------------------
+
+CPU and I/O devices are very different.
+
+CPU:
+    Extremely fast
+    Works electronically
+    Executes instructions rapidly
+
+I/O device:
+    Usually much slower
+    Has different communication requirements
+    May generate data unpredictably
+
+Example:
+
+    CPU → billions of operations per second
+
+    Keyboard → user may press one key every few seconds
+
+
+Therefore, the CPU cannot simply communicate with every device
+in the same way it communicates with RAM.
+
+An intermediate mechanism is needed.
+
+This is called:
+
+    I/O ORGANISATION
+
+
+------------------------------------------------------------
+21.3 BASIC I/O SYSTEM
+------------------------------------------------------------
+
+A simplified computer system:
+
+              +----------------+
+              |      CPU       |
+              +----------------+
+                      |
+                      |
+                System Bus
+                      |
+          +-----------+-----------+
+          |           |           |
+          ↓           ↓           ↓
+       Memory     I/O Controller  I/O
+                             
+                              ↓
+                         Device
+
+
+Examples:
+
+    CPU
+      ↓
+    USB Controller
+      ↓
+    Keyboard
+
+
+    CPU
+      ↓
+    Storage Controller
+      ↓
+    SSD
+
+
+------------------------------------------------------------
+21.4 I/O DEVICE
+------------------------------------------------------------
+
+An I/O device is hardware that allows a computer to interact
+with the external environment.
+
+Examples:
+
+    Keyboard
+    Mouse
+    Display
+    Printer
+    Disk
+    SSD
+    Network interface
+    Camera
+    Audio device
+
+
+I/O devices can differ in:
+
+    • Speed
+    • Data format
+    • Communication method
+    • Timing
+    • Control requirements
+
+
+------------------------------------------------------------
+21.5 I/O CONTROLLER
+------------------------------------------------------------
+
+An I/O controller is hardware that manages communication
+between the CPU/system bus and an I/O device.
+
+It acts as an interface.
+
+Conceptually:
+
+        CPU
+         |
+         ↓
+    System Bus
+         |
+         ↓
+    I/O Controller
+         |
+         ↓
+    I/O Device
+
+
+Example:
+
+    CPU
+     ↓
+    USB Controller
+     ↓
+    Keyboard
+
+
+The controller handles details that the CPU does not need to
+manage directly.
+
+
+------------------------------------------------------------
+21.6 WHY IS AN I/O CONTROLLER NEEDED?
+------------------------------------------------------------
+
+Suppose the CPU wants to communicate with a keyboard.
+
+The keyboard may have:
+
+    Different electrical characteristics
+    Different speed
+    Different protocol
+    Different timing
+
+The controller handles these differences.
+
+Therefore:
+
+    CPU
+     ↓
+    Controller
+     ↓
+    Device
+
+is easier than:
+
+    CPU
+     ↓
+    Device directly
+
+
+------------------------------------------------------------
+21.7 I/O INTERFACE
+------------------------------------------------------------
+
+An I/O interface provides the communication mechanism between
+the CPU/system bus and the I/O device.
+
+It commonly contains:
+
+    1. Data Register
+    2. Status Register
+    3. Control Register
+
+
+Basic structure:
+
+       CPU / BUS
+           |
+    +---------------+
+    | I/O Interface |
+    |---------------|
+    | Data Register |
+    | Status Reg.   |
+    | Control Reg.  |
+    +---------------+
+           |
+           ↓
+        Device
+
+
+------------------------------------------------------------
+21.8 DATA REGISTER
+------------------------------------------------------------
+
+The data register temporarily stores data being transferred
+between the CPU and I/O device.
+
+Example:
+
+    Keyboard sends:
+
+        'A'
+
+The controller may place the data into its data register.
+
+Then:
+
+    CPU reads the data register.
+
+
+For output:
+
+    CPU writes data to the data register.
+
+    Controller sends it to the device.
+
+
+------------------------------------------------------------
+21.9 STATUS REGISTER
+------------------------------------------------------------
+
+The status register contains information about the current
+condition of the I/O device.
+
+Typical status information:
+
+    READY
+    BUSY
+    ERROR
+    DATA AVAILABLE
+    INTERRUPT STATUS
+
+
+Example:
+
+    Status = READY
+
+means:
+
+    Device is ready for communication.
+
+
+Example:
+
+    Status = BUSY
+
+means:
+
+    Device is currently performing an operation.
+
+
+------------------------------------------------------------
+21.10 CONTROL REGISTER
+------------------------------------------------------------
+
+The control register contains commands or control information
+for the I/O device/controller.
+
+Examples:
+
+    START
+    STOP
+    RESET
+    ENABLE
+    INTERRUPT ENABLE
+
+
+The CPU can write control information into this register.
+
+
+------------------------------------------------------------
+21.11 I/O REGISTERS SUMMARY
+------------------------------------------------------------
+
++----------------+--------------------------------------+
+| Register       | Purpose                              |
++----------------+--------------------------------------+
+| Data Register  | Stores data being transferred        |
+| Status Register| Shows device/controller status      |
+| Control Register| Controls device/controller          |
++----------------+--------------------------------------+
+
+
+Easy memory trick:
+
+    DATA    → What is being transferred?
+    STATUS  → What is happening?
+    CONTROL → What should happen?
+
+
+------------------------------------------------------------
+21.12 I/O ADDRESSING
+------------------------------------------------------------
+
+The CPU needs a way to identify I/O devices/registers.
+
+Two major approaches are:
+
+    1. Memory-Mapped I/O
+    2. Isolated I/O / Port-Mapped I/O
+
+
+------------------------------------------------------------
+21.13 MEMORY-MAPPED I/O
+------------------------------------------------------------
+
+In memory-mapped I/O, I/O registers are assigned addresses
+within the normal memory address space.
+
+Conceptually:
+
+    Address Space
+
+    +----------------------+
+    | Memory               |
+    +----------------------+
+    | Memory               |
+    +----------------------+
+    | I/O Registers        |
+    +----------------------+
+    | I/O Registers        |
+    +----------------------+
+
+
+CPU uses normal memory instructions to access I/O registers.
+
+
+Example:
+
+    LOAD R1, [address]
+
+The address could refer to:
+
+    RAM
+
+or:
+
+    I/O register
+
+
+Advantages:
+
+    • Simple programming model
+    • Can use normal load/store instructions
+    • Large set of addressing operations may be available
+
+
+Disadvantage:
+
+    I/O consumes part of the address space.
+
+
+------------------------------------------------------------
+21.14 ISOLATED I/O
+------------------------------------------------------------
+
+Also called:
+
+    Port-Mapped I/O
+
+I/O has a separate address space from memory.
+
+Conceptually:
+
+    Memory Address Space
+    +------------------+
+    |      Memory      |
+    +------------------+
+
+
+    I/O Address Space
+    +------------------+
+    |   I/O Ports      |
+    +------------------+
+
+
+Special I/O instructions are used to access the ports.
+
+
+Advantages:
+
+    • Does not consume normal memory address space
+    • Separate I/O addressing
+
+
+Disadvantages:
+
+    • Requires special I/O instructions
+    • Programming model can be less uniform
+
+
+------------------------------------------------------------
+21.15 MEMORY-MAPPED I/O VS ISOLATED I/O
+------------------------------------------------------------
+
++----------------------+------------------------+
+| Memory-Mapped I/O    | Isolated I/O           |
++----------------------+------------------------+
+| Shared address space | Separate I/O space    |
+| with memory          |                        |
++----------------------+------------------------+
+| Normal load/store    | Special I/O commands |
+| can access I/O       | often used            |
++----------------------+------------------------+
+| Simple programming   | Separate addressing   |
+| model                | model                 |
++----------------------+------------------------+
+
+
+------------------------------------------------------------
+21.16 I/O DATA TRANSFER METHODS
+------------------------------------------------------------
+
+The CPU can communicate with I/O devices using several methods.
+
+Main methods:
+
+    1. Programmed I/O
+    2. Interrupt-Driven I/O
+    3. Direct Memory Access (DMA)
+
+
+These are extremely important for exams.
+
+
+------------------------------------------------------------
+21.17 PROGRAMMED I/O
+------------------------------------------------------------
+
+In Programmed I/O, the CPU actively controls the entire
+transfer.
+
+The CPU repeatedly checks the status of the device.
+
+This is also commonly associated with:
+
+    POLLING
+
+
+Basic process:
+
+    CPU
+     |
+     ↓
+    Check status
+     |
+     ↓
+    Device ready?
+      / \
+    No   Yes
+    |     |
+    |     ↓
+    |   Transfer data
+    |
+    +----→ Check again
+
+
+------------------------------------------------------------
+21.18 POLLING
+------------------------------------------------------------
+
+Polling means repeatedly checking whether an I/O device is
+ready.
+
+Example:
+
+    CPU:
+       "Are you ready?"
+
+    Device:
+       "No."
+
+    CPU:
+       "Are you ready?"
+
+    Device:
+       "No."
+
+    CPU:
+       "Are you ready?"
+
+    Device:
+       "YES!"
+
+    CPU:
+       "Transfer data."
+
+
+The CPU spends time repeatedly checking the device.
+
+
+------------------------------------------------------------
+21.19 PROGRAMMED I/O EXAMPLE
+------------------------------------------------------------
+
+Suppose CPU wants to read a character from keyboard.
+
+Steps:
+
+    1. CPU checks status register.
+    2. If data is not available, CPU checks again.
+    3. When data becomes available:
+    4. CPU reads data register.
+    5. CPU continues program execution.
+
+
+Pseudo-code:
+
+    while (DATA_NOT_READY)
+        check_status();
+
+    data = DATA_REGISTER;
+
+
+The CPU is busy during the waiting period.
+
+
+------------------------------------------------------------
+21.20 ADVANTAGES OF PROGRAMMED I/O
+------------------------------------------------------------
+
+    + Simple
+    + Easy to implement
+    + Easy to understand
+    + Suitable for simple/small systems
+
+
+------------------------------------------------------------
+21.21 DISADVANTAGES OF PROGRAMMED I/O
+------------------------------------------------------------
+
+    - CPU wastes time polling
+    - Poor CPU utilization
+    - Inefficient for slow devices
+    - CPU must actively manage transfers
+
+
+Key idea:
+
+    CPU involvement = HIGH
+
+
+------------------------------------------------------------
+21.22 INTERRUPT-DRIVEN I/O
+------------------------------------------------------------
+
+Instead of continuously checking the device, the CPU can
+continue executing other work.
+
+When the device becomes ready:
+
+    Device → sends interrupt
+
+Then CPU temporarily responds to the device.
+
+
+Basic idea:
+
+        CPU
+         |
+         | Continue normal work
+         ↓
+      Program
+         
+    Device becomes ready
+         |
+         ↓
+      Interrupt
+         |
+         ↓
+        CPU
+         |
+         ↓
+    Interrupt Service Routine
+         |
+         ↓
+    Handle device
+         |
+         ↓
+    Return to previous program
+
+
+------------------------------------------------------------
+21.23 INTERRUPT REQUEST
+------------------------------------------------------------
+
+An interrupt request is a signal indicating that a device
+requires CPU attention.
+
+Common abbreviation:
+
+    IRQ = Interrupt Request
+
+
+Example:
+
+    Keyboard key pressed
+          ↓
+    Keyboard controller
+          ↓
+        IRQ
+          ↓
+         CPU
+
+
+------------------------------------------------------------
+21.24 INTERRUPT-DRIVEN I/O EXAMPLE
+------------------------------------------------------------
+
+Suppose CPU is executing:
+
+    Program A
+
+
+Keyboard receives a key:
+
+    'A'
+
+
+Instead of CPU constantly checking:
+
+    "Is a key available?"
+
+The keyboard controller sends:
+
+    INTERRUPT
+
+
+CPU then:
+
+    1. Detects interrupt.
+    2. Saves required CPU state.
+    3. Executes interrupt service routine.
+    4. Reads keyboard data.
+    5. Restores state.
+    6. Continues Program A.
+
+
+------------------------------------------------------------
+21.25 INTERRUPT SERVICE ROUTINE
+------------------------------------------------------------
+
+ISR = Interrupt Service Routine
+
+It is software executed by the CPU to handle an interrupt.
+
+Example:
+
+    Keyboard Interrupt
+          ↓
+        ISR
+          ↓
+    Read keyboard data
+          ↓
+    Process key
+          ↓
+    Return
+
+
+The ISR is also commonly called:
+
+    Interrupt Handler
+
+
+------------------------------------------------------------
+21.26 ADVANTAGES OF INTERRUPT-DRIVEN I/O
+------------------------------------------------------------
+
+    + CPU does not need continuous polling
+    + Better CPU utilization
+    + Suitable for unpredictable events
+    + More efficient than programmed I/O in many cases
+
+
+------------------------------------------------------------
+21.27 DISADVANTAGES OF INTERRUPT-DRIVEN I/O
+------------------------------------------------------------
+
+    - Interrupt processing creates overhead
+    - CPU still participates in data transfer
+    - Too many interrupts can reduce performance
+    - Requires interrupt-handling hardware/software
+
+
+Key idea:
+
+    CPU involvement = MODERATE
+
+
+------------------------------------------------------------
+21.28 DIRECT MEMORY ACCESS (DMA)
+------------------------------------------------------------
+
+DMA = Direct Memory Access
+
+DMA allows an I/O device to transfer data directly to or from
+main memory with minimal CPU involvement.
+
+Instead of:
+
+    Device → CPU → Memory
+
+DMA can perform:
+
+    Device → Memory
+
+
+or:
+
+    Memory → Device
+
+
+------------------------------------------------------------
+21.29 WHY DO WE NEED DMA?
+------------------------------------------------------------
+
+Suppose a disk needs to transfer:
+
+    1 MB of data
+
+If CPU handles every byte/word:
+
+    Device
+      ↓
+     CPU
+      ↓
+    Memory
+
+This creates significant CPU overhead.
+
+
+With DMA:
+
+    Device
+      ↓
+    DMA Controller
+      ↓
+    Memory
+
+
+CPU only sets up the transfer and is not required to handle
+every individual data unit.
+
+
+------------------------------------------------------------
+21.30 DMA CONTROLLER
+------------------------------------------------------------
+
+A DMA controller manages DMA transfers.
+
+It typically needs information such as:
+
+    • Starting memory address
+    • Transfer count
+    • Direction of transfer
+    • Device/channel information
+    • Control/status information
+
+
+Conceptual structure:
+
+             CPU
+              |
+       Setup DMA transfer
+              |
+              ↓
+       +--------------+
+       | DMA Controller|
+       +--------------+
+          /         \
+         ↓           ↓
+      Device        RAM
+
+
+------------------------------------------------------------
+21.31 DMA TRANSFER PROCESS
+------------------------------------------------------------
+
+Suppose data must move:
+
+    Disk → RAM
+
+
+Step 1:
+
+    CPU configures DMA controller.
+
+Step 2:
+
+    CPU provides:
+        Starting address
+        Transfer size
+        Direction
+
+Step 3:
+
+    DMA controller requests/coordinates access to the bus.
+
+Step 4:
+
+    Data moves:
+
+        Disk → DMA → RAM
+
+Step 5:
+
+    DMA updates address/count information.
+
+Step 6:
+
+    When transfer completes, DMA can notify CPU using an
+    interrupt.
+
+
+Complete:
+
+    CPU
+     |
+     | Setup
+     ↓
+    DMA
+     |
+     ↓
+    Disk ↔ RAM
+     |
+     ↓
+    Completion interrupt
+     |
+     ↓
+    CPU
+
+
+------------------------------------------------------------
+21.32 DMA MODES
+------------------------------------------------------------
+
+Common conceptual DMA modes include:
+
+    1. Burst Mode
+    2. Cycle Stealing
+    3. Transparent DMA
+
+
+------------------------------------------------------------
+21.33 BURST MODE
+------------------------------------------------------------
+
+In burst mode, DMA transfers a block of data continuously.
+
+Example:
+
+    DMA gets bus
+       ↓
+    Transfers many bytes/words
+       ↓
+    Releases bus
+
+
+Advantage:
+
+    Fast block transfer
+
+
+Disadvantage:
+
+    CPU may have to wait while DMA owns the bus.
+
+
+------------------------------------------------------------
+21.34 CYCLE STEALING
+------------------------------------------------------------
+
+In cycle stealing, DMA takes control of the bus for individual
+transfer cycles.
+
+Conceptually:
+
+    CPU cycle
+    DMA cycle
+    CPU cycle
+    DMA cycle
+    ...
+
+
+DMA "steals" bus cycles from CPU.
+
+Advantage:
+
+    CPU can continue operating between DMA transfers.
+
+
+Disadvantage:
+
+    CPU performance can be reduced due to lost bus cycles.
+
+
+------------------------------------------------------------
+21.35 TRANSPARENT DMA
+------------------------------------------------------------
+
+DMA transfers data when the CPU is not using the bus.
+
+The goal is to minimize interference with CPU operation.
+
+Conceptually:
+
+    CPU not using bus
+          ↓
+        DMA uses bus
+
+
+This is called:
+
+    Transparent DMA
+
+
+------------------------------------------------------------
+21.36 PROGRAMMED I/O VS INTERRUPT I/O VS DMA
+------------------------------------------------------------
+
++------------------+-------------+-------------+-------------+
+| Feature          | Programmed  | Interrupt   | DMA         |
++------------------+-------------+-------------+-------------+
+| CPU involvement  | Very high   | Moderate    | Low         |
++------------------+-------------+-------------+-------------+
+| Polling          | Yes         | No          | No          |
++------------------+-------------+-------------+-------------+
+| CPU waits        | Often       | Usually no  | No          |
++------------------+-------------+-------------+-------------+
+| Data transfer    | CPU handles | CPU handles | DMA handles |
++------------------+-------------+-------------+-------------+
+| Best for         | Simple I/O  | Events      | Large block |
+|                  |             |             | transfers   |
++------------------+-------------+-------------+-------------+
+
+
+------------------------------------------------------------
+21.37 SIMPLE COMPARISON
+------------------------------------------------------------
+
+PROGRAMMED I/O:
+
+    CPU asks:
+    "Are you ready?"
+    "Are you ready?"
+    "Are you ready?"
+
+    CPU does the work.
+
+
+INTERRUPT I/O:
+
+    CPU:
+    "I'll do other work."
+
+    Device:
+    "I'm ready!"
+
+    CPU handles it.
+
+
+DMA:
+
+    CPU:
+    "DMA, transfer this block."
+
+    DMA:
+    "Okay."
+
+    Device ↔ Memory
+
+    CPU is largely free.
+
+
+------------------------------------------------------------
+21.38 I/O CONTROLLER REGISTERS
+------------------------------------------------------------
+
+A typical controller may contain:
+
+    +----------------------+
+    | Data Register        |
+    +----------------------+
+    | Status Register      |
+    +----------------------+
+    | Control Register     |
+    +----------------------+
+
+
+DATA:
+
+    Holds transferred data.
+
+
+STATUS:
+
+    Indicates current state.
+
+
+CONTROL:
+
+    Specifies desired operation.
+
+
+------------------------------------------------------------
+21.39 I/O OPERATION: INPUT
+------------------------------------------------------------
+
+Example:
+
+    Keyboard → CPU
+
+
+Step-by-step:
+
+    Keyboard
+       ↓
+    I/O Controller
+       ↓
+    Data Register
+       ↓
+    CPU reads data
+
+
+With programmed I/O:
+
+    CPU polls status register.
+
+
+With interrupt I/O:
+
+    Controller interrupts CPU.
+
+
+With DMA:
+
+    For suitable high-volume transfers:
+
+    Device → DMA → Memory
+
+
+------------------------------------------------------------
+21.40 I/O OPERATION: OUTPUT
+------------------------------------------------------------
+
+Example:
+
+    CPU → Printer
+
+
+CPU sends data to:
+
+    I/O controller
+
+Controller stores/manages it and sends it to:
+
+    Printer
+
+
+Conceptually:
+
+    CPU
+     ↓
+    Data Register
+     ↓
+    I/O Controller
+     ↓
+    Printer
+
+
+------------------------------------------------------------
+21.41 SYNCHRONOUS VS ASYNCHRONOUS I/O
+------------------------------------------------------------
+
+SYNCHRONOUS:
+
+    CPU/program waits for the operation to complete or reaches
+    a synchronization point.
+
+
+ASYNCHRONOUS:
+
+    CPU/program can continue other work while the operation
+    proceeds.
+
+
+Interrupt-driven I/O and DMA are commonly associated with
+asynchronous operation from the CPU's point of view.
+
+
+------------------------------------------------------------
+21.42 BUFFERING
+------------------------------------------------------------
+
+A buffer is a temporary storage area used during data transfer.
+
+Why?
+
+Because CPU and I/O devices often operate at different speeds.
+
+Example:
+
+    Fast CPU
+       ↓
+    Buffer
+       ↓
+    Slow device
+
+
+The buffer temporarily stores data so that the two sides do
+not need to operate at exactly the same speed.
+
+
+------------------------------------------------------------
+21.43 I/O AND SYSTEM BUS
+------------------------------------------------------------
+
+The system bus can be conceptually divided into:
+
+    Address Bus
+    Data Bus
+    Control Bus
+
+
+For I/O:
+
+    Address bus:
+        Selects device/register.
+
+    Data bus:
+        Carries data.
+
+    Control bus:
+        Carries control/timing signals.
+
+
+------------------------------------------------------------
+21.44 BUS ACCESS DURING DMA
+------------------------------------------------------------
+
+DMA requires access to the system bus.
+
+Therefore, DMA and CPU may compete for bus access.
+
+A bus-arbitration mechanism decides:
+
+    Who gets the bus?
+
+Possible participants:
+
+    CPU
+    DMA controller
+    Other bus masters
+
+
+------------------------------------------------------------
+21.45 DMA AND CPU
+------------------------------------------------------------
+
+Important:
+
+DMA does NOT mean:
+
+    "CPU completely disappears."
+
+CPU usually:
+
+    1. Initializes DMA.
+    2. DMA performs transfer.
+    3. DMA notifies CPU after completion.
+
+
+Therefore:
+
+    CPU involvement = low
+
+not:
+
+    CPU involvement = zero
+
+
+------------------------------------------------------------
+21.46 DMA EXAMPLE
+------------------------------------------------------------
+
+Suppose:
+
+    SSD → RAM
+
+Data size:
+
+    100 MB
+
+
+Without DMA:
+
+    SSD
+      ↓
+    CPU
+      ↓
+    RAM
+
+CPU may be heavily involved in the transfer.
+
+
+With DMA:
+
+    SSD
+      ↓
+    DMA Controller
+      ↓
+    RAM
+
+CPU:
+
+    Setup → Continue other work → Receive completion interrupt
+
+
+DMA is therefore especially useful for high-volume transfers.
+
+
+------------------------------------------------------------
+21.47 INTERRUPT VS DMA
+------------------------------------------------------------
+
+INTERRUPT-DRIVEN I/O:
+
+    Device interrupts CPU.
+    CPU handles transfer.
+
+DMA:
+
+    DMA controller manages bulk transfer.
+    CPU is interrupted mainly when setup/completion/action
+    is required.
+
+
+Simple idea:
+
+    Interrupt:
+        "CPU, please handle this."
+
+    DMA:
+        "DMA handles the transfer; CPU, I'll notify you."
+
+
+------------------------------------------------------------
+21.48 CPU INVOLVEMENT SPECTRUM
+------------------------------------------------------------
+
+High CPU involvement:
+
+    Programmed I/O
+          ↓
+    Interrupt-driven I/O
+          ↓
+    DMA
+          ↓
+Low CPU involvement
+
+
+Remember:
+
+    Programmed I/O > Interrupt I/O > DMA
+
+in terms of typical CPU involvement.
+
+
+------------------------------------------------------------
+21.49 I/O PERFORMANCE FACTORS
+------------------------------------------------------------
+
+I/O performance depends on:
+
+    • Device speed
+    • Bus bandwidth
+    • CPU overhead
+    • Interrupt frequency
+    • DMA efficiency
+    • Buffering
+    • Controller design
+    • Transfer size
+    • Latency
+
+
+For large transfers:
+
+    DMA is generally more efficient than CPU-driven transfer.
+
+
+------------------------------------------------------------
+21.50 COMMON MISTAKES
+------------------------------------------------------------
+
+MISTAKE 1:
+
+    DMA transfers data through CPU.
+
+CORRECT:
+
+    DMA can transfer data directly between an I/O device and
+    main memory.
+
+
+MISTAKE 2:
+
+    DMA requires no CPU involvement at all.
+
+CORRECT:
+
+    CPU usually initializes/configures DMA and may handle
+    completion.
+
+
+MISTAKE 3:
+
+    Interrupt-driven I/O means CPU continuously polls.
+
+CORRECT:
+
+    Interrupt-driven I/O avoids continuous polling.
+
+
+MISTAKE 4:
+
+    Polling and interrupt-driven I/O are the same.
+
+CORRECT:
+
+    Polling = CPU repeatedly checks.
+    Interrupt = device notifies CPU.
+
+
+MISTAKE 5:
+
+    Status register stores normal data.
+
+CORRECT:
+
+    Data register stores transferred data;
+    status register reports device state.
+
+
+MISTAKE 6:
+
+    Control register tells CPU what happened.
+
+CORRECT:
+
+    Control register is primarily used to configure/control
+    the device/controller.
+
+
+MISTAKE 7:
+
+    DMA is only for input.
+
+CORRECT:
+
+    DMA can support both input and output transfers.
+
+
+------------------------------------------------------------
+21.51 B.TECH EXAM QUESTIONS
+------------------------------------------------------------
+
+Q1. What is I/O organisation?
+
+Q2. Why is an I/O controller required?
+
+Q3. Explain the functions of an I/O interface.
+
+Q4. Explain data, status and control registers.
+
+Q5. What is programmed I/O?
+
+Q6. Explain polling.
+
+Q7. What are the advantages and disadvantages of programmed
+    I/O?
+
+Q8. What is interrupt-driven I/O?
+
+Q9. Explain the role of an interrupt service routine.
+
+Q10. What is DMA?
+
+Q11. Explain the working of a DMA controller.
+
+Q12. Explain DMA transfer modes.
+
+Q13. What is burst-mode DMA?
+
+Q14. What is cycle stealing?
+
+Q15. Compare programmed I/O, interrupt-driven I/O and DMA.
+
+Q16. Differentiate memory-mapped I/O and isolated I/O.
+
+Q17. What is an I/O controller?
+
+Q18. Explain the role of buffering in I/O.
+
+
+------------------------------------------------------------
+21.52 COMPETITIVE EXAM HIGH-VALUE POINTS
+------------------------------------------------------------
+
+MEMORIZE:
+
+    Programmed I/O
+        ↓
+    CPU continuously checks device status.
+
+
+    Interrupt-driven I/O
+        ↓
+    Device notifies CPU when service is required.
+
+
+    DMA
+        ↓
+    Controller manages bulk data transfer with minimal CPU
+    involvement.
+
+
+    Data Register
+        ↓
+    Data
+
+
+    Status Register
+        ↓
+    Device state
+
+
+    Control Register
+        ↓
+    Commands/configuration
+
+
+    DMA is especially useful for:
+        Large block transfers
+
+
+    Polling:
+        CPU initiated checking
+
+
+    Interrupt:
+        Device/controller initiated notification
+
+
+    DMA:
+        Device/controller transfers data with memory,
+        reducing CPU involvement.
+
+
+------------------------------------------------------------
+21.53 QUICK REVISION
+------------------------------------------------------------
+
+I/O
+ ↓
+Communication between computer and external devices.
+
+I/O CONTROLLER
+ ↓
+Interface between system and device.
+
+I/O INTERFACE
+ ↓
+Contains/control registers used for communication.
+
+DATA REGISTER
+ ↓
+Stores transferred data.
+
+STATUS REGISTER
+ ↓
+Reports device state.
+
+CONTROL REGISTER
+ ↓
+Controls device operation.
+
+PROGRAMMED I/O
+ ↓
+CPU polls and performs transfer.
+
+INTERRUPT I/O
+ ↓
+Device interrupts CPU when service is needed.
+
+DMA
+ ↓
+DMA controller handles bulk transfer between device and memory.
+
+FIFO/BURST DMA
+ ↓
+Transfer a block continuously.
+
+CYCLE STEALING
+ ↓
+DMA takes individual bus cycles.
+
+BUFFER
+ ↓
+Temporary storage between components operating at different
+speeds.
+
+
+============================================================
+21.54 MASTER CONCEPT MAP
+============================================================
+
+                         I/O ORGANISATION
+                                |
+          +---------------------+----------------------+
+          |                     |                      |
+       DEVICE                CONTROLLER              CPU
+          |                     |                      |
+          +---------------------+----------------------+
+                                |
+                         I/O INTERFACE
+                                |
+                 +--------------+--------------+
+                 |              |              |
+               DATA           STATUS        CONTROL
+              REGISTER       REGISTER       REGISTER
+                                |
+                                ↓
+                         DATA TRANSFER
+                                |
+             +------------------+------------------+
+             |                  |                  |
+        PROGRAMMED          INTERRUPT             DMA
+             I/O                I/O                |
+             |                  |                  |
+          Polling            Device              DMA
+             |              notifies              |
+             ↓                  ↓                  ↓
+            CPU               CPU             Memory
+             |                  |                  |
+             +------------------+------------------+
+                                |
+                                ↓
+                         I/O COMPLETION
+
+
+============================================================
+21.55 ONE-LINE MEMORY TRICK
+============================================================
+
+PROGRAMMED I/O
+    = CPU checks
+
+INTERRUPT I/O
+    = Device tells CPU
+
+DMA
+    = Controller transfers
+
+
+============================================================
+CHAPTER 21 COMPLETE
+============================================================

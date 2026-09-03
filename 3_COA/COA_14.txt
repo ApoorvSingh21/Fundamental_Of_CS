@@ -1,0 +1,2705 @@
+============================================================
+CHAPTER 14 — ARITHMETIC LOGIC UNIT (ALU)
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner
+
+OBJECTIVE:
+Understand how the ALU performs arithmetic and logical
+operations, how it is built from digital circuits, and how
+multiplication and division algorithms work.
+
+
+============================================================
+14.1 WHAT IS AN ALU?
+============================================================
+
+ALU stands for:
+
+    ARITHMETIC LOGIC UNIT
+
+
+The ALU is a major component of the CPU.
+
+Its main job is to perform:
+
+    • Arithmetic operations
+    • Logical operations
+    • Bitwise operations
+    • Comparisons
+    • Shifts
+    • Increment/decrement operations
+
+
+Simple definition:
+
+    ALU is the part of the CPU that performs arithmetic
+    and logical operations on data.
+
+
+============================================================
+14.2 REAL-WORLD ANALOGY
+============================================================
+
+Imagine a calculator.
+
+You enter:
+
+    25 + 10
+
+The calculator performs the addition and produces:
+
+    35
+
+
+Inside a CPU, the ALU performs a similar job.
+
+For example:
+
+    R1 = 25
+    R2 = 10
+
+The ALU can calculate:
+
+    R1 + R2 = 35
+
+
+But the ALU can do much more than a normal calculator.
+
+It can perform:
+
+    ADD
+    SUBTRACT
+    AND
+    OR
+    XOR
+    SHIFT
+    COMPARE
+    INCREMENT
+    DECREMENT
+
+
+============================================================
+14.3 ALU IN THE CPU
+============================================================
+
+A simplified CPU:
+
+                  CPU
+    ┌─────────────────────────────────┐
+    │                                 │
+    │      ┌───────────────┐          │
+    │      │ CONTROL UNIT  │          │
+    │      └───────┬───────┘          │
+    │              │                  │
+    │       Control Signals           │
+    │              │                  │
+    │      ┌───────▼───────┐          │
+    │      │      ALU      │          │
+    │      └───────┬───────┘          │
+    │              │                  │
+    │         ┌────▼────┐             │
+    │         │Registers│             │
+    │         └─────────┘             │
+    │                                 │
+    └─────────────────────────────────┘
+
+
+IMPORTANT:
+
+    ALU = Performs operations
+
+    Control Unit = Controls operations
+
+
+============================================================
+14.4 ALU INPUTS AND OUTPUTS
+============================================================
+
+A basic ALU generally receives:
+
+    Input A
+    Input B
+    Operation/Control signals
+
+
+And produces:
+
+    Result
+    Status/Flag outputs
+
+
+Conceptually:
+
+             A ──────────┐
+                         │
+                         ▼
+                    ┌─────────┐
+    Operation ─────→│   ALU   │────→ Result
+                    └────┬────┘
+                         │
+                         ▼
+                       Flags
+             B ──────────┘
+
+
+Example:
+
+    A = 10
+    B = 5
+    Operation = ADD
+
+    Result = 15
+
+
+============================================================
+14.5 ALU OPERATIONS
+============================================================
+
+Arithmetic operations:
+
+    ADD
+    SUB
+    INCREMENT
+    DECREMENT
+
+
+Logical operations:
+
+    AND
+    OR
+    XOR
+    NOT
+
+
+Bit operations:
+
+    LEFT SHIFT
+    RIGHT SHIFT
+
+
+Comparison operations:
+
+    Equal
+    Greater than
+    Less than
+
+
+The exact operations supported depend on the processor.
+
+
+============================================================
+14.6 ARITHMETIC OPERATIONS
+============================================================
+
+The basic arithmetic operations are:
+
+    Addition
+    Subtraction
+    Increment
+    Decrement
+
+
+Example:
+
+    5 + 3 = 8
+
+    5 - 3 = 2
+
+    5 + 1 = 6       ← Increment
+
+    5 - 1 = 4       ← Decrement
+
+
+============================================================
+14.7 LOGICAL OPERATIONS
+============================================================
+
+Logical operations work on individual bits.
+
+
+The most important operations are:
+
+    AND
+    OR
+    XOR
+    NOT
+
+
+Example:
+
+    A = 1010
+    B = 1100
+
+
+AND:
+
+      1010
+    AND 1100
+      ----
+      1000
+
+
+OR:
+
+      1010
+     OR 1100
+      ----
+      1110
+
+
+XOR:
+
+      1010
+    XOR 1100
+      ----
+      0110
+
+
+NOT:
+
+      1010
+       ↓
+      0101
+
+
+============================================================
+14.8 ALU AND BINARY ADDITION
+============================================================
+
+Binary addition rules:
+
+    0 + 0 = 0
+    0 + 1 = 1
+    1 + 0 = 1
+    1 + 1 = 10
+
+
+The last case means:
+
+    Sum = 0
+    Carry = 1
+
+
+Example:
+
+       1010
+     + 0011
+     ------
+       1101
+
+
+Therefore:
+
+    1010₂ + 0011₂ = 1101₂
+
+
+The ALU contains hardware capable of performing this
+operation.
+
+
+============================================================
+14.9 HALF ADDER
+============================================================
+
+A half adder adds two single bits.
+
+
+Inputs:
+
+    A
+    B
+
+
+Outputs:
+
+    Sum
+    Carry
+
+
+Equations:
+
+    Sum = A XOR B
+
+    Carry = A AND B
+
+
+Truth table:
+
+    ┌───┬───┬─────┬───────┐
+    │ A │ B │ Sum │ Carry │
+    ├───┼───┼─────┼───────┤
+    │ 0 │ 0 │  0  │   0   │
+    │ 0 │ 1 │  1  │   0   │
+    │ 1 │ 0 │  1  │   0   │
+    │ 1 │ 1 │  0  │   1   │
+    └───┴───┴─────┴───────┘
+
+
+============================================================
+14.10 FULL ADDER
+============================================================
+
+A full adder adds:
+
+    A
+    B
+    Carry-in
+
+
+Outputs:
+
+    Sum
+    Carry-out
+
+
+Equations:
+
+    Sum = A XOR B XOR Cin
+
+    Cout = AB + ACin + BCin
+
+
+A multi-bit ALU uses multiple full-adder stages to perform
+multi-bit addition.
+
+
+============================================================
+14.11 N-BIT ADDER
+============================================================
+
+For an 4-bit addition:
+
+       A3 A2 A1 A0
+    +  B3 B2 B1 B0
+    ----------------
+       S3 S2 S1 S0
+
+
+Conceptually:
+
+    A0,B0 → Full Adder → S0, C1
+    A1,B1 → Full Adder → S1, C2
+    A2,B2 → Full Adder → S2, C3
+    A3,B3 → Full Adder → S3, C4
+
+
+This is called a:
+
+    Ripple Carry Adder
+
+
+because the carry moves from one stage to the next.
+
+
+============================================================
+14.12 RIPPLE CARRY ADDER
+============================================================
+
+    A0 B0
+      │
+      ▼
+    ┌─────┐
+    │ FA0 │──→ S0
+    └──┬──┘
+       │ C1
+       ▼
+    ┌─────┐
+    │ FA1 │──→ S1
+    └──┬──┘
+       │ C2
+       ▼
+    ┌─────┐
+    │ FA2 │──→ S2
+    └──┬──┘
+       │ C3
+       ▼
+    ┌─────┐
+    │ FA3 │──→ S3
+    └─────┘
+
+
+Problem:
+
+    Carry must propagate through several stages.
+
+Therefore, larger ripple-carry adders can be slower.
+
+
+============================================================
+14.13 ALU SUBTRACTION
+============================================================
+
+Binary subtraction can be performed using:
+
+    2's complement
+
+
+Important identity:
+
+    A - B = A + (2's complement of B)
+
+
+Example:
+
+    7 - 3
+
+
+Using 4 bits:
+
+    7 = 0111
+    3 = 0011
+
+
+2's complement of 0011:
+
+    0011
+      ↓ invert
+    1100
+      ↓ +1
+    1101
+
+
+Now:
+
+      0111
+    + 1101
+    ------
+     1 0100
+
+
+Ignoring the carry:
+
+    0100 = 4
+
+
+Therefore:
+
+    7 - 3 = 4
+
+
+============================================================
+14.14 ADD/SUBTRACT HARDWARE
+============================================================
+
+A common ALU design can use the same adder for both:
+
+    ADD
+    SUBTRACT
+
+
+For subtraction:
+
+    A - B
+
+becomes:
+
+    A + NOT(B) + 1
+
+
+A control signal can determine whether B is used normally
+or complemented.
+
+
+Conceptually:
+
+              B
+              │
+              ▼
+         ┌─────────┐
+         │ XOR     │←── SUB control
+         └────┬────┘
+              │
+              ▼
+    A ─────→ Adder ─────→ Result
+                 ↑
+             Carry-in
+
+
+If:
+
+    SUB = 0
+
+then:
+
+    B remains B
+
+
+If:
+
+    SUB = 1
+
+then:
+
+    B becomes NOT(B)
+
+and the initial carry-in can be set to 1.
+
+
+Thus:
+
+    ADD:
+        A + B
+
+
+    SUB:
+        A + NOT(B) + 1
+
+
+============================================================
+14.15 INCREMENT
+============================================================
+
+Increment means:
+
+    Add 1
+
+
+Example:
+
+    0101 + 1 = 0110
+
+
+Therefore:
+
+    Increment(0101) = 0110
+
+
+The ALU or dedicated processor hardware can perform
+increment operations.
+
+
+Common uses:
+
+    PC ← PC + 1
+
+or, depending on ISA:
+
+    PC ← PC + instruction_length
+
+
+============================================================
+14.16 DECREMENT
+============================================================
+
+Decrement means:
+
+    Subtract 1
+
+
+Example:
+
+    0110 - 1 = 0101
+
+
+Therefore:
+
+    Decrement(0110) = 0101
+
+
+Used in:
+
+    • Counters
+    • Loops
+    • Stack operations
+    • Address calculations
+
+
+============================================================
+14.17 ALU LOGICAL UNIT
+============================================================
+
+The ALU contains logic circuitry for bitwise operations.
+
+
+For example:
+
+    A = 1010
+    B = 1100
+
+
+AND:
+
+    1010
+    1100
+    ----
+    1000
+
+
+OR:
+
+    1010
+    1100
+    ----
+    1110
+
+
+XOR:
+
+    1010
+    1100
+    ----
+    0110
+
+
+The ALU selects the required result using control signals.
+
+
+============================================================
+14.18 ALU FUNCTION SELECTION
+============================================================
+
+The ALU receives control bits telling it which operation
+to perform.
+
+
+For example, a simplified ALU might have:
+
+    Control = 000 → AND
+    Control = 001 → OR
+    Control = 010 → ADD
+    Control = 011 → SUB
+    Control = 100 → XOR
+
+
+The exact encoding depends on the processor.
+
+
+Conceptually:
+
+                  Control
+                     │
+                     ▼
+    A ──────────→ ┌───────┐
+                   │       │
+    B ──────────→ │  ALU  │ ───→ Result
+                   │       │
+                   └───────┘
+
+
+============================================================
+14.19 MULTIPLEXER INSIDE ALU
+============================================================
+
+An ALU can produce several possible results:
+
+    AND result
+    OR result
+    ADD result
+    SUB result
+    XOR result
+
+
+A multiplexer can select the required result.
+
+
+Conceptually:
+
+    AND ─────┐
+    OR ──────┤
+    ADD ─────┤
+    SUB ──────┤→ MUX → Final Result
+    XOR ─────┘
+                ↑
+             Select
+
+
+The Control Unit supplies the selection signals.
+
+
+============================================================
+14.20 ALU FLAGS
+============================================================
+
+The ALU can produce status information called:
+
+    FLAGS
+
+
+Common flags include:
+
+    • Carry Flag (C)
+    • Zero Flag (Z)
+    • Sign/Negative Flag (N/S)
+    • Overflow Flag (V/O)
+    • Parity Flag (P)
+
+
+Not every CPU uses exactly the same flags.
+
+
+============================================================
+14.21 ZERO FLAG
+============================================================
+
+Zero Flag indicates that the result is zero.
+
+
+Example:
+
+    5 - 5 = 0
+
+
+Therefore:
+
+    Z = 1
+
+
+If:
+
+    Result ≠ 0
+
+then typically:
+
+    Z = 0
+
+
+Used for:
+
+    • Conditional branches
+    • Comparisons
+    • Loop control
+
+
+============================================================
+14.22 CARRY FLAG
+============================================================
+
+Carry Flag indicates a carry out from the most significant
+bit in an unsigned addition.
+
+
+Example using 4 bits:
+
+       1111
+     + 0001
+     ------
+     1 0000
+
+
+The 4-bit result is:
+
+    0000
+
+
+with:
+
+    Carry = 1
+
+
+Therefore:
+
+    C = 1
+
+
+IMPORTANT:
+
+Carry and overflow are NOT the same thing.
+
+
+============================================================
+14.23 SIGN/NEGATIVE FLAG
+============================================================
+
+In a two's-complement system, the most significant bit
+represents the sign.
+
+
+Example:
+
+    4-bit:
+
+    0101 = +5
+
+    1101 = -3
+
+
+If the result has MSB = 1, the result is negative in
+two's-complement representation.
+
+
+Many CPUs set a Negative/Sign flag based on the result's
+most significant bit.
+
+
+============================================================
+14.24 OVERFLOW FLAG
+============================================================
+
+Overflow occurs when a signed result cannot be represented
+within the available number of bits.
+
+
+Example using 4-bit signed numbers:
+
+Range:
+
+    -8 to +7
+
+
+Consider:
+
+    7 + 1
+
+
+    0111
+    0001
+    ----
+    1000
+
+
+1000 represents:
+
+    -8
+
+in 4-bit two's complement.
+
+But mathematically:
+
+    7 + 1 = 8
+
+
++8 cannot be represented in 4-bit signed two's complement.
+
+Therefore:
+
+    OVERFLOW = 1
+
+
+============================================================
+14.25 CARRY VS OVERFLOW
+============================================================
+
+CARRY:
+
+    Mainly relevant to unsigned arithmetic.
+
+
+OVERFLOW:
+
+    Indicates signed-range overflow.
+
+
+Example:
+
+    1111 + 0001 = 1 0000
+
+
+There is a carry.
+
+
+But the interpretation of overflow depends on whether the
+numbers are signed or unsigned.
+
+
+MEMORY TRICK:
+
+    Carry → Unsigned
+
+    Overflow → Signed
+
+
+This is a useful exam rule, though the exact flag semantics
+depend on the instruction/architecture.
+
+
+============================================================
+14.26 COMPARISON USING ALU
+============================================================
+
+The ALU can compare values.
+
+
+One common method:
+
+    A - B
+
+
+Then examine flags.
+
+
+For example:
+
+    A = B
+
+if:
+
+    A - B = 0
+
+
+Therefore:
+
+    Zero Flag = 1
+
+
+This is how subtraction hardware can support equality
+testing.
+
+
+============================================================
+14.27 SHIFT OPERATIONS
+============================================================
+
+ALUs often support shifts.
+
+
+LEFT SHIFT:
+
+    0011 << 1
+
+    = 0110
+
+
+For unsigned values, a logical left shift by one generally
+corresponds to multiplication by 2 if no significant bit is
+lost.
+
+
+RIGHT SHIFT:
+
+    1000 >> 1
+
+    = 0100
+
+for a logical right shift.
+
+
+There are different types of right shifts:
+
+    • Logical right shift
+    • Arithmetic right shift
+
+
+============================================================
+14.28 LOGICAL RIGHT SHIFT
+============================================================
+
+Zeros are inserted from the left.
+
+
+Example:
+
+    1010 >> 1
+
+    = 0101
+
+
+This is commonly used for unsigned bit manipulation.
+
+
+============================================================
+14.29 ARITHMETIC RIGHT SHIFT
+============================================================
+
+The sign bit is replicated.
+
+
+Example:
+
+    1100 >> 1
+
+    = 1110
+
+
+This helps preserve the sign of a two's-complement
+negative number.
+
+
+============================================================
+14.30 BASIC ALU STRUCTURE
+============================================================
+
+A simplified ALU can be represented as:
+
+                A
+                │
+                ▼
+        ┌─────────────────┐
+        │ Arithmetic Unit │
+        │                 │
+        │ +  -  +1  -1    │
+        └────────┬────────┘
+                 │
+                 │
+        ┌────────▼────────┐
+        │  Logic Unit     │
+        │                 │
+        │ AND OR XOR NOT  │
+        └────────┬────────┘
+                 │
+                 ▼
+              Selector
+                 │
+                 ▼
+              Result
+                 │
+                 ▼
+               Flags
+
+
+============================================================
+14.31 COMPLETE ALU CONCEPT
+============================================================
+
+                  ┌──────────────────────┐
+          A ─────→│                      │
+                  │      ARITHMETIC      │
+          B ─────→│        UNIT          │
+                  │                      │
+                  └──────────┬───────────┘
+                             │
+                             │
+                  ┌──────────▼───────────┐
+          A ─────→│                      │
+                  │        LOGIC         │
+          B ─────→│         UNIT         │
+                  │                      │
+                  └──────────┬───────────┘
+                             │
+                             ▼
+                       ┌───────────┐
+       Control ───────→│  SELECTOR │
+                       └─────┬─────┘
+                             │
+                             ▼
+                          RESULT
+                             │
+                             ▼
+                           FLAGS
+
+
+============================================================
+14.32 MULTIPLICATION
+============================================================
+
+Multiplication can be implemented using:
+
+    Shift-and-add
+
+
+Basic idea:
+
+    Multiplication
+         ↓
+    Repeated addition
+         +
+    Shifting
+
+
+Example:
+
+    5 × 3
+
+    3 = binary 0011
+
+    5 × 3
+    = 5 × (2 + 1)
+    = 10 + 5
+    = 15
+
+
+Binary:
+
+    0101 × 0011
+
+
+Partial products:
+
+    0101
+    1010
+    ----
+    1111
+
+
+Result:
+
+    1111 = 15
+
+
+============================================================
+14.33 SHIFT-AND-ADD MULTIPLICATION
+============================================================
+
+Suppose:
+
+    Multiplicand = M
+    Multiplier   = Q
+
+
+Look at the least significant bit of Q.
+
+
+If:
+
+    Q0 = 1
+
+then:
+
+    Add M to the partial product.
+
+
+If:
+
+    Q0 = 0
+
+then:
+
+    Do not add M.
+
+
+Then:
+
+    Shift the multiplicand
+    Shift the multiplier
+
+and repeat.
+
+
+============================================================
+14.34 SHIFT-AND-ADD ALGORITHM
+============================================================
+
+Given:
+
+    M = multiplicand
+    Q = multiplier
+    A = accumulator
+
+
+Initialize:
+
+    A = 0
+
+
+Repeat for every multiplier bit:
+
+    1. Check least significant bit of Q.
+
+    2. If Q0 = 1:
+           A ← A + M
+
+    3. Shift M left.
+
+    4. Shift Q right.
+
+    5. Repeat.
+
+
+Final:
+
+    Product = accumulated result
+
+
+============================================================
+14.35 SHIFT-AND-ADD EXAMPLE
+============================================================
+
+Calculate:
+
+    5 × 3
+
+
+Binary:
+
+    M = 0101
+    Q = 0011
+    A = 0000
+
+
+STEP 1:
+
+    Q0 = 1
+
+    A = A + M
+
+      0000
+    + 0101
+    ------
+      0101
+
+    Shift M left:
+
+      1010
+
+    Shift Q right:
+
+      0001
+
+
+STEP 2:
+
+    Q0 = 1
+
+    A = A + M
+
+      0101
+    + 1010
+    ------
+      1111
+
+    Shift M left.
+
+    Shift Q right:
+
+      0000
+
+
+Q = 0
+
+Stop.
+
+
+Result:
+
+    A = 1111
+
+    = 15
+
+
+Therefore:
+
+    5 × 3 = 15
+
+
+============================================================
+14.36 WHY SHIFTING WORKS
+============================================================
+
+Binary place values are powers of 2.
+
+For example:
+
+    1011
+
+means:
+
+    1×8 + 0×4 + 1×2 + 1×1
+
+
+Therefore shifting left by one gives:
+
+    1011 << 1 = 10110
+
+
+which corresponds to multiplying by 2 when no relevant
+overflow/loss occurs.
+
+
+Shifting is therefore extremely useful in hardware
+multiplication.
+
+
+============================================================
+14.37 BOOTH'S ALGORITHM
+============================================================
+
+Booth's algorithm is a multiplication algorithm designed
+for signed binary numbers represented using two's complement.
+
+
+It is especially useful because it can reduce the number of
+addition/subtraction operations when the multiplier contains
+runs of 1s.
+
+
+Example pattern:
+
+    011110
+
+
+Instead of treating every 1 as a separate addition, Booth's
+algorithm can exploit transitions.
+
+
+============================================================
+14.38 BOOTH'S ALGORITHM — MAIN IDEA
+============================================================
+
+Booth's algorithm examines:
+
+    Q0
+
+and:
+
+    Q-1
+
+
+where:
+
+    Q0 = current least significant multiplier bit
+
+    Q-1 = extra bit initially set to 0
+
+
+Rules:
+
+    ┌────────┬─────────────────────┐
+    │ Q0 Q-1 │ Operation           │
+    ├────────┼─────────────────────┤
+    │  00    │ No operation        │
+    │  01    │ A ← A + M           │
+    │  10    │ A ← A - M           │
+    │  11    │ No operation        │
+    └────────┴─────────────────────┘
+
+
+After the operation:
+
+    Arithmetic right shift of:
+
+        A, Q, Q-1
+
+
+Repeat for the number of bits.
+
+
+============================================================
+14.39 WHY BOOTH USES 01 AND 10
+============================================================
+
+The transition between bits is important.
+
+
+    01:
+
+        Start of a run of 1s
+
+        → Add M
+
+
+    10:
+
+        End of a run of 1s
+
+        → Subtract M
+
+
+    00 or 11:
+
+        No transition
+
+        → No addition/subtraction
+
+
+This reduces operations for certain multiplier patterns.
+
+
+============================================================
+14.40 BOOTH'S ALGORITHM — REGISTER STRUCTURE
+============================================================
+
+Typical conceptual registers:
+
+    ┌───────────────┐
+    │      A        │
+    └───────────────┘
+           │
+           │
+    ┌───────────────┐
+    │      Q        │
+    └───────────────┘
+           │
+    ┌───────────────┐
+    │     Q-1       │
+    └───────────────┘
+
+
+Also:
+
+    M = Multiplicand
+
+
+Initially:
+
+    A = 0
+    Q = Multiplier
+    Q-1 = 0
+
+
+============================================================
+14.41 BOOTH'S ALGORITHM STEPS
+============================================================
+
+1. Initialize:
+
+       A = 0
+       Q-1 = 0
+
+
+2. Load multiplicand into M.
+
+
+3. Examine:
+
+       Q0 Q-1
+
+
+4. Apply the rule:
+
+       00 → No operation
+       01 → A = A + M
+       10 → A = A - M
+       11 → No operation
+
+
+5. Perform arithmetic right shift on:
+
+       A, Q, Q-1
+
+
+6. Decrease count.
+
+
+7. Repeat until all bits are processed.
+
+
+8. Final product is:
+
+       A Q
+
+
+============================================================
+14.42 BOOTH EXAMPLE — CONCEPT
+============================================================
+
+Suppose we want:
+
+    3 × 2
+
+
+Using signed binary representation.
+
+The exact register width must be selected carefully.
+
+General process:
+
+    Initialize A = 0
+    Q = multiplier
+    Q-1 = 0
+
+Then repeatedly:
+
+    Check Q0,Q-1
+    Apply Booth rule
+    Arithmetic shift
+    Repeat
+
+
+Final:
+
+    A,Q contain the product.
+
+
+For exam problems, ALWAYS maintain the specified bit width
+and show every iteration.
+
+
+============================================================
+14.43 MULTIPLICATION COMPARISON
+============================================================
+
+SHIFT-AND-ADD:
+
+    • Simple
+    • Easy to understand
+    • Works naturally with unsigned multiplication
+    • Can be extended for signed numbers
+
+
+BOOTH:
+
+    • Designed for signed two's-complement multiplication
+    • Uses addition and subtraction
+    • Can reduce operations for runs of 1s
+
+
+============================================================
+14.44 DIVISION
+============================================================
+
+Binary division is similar to decimal long division.
+
+
+Example:
+
+    15 ÷ 3 = 5
+
+
+In binary:
+
+    1111₂ ÷ 0011₂ = 0101₂
+
+
+Hardware division algorithms commonly use:
+
+    • Restoring division
+    • Non-restoring division
+
+
+============================================================
+14.45 RESTORING DIVISION
+============================================================
+
+Restoring division is a binary division algorithm.
+
+
+Important registers:
+
+    A = Accumulator/remainder register
+
+    Q = Dividend/quotient register
+
+    M = Divisor
+
+
+Basic idea:
+
+    Shift
+      ↓
+    Subtract divisor
+      ↓
+    Check sign
+      ↓
+    If negative:
+        Restore previous value
+      ↓
+    Determine quotient bit
+
+
+============================================================
+14.46 RESTORING DIVISION — BASIC STEPS
+============================================================
+
+Initialize:
+
+    A = 0
+    Q = Dividend
+    M = Divisor
+
+
+For each bit:
+
+    1. Shift left the combined A,Q.
+
+
+    2. Subtract M from A:
+
+           A ← A - M
+
+
+    3. If A becomes negative:
+
+           Set quotient bit = 0
+
+           Restore:
+
+           A ← A + M
+
+
+    4. Otherwise:
+
+           Set quotient bit = 1
+
+
+    5. Repeat.
+
+
+At the end:
+
+    Q = Quotient
+
+    A = Remainder
+
+
+============================================================
+14.47 WHY IS IT CALLED "RESTORING"?
+============================================================
+
+Suppose:
+
+    A - M < 0
+
+
+The subtraction produced a negative partial remainder.
+
+
+The algorithm restores the old value by:
+
+    A ← A + M
+
+
+Therefore:
+
+    RESTORING DIVISION
+
+
+Memory trick:
+
+    Negative result
+         ↓
+    Restore A
+         ↓
+    Quotient bit = 0
+
+
+============================================================
+14.48 RESTORING DIVISION EXAMPLE
+============================================================
+
+Calculate:
+
+    7 ÷ 2
+
+
+Decimal answer:
+
+    Quotient = 3
+    Remainder = 1
+
+
+Binary:
+
+    0111 ÷ 0010
+
+
+The algorithm repeatedly:
+
+    • Shifts
+    • Subtracts divisor
+    • Checks sign
+    • Restores if negative
+    • Sets quotient bits
+
+
+Final:
+
+    Quotient   = 0011
+    Remainder  = 0001
+
+
+Therefore:
+
+    7 ÷ 2 = 3 remainder 1
+
+
+============================================================
+14.49 NON-RESTORING DIVISION
+============================================================
+
+Non-restoring division is an improved division method.
+
+
+Main difference:
+
+    It avoids immediately restoring the partial remainder
+    after every unsuccessful subtraction.
+
+
+Instead, the next step compensates for the previous negative
+remainder.
+
+
+This can reduce operations.
+
+
+============================================================
+14.50 NON-RESTORING DIVISION — BASIC IDEA
+============================================================
+
+If the partial remainder is positive:
+
+    Subtract divisor.
+
+
+If the partial remainder is negative:
+
+    Add divisor.
+
+
+Then shift and continue.
+
+
+Conceptually:
+
+    Positive A:
+        A ← A - M
+
+
+    Negative A:
+        A ← A + M
+
+
+The sign of A determines the next operation.
+
+
+============================================================
+14.51 RESTORING VS NON-RESTORING
+============================================================
+
+    ┌────────────────────┬──────────────────────────────┐
+    │ Restoring          │ Non-restoring                │
+    ├────────────────────┼──────────────────────────────┤
+    │ Restores after     │ Does not immediately restore │
+    │ negative result    │                              │
+    │                    │                              │
+    │ Simpler concept    │ More efficient conceptually  │
+    │                    │                              │
+    │ May require extra  │ Avoids some restore steps    │
+    │ operations         │                              │
+    └────────────────────┴──────────────────────────────┘
+
+
+============================================================
+14.52 ARITHMETIC LOGIC DESIGN
+============================================================
+
+An ALU combines:
+
+    Arithmetic circuits
+           +
+    Logic circuits
+           +
+    Selection circuitry
+           +
+    Control signals
+
+
+Conceptually:
+
+                 A
+                 │
+                 ├──────────────┐
+                 │              │
+                 ▼              ▼
+          ┌────────────┐  ┌────────────┐
+          │ Arithmetic │  │   Logic    │
+          │   Unit     │  │   Unit     │
+          └──────┬─────┘  └─────┬──────┘
+                 │              │
+                 └──────┬───────┘
+                        ▼
+                   ┌─────────┐
+          Select ─→│   MUX   │
+                   └────┬────┘
+                        │
+                        ▼
+                     RESULT
+
+
+============================================================
+14.53 ALU USING MULTIPLEXERS
+============================================================
+
+Suppose the ALU supports:
+
+    AND
+    OR
+    ADD
+    SUB
+
+
+Each circuit produces a result:
+
+    AND ──┐
+    OR ───┤
+    ADD ──┤
+    SUB ──┤→ MUX → Result
+          │
+          └── Select
+
+
+The selection bits determine which result reaches the
+output.
+
+
+============================================================
+14.54 ALU CONTROL
+============================================================
+
+The Control Unit sends ALU control signals.
+
+
+Example:
+
+    Instruction:
+
+        ADD R1, R2
+
+
+Control Unit may generate:
+
+    ALUControl = ADD
+
+
+For:
+
+    SUB R1, R2
+
+
+it may generate:
+
+    ALUControl = SUB
+
+
+The exact control encoding is architecture-dependent.
+
+
+============================================================
+14.55 ALU AND REGISTERS
+============================================================
+
+The ALU normally receives data from registers or datapath
+sources.
+
+
+Example:
+
+    R1 = 10
+    R2 = 20
+
+
+Instruction:
+
+    R3 = R1 + R2
+
+
+Flow:
+
+    R1 ───────┐
+              │
+              ▼
+             ALU ─────→ R3
+              ▲
+              │
+    R2 ───────┘
+
+
+Result:
+
+    R3 = 30
+
+
+============================================================
+14.56 ALU AND CONTROL UNIT
+============================================================
+
+The two work together.
+
+
+CONTROL UNIT:
+
+    Determines WHAT operation is required.
+
+
+ALU:
+
+    Performs the operation.
+
+
+Example:
+
+    Instruction = ADD
+
+
+Control Unit:
+
+    "ALU, perform addition."
+
+
+ALU:
+
+    Performs addition.
+
+
+Result:
+
+    Stored in destination register.
+
+
+============================================================
+14.57 ALU AND STATUS REGISTER
+============================================================
+
+After an operation, ALU may update flags.
+
+
+Example:
+
+    R1 = 5
+    R2 = 5
+
+    R1 - R2 = 0
+
+
+ALU:
+
+    Result = 0
+
+Therefore:
+
+    Zero Flag = 1
+
+
+The Control Unit or branch logic can use this flag.
+
+
+============================================================
+14.58 NUMERICAL PROBLEM 1
+============================================================
+
+Perform:
+
+    1011₂ + 0110₂
+
+
+Solution:
+
+       1011
+     + 0110
+     ------
+     1 0001
+
+
+If using 4-bit result:
+
+    Result = 0001
+
+    Carry = 1
+
+
+============================================================
+14.59 NUMERICAL PROBLEM 2
+============================================================
+
+Perform:
+
+    1101₂ - 0101₂
+
+
+Using 2's complement:
+
+    0101
+      ↓
+    1010
+      ↓ +1
+    1011
+
+
+Now:
+
+       1101
+     + 1011
+     ------
+    1 1000
+
+
+Ignore carry:
+
+    1000
+
+
+Therefore:
+
+    1101₂ - 0101₂ = 1000₂
+
+
+Decimal check:
+
+    13 - 5 = 8
+
+
+Correct.
+
+
+============================================================
+14.60 NUMERICAL PROBLEM 3
+============================================================
+
+Perform:
+
+    1010 AND 1100
+
+
+    1010
+    1100
+    ----
+    1000
+
+
+Answer:
+
+    1000
+
+
+============================================================
+14.61 NUMERICAL PROBLEM 4
+============================================================
+
+Perform:
+
+    1010 XOR 1100
+
+
+    1010
+    1100
+    ----
+    0110
+
+
+Answer:
+
+    0110
+
+
+============================================================
+14.62 NUMERICAL PROBLEM 5
+============================================================
+
+Calculate:
+
+    6 × 5
+
+
+Binary:
+
+    6 = 0110
+    5 = 0101
+
+
+Using shift-and-add:
+
+    0101 contains:
+
+        1×1 + 0×2 + 1×4
+
+Therefore:
+
+    6×5
+    = 6×1 + 6×4
+    = 6 + 24
+    = 30
+
+
+Binary:
+
+    0110
+    0000
+    1100
+    -----
+    11110
+
+
+Answer:
+
+    11110₂ = 30₁₀
+
+
+============================================================
+14.63 NUMERICAL PROBLEM 6
+============================================================
+
+Calculate:
+
+    13 ÷ 3
+
+
+Decimal:
+
+    Quotient = 4
+    Remainder = 1
+
+
+Binary:
+
+    1101 ÷ 0011
+
+
+Answer:
+
+    Quotient  = 0100
+    Remainder = 0001
+
+
+============================================================
+14.64 IMPORTANT FORMULAS
+============================================================
+
+BINARY SUBTRACTION:
+
+    A - B = A + 2's complement(B)
+
+
+2's COMPLEMENT:
+
+    Invert all bits
+    +
+    Add 1
+
+
+ADDITION:
+
+    A + B
+
+
+MULTIPLICATION:
+
+    Repeated shifted addition
+
+
+DIVISION:
+
+    Repeated shifted subtraction/addition
+
+
+HALF ADDER:
+
+    Sum   = A XOR B
+    Carry = A AND B
+
+
+FULL ADDER:
+
+    Sum  = A XOR B XOR Cin
+
+    Cout = AB + ACin + BCin
+
+
+============================================================
+14.65 COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    "ALU controls the CPU."
+
+CORRECT:
+
+    Control Unit controls the CPU.
+    ALU performs operations.
+
+
+MISTAKE 2:
+
+    "Carry and overflow are identical."
+
+CORRECT:
+
+    They represent different conditions.
+
+
+MISTAKE 3:
+
+    "1's complement is enough for subtraction."
+
+CORRECT:
+
+    In the standard two's-complement subtraction method:
+
+        A - B = A + 2's complement(B)
+
+
+MISTAKE 4:
+
+    Forgetting the +1 after bit inversion.
+
+CORRECT:
+
+    2's complement:
+
+        Invert + 1
+
+
+MISTAKE 5:
+
+    Confusing logical and arithmetic right shifts.
+
+CORRECT:
+
+    Logical right shift → insert 0
+
+    Arithmetic right shift → replicate sign bit
+
+
+MISTAKE 6:
+
+    In Booth's algorithm, forgetting Q-1.
+
+CORRECT:
+
+    Booth examines:
+
+        Q0 and Q-1
+
+
+MISTAKE 7:
+
+    Using ordinary right shift in Booth's algorithm.
+
+CORRECT:
+
+    Booth uses an arithmetic right shift of the combined
+    register structure.
+
+
+MISTAKE 8:
+
+    Forgetting restoration in restoring division.
+
+CORRECT:
+
+    If partial remainder becomes negative:
+
+        Restore by adding divisor.
+
+
+============================================================
+14.66 B.TECH QUESTIONS
+============================================================
+
+1. Define ALU.
+
+2. Explain the functions of an ALU.
+
+3. Draw and explain the block diagram of an ALU.
+
+4. Explain the arithmetic section of an ALU.
+
+5. Explain the logic section of an ALU.
+
+6. Explain how an ALU performs addition.
+
+7. Explain how subtraction is performed using 2's
+   complement.
+
+8. Explain the role of multiplexers in an ALU.
+
+9. Explain ALU control signals.
+
+10. Explain the function of status flags.
+
+11. Differentiate carry and overflow.
+
+12. Explain ripple carry adder.
+
+13. Explain shift-and-add multiplication.
+
+14. Explain Booth's multiplication algorithm.
+
+15. Explain restoring division.
+
+16. Explain non-restoring division.
+
+17. Compare restoring and non-restoring division.
+
+18. Compare shift-and-add and Booth multiplication.
+
+19. Design a basic arithmetic logic unit.
+
+20. Explain the relationship between Control Unit and ALU.
+
+
+============================================================
+14.67 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. ALU stands for:
+
+A. Arithmetic Logic Unit
+B. Arithmetic Load Unit
+C. Address Logic Unit
+D. Application Logic Unit
+
+
+Q2. Which component performs arithmetic operations?
+
+A. CU
+B. ALU
+C. PC
+D. MAR
+
+
+Q3. Which operation is logical?
+
+A. ADD
+B. SUB
+C. AND
+D. INC
+
+
+Q4. The result of:
+
+    1010 AND 1100
+
+is:
+
+A. 1110
+B. 0110
+C. 1000
+D. 0100
+
+
+Q5. The result of:
+
+    1010 XOR 1100
+
+is:
+
+A. 1000
+B. 1110
+C. 0110
+D. 0101
+
+
+Q6. In a half adder:
+
+    Sum = ?
+
+A. AND
+B. OR
+C. XOR
+D. NOT
+
+
+Q7. In a half adder:
+
+    Carry = ?
+
+A. XOR
+B. AND
+C. OR
+D. NOT
+
+
+Q8. Which algorithm is particularly associated with signed
+   two's-complement multiplication?
+
+A. Booth's algorithm
+B. FIFO
+C. LRU
+D. Restoring division
+
+
+Q9. Booth's algorithm examines:
+
+A. A and M
+B. Q0 and Q-1
+C. PC and IR
+D. MAR and MDR
+
+
+Q10. In Booth's algorithm, Q0Q-1 = 01 means:
+
+A. A ← A + M
+B. A ← A - M
+C. No operation
+D. Shift only
+
+
+Q11. In Booth's algorithm, Q0Q-1 = 10 means:
+
+A. A ← A + M
+B. A ← A - M
+C. No operation
+D. A ← 0
+
+
+Q12. Restoring division restores the partial remainder when:
+
+A. It is positive
+B. It is negative
+C. It is zero
+D. Carry is generated
+
+
+Q13. Arithmetic right shift:
+
+A. Always inserts 0
+B. Replicates the sign bit
+C. Always inserts 1
+D. Reverses all bits
+
+
+Q14. Which flag commonly indicates a zero result?
+
+A. Carry
+B. Zero
+C. Overflow
+D. Sign
+
+
+Q15. For 4-bit signed two's-complement numbers, the range
+     is:
+
+A. -7 to +7
+B. -8 to +7
+C. -8 to +8
+D. -15 to +15
+
+
+============================================================
+ANSWERS
+============================================================
+
+    Q1  → A
+    Q2  → B
+    Q3  → C
+    Q4  → C
+    Q5  → C
+    Q6  → C
+    Q7  → B
+    Q8  → A
+    Q9  → B
+    Q10 → A
+    Q11 → B
+    Q12 → B
+    Q13 → B
+    Q14 → B
+    Q15 → B
+
+
+============================================================
+14.68 QUICK REVISION
+============================================================
+
+ALU:
+
+    Arithmetic + Logic Unit
+
+
+MAIN JOB:
+
+    Perform operations on binary data.
+
+
+ARITHMETIC:
+
+    ADD
+    SUB
+    INC
+    DEC
+
+
+LOGIC:
+
+    AND
+    OR
+    XOR
+    NOT
+
+
+SHIFT:
+
+    Logical shift
+    Arithmetic shift
+
+
+FLAGS:
+
+    Carry
+    Zero
+    Sign/Negative
+    Overflow
+    Parity (architecture-dependent)
+
+
+SUBTRACTION:
+
+    A - B
+    =
+    A + 2's complement(B)
+
+
+MULTIPLICATION:
+
+    Shift-and-add
+    Booth's algorithm
+
+
+DIVISION:
+
+    Restoring
+    Non-restoring
+
+
+ALU RELATIONSHIP:
+
+    Control Unit
+         ↓
+    Control signals
+         ↓
+        ALU
+         ↓
+      Result
+         ↓
+       Flags
+
+
+============================================================
+14.69 MASTER MEMORY MAP
+============================================================
+
+                    ALU
+                     │
+        ┌────────────┼────────────┐
+        │            │            │
+        ▼            ▼            ▼
+    Arithmetic     Logic        Shift
+        │            │            │
+     ADD/SUB      AND/OR/XOR   Left/Right
+     INC/DEC         NOT
+        │            │            │
+        └────────────┼────────────┘
+                     ▼
+                   RESULT
+                     │
+                     ▼
+                   FLAGS
+
+
+MULTIPLICATION:
+
+    Multiplier bit
+          ↓
+       Check
+          ↓
+    Add if 1
+          ↓
+       Shift
+          ↓
+       Repeat
+
+
+BOOTH:
+
+    Q0 Q-1
+      ↓
+    01 → ADD
+    10 → SUB
+    00 → NOTHING
+    11 → NOTHING
+      ↓
+    Arithmetic shift
+      ↓
+    Repeat
+
+
+RESTORING DIVISION:
+
+    Shift
+      ↓
+    Subtract
+      ↓
+    Negative?
+     /     \
+   YES      NO
+    │        │
+ Restore     │
+    │        │
+    └────┬───┘
+         ↓
+    Quotient bit
+         ↓
+       Repeat
+
+
+============================================================
+14.70 MASTER CHECKPOINT
+============================================================
+
+Before moving ahead, you should be able to:
+
+[ ] Define ALU.
+[ ] Explain the role of ALU in CPU.
+[ ] Identify ALU inputs and outputs.
+[ ] Explain arithmetic operations.
+[ ] Explain logical operations.
+[ ] Explain half adder.
+[ ] Explain full adder.
+[ ] Explain ripple carry adder.
+[ ] Perform binary addition.
+[ ] Perform binary subtraction.
+[ ] Perform subtraction using 2's complement.
+[ ] Explain increment/decrement.
+[ ] Explain ALU control.
+[ ] Explain multiplexer-based ALU selection.
+[ ] Explain Zero flag.
+[ ] Explain Carry flag.
+[ ] Explain Sign flag.
+[ ] Explain Overflow flag.
+[ ] Differentiate Carry and Overflow.
+[ ] Explain logical shift.
+[ ] Explain arithmetic shift.
+[ ] Perform shift-and-add multiplication.
+[ ] Explain Booth's algorithm.
+[ ] Apply Booth's decision table.
+[ ] Explain restoring division.
+[ ] Explain non-restoring division.
+[ ] Compare restoring and non-restoring division.
+[ ] Explain arithmetic logic design.
+[ ] Solve basic ALU numerical problems.
+
+
+============================================================
+CHAPTER 14 COMPLETE
+============================================================
+
+CORE IDEA:
+
+    CONTROL UNIT
+          │
+          │ tells ALU what to do
+          ▼
+        ┌─────┐
+        │ ALU │
+        └──┬──┘
+           │
+     ┌─────┼───────────────┐
+     ▼     ▼               ▼
+   ADD    LOGIC          SHIFT
+   SUB    AND/OR/XOR     LEFT/RIGHT
+   INC    NOT
+   DEC
+     │
+     ▼
+   RESULT
+     │
+     ▼
+   FLAGS
+
+
+THE BIG PICTURE:
+
+    Registers
+       │
+       ▼
+      ALU
+       │
+       ├── Arithmetic
+       ├── Logic
+       ├── Shift
+       └── Compare
+       │
+       ▼
+     Result
+       │
+       ▼
+    Registers
+
+
+============================================================
+NEXT:
+CHAPTER 15 — FLOATING-POINT ARITHMETIC
+============================================================
+
+15.1 Floating-Point Addition
+15.2 Floating-Point Subtraction
+15.3 Floating-Point Multiplication
+15.4 Floating-Point Division
+15.5 Rounding
+    • Round-to-nearest
+    • Truncation
+    • Precision
+15.6 Floating-Point Hardware
+    • Floating-Point Unit (FPU)
+============================================================

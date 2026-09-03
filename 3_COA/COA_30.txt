@@ -1,0 +1,2421 @@
+CHAPTER 30 — MULTICORE PROCESSORS
+
+============================================================
+CHAPTER 30 — MULTICORE PROCESSORS
+============================================================
+
+LEVEL:
+B.Tech 1st Year → Intermediate → Advanced Foundation
+
+PREREQUISITES:
+Chapter 24 — Processor Organisation
+Chapter 25 — Instruction Pipelining
+Chapter 26 — Advanced Pipelining
+Chapter 29 — Parallel Processing
+
+GOAL:
+Understand single-core and multicore processors, shared
+memory, cache coherence, MESI protocol, memory consistency,
+and multithreading.
+
+============================================================
+30.1 WHAT IS A PROCESSOR CORE?
+============================================================
+
+A CORE is an independent processing unit inside a CPU.
+
+A core generally contains:
+
+    • ALU
+    • Registers
+    • Control logic
+    • Execution units
+    • Pipeline
+    • Load/store hardware
+    • Often private cache
+
+Simple view:
+
+              CPU CORE
+                  |
+        +---------+---------+
+        |         |         |
+       ALU    Registers   Control
+        |
+      Execute instructions
+
+
+A processor can contain:
+
+    1 core
+    2 cores
+    4 cores
+    8 cores
+    16 cores
+    32+ cores
+
+depending on the processor.
+
+
+============================================================
+30.2 SINGLE-CORE PROCESSOR
+============================================================
+
+A single-core processor contains one main processing core.
+
+
+Diagram:
+
+              CPU
+               |
+          +---------+
+          |  CORE   |
+          +---------+
+               |
+       Executes instructions
+
+
+If multiple software tasks exist, the operating system can
+switch between them.
+
+Example:
+
+    Task A
+      ↓
+    Task B
+      ↓
+    Task C
+
+
+The core shares its execution resources among tasks.
+
+
+============================================================
+30.3 MULTICORE PROCESSOR
+============================================================
+
+A multicore processor contains multiple processing cores
+inside one processor package/chip.
+
+
+Example:
+
+                  CPU
+                   |
+       +-----------+-----------+
+       |           |           |
+     CORE 1      CORE 2      CORE 3
+       |           |           |
+      ALU         ALU         ALU
+       |           |           |
+    Registers   Registers   Registers
+
+
+A 4-core processor has four cores.
+
+A 8-core processor has eight cores.
+
+
+============================================================
+30.4 SINGLE-CORE VS MULTICORE
+============================================================
+
+SINGLE-CORE:
+
+    +---------+
+    |  CORE   |
+    +---------+
+
+
+MULTICORE:
+
+    +---------+---------+---------+---------+
+    | Core 1  | Core 2  | Core 3  | Core 4  |
+    +---------+---------+---------+---------+
+
+
+Multicore systems can execute multiple independent threads
+in parallel.
+
+
+============================================================
+30.5 WHY MULTICORE PROCESSORS?
+============================================================
+
+Increasing clock frequency indefinitely causes problems:
+
+    • High power consumption
+    • Heat generation
+    • Leakage power
+    • Physical limitations
+    • Voltage limitations
+
+Instead of making one core extremely fast, designers can
+place multiple cores on the same chip.
+
+
+Basic idea:
+
+    One very fast core
+          ↓
+    Multiple efficient cores
+          ↓
+    Parallel execution
+
+
+============================================================
+30.6 REAL-WORLD ANALOGY
+============================================================
+
+Imagine one worker completing four jobs:
+
+    Worker
+      |
+      +-- Job 1
+      +-- Job 2
+      +-- Job 3
+      +-- Job 4
+
+
+Now imagine four workers:
+
+    Worker 1 → Job 1
+    Worker 2 → Job 2
+    Worker 3 → Job 3
+    Worker 4 → Job 4
+
+
+If jobs are independent:
+
+    Total work can finish faster.
+
+
+This is the basic idea behind multicore processing.
+
+
+============================================================
+30.7 MULTICORE ARCHITECTURE
+============================================================
+
+A simplified multicore processor:
+
+                   PROCESSOR
+                       |
+       +---------------+---------------+
+       |               |               |
+     CORE 1          CORE 2          CORE 3
+       |               |               |
+      L1              L1              L1
+       |               |               |
+       +---------------+---------------+
+                       |
+                    L2/L3
+                     CACHE
+                       |
+                  Memory System
+                       |
+                     RAM
+
+
+Different processors use different cache arrangements.
+
+
+============================================================
+30.8 CORE COMPONENTS
+============================================================
+
+A core may contain:
+
+    1. Fetch unit
+    2. Decode unit
+    3. Execution units
+    4. ALU
+    5. Floating-point unit
+    6. Load/store unit
+    7. Registers
+    8. Branch prediction
+    9. Pipeline
+   10. L1 cache
+
+
+Conceptually:
+
+    Instruction
+        ↓
+      Fetch
+        ↓
+      Decode
+        ↓
+      Execute
+        ↓
+      Memory
+        ↓
+     Write-back
+
+
+============================================================
+30.9 SHARED MEMORY
+============================================================
+
+In a shared-memory multiprocessor, multiple cores can access
+a common memory system.
+
+
+Diagram:
+
+       Core 1 ───┐
+       Core 2 ────┤
+       Core 3 ────┼──→ Shared Memory
+       Core 4 ────┘
+
+
+The cores can communicate by reading and writing shared
+memory.
+
+
+Example:
+
+    Core 1 writes:
+
+        X = 100
+
+
+    Core 2 reads:
+
+        X
+
+
+Core 2 may obtain:
+
+        100
+
+
+But this introduces important problems involving caches and
+memory ordering.
+
+
+============================================================
+30.10 SHARED MEMORY MULTICORE SYSTEM
+============================================================
+
+             +---------+
+             |  CORE 1 |
+             +---------+
+                  |
+                 L1
+                  |
+                  |
+             +---------+
+             |  CORE 2 |
+             +---------+
+                  |
+                 L1
+                  |
+          +-------+-------+
+          | Shared Cache |
+          +-------+-------+
+                  |
+               Memory
+                  |
+                 RAM
+
+
+Different architectures may use private and/or shared cache
+levels.
+
+
+============================================================
+30.11 PRIVATE VS SHARED CACHE
+============================================================
+
+PRIVATE CACHE:
+
+    Each core has its own cache.
+
+
+       Core 1 → L1
+       Core 2 → L1
+       Core 3 → L1
+
+
+SHARED CACHE:
+
+    Multiple cores access the same cache.
+
+
+       Core 1 ─┐
+       Core 2 ─┼→ Shared L3
+       Core 3 ─┘
+
+
+Common design:
+
+    Each core:
+        Private L1
+
+    Sometimes:
+        Private L2
+
+    Shared:
+        L3
+
+
+But actual designs vary.
+
+
+============================================================
+30.12 WHY DO CORES HAVE CACHES?
+============================================================
+
+CPU cores are much faster than main memory.
+
+
+Without caches:
+
+    Core
+      ↓
+    RAM
+      ↓
+    Long wait
+
+
+With cache:
+
+    Core
+      ↓
+    L1 cache
+      ↓
+    L2 cache
+      ↓
+    L3 cache
+      ↓
+    RAM
+
+
+Caches reduce average memory access time.
+
+
+============================================================
+30.13 THE CACHE COHERENCE PROBLEM
+============================================================
+
+This is one of the MOST IMPORTANT topics in multicore
+architecture.
+
+
+Suppose:
+
+    Core 1 has variable X in its cache.
+
+    Core 2 also has X in its cache.
+
+
+Initially:
+
+    X = 10
+
+
+Both caches:
+
+    Core 1 cache → X = 10
+    Core 2 cache → X = 10
+
+
+Now Core 1 changes:
+
+    X = 20
+
+
+Core 1 cache:
+
+    X = 20
+
+
+But Core 2 may still have:
+
+    X = 10
+
+
+Now two cores have different values of the same memory
+location.
+
+
+This is the CACHE COHERENCE PROBLEM.
+
+
+============================================================
+30.14 CACHE COHERENCE
+============================================================
+
+Cache coherence means maintaining a consistent view of a
+memory location across multiple caches, according to the
+system's coherence rules.
+
+
+Example:
+
+    Memory:
+        X = 10
+
+
+    Core 1 cache:
+        X = 10
+
+
+    Core 2 cache:
+        X = 10
+
+
+Core 1 writes:
+
+    X = 20
+
+
+The system must ensure that Core 2 does not indefinitely use
+a stale cached copy.
+
+
+============================================================
+30.15 WHY CACHE COHERENCE IS NEEDED
+============================================================
+
+Without coherence:
+
+    Core 1 sees X = 20
+
+    Core 2 sees X = 10
+
+
+This can lead to incorrect program behaviour when software
+expects cores to observe updates according to the architecture's
+memory model.
+
+
+Therefore multicore processors require cache-coherence
+mechanisms.
+
+
+============================================================
+30.16 COHERENCE VS CONSISTENCY
+============================================================
+
+VERY IMPORTANT DISTINCTION:
+
+
+CACHE COHERENCE:
+
+    Concerns the ordering/visibility of writes to the
+    same memory location across caches.
+
+
+MEMORY CONSISTENCY:
+
+    Defines rules for the ordering and visibility of memory
+    operations across different memory locations.
+
+
+Simple memory trick:
+
+    Coherence → "same location"
+
+    Consistency → "ordering of memory operations"
+
+
+============================================================
+30.17 CACHE COHERENCE METHODS
+============================================================
+
+Important approaches include:
+
+    1. Snooping-based coherence
+    2. Directory-based coherence
+
+
+The syllabus focuses especially on:
+
+    • Snooping
+    • MESI
+
+
+============================================================
+30.18 SNOOPING
+============================================================
+
+Snooping is a cache-coherence technique in which caches
+monitor ("snoop") relevant transactions on a shared
+communication medium/interconnect.
+
+
+Conceptually:
+
+       Core 1
+         |
+       Cache
+         |
+         +---------+
+                   |
+              Shared Bus
+                   |
+         +---------+
+         |
+       Cache
+         |
+       Core 2
+
+
+Each cache observes relevant bus/interconnect activity.
+
+
+============================================================
+30.19 SNOOPING EXAMPLE
+============================================================
+
+Suppose:
+
+    Core 1:
+        X = 10
+
+    Core 2:
+        X = 10
+
+
+Core 1 executes:
+
+    X = 20
+
+
+A coherence transaction is generated.
+
+
+Other caches observe the transaction.
+
+
+Core 2's cached copy may be:
+
+    Invalidated
+
+
+Then Core 2 cannot continue treating its old copy as valid.
+
+
+============================================================
+30.20 DIRECTORY-BASED COHERENCE
+============================================================
+
+For larger systems, a central shared bus may not scale well.
+
+
+Directory-based coherence maintains information about:
+
+    • Which caches contain a block
+    • Which cache may have modified ownership
+
+
+Conceptual:
+
+             DIRECTORY
+                 |
+       +---------+---------+
+       |         |         |
+     Core 1    Core 2    Core 3
+       |         |         |
+     Cache     Cache     Cache
+
+
+The directory tracks sharing/ownership information.
+
+
+============================================================
+30.21 COHERENCE STATES
+============================================================
+
+To manage cache blocks, processors use coherence states.
+
+
+One of the most important protocols is:
+
+    MESI
+
+
+MESI states:
+
+    M → Modified
+    E → Exclusive
+    S → Shared
+    I → Invalid
+
+
+============================================================
+30.22 MESI PROTOCOL
+============================================================
+
+MESI is a cache-coherence protocol.
+
+
+Each cache line/block can be in one of four states:
+
+    M = Modified
+    E = Exclusive
+    S = Shared
+    I = Invalid
+
+
+These states tell the processor how the cached copy relates
+to other possible copies and main memory.
+
+
+============================================================
+30.23 M — MODIFIED
+============================================================
+
+MODIFIED means:
+
+    • This cache has the most recent modified copy.
+    • The memory copy is stale relative to this cache line.
+    • No other cache should have a valid shared copy of the
+      same line under the MESI model.
+
+
+Example:
+
+    Memory:
+        X = 10
+
+    Core 1 modifies X:
+
+        X = 20
+
+
+Core 1 cache:
+
+        X = 20
+        State = MODIFIED
+
+
+Memory may still contain:
+
+        X = 10
+
+
+When the modified line is eventually written back:
+
+        Memory ← 20
+
+
+============================================================
+30.24 E — EXCLUSIVE
+============================================================
+
+EXCLUSIVE means:
+
+    • The cache has the only cached copy.
+    • The line is clean.
+    • Memory has the same value.
+
+
+Example:
+
+    Memory:
+        X = 10
+
+
+Core 1 loads X:
+
+    Core 1 cache:
+        X = 10
+        State = EXCLUSIVE
+
+
+No other cache has the line.
+
+
+If Core 1 writes X:
+
+    X = 20
+
+
+The line can transition:
+
+    E → M
+
+
+without necessarily needing to obtain ownership from another
+cache because it was already exclusive.
+
+
+============================================================
+30.25 S — SHARED
+============================================================
+
+SHARED means:
+
+    • Multiple caches may contain the same line.
+    • The cached copy is clean relative to memory.
+
+
+Example:
+
+    Core 1 cache:
+        X = 10
+        S
+
+
+    Core 2 cache:
+        X = 10
+        S
+
+
+Memory:
+
+        X = 10
+
+
+Multiple cores share the same data.
+
+
+============================================================
+30.26 I — INVALID
+============================================================
+
+INVALID means:
+
+    The cache line cannot currently be used as a valid copy.
+
+
+Example:
+
+    Core 1 cache:
+        X = 10
+
+
+Core 2 writes:
+
+    X = 20
+
+
+Core 1's old copy may become:
+
+    X = 10
+    State = INVALID
+
+
+Core 1 must obtain a valid copy before using that line as
+current data.
+
+
+============================================================
+30.27 MESI STATE SUMMARY
+------------------------------------------------------------
+
++--------+-----------------------------------------------+
+| State  | Meaning                                       |
++--------+-----------------------------------------------+
+| M      | Modified; dirty, exclusive copy              |
+| E      | Exclusive; clean, only cached copy           |
+| S      | Shared; clean copy may exist in many caches  |
+| I      | Invalid; line is not valid                   |
++--------+-----------------------------------------------+
+
+
+MEMORY TRICK:
+
+    M → Modified
+    E → Exclusive
+    S → Shared
+    I → Invalid
+
+
+============================================================
+30.28 MESI STATE DIAGRAM — BASIC
+============================================================
+
+                    READ MISS
+                       |
+                       ↓
+                +-------------+
+                |     E       |
+                +-------------+
+                  |         |
+              WRITE       OTHER
+                  |       SHARES
+                  ↓         ↓
+                +---+      +---+
+                | M |      | S |
+                +---+      +---+
+                  |
+              OTHER CORE
+              WRITES
+                  |
+                  ↓
+                +---+
+                | I |
+                +---+
+
+
+The complete transition diagram depends on the specific
+coherence implementation and bus/interconnect transactions.
+
+
+============================================================
+30.29 MESI EXAMPLE
+============================================================
+
+Initial:
+
+    Memory:
+        X = 100
+
+
+Core 1 reads X.
+
+    Core 1 cache:
+        X = 100
+        E
+
+
+Core 2 reads X.
+
+Now both may have:
+
+    Core 1 → X = 100, S
+    Core 2 → X = 100, S
+
+
+Core 1 writes:
+
+    X = 200
+
+
+Core 1:
+
+    X = 200
+    M
+
+
+Core 2:
+
+    X = 100
+    I
+
+
+Eventually Core 1's modified value will be propagated to
+memory according to the implementation's write-back/coherence
+mechanism.
+
+
+============================================================
+30.30 MESI STATE TRANSITIONS — BASIC CASES
+============================================================
+
+CASE 1:
+A core reads a block and no other cache has it.
+
+    I → E
+
+
+CASE 2:
+A core reads a block that another cache also has.
+
+    I → S
+
+
+CASE 3:
+A core writes an exclusive block.
+
+    E → M
+
+
+CASE 4:
+A core writes a shared block.
+
+    S → M
+
+with other cached copies being invalidated.
+
+
+CASE 5:
+Another core writes a block that this cache has.
+
+    S → I
+
+or potentially another transition depending on the exact
+transaction/protocol implementation.
+
+
+============================================================
+30.31 WRITE INVALIDATE
+============================================================
+
+A common coherence strategy is:
+
+    WRITE-INVALIDATE
+
+
+When one core wants to modify a shared cache line:
+
+    Other cached copies
+          ↓
+       INVALIDATE
+
+
+Example:
+
+    Core 1 → X = 20
+
+    Core 2's X → INVALID
+
+
+Then only the writer has the valid modified copy.
+
+
+This reduces the possibility of multiple stale writable copies.
+
+
+============================================================
+30.32 WRITE UPDATE
+============================================================
+
+Another possible strategy is:
+
+    WRITE-UPDATE
+
+
+When one core writes:
+
+    X = 20
+
+
+Other caches may receive the new value.
+
+
+Conceptually:
+
+    Core 1:
+        X = 20
+          |
+          +------→ Core 2 cache
+          |
+          +------→ Core 3 cache
+
+
+Write-update can generate substantial communication traffic.
+
+
+============================================================
+30.33 WRITE-INVALIDATE VS WRITE-UPDATE
+============================================================
+
+WRITE-INVALIDATE:
+
+    Writer changes X
+          ↓
+    Other copies invalidated
+
+
+WRITE-UPDATE:
+
+    Writer changes X
+          ↓
+    Other copies updated
+
+
+Simplified comparison:
+
++------------------+-----------------------------+
+| Strategy         | Action                      |
++------------------+-----------------------------+
+| Invalidate       | Invalidate other copies    |
+| Update           | Send new value to copies   |
++------------------+-----------------------------+
+
+
+============================================================
+30.34 MULTICORE MEMORY HIERARCHY
+============================================================
+
+A simplified multicore memory hierarchy:
+
+                 CORE 1
+                   |
+                  L1
+                   |
+                  L2
+                   |
+        +----------+----------+
+        |                     |
+      Shared L3           CORE 2
+                              |
+                             L1
+                              |
+                             L2
+                              |
+                              |
+                             RAM
+
+
+Actual designs vary significantly.
+
+
+============================================================
+30.35 SHARED MEMORY PROGRAMMING
+============================================================
+
+Suppose two threads share:
+
+    counter
+
+
+Thread 1:
+
+    counter = counter + 1
+
+
+Thread 2:
+
+    counter = counter + 1
+
+
+It looks simple.
+
+But internally:
+
+    LOAD
+    ADD
+    STORE
+
+
+The operations can interleave.
+
+
+This may produce incorrect results if proper synchronization
+is not used.
+
+
+============================================================
+30.36 RACE CONDITION
+============================================================
+
+A race condition occurs when program behaviour depends on the
+timing/interleaving of concurrent accesses to shared data.
+
+
+Example:
+
+Initial:
+
+    counter = 10
+
+
+Thread 1:
+
+    READ counter → 10
+
+
+Thread 2:
+
+    READ counter → 10
+
+
+Thread 1:
+
+    WRITE 11
+
+
+Thread 2:
+
+    WRITE 11
+
+
+Final:
+
+    counter = 11
+
+
+Expected:
+
+    counter = 12
+
+
+One increment was effectively lost.
+
+
+This is called a LOST UPDATE.
+
+
+============================================================
+30.37 ATOMIC OPERATION
+============================================================
+
+An atomic operation appears indivisible to other threads.
+
+
+Example:
+
+    Atomic Increment(counter)
+
+
+Instead of:
+
+    LOAD
+    ADD
+    STORE
+
+
+being separately visible, the architecture provides an
+atomic read-modify-write mechanism.
+
+
+Atomic operations are important for synchronization.
+
+
+============================================================
+30.38 SYNCHRONIZATION
+============================================================
+
+Synchronization coordinates concurrent threads.
+
+
+Common mechanisms:
+
+    • Locks
+    • Mutexes
+    • Semaphores
+    • Atomic operations
+    • Barriers
+
+
+Hardware provides primitives that help software implement
+these mechanisms safely.
+
+
+============================================================
+30.39 MEMORY CONSISTENCY
+============================================================
+
+Memory consistency defines the rules governing the order in
+which memory operations become observable to different
+processors/cores.
+
+
+Example:
+
+Thread 1:
+
+    X = 1
+    Y = 1
+
+
+Thread 2:
+
+    Read Y
+    Read X
+
+
+What values can Thread 2 observe?
+
+
+The answer depends on the architecture's memory consistency
+model and synchronization.
+
+
+============================================================
+30.40 SEQUENTIAL CONSISTENCY
+============================================================
+
+Sequential consistency is a strong conceptual memory model.
+
+
+Informally:
+
+    The result of execution is as if all operations of all
+    processors were interleaved in some single global order,
+    while preserving each processor's program order.
+
+
+Example:
+
+    Core 1:
+        A = 1
+        B = 2
+
+
+    Core 2:
+        Read B
+        Read A
+
+
+The global ordering must respect the program order within
+each core.
+
+
+============================================================
+30.41 STRONG VS WEAK MEMORY ORDERING
+============================================================
+
+Different processors may provide different memory-ordering
+models.
+
+
+STRONGER ORDERING:
+
+    Fewer reorderings visible to software.
+
+
+WEAKER ORDERING:
+
+    More hardware/compiler freedom to reorder operations,
+    potentially improving performance.
+
+
+Software uses:
+
+    • Memory barriers/fences
+    • Atomic instructions
+    • Synchronization primitives
+
+
+when ordering guarantees are required.
+
+
+============================================================
+30.42 CACHE COHERENCE VS MEMORY CONSISTENCY
+============================================================
+
+VERY IMPORTANT EXAM QUESTION.
+
+
+CACHE COHERENCE:
+
+    Deals primarily with the value and ordering of accesses
+    to the same memory location across caches.
+
+
+MEMORY CONSISTENCY:
+
+    Deals with ordering/visibility of memory operations,
+    potentially across different locations.
+
+
+Example:
+
+    Coherence:
+        "Do all cores eventually agree appropriately about X?"
+
+
+    Consistency:
+        "In what order can reads/writes to X and Y become
+         visible?"
+
+
+============================================================
+30.43 MULTITHREADING
+============================================================
+
+A THREAD is a sequence of instructions that can execute
+independently within a process.
+
+
+Multiple threads can exist in one process.
+
+
+Example:
+
+    Application
+       |
+    +--+--+--+
+    |  |  |  |
+   T1 T2 T3 T4
+
+
+Threads may share:
+
+    • Address space
+    • Global variables
+    • Heap memory
+
+
+but have their own:
+
+    • Program counter
+    • Registers
+    • Stack
+
+
+============================================================
+30.44 PROCESS VS THREAD
+============================================================
+
+PROCESS:
+
+    A program instance with its own protected address space.
+
+
+THREAD:
+
+    A unit of execution within a process.
+
+
+Conceptually:
+
+    Process
+       |
+       +-- Thread 1
+       +-- Thread 2
+       +-- Thread 3
+
+
+Threads in the same process usually share the process's
+memory resources.
+
+
+============================================================
+30.45 HARDWARE THREADS
+============================================================
+
+A processor may support multiple hardware threads per core.
+
+
+A hardware thread provides architectural state that allows
+the processor to keep track of more than one thread of
+execution.
+
+
+Conceptually:
+
+             CORE
+              |
+        +-----+-----+
+        |           |
+      Thread 1    Thread 2
+
+
+This can improve utilisation of execution resources when one
+thread is waiting.
+
+
+============================================================
+30.46 MULTITHREADING VS MULTICORE
+============================================================
+
+MULTICORE:
+
+    Multiple physical processing cores.
+
+
+MULTITHREADING:
+
+    Multiple threads can be active/executed.
+
+
+Example:
+
+    4 cores
+    2 hardware threads per core
+
+
+Conceptually:
+
+    4 × 2 = 8 hardware threads
+
+
+This does NOT necessarily mean performance equals that of
+8 physical cores.
+
+
+============================================================
+30.47 SIMULTANEOUS MULTITHREADING (SMT)
+============================================================
+
+SMT allows a single physical core to issue/use execution
+resources for instructions from multiple hardware threads
+during overlapping periods.
+
+
+Conceptual:
+
+             ONE CORE
+                |
+        +-------+-------+
+        |               |
+      Thread A        Thread B
+        |               |
+        +-------+-------+
+                |
+        Shared execution resources
+
+
+SMT attempts to keep otherwise idle execution resources busy.
+
+
+============================================================
+30.48 SMT EXAMPLE
+============================================================
+
+Suppose Core 1 has:
+
+    Thread A
+    Thread B
+
+
+Thread A may be waiting for memory.
+
+
+Instead of leaving some execution resources idle:
+
+    Thread B can use available resources.
+
+
+Thus:
+
+    Better hardware utilisation
+
+
+But:
+
+    SMT does NOT double performance automatically.
+
+
+============================================================
+30.49 MULTICORE + SMT
+============================================================
+
+Suppose:
+
+    CPU = 4 physical cores
+    SMT = 2 threads/core
+
+
+Then:
+
+    Physical cores = 4
+
+    Hardware threads = 8
+
+
+Diagram:
+
+    Core 1 → T1, T2
+    Core 2 → T3, T4
+    Core 3 → T5, T6
+    Core 4 → T7, T8
+
+
+Again:
+
+    8 hardware threads ≠ 8 physical cores.
+
+
+============================================================
+30.50 MULTICORE ADVANTAGES
+============================================================
+
+Advantages:
+
+    • Parallel execution
+    • Better throughput
+    • Better multitasking
+    • Improved performance for multithreaded applications
+    • More performance without relying only on higher clock
+      frequency
+    • Potentially better performance per watt
+
+
+============================================================
+30.51 MULTICORE LIMITATIONS
+============================================================
+
+Limitations:
+
+    • Parallel programming is difficult
+    • Synchronization overhead
+    • Cache coherence overhead
+    • Memory bandwidth limitations
+    • Shared-resource contention
+    • Load imbalance
+    • Serial portions limit speedup
+    • Increased design complexity
+
+
+============================================================
+30.52 Amdahl's LAW AND MULTICORE
+============================================================
+
+Amdahl's Law is extremely important for multicore systems.
+
+
+Suppose:
+
+    90% of program = parallelisable
+    10% = serial
+
+
+Even with many cores:
+
+    Serial portion remains.
+
+
+Maximum speedup:
+
+    1 / 0.10
+    = 10×
+
+
+Therefore:
+
+    Infinite cores
+          ↓
+    Maximum theoretical speedup = 10×
+
+
+More cores do not eliminate the serial portion.
+
+
+============================================================
+30.53 GUSTAFSON'S LAW — BASIC IDEA
+============================================================
+
+Amdahl's Law assumes a fixed workload.
+
+
+Gustafson's Law considers that with more processors,
+we may solve larger problems in roughly the same amount of
+time.
+
+
+Basic idea:
+
+    More processors
+         ↓
+    Larger useful workload
+         ↓
+    Better scalability
+
+
+For introductory COA, remember:
+
+    Amdahl → fixed problem / limits speedup
+
+    Gustafson → scaled problem / better view of scalability
+
+
+============================================================
+30.54 SCALABILITY
+============================================================
+
+Scalability means:
+
+    How effectively performance increases as computing
+    resources increase.
+
+
+Ideal:
+
+    1 core → 1×
+    2 cores → 2×
+    4 cores → 4×
+    8 cores → 8×
+
+
+Real:
+
+    1 core → 1×
+    2 cores → 1.8×
+    4 cores → 3.2×
+    8 cores → 5.5×
+
+
+Reasons:
+
+    • Serial work
+    • Synchronization
+    • Communication
+    • Memory bottlenecks
+    • Load imbalance
+
+
+============================================================
+30.55 LOAD BALANCING
+============================================================
+
+Load balancing means distributing work approximately evenly
+among processing resources.
+
+
+BAD:
+
+    Core 1 → █████████████████
+    Core 2 → ██
+    Core 3 → █
+    Core 4 →
+
+
+Core 1 is overloaded.
+
+
+GOOD:
+
+    Core 1 → █████
+    Core 2 → █████
+    Core 3 → █████
+    Core 4 → █████
+
+
+Balanced work improves parallel efficiency.
+
+
+============================================================
+30.56 SHARED RESOURCE CONTENTION
+============================================================
+
+Multiple cores may compete for:
+
+    • Shared cache
+    • Memory bandwidth
+    • Interconnect
+    • Memory controller
+    • Execution resources
+
+
+Example:
+
+    Core 1 ─┐
+    Core 2 ─┼──→ Memory controller
+    Core 3 ─┤
+    Core 4 ─┘
+
+
+If many cores request memory simultaneously:
+
+    Contention occurs.
+
+
+============================================================
+30.57 CACHE LINE
+============================================================
+
+Caches transfer data in blocks called:
+
+    CACHE LINES
+
+
+A cache line contains multiple bytes.
+
+
+Example:
+
+    Cache line = 64 bytes
+
+
+If two variables used by different cores fall in the same
+cache line, coherence traffic can occur even when the cores
+are modifying different variables.
+
+
+This leads to an important performance problem.
+
+
+============================================================
+30.58 FALSE SHARING
+============================================================
+
+False sharing occurs when:
+
+    Two or more cores modify different variables that happen
+    to reside in the same cache line.
+
+
+Example:
+
+    Cache line:
+    +-------------------------------+
+    | Variable A | Variable B       |
+    +-------------------------------+
+
+
+Core 1 modifies:
+
+    Variable A
+
+
+Core 2 modifies:
+
+    Variable B
+
+
+Even though A and B are logically independent, the entire
+cache line may participate in coherence operations.
+
+
+This creates unnecessary coherence traffic.
+
+
+============================================================
+30.59 FALSE SHARING EXAMPLE
+============================================================
+
+Suppose:
+
+    Core 1 repeatedly updates A.
+
+    Core 2 repeatedly updates B.
+
+
+But:
+
+    A and B are in the same cache line.
+
+
+Then:
+
+    Core 1 → invalidates/updates line
+    Core 2 → invalidates/updates line
+    Core 1 → invalidates/updates line
+    Core 2 → ...
+
+
+Performance decreases.
+
+
+IMPORTANT:
+
+    False sharing is a hardware/cache interaction that can
+    seriously hurt multicore performance.
+
+
+============================================================
+30.60 CACHE COHERENCE PERFORMANCE COST
+============================================================
+
+Coherence requires:
+
+    • Communication
+    • State transitions
+    • Invalidations
+    • Data transfers
+    • Interconnect traffic
+
+
+Therefore:
+
+    More cores
+        ↓
+    More potential sharing
+        ↓
+    More coherence traffic
+
+
+Large multicore systems require sophisticated coherence
+mechanisms.
+
+
+============================================================
+30.61 MULTICORE INTERCONNECT
+============================================================
+
+Cores need to communicate with:
+
+    • Other cores
+    • Caches
+    • Memory controller
+    • I/O devices
+
+
+Possible interconnect structures:
+
+    • Shared bus
+    • Ring
+    • Mesh
+    • Crossbar
+    • Network-on-Chip
+
+
+Modern many-core systems often use scalable on-chip
+interconnects rather than one simple shared bus.
+
+
+============================================================
+30.62 BASIC MULTICORE ARCHITECTURE
+============================================================
+
+                  +----------------+
+                  |    Core 1      |
+                  |   L1 Cache     |
+                  +-------+--------+
+                          |
+                  +-------+--------+
+                  |   Interconnect |
+                  +---+--------+---+
+                      |        |
+            +---------+        +---------+
+            |                            |
+     +------+-------+              +-----+------+
+     |   Core 2     |              |   Core 3   |
+     |   L1 Cache   |              |  L1 Cache  |
+     +------+-------+              +-----+------+
+            |                            |
+            +-------------+--------------+
+                          |
+                     Shared Cache
+                          |
+                   Memory Controller
+                          |
+                         RAM
+
+
+============================================================
+30.63 MANY-CORE PROCESSORS
+============================================================
+
+Multicore usually refers to multiple CPU cores.
+
+
+Many-core refers to architectures with a very large number
+of processing cores, often optimised for highly parallel
+workloads.
+
+
+Examples of many-core concepts appear strongly in:
+
+    • GPUs
+    • Accelerators
+    • High-performance computing
+
+
+============================================================
+30.64 MULTICORE VS MULTIPROCESSOR
+============================================================
+
+MULTICORE:
+
+    Multiple cores on one processor chip/package.
+
+
+MULTIPROCESSOR:
+
+    System containing multiple processor units.
+
+
+Conceptually:
+
+    Multicore:
+
+       [ CPU
+         Core 1
+         Core 2
+         Core 3 ]
+
+
+    Multiprocessor:
+
+       CPU 1 + CPU 2 + CPU 3
+
+
+Modern systems can combine both ideas.
+
+
+============================================================
+30.65 IMPORTANT EXAM COMPARISON
+------------------------------------------------------------
+
++------------------+-----------------------------+
+| Concept          | Meaning                     |
++------------------+-----------------------------+
+| Multicore        | Multiple cores in CPU       |
+| Multithreading   | Multiple execution threads  |
+| SMT              | Multiple threads share one  |
+|                  | physical core's resources   |
+| Multiprocessor   | Multiple processor units    |
+| SIMD             | One instruction, many data  |
+| MIMD             | Many instructions, data     |
+|                  | streams                     |
++------------------+-----------------------------+
+
+
+============================================================
+30.66 B.TECH QUESTIONS
+============================================================
+
+Q1. What is a multicore processor?
+
+Q2. Explain the need for multicore processors.
+
+Q3. Compare single-core and multicore processors.
+
+Q4. Explain multicore architecture with a diagram.
+
+Q5. What is shared memory?
+
+Q6. Explain the cache coherence problem.
+
+Q7. What is snooping?
+
+Q8. Explain directory-based cache coherence.
+
+Q9. Explain MESI protocol.
+
+Q10. Explain the four states of MESI.
+
+Q11. Explain Modified, Exclusive, Shared and Invalid states.
+
+Q12. Differentiate cache coherence and memory consistency.
+
+Q13. Explain write-invalidate and write-update protocols.
+
+Q14. What is a race condition?
+
+Q15. Explain atomic operations.
+
+Q16. What is multithreading?
+
+Q17. Differentiate process and thread.
+
+Q18. What is simultaneous multithreading?
+
+Q19. Explain hardware threads.
+
+Q20. Explain false sharing.
+
+Q21. Explain scalability in multicore systems.
+
+Q22. Explain the role of Amdahl's Law in multicore systems.
+
+Q23. What are the limitations of multicore processors?
+
+Q24. Explain shared and private caches.
+
+Q25. Explain multicore interconnects.
+
+
+============================================================
+30.67 COMPETITIVE EXAM MCQs
+============================================================
+
+Q1. A multicore processor contains:
+
+    A. Multiple CPUs only on separate computers
+    B. Multiple processing cores
+    C. Multiple RAM modules only
+    D. Multiple operating systems
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q2. Which problem arises because multiple cores can have
+copies of the same memory block?
+
+    A. Cache coherence
+    B. Compilation
+    C. Pipelining
+    D. Instruction decoding
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q3. MESI contains how many states?
+
+    A. 2
+    B. 3
+    C. 4
+    D. 5
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q4. In MESI, M stands for:
+
+    A. Memory
+    B. Modified
+    C. Multiple
+    D. Main
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q5. In MESI, which state indicates a clean cache line that
+is the only cached copy?
+
+    A. M
+    B. E
+    C. S
+    D. I
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q6. In MESI, which state indicates that a cache line is
+invalid?
+
+    A. M
+    B. E
+    C. S
+    D. I
+
+ANSWER:
+    D
+
+
+------------------------------------------------------------
+
+Q7. In MESI, a line can be shared by multiple caches in:
+
+    A. M
+    B. E
+    C. S
+    D. I
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q8. Cache coherence mainly concerns:
+
+    A. CPU clock frequency
+    B. Consistent handling of cached copies
+    C. Program compilation
+    D. Disk formatting
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q9. Which mechanism allows caches to observe coherence
+transactions on a shared interconnect?
+
+    A. Snooping
+    B. Paging
+    C. Branch prediction
+    D. Spooling
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q10. Which of the following is NOT a MESI state?
+
+    A. Modified
+    B. Exclusive
+    C. Shared
+    D. Buffered
+
+ANSWER:
+    D
+
+
+------------------------------------------------------------
+
+Q11. Multiple hardware threads per physical core are
+associated with:
+
+    A. SMT
+    B. DMA
+    C. RAID
+    D. ROM
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q12. False sharing occurs when:
+
+    A. Two cores share the same instruction
+    B. Independent variables occupy the same cache line
+    C. Two processors have different operating systems
+    D. RAM becomes full
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q13. Which law limits maximum parallel speedup due to the
+serial portion?
+
+    A. Amdahl's Law
+    B. Moore's Law
+    C. Ohm's Law
+    D. Shannon's Law
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q14. Which is generally true?
+
+    A. More cores always give exactly linear speedup
+    B. More cores can increase performance but speedup is
+       limited by serial work and overhead
+    C. Multicore eliminates memory latency
+    D. Multicore eliminates cache misses
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q15. Which is an example of a shared resource?
+
+    A. Shared last-level cache
+    B. Private program counter
+    C. Private register
+    D. Individual thread stack
+
+ANSWER:
+    A
+
+
+============================================================
+30.68 NUMERICAL PROBLEM
+============================================================
+
+QUESTION:
+
+A program is 80% parallelisable.
+It runs on 8 cores.
+
+Find the theoretical speedup using Amdahl's Law.
+
+
+Given:
+
+    P = 0.8
+    N = 8
+
+
+Formula:
+
+    Speedup =
+        1
+    -----------
+    (1-P) + P/N
+
+
+Substitute:
+
+    Speedup =
+        1
+    ----------------
+    0.2 + 0.8/8
+
+
+    0.8/8 = 0.1
+
+
+Therefore:
+
+    Speedup =
+        1
+    -------
+    0.3
+
+    = 3.333...
+
+
+ANSWER:
+
+    ≈ 3.33×
+
+
+============================================================
+30.69 NUMERICAL PROBLEM
+============================================================
+
+QUESTION:
+
+A processor has 6 cores and supports 2 hardware threads
+per core.
+
+How many hardware threads are supported?
+
+
+    Threads
+      =
+    Cores × Threads/Core
+
+
+      = 6 × 2
+
+      = 12
+
+
+ANSWER:
+
+    12 hardware threads
+
+
+IMPORTANT:
+
+    12 hardware threads does NOT mean 12 physical cores.
+
+
+============================================================
+30.70 QUICK REVISION
+============================================================
+
+MULTICORE:
+
+    Multiple processing cores on one processor.
+
+
+WHY?
+
+    Better parallel performance
+    + improved throughput
+    + power/performance advantages
+
+
+SHARED MEMORY:
+
+    Multiple cores can access common memory.
+
+
+CACHE COHERENCE:
+
+    Keeps cached copies appropriately coordinated.
+
+
+SNOOPING:
+
+    Caches monitor coherence transactions.
+
+
+MESI:
+
+    M → Modified
+    E → Exclusive
+    S → Shared
+    I → Invalid
+
+
+MEMORY CONSISTENCY:
+
+    Rules governing ordering/visibility of memory operations.
+
+
+MULTITHREADING:
+
+    Multiple threads execute concurrently/parallel.
+
+
+SMT:
+
+    Multiple hardware threads share one physical core.
+
+
+FALSE SHARING:
+
+    Different variables in the same cache line cause
+    unnecessary coherence traffic.
+
+
+AMDAHL:
+
+    Serial portion limits speedup.
+
+
+============================================================
+30.71 CHAPTER 30 MASTER MAP
+============================================================
+
+                  MULTICORE PROCESSORS
+                           |
+          +----------------+----------------+
+          |                |                |
+       Multiple          Shared           Parallel
+        Cores            Memory            Execution
+          |                |                |
+          |                ↓                |
+          |          Cache Coherence        |
+          |                |                |
+          |          +-----+-----+          |
+          |          |           |          |
+          |       Snooping    Directory     |
+          |                |                |
+          |               MESI              |
+          |                |                |
+          |       M E S I States            |
+          |                                 |
+          +---------------+-----------------+
+                          |
+                    Multithreading
+                          |
+                    +-----+-----+
+                    |           |
+                  Threads      SMT
+                    |
+                Hardware
+                 Threads
+
+
+============================================================
+30.72 FINAL TAKEAWAY
+============================================================
+
+The central idea of multicore architecture is:
+
+    ONE PROCESSOR
+          ↓
+    MULTIPLE CORES
+          ↓
+    PARALLEL EXECUTION
+
+
+But multiple cores introduce new challenges:
+
+    Multiple caches
+          ↓
+    Cache coherence
+          ↓
+    MESI / Snooping / Directory
+
+
+And multiple threads introduce:
+
+    Shared data
+          ↓
+    Synchronization
+          ↓
+    Memory consistency
+
+
+Therefore:
+
+    Multicore performance
+        =
+    Cores
+    + Parallelism
+    + Efficient memory system
+    + Cache coherence
+    + Synchronization
+    + Good workload distribution
+
+
+============================================================
+CHAPTER 30 COMPLETE
+============================================================

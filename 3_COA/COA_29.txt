@@ -1,0 +1,2347 @@
+CHAPTER 29 — PARALLEL PROCESSING
+
+============================================================
+CHAPTER 29 — PARALLEL PROCESSING
+============================================================
+
+LEVEL:
+B.Tech 1st Year → Intermediate → Advanced Foundation
+
+PREREQUISITE:
+Chapter 25 — Instruction Pipelining
+Chapter 26 — Advanced Pipelining
+Chapter 27 — RISC Architecture
+Chapter 28 — CISC Architecture
+
+GOAL:
+Understand parallelism, different forms of parallel processing,
+Flynn's classification, SIMD, vector processing, and the basics
+of GPU computing.
+
+============================================================
+29.1 WHAT IS PARALLEL PROCESSING?
+============================================================
+
+Parallel processing means:
+
+    Performing multiple operations at the same time
+    or overlapping their execution.
+
+Basic idea:
+
+    Traditional sequential processing:
+
+        Task 1
+          ↓
+        Task 2
+          ↓
+        Task 3
+          ↓
+        Task 4
+
+
+    Parallel processing:
+
+        Task 1 ──────→
+        Task 2 ──────→
+        Task 3 ──────→
+        Task 4 ──────→
+
+        Multiple tasks execute simultaneously.
+
+
+IMPORTANT:
+
+    Parallelism is one of the most important techniques used
+    to improve computer performance.
+
+
+============================================================
+29.2 REAL-WORLD ANALOGY
+============================================================
+
+Imagine a restaurant with one chef.
+
+ONE CHEF:
+
+    Order 1
+      ↓
+    Order 2
+      ↓
+    Order 3
+      ↓
+    Order 4
+
+
+Now imagine four chefs.
+
+    Chef 1 → Order 1
+    Chef 2 → Order 2
+    Chef 3 → Order 3
+    Chef 4 → Order 4
+
+
+Several orders can be processed simultaneously.
+
+
+This is similar to parallel processing.
+
+
+============================================================
+29.3 SEQUENTIAL VS PARALLEL PROCESSING
+============================================================
+
+SEQUENTIAL:
+
+    +---------+
+    | Task 1  |
+    +---------+
+         ↓
+    +---------+
+    | Task 2  |
+    +---------+
+         ↓
+    +---------+
+    | Task 3  |
+    +---------+
+         ↓
+    +---------+
+    | Task 4  |
+    +---------+
+
+
+PARALLEL:
+
+          +---------+
+          | Task 1  |
+          +---------+
+
+          +---------+
+          | Task 2  |
+          +---------+
+
+          +---------+
+          | Task 3  |
+          +---------+
+
+          +---------+
+          | Task 4  |
+          +---------+
+
+All may execute simultaneously if sufficient hardware and
+independent work are available.
+
+
+============================================================
+29.4 WHY DO WE NEED PARALLELISM?
+------------------------------------------------------------
+
+A single processor cannot indefinitely increase performance
+simply by increasing clock frequency.
+
+
+Problems include:
+
+    • Power consumption
+    • Heat generation
+    • Leakage
+    • Physical limitations
+    • Memory bottlenecks
+    • Diminishing returns from frequency increases
+
+
+Therefore, performance can also be improved by doing more
+work simultaneously.
+
+
+Basic idea:
+
+    More useful work per unit time
+                ↓
+           Higher throughput
+
+
+============================================================
+29.5 PARALLELISM VS CONCURRENCY
+------------------------------------------------------------
+
+CONCURRENCY:
+
+    Multiple tasks are being managed or making progress.
+
+
+PARALLELISM:
+
+    Multiple tasks are actually executing simultaneously.
+
+
+Example:
+
+    Single CPU core rapidly switching between:
+
+        Task A
+        Task B
+        Task C
+
+
+This can provide concurrency.
+
+
+But:
+
+    Multiple CPU cores executing:
+
+        Core 1 → Task A
+        Core 2 → Task B
+        Core 3 → Task C
+
+
+provides actual parallel execution.
+
+
+IMPORTANT:
+
+    Concurrency ≠ Parallelism
+
+
+============================================================
+29.6 BASIC TYPES OF PARALLELISM
+------------------------------------------------------------
+
+Three important types:
+
+    1. Instruction-Level Parallelism (ILP)
+    2. Data-Level Parallelism (DLP)
+    3. Thread-Level Parallelism (TLP)
+
+
+They operate at different levels.
+
+
+============================================================
+29.7 INSTRUCTION-LEVEL PARALLELISM (ILP)
+------------------------------------------------------------
+
+ILP means:
+
+    Executing or overlapping multiple independent instructions.
+
+
+Example:
+
+    I1: A = B + C
+    I2: D = E + F
+
+
+I2 does not depend on I1.
+
+
+Therefore:
+
+    I1 ─────────→
+    I2 ─────────→
+
+They may execute simultaneously.
+
+
+============================================================
+29.8 ILP EXAMPLE
+------------------------------------------------------------
+
+Consider:
+
+    A = B + C
+    D = E × F
+    G = H - I
+
+
+If:
+
+    + and × and -
+
+can use suitable execution units, these operations may
+potentially execute in parallel.
+
+
+Conceptually:
+
+    ADD ─────────→
+    MUL ─────────→
+    SUB ─────────→
+
+
+This is instruction-level parallelism.
+
+
+============================================================
+29.9 HOW CPUs EXPLOIT ILP
+------------------------------------------------------------
+
+Modern processors use techniques such as:
+
+    • Pipelining
+    • Superscalar execution
+    • Out-of-order execution
+    • Register renaming
+    • Speculative execution
+    • Branch prediction
+
+
+These were introduced in Chapters 25, 26, and 34.
+
+
+============================================================
+29.10 DATA-LEVEL PARALLELISM (DLP)
+------------------------------------------------------------
+
+DLP means:
+
+    Performing the same operation on multiple data elements
+    simultaneously.
+
+
+Example:
+
+    A = [1, 2, 3, 4]
+    B = [5, 6, 7, 8]
+
+
+Perform:
+
+    A + B
+
+
+Instead of:
+
+    1 + 5
+    2 + 6
+    3 + 7
+    4 + 8
+
+
+one at a time, a vector/SIMD processor may perform:
+
+    [1,2,3,4]
+        +
+    [5,6,7,8]
+        ↓
+    [6,8,10,12]
+
+
+simultaneously.
+
+
+============================================================
+29.11 THREAD-LEVEL PARALLELISM (TLP)
+------------------------------------------------------------
+
+TLP means:
+
+    Multiple threads execute concurrently or in parallel.
+
+
+Example:
+
+    Thread 1 → Process image
+    Thread 2 → Calculate statistics
+    Thread 3 → Process audio
+    Thread 4 → Handle user input
+
+
+On a multicore processor:
+
+    Core 1 → Thread 1
+    Core 2 → Thread 2
+    Core 3 → Thread 3
+    Core 4 → Thread 4
+
+
+This provides thread-level parallelism.
+
+
+============================================================
+29.12 COMPARISON OF ILP, DLP AND TLP
+------------------------------------------------------------
+
++------+----------------------------+-----------------------+
+| Type | Main idea                  | Example               |
++------+----------------------------+-----------------------+
+| ILP  | Multiple instructions      | ADD + MUL             |
+|      | execute/overlap            | simultaneously        |
++------+----------------------------+-----------------------+
+| DLP  | Same operation on         | Vector addition       |
+|      | multiple data              |                       |
++------+----------------------------+-----------------------+
+| TLP  | Multiple threads execute  | Multiple application  |
+|      | concurrently/parallel     | threads               |
++------+----------------------------+-----------------------+
+
+
+============================================================
+29.13 FLYNN'S CLASSIFICATION
+------------------------------------------------------------
+
+Flynn's taxonomy classifies computer architectures based on:
+
+    Number of instruction streams
+
+and
+
+    Number of data streams
+
+
+There are four categories:
+
+    1. SISD
+    2. SIMD
+    3. MISD
+    4. MIMD
+
+
+Memory trick:
+
+    S = Single
+    M = Multiple
+
+    First letter  → Instruction streams
+    Second letter → Data streams
+
+
+============================================================
+29.14 FLYNN'S CLASSIFICATION DIAGRAM
+------------------------------------------------------------
+
+                    FLYNN'S TAXONOMY
+                          |
+          +---------------+---------------+
+          |               |               |
+          ↓               ↓               ↓
+        SISD            SIMD            MIMD
+                                          |
+                                         ...
+                          +
+                          |
+                         MISD
+
+
+The four classifications are:
+
+    SISD
+    SIMD
+    MISD
+    MIMD
+
+
+============================================================
+29.15 SISD
+------------------------------------------------------------
+
+SISD:
+
+    Single Instruction
+    Single Data
+
+
+Meaning:
+
+    One instruction stream
+    operates on
+    one data stream
+
+
+Conceptually:
+
+    Instruction
+        ↓
+      CPU
+        ↓
+      Data
+
+
+Example:
+
+    Traditional single-core sequential processor model.
+
+
+Diagram:
+
+    I1 → D1
+    I2 → D2
+    I3 → D3
+    I4 → D4
+
+
+One instruction at a time conceptually.
+
+
+============================================================
+29.16 SISD EXAMPLE
+------------------------------------------------------------
+
+Suppose:
+
+    A = B + C
+
+
+A single processor executes instructions sequentially:
+
+    LOAD B
+    LOAD C
+    ADD
+    STORE A
+
+
+This represents the traditional SISD model.
+
+
+IMPORTANT:
+
+    Modern CPUs may internally exploit ILP even if the
+    overall system is conceptually classified as SISD.
+
+
+============================================================
+29.17 SIMD
+------------------------------------------------------------
+
+SIMD:
+
+    Single Instruction
+    Multiple Data
+
+
+Meaning:
+
+    One instruction
+        ↓
+    Multiple data elements
+
+
+Example:
+
+    Add four numbers at once:
+
+    [1, 2, 3, 4]
+          +
+    [5, 6, 7, 8]
+          ↓
+    [6, 8, 10, 12]
+
+
+One instruction controls the same operation across
+multiple data elements.
+
+
+============================================================
+29.18 SIMD DIAGRAM
+------------------------------------------------------------
+
+              ONE INSTRUCTION
+                     |
+          +----------+----------+
+          |          |          |
+          ↓          ↓          ↓
+        Data 1     Data 2     Data 3    Data 4
+          |          |          |         |
+          ↓          ↓          ↓         ↓
+        ALU        ALU        ALU       ALU
+          |          |          |         |
+          +----------+----------+---------+
+                     |
+                  Results
+
+
+One instruction:
+
+    ADD
+
+Multiple data:
+
+    D1, D2, D3, D4
+
+
+============================================================
+29.19 SIMD EXAMPLE
+------------------------------------------------------------
+
+Vector A:
+
+    A = [10, 20, 30, 40]
+
+
+Vector B:
+
+    B = [1, 2, 3, 4]
+
+
+SIMD operation:
+
+    A + B
+
+
+Result:
+
+    [11, 22, 33, 44]
+
+
+Instead of issuing separate conceptual operations:
+
+    10 + 1
+    20 + 2
+    30 + 3
+    40 + 4
+
+
+a SIMD instruction can operate on multiple lanes.
+
+
+============================================================
+29.20 SIMD APPLICATIONS
+------------------------------------------------------------
+
+SIMD is useful when the same operation is repeated over
+many data elements.
+
+
+Applications:
+
+    • Image processing
+    • Audio processing
+    • Video processing
+    • Scientific computing
+    • Matrix operations
+    • Signal processing
+    • Machine learning
+    • Cryptography
+    • Multimedia
+
+
+Example:
+
+    Image brightness adjustment
+
+
+For every pixel:
+
+    NewPixel = OldPixel + Constant
+
+
+Thousands or millions of pixels may need the same operation.
+
+
+This is highly suitable for data-level parallelism.
+
+
+============================================================
+29.21 MISD
+------------------------------------------------------------
+
+MISD:
+
+    Multiple Instruction
+    Single Data
+
+
+Meaning:
+
+    Multiple instruction streams
+    operate on a single data stream.
+
+
+Conceptual:
+
+    Instruction 1 ──┐
+    Instruction 2 ──┤
+    Instruction 3 ──┼──→ Same data
+    Instruction 4 ──┘
+
+
+MISD is uncommon in general-purpose computing.
+
+
+Some specialised fault-tolerant or streaming systems have
+been discussed as examples, but classification can be
+debatable.
+
+
+IMPORTANT:
+
+    MISD is the least commonly encountered category.
+
+
+============================================================
+29.22 MIMD
+------------------------------------------------------------
+
+MIMD:
+
+    Multiple Instruction
+    Multiple Data
+
+
+Meaning:
+
+    Multiple processors/cores can execute different
+    instructions on different data.
+
+
+Example:
+
+    Core 1 → Instruction stream A → Data A
+    Core 2 → Instruction stream B → Data B
+    Core 3 → Instruction stream C → Data C
+    Core 4 → Instruction stream D → Data D
+
+
+This is extremely important in modern multicore systems.
+
+
+============================================================
+29.23 MIMD EXAMPLE
+------------------------------------------------------------
+
+Suppose a computer has four cores.
+
+
+Core 1:
+
+    Calculate payroll
+
+
+Core 2:
+
+    Process web request
+
+
+Core 3:
+
+    Encode video
+
+
+Core 4:
+
+    Run background task
+
+
+Each core may execute different instructions on different
+data.
+
+
+Therefore:
+
+    Multiple Instructions
+    +
+    Multiple Data
+
+
+= MIMD
+
+
+============================================================
+29.24 SISD vs SIMD vs MISD vs MIMD
+------------------------------------------------------------
+
++------+---------------------+---------------------+
+| Type | Instruction         | Data                |
++------+---------------------+---------------------+
+| SISD | Single              | Single              |
++------+---------------------+---------------------+
+| SIMD | Single              | Multiple            |
++------+---------------------+---------------------+
+| MISD | Multiple            | Single              |
++------+---------------------+---------------------+
+| MIMD | Multiple            | Multiple            |
++------+---------------------+---------------------+
+
+
+MEMORY TRICK:
+
+    SISD → 1 instruction, 1 data
+    SIMD → 1 instruction, many data
+    MISD → many instructions, 1 data
+    MIMD → many instructions, many data
+
+
+============================================================
+29.25 FLYNN'S TAXONOMY TABLE
+------------------------------------------------------------
+
++------+-----------------------+-----------------------------+
+|      | SINGLE DATA           | MULTIPLE DATA              |
++------+-----------------------+-----------------------------+
+| SINGLE| SISD                  | SIMD                        |
+| INST. |                       |                             |
++------+-----------------------+-----------------------------+
+| MULT. | MISD                  | MIMD                        |
+| INST. |                       |                             |
++------+-----------------------+-----------------------------+
+
+
+============================================================
+29.26 VECTOR PROCESSING
+------------------------------------------------------------
+
+Vector processing means:
+
+    Processing a collection of data elements as a vector.
+
+
+A vector is an ordered collection of values.
+
+
+Example:
+
+    V1 = [2, 4, 6, 8]
+
+
+Instead of processing:
+
+    2
+    4
+    6
+    8
+
+individually, a vector instruction can operate on the whole
+vector or multiple elements at once.
+
+
+============================================================
+29.27 SCALAR VS VECTOR PROCESSING
+------------------------------------------------------------
+
+SCALAR:
+
+    A = 10
+    B = 20
+
+    A + B = 30
+
+
+One operation processes one data element.
+
+
+VECTOR:
+
+    A = [10, 20, 30, 40]
+    B = [1,  2,  3,  4]
+
+    A + B
+      ↓
+    [11, 22, 33, 44]
+
+
+One vector operation processes multiple elements.
+
+
+============================================================
+29.28 VECTOR PROCESSOR
+------------------------------------------------------------
+
+A vector processor contains hardware designed to efficiently
+process vector data.
+
+
+Conceptual structure:
+
+             CPU
+              |
+        +-----+-----+
+        |           |
+    Scalar Unit  Vector Unit
+                    |
+          +---------+---------+
+          |         |         |
+        Lane 1    Lane 2    Lane 3 ...
+          |         |         |
+         ALU       ALU       ALU
+
+
+Each lane can process part of a vector.
+
+
+============================================================
+29.29 VECTOR REGISTER
+------------------------------------------------------------
+
+A vector processor may contain vector registers.
+
+
+Example:
+
+    V1 = [10, 20, 30, 40]
+
+
+    V2 = [ 1,  2,  3,  4]
+
+
+Instruction:
+
+    V3 = V1 + V2
+
+
+Result:
+
+    V3 = [11, 22, 33, 44]
+
+
+This is an example of data-level parallelism.
+
+
+============================================================
+29.30 VECTOR LANES
+------------------------------------------------------------
+
+Suppose a vector unit has four lanes.
+
+
+Vector:
+
+    [A, B, C, D]
+
+
+can be processed as:
+
+    Lane 1 → A
+    Lane 2 → B
+    Lane 3 → C
+    Lane 4 → D
+
+
+If one operation is performed on all lanes:
+
+    ADD
+
+then:
+
+    Lane 1 → A + X
+    Lane 2 → B + Y
+    Lane 3 → C + Z
+    Lane 4 → D + W
+
+
+This provides parallel execution.
+
+
+============================================================
+29.31 VECTOR PROCESSING AND SIMD
+------------------------------------------------------------
+
+Vector processing and SIMD are closely related.
+
+
+SIMD:
+
+    One instruction
+        ↓
+    Multiple data elements
+
+
+Vector processing:
+
+    Operates on collections/vectors of data.
+
+
+Modern CPUs commonly provide SIMD/vector instruction
+extensions.
+
+
+Examples in real processors include:
+
+    x86 SIMD extensions
+    ARM NEON/SVE
+    RISC-V vector extensions
+
+
+============================================================
+29.32 SIMD WIDTH
+------------------------------------------------------------
+
+Suppose a SIMD register has:
+
+    128 bits
+
+
+and each element is:
+
+    32 bits
+
+
+Number of elements:
+
+    128 / 32 = 4
+
+
+Therefore:
+
+    4 × 32-bit values
+
+can fit in the vector register.
+
+
+If a processor has:
+
+    256-bit vector register
+
+
+then:
+
+    256 / 32 = 8
+
+
+32-bit elements can fit.
+
+
+============================================================
+29.33 NUMERICAL EXAMPLE — SIMD WIDTH
+------------------------------------------------------------
+
+QUESTION:
+
+A SIMD register is 256 bits wide.
+Each element is 32 bits.
+
+How many elements can it hold?
+
+
+SOLUTION:
+
+    Number of elements
+        =
+    Register width / Element size
+
+        =
+    256 / 32
+
+        =
+    8
+
+
+ANSWER:
+
+    8 elements
+
+
+============================================================
+29.34 GPU COMPUTING
+------------------------------------------------------------
+
+GPU:
+
+    Graphics Processing Unit
+
+
+Originally designed primarily for graphics.
+
+
+Modern GPUs are also widely used for:
+
+    • Machine learning
+    • Scientific computing
+    • Image processing
+    • Video processing
+    • Cryptocurrency workloads
+    • Numerical simulation
+    • Data-parallel workloads
+
+
+GPUs are designed to provide massive parallel throughput.
+
+
+============================================================
+29.35 CPU VS GPU — BASIC IDEA
+------------------------------------------------------------
+
+CPU:
+
+    Fewer powerful/general-purpose cores
+          ↓
+    Excellent for:
+        • Sequential work
+        • Branch-heavy work
+        • General-purpose computing
+        • Low-latency tasks
+
+
+GPU:
+
+    Large number of parallel execution resources
+          ↓
+    Excellent for:
+        • Data-parallel work
+        • High-throughput computation
+        • Graphics
+        • Matrix operations
+
+
+IMPORTANT:
+
+    This is a simplified conceptual comparison.
+
+
+============================================================
+29.36 CPU VS GPU ANALOGY
+------------------------------------------------------------
+
+CPU:
+
+    Small team of highly versatile experts.
+
+
+GPU:
+
+    Very large team of specialised workers doing many
+    similar tasks simultaneously.
+
+
+Example:
+
+    Editing one complex document:
+
+        CPU is very suitable.
+
+
+    Applying the same mathematical operation to millions
+    of pixels:
+
+        GPU can be extremely effective.
+
+
+============================================================
+29.37 GPU PARALLELISM
+------------------------------------------------------------
+
+Suppose we need to process:
+
+    1,000,000 pixels.
+
+
+Each pixel requires:
+
+    NewPixel = Pixel × Brightness
+
+
+Sequential approach:
+
+    Pixel 1
+    Pixel 2
+    Pixel 3
+    ...
+    Pixel 1,000,000
+
+
+Parallel approach:
+
+    Many processing elements
+           ↓
+    Process many pixels simultaneously.
+
+
+This is an excellent GPU workload.
+
+
+============================================================
+29.38 GPU PROGRAMMING MODEL
+------------------------------------------------------------
+
+A simplified GPU programming model contains:
+
+    Grid
+      ↓
+    Blocks
+      ↓
+    Threads
+
+
+Conceptually:
+
+    Grid
+      |
+      +---- Block 1
+      |       |
+      |       +-- Thread 1
+      |       +-- Thread 2
+      |       +-- Thread 3
+      |
+      +---- Block 2
+              |
+              +-- Thread 1
+              +-- Thread 2
+              +-- Thread 3
+
+
+The exact terminology varies by GPU programming framework.
+
+
+============================================================
+29.39 GPU THREADS
+------------------------------------------------------------
+
+A GPU can execute a very large number of lightweight threads.
+
+
+Example:
+
+    Thread 0 → Pixel 0
+    Thread 1 → Pixel 1
+    Thread 2 → Pixel 2
+    Thread 3 → Pixel 3
+    ...
+    Thread N → Pixel N
+
+
+Each thread can perform similar operations on different data.
+
+
+This is data-level parallelism at massive scale.
+
+
+============================================================
+29.40 SIMT
+------------------------------------------------------------
+
+SIMT:
+
+    Single Instruction, Multiple Threads
+
+
+SIMT is strongly associated with GPU programming models.
+
+
+Basic idea:
+
+    Many threads execute the same or similar instruction
+    sequence on different data.
+
+
+Conceptually:
+
+    Instruction
+        |
+    +---+---+---+---+
+    |   |   |   |   |
+    T1  T2  T3  T4  ...
+    |   |   |   |
+    D1  D2  D3  D4
+
+
+SIMT resembles SIMD but is not identical to traditional
+fixed-width SIMD.
+
+
+============================================================
+29.41 SIMD VS SIMT
+------------------------------------------------------------
+
+SIMD:
+
+    One instruction operates on multiple data elements.
+
+
+SIMT:
+
+    Many threads execute instructions in a GPU execution
+    model, with groups of threads often executing together.
+
+
+Simplified distinction:
+
+    SIMD → data lanes
+
+    SIMT → threads
+
+
+============================================================
+29.42 GPU WARP CONCEPT
+------------------------------------------------------------
+
+In NVIDIA's CUDA model, a group of threads is called a:
+
+    WARP
+
+
+A warp contains:
+
+    32 threads
+
+in the common NVIDIA CUDA model.
+
+
+These threads execute in a coordinated fashion.
+
+
+IMPORTANT:
+
+    Warp size is an implementation/programming-model detail,
+    not a universal property of every GPU.
+
+
+============================================================
+29.43 GPU BLOCK
+------------------------------------------------------------
+
+A thread block is a group of threads that can cooperate.
+
+
+Conceptually:
+
+    Block
+      |
+      +-- Thread 0
+      +-- Thread 1
+      +-- Thread 2
+      +-- ...
+      +-- Thread N
+
+
+Threads in a block can typically:
+
+    • Share certain fast memory
+    • Synchronize
+    • Cooperate on a task
+
+
+============================================================
+29.44 GPU MEMORY HIERARCHY
+------------------------------------------------------------
+
+A simplified GPU memory hierarchy may include:
+
+    Registers
+       ↓
+    Shared/local fast memory
+       ↓
+    Cache
+       ↓
+    Global/device memory
+
+
+Different memory levels have different:
+
+    • Capacity
+    • Speed
+    • Scope
+    • Access characteristics
+
+
+Understanding memory behaviour is critical for GPU
+performance.
+
+
+============================================================
+29.45 GPU COMPUTING EXAMPLE
+------------------------------------------------------------
+
+Suppose we want:
+
+    C[i] = A[i] + B[i]
+
+
+for:
+
+    i = 0 ... 999999
+
+
+CPU sequential approach:
+
+    for each i:
+        C[i] = A[i] + B[i]
+
+
+GPU-style parallel approach:
+
+    Thread 0 → C[0] = A[0] + B[0]
+    Thread 1 → C[1] = A[1] + B[1]
+    Thread 2 → C[2] = A[2] + B[2]
+    ...
+    Thread N → C[N] = A[N] + B[N]
+
+
+Because the operations are independent, massive parallelism
+can be exploited.
+
+
+============================================================
+29.46 WHEN PARALLELISM WORKS WELL
+------------------------------------------------------------
+
+Parallelism works especially well when:
+
+    • Tasks are independent
+    • Same operation repeats over many data items
+    • Enough hardware resources exist
+    • Communication overhead is low
+    • Synchronisation requirements are manageable
+
+
+Examples:
+
+    Matrix multiplication
+    Image processing
+    Video encoding
+    Scientific simulations
+    Machine learning
+
+
+============================================================
+29.47 WHEN PARALLELISM IS DIFFICULT
+------------------------------------------------------------
+
+Parallelism becomes difficult when tasks depend heavily on
+one another.
+
+
+Example:
+
+    A = B + C
+    D = A + E
+    F = D + G
+
+
+Here:
+
+    D depends on A
+    F depends on D
+
+
+Therefore, all operations cannot execute independently.
+
+
+This is a dependency chain.
+
+
+============================================================
+29.48 DATA DEPENDENCY
+------------------------------------------------------------
+
+Consider:
+
+    I1: A = B + C
+
+    I2: D = A + E
+
+
+I2 requires the result of I1.
+
+
+Therefore:
+
+    I1
+     ↓
+    I2
+
+
+They cannot be completely executed independently.
+
+
+This limits parallelism.
+
+
+============================================================
+29.49 PARALLEL OVERHEAD
+------------------------------------------------------------
+
+Parallel processing itself has costs.
+
+
+Possible overheads:
+
+    • Creating tasks
+    • Scheduling
+    • Communication
+    • Synchronisation
+    • Data movement
+    • Memory contention
+
+
+Therefore:
+
+    More processors
+        ≠
+    Automatically proportional performance increase.
+
+
+============================================================
+29.50 SPEEDUP
+------------------------------------------------------------
+
+Speedup measures performance improvement.
+
+
+Formula:
+
+    Speedup =
+
+        Time without parallelism
+        ------------------------
+        Time with parallelism
+
+
+Example:
+
+    Sequential time = 100 seconds
+    Parallel time   = 25 seconds
+
+
+    Speedup = 100 / 25
+            = 4
+
+
+Therefore:
+
+    4× speedup
+
+
+============================================================
+29.51 IDEAL SPEEDUP
+------------------------------------------------------------
+
+Suppose:
+
+    N processors
+
+
+Ideal case:
+
+    Speedup = N
+
+
+For 8 processors:
+
+    Ideal speedup = 8×
+
+
+But real systems usually achieve:
+
+    Speedup < N
+
+
+because of:
+
+    • Serial portions
+    • Communication
+    • Synchronisation
+    • Load imbalance
+    • Memory limitations
+
+
+============================================================
+29.52 AMDAHL'S LAW
+------------------------------------------------------------
+
+Amdahl's Law describes a fundamental limitation on parallel
+speedup.
+
+
+If a fraction P of a program can be parallelised and there
+are N processors:
+
+    Speedup =
+
+        1
+    -----------
+    (1-P) + P/N
+
+
+Where:
+
+    P = parallelisable fraction
+
+    N = number of processors
+
+
+The serial part:
+
+    (1-P)
+
+limits maximum speedup.
+
+
+============================================================
+29.53 AMDAHL'S LAW EXAMPLE
+------------------------------------------------------------
+
+Suppose:
+
+    P = 0.8
+
+meaning:
+
+    80% of the program can be parallelised.
+
+
+Processors:
+
+    N = 4
+
+
+Then:
+
+    Speedup =
+        1
+    ----------------
+    0.2 + 0.8/4
+
+        =
+        1
+    ----------------
+    0.2 + 0.2
+
+        =
+        1
+    ----
+    0.4
+
+        =
+        2.5
+
+
+ANSWER:
+
+    2.5× speedup
+
+
+Even with 4 processors, we do NOT obtain 4× speedup.
+
+
+============================================================
+29.54 MAXIMUM AMDAHL SPEEDUP
+------------------------------------------------------------
+
+If:
+
+    N → ∞
+
+
+Then:
+
+    P/N → 0
+
+
+Therefore:
+
+    Maximum Speedup = 1 / (1-P)
+
+
+Example:
+
+    P = 0.9
+
+
+Maximum:
+
+    1 / (1 - 0.9)
+    = 1 / 0.1
+    = 10
+
+
+Even with infinitely many processors:
+
+    Maximum speedup = 10×
+
+
+This is extremely important for competitive exams.
+
+
+============================================================
+29.55 PARALLEL PROCESSING HIERARCHY
+------------------------------------------------------------
+
+Parallelism can exist at many levels:
+
+    Bit-level parallelism
+          ↓
+    Instruction-level parallelism
+          ↓
+    Data-level parallelism
+          ↓
+    Thread-level parallelism
+          ↓
+    Process-level parallelism
+
+
+Modern computers can exploit several levels simultaneously.
+
+
+============================================================
+29.56 PARALLEL PROCESSING IN MODERN COMPUTERS
+------------------------------------------------------------
+
+A modern computer may use:
+
+    CPU:
+        • Pipelining
+        • Superscalar execution
+        • Out-of-order execution
+
+    SIMD:
+        • Vector operations
+
+    Multicore:
+        • Multiple CPU cores
+
+    GPU:
+        • Massive data parallelism
+
+    Software:
+        • Multiple threads/processes
+
+
+Therefore:
+
+    Modern performance
+        =
+    Multiple forms of parallelism combined
+
+
+============================================================
+29.57 PARALLELISM IN A MODERN SYSTEM
+------------------------------------------------------------
+
+                    COMPUTER
+                       |
+          +------------+------------+
+          |                         |
+         CPU                       GPU
+          |                         |
+     Multiple cores            Many parallel
+          |                    execution resources
+          |
+     +----+----+
+     |    |    |
+   Core Core Core
+     |
+   ILP + SIMD
+     |
+   Threads
+
+
+Different levels of parallelism cooperate.
+
+
+============================================================
+29.58 IMPORTANT DISTINCTION
+------------------------------------------------------------
+
+PIPELINING:
+
+    Overlaps different stages of instructions.
+
+
+SUPERSCALAR:
+
+    Executes multiple instructions per cycle when possible.
+
+
+SIMD:
+
+    One instruction operates on multiple data elements.
+
+
+MULTICORE:
+
+    Multiple cores execute tasks/threads.
+
+
+GPU:
+
+    Designed for massive throughput and parallel workloads.
+
+
+These are related but NOT identical concepts.
+
+
+============================================================
+29.59 PARALLELISM VS PIPELINING
+------------------------------------------------------------
+
+PIPELINING:
+
+    Instruction 1 → Stage 1 → Stage 2 → Stage 3
+    Instruction 2 →          Stage 1 → Stage 2 → Stage 3
+
+
+Multiple instructions overlap in different stages.
+
+
+PARALLEL PROCESSING:
+
+    Multiple independent operations can execute
+    simultaneously.
+
+
+Pipelining is one mechanism for exploiting parallelism,
+especially instruction-level parallelism.
+
+
+============================================================
+29.60 EXAM-IMPORTANT DEFINITIONS
+------------------------------------------------------------
+
+PARALLEL PROCESSING:
+
+    Execution of multiple operations simultaneously or with
+    overlapping execution to improve performance.
+
+
+ILP:
+
+    Parallelism among independent instructions.
+
+
+DLP:
+
+    Parallelism achieved by applying the same operation to
+    multiple data elements.
+
+
+TLP:
+
+    Parallelism among multiple threads.
+
+
+SIMD:
+
+    Single Instruction, Multiple Data.
+
+
+MIMD:
+
+    Multiple Instruction, Multiple Data.
+
+
+VECTOR PROCESSING:
+
+    Processing multiple data elements as a vector.
+
+
+GPU:
+
+    A processor designed to efficiently perform highly
+    parallel, throughput-oriented workloads.
+
+
+============================================================
+29.61 COMMON MISTAKES
+------------------------------------------------------------
+
+MISTAKE 1:
+
+    Parallelism means every task runs at exactly the same
+    time.
+
+CORRECTION:
+
+    Parallelism means useful work can be executed
+    simultaneously or overlapped; exact timing depends on
+    hardware and dependencies.
+
+
+MISTAKE 2:
+
+    SIMD means multiple instructions on multiple data.
+
+CORRECTION:
+
+    SIMD = Single Instruction, Multiple Data.
+
+
+MISTAKE 3:
+
+    MIMD means one instruction on multiple data.
+
+CORRECTION:
+
+    MIMD = Multiple Instruction, Multiple Data.
+
+
+MISTAKE 4:
+
+    GPU is simply a faster CPU.
+
+CORRECTION:
+
+    GPU and CPU are designed with different optimisation
+    goals and workloads.
+
+
+MISTAKE 5:
+
+    More processors always give linear speedup.
+
+CORRECTION:
+
+    No. Amdahl's Law, communication, synchronisation,
+    memory limitations, and load imbalance limit speedup.
+
+
+MISTAKE 6:
+
+    SIMD and SIMT are exactly identical.
+
+CORRECTION:
+
+    They are related but represent different execution
+    models.
+
+
+MISTAKE 7:
+
+    MISD is commonly used in normal computers.
+
+CORRECTION:
+
+    MISD is relatively uncommon and its practical examples
+    are limited/debatable.
+
+
+============================================================
+29.62 B.TECH EXAM QUESTIONS
+------------------------------------------------------------
+
+Q1. Define parallel processing.
+
+Q2. Explain the need for parallel processing.
+
+Q3. Explain instruction-level parallelism.
+
+Q4. Explain data-level parallelism.
+
+Q5. Explain thread-level parallelism.
+
+Q6. Explain Flynn's classification.
+
+Q7. Explain SISD with an example.
+
+Q8. Explain SIMD with an example.
+
+Q9. Explain MISD.
+
+Q10. Explain MIMD with an example.
+
+Q11. Compare SISD, SIMD, MISD and MIMD.
+
+Q12. Explain vector processing.
+
+Q13. Explain SIMD and vector processing.
+
+Q14. Explain GPU computing.
+
+Q15. Compare CPU and GPU.
+
+Q16. Explain SIMT.
+
+Q17. Explain GPU threads, blocks and warps.
+
+Q18. Explain applications of GPU computing.
+
+Q19. Explain speedup in parallel processing.
+
+Q20. Explain Amdahl's Law.
+
+Q21. Discuss limitations of parallel processing.
+
+Q22. Explain different levels of parallelism.
+
+============================================================
+29.63 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. Flynn's classification is based on:
+
+    A. Memory size
+    B. Number of instruction and data streams
+    C. Clock frequency
+    D. Cache size
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q2. SIMD stands for:
+
+    A. Single Instruction Multiple Data
+    B. Single Instruction Multiple Device
+    C. Simple Instruction Multiple Data
+    D. Single Internal Multiple Data
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q3. MIMD stands for:
+
+    A. Multiple Instruction Multiple Data
+    B. Multiple Internal Multiple Data
+    C. Multiple Instruction Memory Data
+    D. Main Instruction Multiple Data
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q4. Which architecture executes one instruction on multiple
+data elements?
+
+    A. SISD
+    B. SIMD
+    C. MISD
+    D. MIMD
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q5. Which category represents multiple instructions and
+multiple data?
+
+    A. SISD
+    B. SIMD
+    C. MISD
+    D. MIMD
+
+ANSWER:
+    D
+
+
+------------------------------------------------------------
+
+Q6. Which is most suitable for processing the same operation
+on thousands of pixels?
+
+    A. SIMD/GPU-style parallelism
+    B. Only sequential processing
+    C. ROM
+    D. Cache replacement
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q7. Which type of parallelism involves multiple threads?
+
+    A. TLP
+    B. DLP
+    C. ILP
+    D. BLP
+
+ANSWER:
+    A
+
+
+------------------------------------------------------------
+
+Q8. Which type of parallelism applies the same operation to
+many data elements?
+
+    A. ILP
+    B. DLP
+    C. TLP
+    D. Control parallelism
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q9. Which law limits parallel speedup because of the
+sequential part of a program?
+
+    A. Moore's Law
+    B. Amdahl's Law
+    C. Ohm's Law
+    D. De Morgan's Law
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q10. If 90% of a program is parallelisable, the theoretical
+maximum speedup is:
+
+    A. 2×
+    B. 5×
+    C. 10×
+    D. 90×
+
+ANSWER:
+    C
+
+
+------------------------------------------------------------
+
+Q11. A 256-bit SIMD register contains how many 32-bit
+elements?
+
+    A. 4
+    B. 8
+    C. 16
+    D. 32
+
+ANSWER:
+    B
+
+
+------------------------------------------------------------
+
+Q12. Which is generally associated with GPU computing?
+
+    A. Massive data parallelism
+    B. Only sequential execution
+    C. No parallelism
+    D. Only scalar operations
+
+ANSWER:
+    A
+
+
+============================================================
+29.64 NUMERICAL PRACTICE
+============================================================
+
+PROBLEM 1:
+
+A SIMD register is 128 bits wide.
+Each element is 16 bits.
+
+Find the number of elements.
+
+
+SOLUTION:
+
+    128 / 16 = 8
+
+
+ANSWER:
+
+    8 elements
+
+
+------------------------------------------------------------
+
+PROBLEM 2:
+
+A program takes 80 seconds sequentially and 20 seconds
+using parallel processing.
+
+Find speedup.
+
+
+    Speedup = 80 / 20
+            = 4
+
+
+ANSWER:
+
+    4×
+
+
+------------------------------------------------------------
+
+PROBLEM 3:
+
+A program is 75% parallelisable.
+Use 4 processors.
+
+    P = 0.75
+    N = 4
+
+
+    Speedup =
+        1
+    ----------------
+    (1-0.75) + 0.75/4
+
+        =
+        1
+    ----------------
+    0.25 + 0.1875
+
+        =
+        1
+    ------
+    0.4375
+
+        ≈ 2.286
+
+
+ANSWER:
+
+    ≈ 2.29×
+
+
+------------------------------------------------------------
+
+PROBLEM 4:
+
+A SIMD unit has 512-bit registers.
+Elements are 64 bits each.
+
+Number of elements:
+
+    512 / 64 = 8
+
+
+ANSWER:
+
+    8 elements
+
+
+============================================================
+29.65 QUICK REVISION
+============================================================
+
+PARALLEL PROCESSING
+    ↓
+Multiple operations execute simultaneously/overlap.
+
+
+THREE IMPORTANT TYPES:
+
+    ILP
+      ↓
+    Multiple independent instructions
+
+    DLP
+      ↓
+    Same operation on multiple data
+
+    TLP
+      ↓
+    Multiple threads
+
+
+FLYNN:
+
+    SISD
+      ↓
+    Single Instruction
+    Single Data
+
+
+    SIMD
+      ↓
+    Single Instruction
+    Multiple Data
+
+
+    MISD
+      ↓
+    Multiple Instruction
+    Single Data
+
+
+    MIMD
+      ↓
+    Multiple Instruction
+    Multiple Data
+
+
+VECTOR PROCESSING
+    ↓
+Process multiple data elements as a vector.
+
+
+GPU
+    ↓
+High-throughput parallel processor.
+
+
+SIMT
+    ↓
+Single Instruction, Multiple Threads.
+
+
+AMDAHL
+    ↓
+Serial portion limits maximum speedup.
+
+
+============================================================
+29.66 ONE-PAGE MEMORY MAP
+============================================================
+
+                    PARALLEL PROCESSING
+                           |
+        +------------------+------------------+
+        |                  |                  |
+       ILP                DLP                TLP
+        |                  |                  |
+   Instructions         Data items          Threads
+        |                  |                  |
+   CPU pipeline        SIMD/Vector       Multicore/GPU
+                           |
+                           ↓
+                     GPU COMPUTING
+                           |
+                     +-----+-----+
+                     |           |
+                  Threads      Blocks
+                     |
+                    Warp
+                     |
+                    SIMT
+
+
+                    FLYNN'S TAXONOMY
+                           |
+          +--------+-------+--------+--------+
+          |        |                |        |
+         SISD     SIMD             MISD     MIMD
+          |        |                |        |
+        1I,1D    1I,MD            MI,1D    MI,MD
+
+
+============================================================
+29.67 CHAPTER 29 MASTER CONCEPT
+============================================================
+
+The central idea of this chapter is:
+
+    DO MORE WORK AT THE SAME TIME.
+
+
+At the instruction level:
+
+    ILP
+
+
+At the data level:
+
+    SIMD / Vector Processing
+
+
+At the thread level:
+
+    TLP
+
+
+At the processor level:
+
+    Multicore
+
+
+At the massively parallel level:
+
+    GPU
+
+
+And Flynn's taxonomy provides a way to classify
+instruction/data stream organisation.
+
+
+============================================================
+CHAPTER 29 COMPLETE
+============================================================

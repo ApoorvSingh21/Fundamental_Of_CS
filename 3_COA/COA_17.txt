@@ -1,0 +1,2543 @@
+============================================================
+CHAPTER 17 — MEMORY HIERARCHY
+============================================================
+
+LEVEL:
+B.Tech 1st Year | Absolute Beginner → Exam Ready
+
+OBJECTIVE:
+Understand why computers use different types of memory,
+how memory is arranged into a hierarchy, locality of reference,
+cache hits and misses, hit ratio, miss penalty, and overall
+memory performance.
+
+
+============================================================
+17.1 WHAT IS MEMORY HIERARCHY?
+============================================================
+
+A computer uses several types of storage instead of relying
+on only one type of memory.
+
+Why?
+
+Because we want memory to be:
+
+    • Very fast
+    • Very large
+    • Very cheap
+
+But no single technology can provide all three at the same
+time.
+
+Therefore, computer systems organize storage into levels.
+
+This arrangement is called:
+
+    MEMORY HIERARCHY
+
+
+Basic hierarchy:
+
+                    CPU
+                     │
+                     ▼
+                REGISTERS
+                     │
+                     ▼
+                   CACHE
+                     │
+                     ▼
+               MAIN MEMORY
+                  (RAM)
+                     │
+                     ▼
+            SECONDARY STORAGE
+                 SSD / HDD
+
+
+============================================================
+17.2 REAL-WORLD ANALOGY
+============================================================
+
+Imagine you are studying for an exam.
+
+You keep frequently used information:
+
+    Directly in your hand
+            ↓
+        Very fast
+
+Less frequently used information:
+
+    On your desk
+            ↓
+        Slightly slower
+
+Books:
+
+    On a bookshelf
+            ↓
+        Slower to access
+
+Books stored in another room:
+
+    Much slower to access
+
+
+Computer memory works similarly.
+
+Frequently needed data is kept closer to the CPU.
+
+
+============================================================
+17.3 BASIC MEMORY HIERARCHY
+============================================================
+
+From FASTEST to SLOWEST:
+
+    1. Registers
+    2. Cache
+    3. Main Memory (RAM)
+    4. Secondary Storage
+
+
+From SMALLEST to LARGEST:
+
+    Registers
+        ↓
+    Cache
+        ↓
+    RAM
+        ↓
+    SSD/HDD
+
+
+Generally:
+
+    Speed decreases
+    Capacity increases
+    Cost per bit decreases
+
+
+============================================================
+17.4 MEMORY HIERARCHY DIAGRAM
+============================================================
+
+                         CPU
+                          │
+                          ▼
+                 ┌────────────────┐
+                 │   REGISTERS    │
+                 └────────────────┘
+                          │
+                     Very Fast
+                          │
+                          ▼
+                 ┌────────────────┐
+                 │     CACHE      │
+                 └────────────────┘
+                          │
+                          ▼
+                 ┌────────────────┐
+                 │   MAIN MEMORY  │
+                 │      RAM       │
+                 └────────────────┘
+                          │
+                          ▼
+                 ┌────────────────┐
+                 │    STORAGE     │
+                 │   SSD / HDD    │
+                 └────────────────┘
+
+                Fast → Slow
+                Small → Large
+                Expensive → Cheap/bit
+
+
+============================================================
+17.5 WHY MEMORY HIERARCHY IS NEEDED
+============================================================
+
+Suppose we build a computer using only extremely fast memory.
+
+Problem:
+
+    Extremely fast memory is expensive.
+
+
+If we build a computer using only cheap large storage:
+
+    It becomes too slow for CPU operations.
+
+
+Memory hierarchy gives us a compromise:
+
+    Small + Fast + Expensive
+              +
+    Large + Slow + Cheap
+
+
+This gives the system:
+
+    High performance
+    Reasonable cost
+    Large storage capacity
+
+
+============================================================
+17.6 SPEED VS CAPACITY VS COST
+============================================================
+
+As we move DOWN the hierarchy:
+
+    Speed generally decreases.
+
+    Capacity generally increases.
+
+    Cost per bit generally decreases.
+
+
+Conceptually:
+
+        FAST
+         ▲
+         │
+    Registers
+         │
+       Cache
+         │
+        RAM
+         │
+     SSD / HDD
+         │
+         ▼
+       LARGE
+
+
+MEMORY TRICK:
+
+    UP:
+        Fast
+        Small
+        Expensive
+
+
+    DOWN:
+        Slow
+        Large
+        Cheap
+
+
+============================================================
+17.7 REGISTERS
+============================================================
+
+Registers are the smallest and fastest storage locations
+available to the CPU.
+
+They are located inside the processor.
+
+
+Examples:
+
+    Program Counter
+    Instruction Register
+    General-Purpose Registers
+    Status Register
+
+
+The CPU can access registers extremely quickly.
+
+
+Example:
+
+    R1 = 10
+    R2 = 20
+
+CPU can perform:
+
+    R1 + R2
+
+
+without first fetching those values from main memory.
+
+
+============================================================
+17.8 CACHE MEMORY
+============================================================
+
+Cache is a small, high-speed memory located close to or inside
+the CPU.
+
+
+Its purpose is to store frequently or recently used data and
+instructions.
+
+
+Basic idea:
+
+    CPU
+     │
+     ▼
+    Cache
+     │
+     ▼
+    RAM
+
+
+If the required data is in cache:
+
+    FAST
+
+
+If it is not:
+
+    CPU must access a lower level.
+
+
+============================================================
+17.9 MAIN MEMORY
+============================================================
+
+Main memory is generally:
+
+    RAM
+
+
+It stores programs and data that are currently being used.
+
+
+Compared with cache:
+
+    RAM is larger.
+
+    RAM is slower.
+
+    RAM is cheaper per bit.
+
+
+Typical relationship:
+
+    Cache:
+        Smaller + faster
+
+
+    RAM:
+        Larger + slower
+
+
+============================================================
+17.10 SECONDARY STORAGE
+============================================================
+
+Secondary storage provides large, persistent storage.
+
+
+Examples:
+
+    • SSD
+    • HDD
+
+
+Characteristics:
+
+    • Very large capacity
+    • Non-volatile
+    • Slower than RAM
+    • Lower cost per bit
+
+
+Programs and files are usually stored here for long-term use.
+
+
+============================================================
+17.11 MEMORY HIERARCHY TABLE
+============================================================
+
+    ┌──────────────────┬──────────┬──────────┬─────────────┐
+    │ Level            │ Speed    │ Capacity │ Cost/bit    │
+    ├──────────────────┼──────────┼──────────┼─────────────┤
+    │ Registers        │ Highest  │ Tiny     │ Highest     │
+    │ Cache            │ Very high│ Small    │ High        │
+    │ RAM              │ High     │ Medium   │ Moderate    │
+    │ SSD/HDD          │ Lower    │ Very large│ Lower      │
+    └──────────────────┴──────────┴──────────┴─────────────┘
+
+
+The exact values depend on the system.
+
+
+============================================================
+17.12 THE PRINCIPLE OF LOCALITY
+============================================================
+
+The memory hierarchy works because programs usually do NOT
+access memory randomly.
+
+Programs tend to repeatedly access:
+
+    • Recently used data
+    • Nearby memory locations
+
+
+This behavior is called:
+
+    LOCALITY OF REFERENCE
+
+
+There are two major types:
+
+    1. Temporal locality
+    2. Spatial locality
+
+
+============================================================
+17.13 TEMPORAL LOCALITY
+============================================================
+
+Temporal means:
+
+    TIME
+
+
+Temporal locality means:
+
+    If a program accesses something now, it is likely to
+    access it again soon.
+
+
+Example:
+
+    for (i = 0; i < 1000; i++)
+        sum = sum + x;
+
+
+The variable:
+
+    sum
+
+is repeatedly accessed.
+
+
+Therefore:
+
+    sum
+
+has temporal locality.
+
+
+============================================================
+17.14 REAL-WORLD ANALOGY — TEMPORAL LOCALITY
+============================================================
+
+Suppose you are solving mathematics problems.
+
+You repeatedly use:
+
+    Formula sheet
+
+
+You keep the formula sheet beside you because you expect to
+use it again soon.
+
+
+That is:
+
+    TEMPORAL LOCALITY
+
+
+MEMORY TRICK:
+
+    Temporal = Again soon
+
+
+============================================================
+17.15 SPATIAL LOCALITY
+============================================================
+
+Spatial means:
+
+    SPACE / LOCATION
+
+
+Spatial locality means:
+
+    If a program accesses one memory location, it is likely
+    to access nearby memory locations soon.
+
+
+Example:
+
+    Array:
+
+    A[0]
+    A[1]
+    A[2]
+    A[3]
+    A[4]
+
+
+If the program accesses:
+
+    A[0]
+
+
+it will likely access:
+
+    A[1], A[2], A[3]...
+
+
+These are nearby locations.
+
+
+Therefore arrays commonly exhibit spatial locality.
+
+
+============================================================
+17.16 REAL-WORLD ANALOGY — SPATIAL LOCALITY
+============================================================
+
+Suppose you are reading a textbook.
+
+You are reading:
+
+    Page 100
+
+
+You are likely to read:
+
+    Page 101
+    Page 102
+
+
+rather than suddenly jumping to:
+
+    Page 500
+
+
+That is:
+
+    SPATIAL LOCALITY
+
+
+MEMORY TRICK:
+
+    Spatial = Nearby
+
+
+============================================================
+17.17 TEMPORAL VS SPATIAL LOCALITY
+============================================================
+
+TEMPORAL:
+
+    Same data again soon.
+
+
+SPATIAL:
+
+    Nearby data soon.
+
+
+Example:
+
+    while(condition)
+        x = x + 1;
+
+
+Variable x:
+
+    Temporal locality
+
+
+Example:
+
+    for(i = 0; i < 100; i++)
+        sum += A[i];
+
+
+Array elements:
+
+    Spatial locality
+
+
+============================================================
+17.18 LOCALITY AND CACHE
+============================================================
+
+Cache works because of locality.
+
+
+Suppose CPU accesses:
+
+    Address 1000
+
+
+The cache may bring not only address 1000 but also nearby
+addresses into the cache.
+
+
+Why?
+
+Because the CPU may soon access:
+
+    1001
+    1002
+    1003
+
+
+This exploits:
+
+    SPATIAL LOCALITY
+
+
+If CPU repeatedly accesses address 1000:
+
+    TEMPORAL LOCALITY
+
+
+allows cache to keep it nearby.
+
+
+============================================================
+17.19 MEMORY ACCESS
+============================================================
+
+Suppose CPU needs data.
+
+
+First:
+
+    CPU checks the cache.
+
+
+If data is present:
+
+    CACHE HIT
+
+
+If data is absent:
+
+    CACHE MISS
+
+
+On a miss, the system obtains the required data from a lower
+level of the hierarchy.
+
+
+============================================================
+17.20 CACHE HIT
+============================================================
+
+A cache HIT occurs when the requested data is found in the
+cache.
+
+
+Flow:
+
+    CPU
+     │
+     ▼
+    CACHE
+     │
+     └── Data found
+             │
+             ▼
+          CACHE HIT
+             │
+             ▼
+            CPU
+
+
+Advantage:
+
+    Very fast access.
+
+
+============================================================
+17.21 CACHE MISS
+============================================================
+
+A cache MISS occurs when the requested data is not found in
+the cache.
+
+
+Flow:
+
+    CPU
+     │
+     ▼
+    CACHE
+     │
+     └── Data NOT found
+             │
+             ▼
+         CACHE MISS
+             │
+             ▼
+            RAM
+             │
+             ▼
+           CACHE
+             │
+             ▼
+            CPU
+
+
+The data may be brought into cache for future accesses.
+
+
+============================================================
+17.22 HIT RATIO
+============================================================
+
+Hit ratio tells us how often requested data is found in cache.
+
+
+Formula:
+
+    Hit Ratio
+    =
+    Number of Hits
+    -------------------------
+    Total Memory Accesses
+
+
+Example:
+
+    Hits = 90
+    Total accesses = 100
+
+
+Then:
+
+    Hit Ratio = 90/100
+
+             = 0.9
+
+             = 90%
+
+
+============================================================
+17.23 MISS RATIO
+============================================================
+
+Miss ratio tells us how often requested data is NOT found in
+cache.
+
+
+Formula:
+
+    Miss Ratio
+    =
+    Number of Misses
+    -------------------------
+    Total Memory Accesses
+
+
+Also:
+
+    Miss Ratio = 1 - Hit Ratio
+
+
+Therefore, if:
+
+    Hit Ratio = 90%
+
+
+Then:
+
+    Miss Ratio = 10%
+
+
+============================================================
+17.24 HIT RATE
+============================================================
+
+Hit rate is another term commonly used for:
+
+    Hit ratio
+
+
+Example:
+
+    Hit rate = 95%
+
+
+means approximately:
+
+    95% of accesses are hits.
+
+
+============================================================
+17.25 MISS RATE
+============================================================
+
+Miss rate is another term for:
+
+    Miss ratio
+
+
+Example:
+
+    Hit rate = 95%
+
+
+Then:
+
+    Miss rate = 5%
+
+
+============================================================
+17.26 MISS PENALTY
+============================================================
+
+When a cache miss occurs, the CPU must access a lower level
+of memory.
+
+
+The extra time required because of the miss is called:
+
+    MISS PENALTY
+
+
+Example:
+
+    Cache access = 2 ns
+
+    Additional time to obtain data from RAM = 50 ns
+
+
+The miss penalty is related to the additional delay caused by
+the miss.
+
+
+IMPORTANT:
+
+    Miss penalty is the cost of a miss in terms of extra
+    access time.
+
+
+============================================================
+17.27 HIT TIME
+============================================================
+
+Hit time is the time required to access the cache and determine
+that the requested data is present, including obtaining it
+according to the system's timing definition.
+
+
+Simplified:
+
+    Hit time ≈ time for a successful cache access
+
+
+Lower hit time:
+
+    Better performance
+
+
+============================================================
+17.28 BASIC CACHE PERFORMANCE
+============================================================
+
+Suppose:
+
+    Hit time = 2 ns
+
+    Miss rate = 10%
+
+    Miss penalty = 50 ns
+
+
+A simplified average access calculation:
+
+    AMAT
+    =
+    Hit time
+    +
+    Miss rate × Miss penalty
+
+
+Therefore:
+
+    AMAT
+    = 2 + (0.10 × 50)
+
+    = 2 + 5
+
+    = 7 ns
+
+
+So average memory access time is approximately:
+
+    7 ns
+
+
+============================================================
+17.29 AVERAGE MEMORY ACCESS TIME
+============================================================
+
+AMAT means:
+
+    AVERAGE MEMORY ACCESS TIME
+
+
+Basic formula:
+
+    AMAT
+    =
+    Hit Time
+    +
+    Miss Rate × Miss Penalty
+
+
+This is one of the most important formulas in cache-related
+numerical problems.
+
+
+Another equivalent formulation may be used depending on how
+the problem defines the times.
+
+
+============================================================
+17.30 AMAT EXAMPLE
+============================================================
+
+Given:
+
+    Hit time = 1 ns
+
+    Hit ratio = 95%
+
+    Miss penalty = 20 ns
+
+
+First:
+
+    Miss rate = 1 - 0.95
+              = 0.05
+
+
+Then:
+
+    AMAT
+    = 1 + (0.05 × 20)
+
+    = 1 + 1
+
+    = 2 ns
+
+
+ANSWER:
+
+    AMAT = 2 ns
+
+
+============================================================
+17.31 AMAT EXAMPLE — 2 LEVELS
+============================================================
+
+Suppose:
+
+    L1 hit time = 1 ns
+
+    L1 miss rate = 10%
+
+    L2 access time = 5 ns
+
+    Main memory penalty after L2 miss = 50 ns
+
+
+Simplified:
+
+    AMAT
+    =
+    L1 hit time
+    +
+    L1 miss rate × L2/miss cost
+
+
+If the problem defines:
+
+    L2/miss cost = 5 + 50 = 55 ns
+
+
+Then:
+
+    AMAT
+    = 1 + (0.10 × 55)
+
+    = 1 + 5.5
+
+    = 6.5 ns
+
+
+Always follow the exact timing definitions given in the
+question.
+
+
+============================================================
+17.32 WHY HIGH HIT RATIO IS IMPORTANT
+============================================================
+
+Suppose:
+
+    Hit ratio = 99%
+
+
+Only:
+
+    1%
+
+of accesses miss.
+
+
+This is good because lower levels are much slower.
+
+
+Even a small miss rate can have a large performance impact if
+the miss penalty is very large.
+
+
+Therefore:
+
+    High hit ratio
+          +
+    Low miss penalty
+          +
+    Low hit time
+          ↓
+    Better performance
+
+
+============================================================
+17.33 EFFECT OF MISS RATE
+============================================================
+
+Suppose:
+
+    Hit time = 1 ns
+    Miss penalty = 100 ns
+
+
+Case 1:
+
+    Miss rate = 1%
+
+
+    AMAT
+    = 1 + (0.01 × 100)
+    = 2 ns
+
+
+Case 2:
+
+    Miss rate = 10%
+
+
+    AMAT
+    = 1 + (0.10 × 100)
+    = 11 ns
+
+
+A tenfold increase in miss rate causes a major increase in
+average access time.
+
+
+============================================================
+17.34 EFFECT OF MISS PENALTY
+============================================================
+
+Suppose:
+
+    Hit time = 1 ns
+    Miss rate = 5%
+
+
+Case 1:
+
+    Miss penalty = 20 ns
+
+    AMAT = 1 + (0.05 × 20)
+         = 2 ns
+
+
+Case 2:
+
+    Miss penalty = 100 ns
+
+    AMAT = 1 + (0.05 × 100)
+         = 6 ns
+
+
+Therefore:
+
+    Higher miss penalty
+            ↓
+    Higher AMAT
+
+
+============================================================
+17.35 MEMORY HIERARCHY AND LOCALITY
+============================================================
+
+The whole idea can be summarized:
+
+    Programs show locality
+            │
+            ▼
+    Frequently used data
+    is likely to be needed again
+            │
+            ▼
+    Keep it in faster memory
+            │
+            ▼
+          CACHE
+            │
+            ▼
+    Reduce average access time
+
+
+============================================================
+17.36 TEMPORAL LOCALITY EXAMPLE
+============================================================
+
+Consider:
+
+    x = 10
+
+    for(i = 0; i < 1000; i++)
+    {
+        x = x + 1;
+    }
+
+
+The variable:
+
+    x
+
+
+is accessed repeatedly.
+
+
+Therefore:
+
+    x → Temporal locality
+
+
+============================================================
+17.37 SPATIAL LOCALITY EXAMPLE
+============================================================
+
+Consider:
+
+    int A[100];
+
+    for(i = 0; i < 100; i++)
+    {
+        sum = sum + A[i];
+    }
+
+
+The program accesses:
+
+    A[0]
+    A[1]
+    A[2]
+    A[3]
+    ...
+
+
+These elements are stored near each other.
+
+
+Therefore:
+
+    A[i] → Spatial locality
+
+
+============================================================
+17.38 BOTH TYPES OF LOCALITY
+============================================================
+
+A program can exhibit both.
+
+
+Example:
+
+    for(i = 0; i < 100; i++)
+    {
+        sum = sum + A[i];
+
+        if(condition)
+            use(A[i]);
+    }
+
+
+A[i] may be accessed:
+
+    Nearby → Spatial locality
+
+and:
+
+    Again soon → Temporal locality
+
+
+============================================================
+17.39 LOCALITY IN INSTRUCTIONS
+============================================================
+
+Locality applies not only to data.
+
+Instructions also exhibit locality.
+
+
+Example:
+
+    LOOP:
+        ADD
+        SUB
+        STORE
+        JUMP LOOP
+
+
+The instructions inside the loop are repeatedly executed.
+
+
+Therefore:
+
+    Instruction temporal locality
+
+
+Also, instructions stored next to one another are often
+accessed together.
+
+
+Therefore:
+
+    Instruction spatial locality
+
+
+============================================================
+17.40 DATA LOCALITY VS INSTRUCTION LOCALITY
+============================================================
+
+DATA LOCALITY:
+
+    Related to data accesses.
+
+
+INSTRUCTION LOCALITY:
+
+    Related to instruction accesses.
+
+
+Both help cache performance.
+
+
+============================================================
+17.41 MEMORY HIERARCHY AND PROGRAM EXECUTION
+============================================================
+
+When a program runs:
+
+    Storage
+       │
+       ▼
+    Main Memory
+       │
+       ▼
+     Cache
+       │
+       ▼
+       CPU
+
+
+Frequently used instructions/data move toward faster levels.
+
+
+Less frequently used information remains in lower levels.
+
+
+This creates the illusion of having:
+
+    A large memory
+
+with:
+
+    Near-fast-memory performance
+
+
+============================================================
+17.42 INCLUSIVE IDEA OF MEMORY HIERARCHY
+============================================================
+
+A lower level generally holds much more information than a
+higher level.
+
+
+Conceptually:
+
+    Registers:
+        tiny amount
+
+
+    Cache:
+        more
+
+
+    RAM:
+        much more
+
+
+    Storage:
+        huge
+
+
+Therefore:
+
+    Higher level = small subset of lower level information
+
+
+The exact inclusion relationship depends on the architecture.
+
+
+============================================================
+17.43 MEMORY HIERARCHY PERFORMANCE
+============================================================
+
+Ideal system:
+
+    Very fast access
+          +
+    Very large capacity
+          +
+    Low cost
+
+
+Memory hierarchy attempts to approximate this ideal by
+combining different technologies.
+
+
+Therefore:
+
+    Registers + Cache + RAM + Storage
+
+
+work together.
+
+
+============================================================
+17.44 COST PER BIT
+============================================================
+
+Cost per bit means:
+
+    Cost of storing one bit.
+
+
+Generally:
+
+    Faster memory
+        →
+    Higher cost per bit
+
+
+    Slower storage
+        →
+    Lower cost per bit
+
+
+Therefore:
+
+    Registers:
+        Very high cost/bit
+
+
+    Storage:
+        Low cost/bit
+
+
+============================================================
+17.45 CAPACITY
+============================================================
+
+Capacity means:
+
+    Amount of data that can be stored.
+
+
+Generally:
+
+    Registers:
+        Very small
+
+
+    Cache:
+        Small
+
+
+    RAM:
+        Larger
+
+
+    SSD/HDD:
+        Very large
+
+
+============================================================
+17.46 ACCESS TIME
+============================================================
+
+Generally:
+
+    Registers:
+        Fastest
+
+
+    Cache:
+        Very fast
+
+
+    RAM:
+        Slower
+
+
+    SSD/HDD:
+        Much slower
+
+
+Therefore:
+
+    Moving downward
+        ↓
+    Access time generally increases
+
+
+============================================================
+17.47 IMPORTANT TRADE-OFF
+============================================================
+
+Memory hierarchy balances:
+
+    SPEED
+    CAPACITY
+    COST
+
+
+Generally:
+
+    Speed ↑ → Cost/bit ↑ → Capacity ↓
+
+
+    Capacity ↑ → Cost/bit ↓ → Speed ↓
+
+
+This is a general trend, not an absolute law for every
+technology.
+
+
+============================================================
+17.48 CACHE HIT EXAMPLE
+============================================================
+
+Suppose CPU requests:
+
+    Address A
+
+
+Cache contains A.
+
+
+Therefore:
+
+    HIT
+
+
+CPU gets data quickly.
+
+
+Next request:
+
+    Address B
+
+
+Cache does not contain B.
+
+
+Therefore:
+
+    MISS
+
+
+Memory hierarchy must look at a lower level.
+
+
+============================================================
+17.49 HIT/MISS NUMERICAL PROBLEM
+============================================================
+
+Suppose there are:
+
+    1000 memory accesses
+
+and:
+
+    950 hits
+
+
+Find hit ratio and miss ratio.
+
+
+Hit ratio:
+
+    950 / 1000
+    = 0.95
+    = 95%
+
+
+Misses:
+
+    1000 - 950
+    = 50
+
+
+Miss ratio:
+
+    50 / 1000
+    = 0.05
+    = 5%
+
+
+ANSWER:
+
+    Hit ratio  = 95%
+    Miss ratio = 5%
+
+
+============================================================
+17.50 HIT/MISS NUMERICAL PROBLEM
+============================================================
+
+Suppose:
+
+    Hit ratio = 80%
+
+    Total accesses = 5000
+
+
+Hits:
+
+    0.80 × 5000
+
+    = 4000
+
+
+Misses:
+
+    5000 - 4000
+
+    = 1000
+
+
+Therefore:
+
+    Hits  = 4000
+    Misses = 1000
+
+
+============================================================
+17.51 AMAT NUMERICAL PROBLEM
+============================================================
+
+Given:
+
+    Hit time = 2 ns
+
+    Hit ratio = 90%
+
+    Miss penalty = 40 ns
+
+
+Miss rate:
+
+    1 - 0.90
+    = 0.10
+
+
+AMAT:
+
+    = Hit time + Miss rate × Miss penalty
+
+    = 2 + (0.10 × 40)
+
+    = 2 + 4
+
+    = 6 ns
+
+
+ANSWER:
+
+    6 ns
+
+
+============================================================
+17.52 AMAT NUMERICAL PROBLEM
+============================================================
+
+Given:
+
+    Hit time = 5 ns
+
+    Miss rate = 2%
+
+    Miss penalty = 100 ns
+
+
+AMAT:
+
+    = 5 + (0.02 × 100)
+
+    = 5 + 2
+
+    = 7 ns
+
+
+ANSWER:
+
+    7 ns
+
+
+============================================================
+17.53 FIND MISS RATE
+============================================================
+
+Given:
+
+    Hit ratio = 97%
+
+
+Miss ratio:
+
+    = 100% - 97%
+
+    = 3%
+
+
+ANSWER:
+
+    Miss rate = 3%
+
+
+============================================================
+17.54 FIND HIT RATIO
+============================================================
+
+Given:
+
+    Miss rate = 8%
+
+
+Hit rate:
+
+    = 100% - 8%
+
+    = 92%
+
+
+ANSWER:
+
+    Hit ratio = 92%
+
+
+============================================================
+17.55 FIND MISS PENALTY
+============================================================
+
+Given:
+
+    AMAT = 10 ns
+
+    Hit time = 2 ns
+
+    Miss rate = 20%
+
+
+Formula:
+
+    AMAT = Hit time + Miss rate × Miss penalty
+
+
+Substitute:
+
+    10 = 2 + 0.20 × Miss Penalty
+
+
+Therefore:
+
+    8 = 0.20 × Miss Penalty
+
+
+    Miss Penalty = 8 / 0.20
+
+                 = 40 ns
+
+
+ANSWER:
+
+    40 ns
+
+
+============================================================
+17.56 IMPORTANT AMAT WARNING
+============================================================
+
+Different textbooks may define:
+
+    Miss penalty
+
+
+slightly differently.
+
+
+For example, one problem may define miss penalty as the
+additional time after a miss.
+
+Another may give:
+
+    Lower-level access time
+
+
+Therefore:
+
+    Always read the exact wording of the problem.
+
+
+Do NOT blindly add times twice.
+
+
+============================================================
+17.57 MULTI-LEVEL MEMORY HIERARCHY
+============================================================
+
+Modern processors often have:
+
+    L1 Cache
+       ↓
+    L2 Cache
+       ↓
+    L3 Cache
+       ↓
+    Main Memory
+       ↓
+    Storage
+
+
+Each level is generally:
+
+    Larger but slower
+
+than the level above it.
+
+
+============================================================
+17.58 L1 CACHE
+============================================================
+
+L1 means:
+
+    Level 1 cache
+
+
+Characteristics:
+
+    • Very fast
+    • Very small
+    • Closest to execution units
+    • Often separated into instruction and data caches
+
+
+Common design:
+
+    L1 Instruction Cache
+    L1 Data Cache
+
+
+============================================================
+17.59 L2 CACHE
+============================================================
+
+L2 means:
+
+    Level 2 cache
+
+
+Compared with L1:
+
+    Larger
+    Usually slower
+    Still much faster than RAM
+
+
+It acts as another fast layer between L1 and main memory.
+
+
+============================================================
+17.60 L3 CACHE
+============================================================
+
+L3 means:
+
+    Level 3 cache
+
+
+Generally:
+
+    Larger than L2
+    Slower than L2
+    Often shared among multiple CPU cores
+
+
+The exact design varies between processors.
+
+
+============================================================
+17.61 COMPLETE MEMORY HIERARCHY
+============================================================
+
+                 CPU
+                  │
+                  ▼
+             REGISTERS
+                  │
+                  ▼
+                L1
+                  │
+                  ▼
+                L2
+                  │
+                  ▼
+                L3
+                  │
+                  ▼
+             MAIN MEMORY
+                 RAM
+                  │
+                  ▼
+             SSD / HDD
+
+
+Moving downward:
+
+    Capacity ↑
+    Latency ↑
+    Cost/bit ↓
+
+
+Moving upward:
+
+    Speed ↑
+    Capacity ↓
+    Cost/bit ↑
+
+
+============================================================
+17.62 WHY CACHE BLOCKS ARE USED
+============================================================
+
+Cache generally transfers data in blocks rather than one byte
+at a time.
+
+
+Why?
+
+Because of:
+
+    SPATIAL LOCALITY
+
+
+If CPU asks for:
+
+    Address 1000
+
+
+nearby addresses may also be useful.
+
+
+Therefore the system may fetch a block containing:
+
+    1000
+    1001
+    1002
+    1003
+    ...
+
+
+The exact block size depends on the architecture.
+
+
+============================================================
+17.63 MEMORY BLOCK
+============================================================
+
+A memory block is a contiguous group of memory bytes/words
+that may be transferred between hierarchy levels.
+
+
+Example:
+
+    Block size = 16 bytes
+
+
+A cache line may contain:
+
+    16 bytes
+
+
+If CPU accesses one byte within the block, the cache may bring
+the entire block into cache.
+
+
+This exploits spatial locality.
+
+
+============================================================
+17.64 CACHE LINE
+============================================================
+
+A cache line is the unit of storage/transfer between cache and
+the next memory level in many cache designs.
+
+
+It usually contains:
+
+    Data block
+    + metadata such as tag/status information
+
+
+Cache lines are central to cache organization.
+
+
+Detailed cache mapping will be covered in:
+
+    CHAPTER 18 — CACHE MEMORY
+
+
+============================================================
+17.65 MEMORY HIERARCHY AND LOCALITY SUMMARY
+============================================================
+
+Program behavior:
+
+    Locality
+       │
+       ├───────────────┐
+       │               │
+       ▼               ▼
+    Temporal         Spatial
+       │               │
+       ▼               ▼
+    Same data       Nearby data
+    again soon      soon
+       │               │
+       └───────┬───────┘
+               ▼
+             CACHE
+               │
+        ┌──────┴──────┐
+        │             │
+       HIT           MISS
+        │             │
+        ▼             ▼
+      Fast       Lower level
+                  access
+                       │
+                       ▼
+                 Miss penalty
+
+
+============================================================
+17.66 B.TECH QUESTIONS
+============================================================
+
+1. What is memory hierarchy?
+
+2. Why is memory hierarchy required?
+
+3. Explain the relationship between speed, capacity and cost.
+
+4. Draw and explain memory hierarchy.
+
+5. Explain locality of reference.
+
+6. Explain temporal locality with an example.
+
+7. Explain spatial locality with an example.
+
+8. Differentiate temporal and spatial locality.
+
+9. What is a cache hit?
+
+10. What is a cache miss?
+
+11. Define hit ratio.
+
+12. Define miss ratio.
+
+13. Define miss penalty.
+
+14. What is hit time?
+
+15. Explain AMAT.
+
+16. Derive the basic AMAT formula.
+
+17. Explain the effect of hit ratio on performance.
+
+18. Explain L1, L2 and L3 caches.
+
+19. Explain why cache uses blocks.
+
+20. Solve numerical problems involving hit ratio.
+
+21. Solve numerical problems involving miss ratio.
+
+22. Solve AMAT problems.
+
+23. Explain the relationship between locality and cache.
+
+24. Explain the trade-off between speed, capacity and cost.
+
+
+============================================================
+17.67 COMPETITIVE-EXAM MCQs
+============================================================
+
+Q1. Which is generally the fastest storage location?
+
+A. HDD
+B. RAM
+C. Cache
+D. Register
+
+
+Q2. Which generally has the largest capacity?
+
+A. Register
+B. Cache
+C. RAM
+D. Secondary storage
+
+
+Q3. Which type of locality refers to reusing the same data
+    soon?
+
+A. Spatial
+B. Temporal
+C. Sequential
+D. Physical
+
+
+Q4. Which type of locality refers to accessing nearby
+    addresses?
+
+A. Temporal
+B. Spatial
+C. Logical
+D. Virtual
+
+
+Q5. A cache hit means:
+
+A. Data is not found in cache
+B. Data is found in cache
+C. RAM is full
+D. CPU is stopped
+
+
+Q6. If hit ratio is 90%, miss ratio is:
+
+A. 1%
+B. 5%
+C. 10%
+D. 90%
+
+
+Q7. AMAT is commonly given by:
+
+A. Hit time − Miss rate × Miss penalty
+B. Hit time + Miss rate × Miss penalty
+C. Miss time + Hit ratio
+D. Hit time × Hit ratio
+
+
+Q8. If hit ratio increases while all other factors remain
+    constant, AMAT generally:
+
+A. Increases
+B. Decreases
+C. Becomes infinite
+D. Does not change
+
+
+Q9. If miss penalty increases, AMAT generally:
+
+A. Decreases
+B. Increases
+C. Becomes zero
+D. Remains unchanged
+
+
+Q10. Which memory level is closest to the CPU?
+
+A. SSD
+B. RAM
+C. Cache
+D. HDD
+
+
+Q11. Which is generally true when moving down the memory
+     hierarchy?
+
+A. Speed increases
+B. Capacity decreases
+C. Capacity increases
+D. Cost per bit increases
+
+
+Q12. A program repeatedly accessing the same variable
+     demonstrates:
+
+A. Spatial locality
+B. Temporal locality
+C. No locality
+D. Virtual locality
+
+
+Q13. Sequential array access mainly demonstrates:
+
+A. Temporal locality only
+B. Spatial locality
+C. No locality
+D. Random locality
+
+
+Q14. If there are 1000 accesses and 950 hits, the hit ratio is:
+
+A. 5%
+B. 50%
+C. 90%
+D. 95%
+
+
+Q15. If hit time = 2 ns, miss rate = 10%, and miss penalty
+     = 30 ns, AMAT is:
+
+A. 3 ns
+B. 5 ns
+C. 8 ns
+D. 32 ns
+
+
+============================================================
+ANSWERS
+============================================================
+
+    Q1  → D
+    Q2  → D
+    Q3  → B
+    Q4  → B
+    Q5  → B
+    Q6  → C
+    Q7  → B
+    Q8  → B
+    Q9  → B
+    Q10 → C
+    Q11 → C
+    Q12 → B
+    Q13 → B
+    Q14 → D
+    Q15 → B
+
+
+Q15 CHECK:
+
+    AMAT = Hit time + Miss rate × Miss penalty
+
+          = 2 + (0.10 × 30)
+
+          = 2 + 3
+
+          = 5 ns
+
+
+============================================================
+17.68 COMMON EXAM TRAPS
+============================================================
+
+TRAP 1:
+
+    "Cache is the largest memory."
+
+WRONG.
+
+    Cache is small but fast.
+
+
+------------------------------------------------------------
+
+TRAP 2:
+
+    "Temporal locality means nearby addresses."
+
+WRONG.
+
+    Temporal = same/recently used item again.
+
+
+------------------------------------------------------------
+
+TRAP 3:
+
+    "Spatial locality means accessing the same item again."
+
+WRONG.
+
+    Spatial = nearby locations.
+
+
+------------------------------------------------------------
+
+TRAP 4:
+
+    "90% hit ratio means 90% miss ratio."
+
+WRONG.
+
+    Miss ratio = 10%.
+
+
+------------------------------------------------------------
+
+TRAP 5:
+
+    Forgetting to convert percentage into decimal.
+
+    10% = 0.10
+
+    5%  = 0.05
+
+    2%  = 0.02
+
+
+------------------------------------------------------------
+
+TRAP 6:
+
+    Treating miss penalty as the total memory access time
+    without checking the question's definition.
+
+Always inspect how the problem defines:
+
+    Hit time
+    Miss penalty
+    Lower-level access time
+
+
+------------------------------------------------------------
+
+TRAP 7:
+
+    Assuming high bandwidth means low latency.
+
+WRONG.
+
+    Bandwidth = amount of data per unit time.
+
+    Latency = delay before data becomes available.
+
+
+============================================================
+17.69 QUICK REVISION
+============================================================
+
+MEMORY HIERARCHY:
+
+    Registers
+       ↓
+    Cache
+       ↓
+    RAM
+       ↓
+    SSD/HDD
+
+
+UPWARD:
+
+    Faster
+    Smaller
+    More expensive/bit
+
+
+DOWNWARD:
+
+    Slower
+    Larger
+    Cheaper/bit
+
+
+LOCALITY:
+
+    Temporal = Same data again soon
+
+    Spatial = Nearby data soon
+
+
+CACHE:
+
+    HIT  = Data found
+
+    MISS = Data not found
+
+
+RATIOS:
+
+    Hit Ratio = Hits / Total Accesses
+
+    Miss Ratio = Misses / Total Accesses
+
+    Miss Ratio = 1 − Hit Ratio
+
+
+PERFORMANCE:
+
+    AMAT = Hit Time + Miss Rate × Miss Penalty
+
+
+IMPORTANT:
+
+    High hit ratio → Better performance
+
+    Low miss rate → Better performance
+
+    Low miss penalty → Better performance
+
+
+============================================================
+17.70 MASTER FORMULA SHEET
+============================================================
+
+HIT RATIO:
+
+    Hit Ratio
+    =
+    Hits / Total Accesses
+
+
+MISS RATIO:
+
+    Miss Ratio
+    =
+    Misses / Total Accesses
+
+
+RELATION:
+
+    Hit Ratio + Miss Ratio = 1
+
+
+Therefore:
+
+    Miss Ratio = 1 − Hit Ratio
+
+    Hit Ratio = 1 − Miss Ratio
+
+
+AMAT:
+
+    AMAT
+    =
+    Hit Time + Miss Rate × Miss Penalty
+
+
+HITS:
+
+    Hits = Hit Ratio × Total Accesses
+
+
+MISSES:
+
+    Misses = Miss Ratio × Total Accesses
+
+
+============================================================
+17.71 MASTER MEMORY MAP
+============================================================
+
+                         MEMORY HIERARCHY
+                                │
+          ┌─────────────────────┼─────────────────────┐
+          │                     │                     │
+          ▼                     ▼                     ▼
+        SPEED                CAPACITY              COST/BIT
+          │                     │                     │
+       Highest              Smallest              Highest
+          │                     │                     │
+          ▼                     ▼                     ▼
+      Registers
+          │
+        Cache
+          │
+         RAM
+          │
+       Storage
+          │
+          ▼
+       Lowest                Largest               Lowest
+
+
+PROGRAM BEHAVIOR
+       │
+       ▼
+    LOCALITY
+       │
+    ┌──┴───┐
+    ▼      ▼
+Temporal Spatial
+    │      │
+    └──┬───┘
+       ▼
+     CACHE
+       │
+   ┌───┴───┐
+   ▼       ▼
+  HIT     MISS
+   │       │
+   ▼       ▼
+ FAST    LOWER LEVEL
+           │
+           ▼
+      MISS PENALTY
+
+
+============================================================
+17.72 FINAL CHECKPOINT
+============================================================
+
+You should now be able to:
+
+[ ] Define memory hierarchy.
+[ ] Explain why memory hierarchy is required.
+[ ] Explain speed-capacity-cost trade-off.
+[ ] Draw the memory hierarchy.
+[ ] Explain registers.
+[ ] Explain cache.
+[ ] Explain RAM.
+[ ] Explain secondary storage.
+[ ] Define locality of reference.
+[ ] Explain temporal locality.
+[ ] Explain spatial locality.
+[ ] Identify locality in program examples.
+[ ] Define cache hit.
+[ ] Define cache miss.
+[ ] Define hit ratio.
+[ ] Define miss ratio.
+[ ] Define hit time.
+[ ] Define miss penalty.
+[ ] Calculate hit ratio.
+[ ] Calculate miss ratio.
+[ ] Calculate number of hits.
+[ ] Calculate number of misses.
+[ ] Calculate AMAT.
+[ ] Explain L1, L2 and L3 cache.
+[ ] Explain cache blocks.
+[ ] Understand latency vs bandwidth.
+[ ] Solve B.Tech numerical problems.
+[ ] Solve competitive-exam questions.
+
+
+============================================================
+CHAPTER 17 COMPLETE
+============================================================
+
+CORE IDEA:
+
+    CPU needs data
+          │
+          ▼
+    Check FAST memory
+          │
+       ┌──┴──┐
+       │     │
+      HIT   MISS
+       │     │
+       ▼     ▼
+      Fast  Go lower
+             │
+             ▼
+       Higher latency
+
+
+WHY THIS WORKS:
+
+    Programs show LOCALITY.
+
+    Temporal:
+        Use the same thing again soon.
+
+    Spatial:
+        Use nearby things soon.
+
+
+Therefore:
+
+    MEMORY HIERARCHY
+            +
+       LOCALITY
+            +
+          CACHE
+            ↓
+    HIGH PERFORMANCE
+
+
+============================================================
+NEXT:
+CHAPTER 18 — CACHE MEMORY
+============================================================
+
+18.1 Cache Basics
+    • Purpose
+    • Cache line/block
+    • Tag
+    • Index
+    • Offset
+
+18.2 Cache Mapping
+    • Direct mapping
+    • Fully associative mapping
+    • Set-associative mapping
+
+18.3 Cache Replacement
+    • LRU
+    • FIFO
+    • Random replacement
+
+18.4 Write Policies
+    • Write-through
+    • Write-back
+    • Write allocate
+    • No-write allocate
+
+18.5 Cache Performance
+    • Hit ratio
+    • Miss ratio
+    • Average Memory Access Time (AMAT)
+
+18.6 Multi-Level Cache
+    • L1
+    • L2
+    • L3
+============================================================
