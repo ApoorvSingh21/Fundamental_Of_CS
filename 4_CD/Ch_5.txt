@@ -1,0 +1,3203 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    COMPILER DESIGN — CHAPTER 5                              ║
+║                       REGULAR EXPRESSIONS                                    ║
+║                    Beginner → Advanced Level                                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                         CHAPTER 5 — OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In Chapter 4, we learned that a lexical analyzer converts:
+
+        CHARACTER STREAM
+               ↓
+             LEXER
+               ↓
+          TOKEN STREAM
+
+But an important question remains:
+
+    HOW DOES THE LEXER KNOW WHETHER A SEQUENCE OF CHARACTERS
+    IS A VALID IDENTIFIER, NUMBER, KEYWORD, OPERATOR, ETC.?
+
+The answer begins with:
+
+                    REGULAR EXPRESSIONS
+
+A regular expression (RE) is a formal notation used to describe
+patterns of strings belonging to regular languages.
+
+Regular expressions are extremely important in compiler design because
+they are commonly used to specify the lexical structure of programming
+languages.
+
+
+CHAPTER 5 TOPICS:
+
+    1. Alphabet
+    2. Symbol
+    3. String
+    4. Empty string
+    5. String length
+    6. Concatenation of strings
+    7. Substring
+    8. Prefix and suffix
+    9. Language
+   10. Operations on languages
+   11. Regular languages
+   12. Regular expressions
+   13. Basic regular-expression operators
+   14. Union
+   15. Concatenation
+   16. Kleene star
+   17. Positive closure
+   18. Optional operator
+   19. Operator precedence
+   20. Parentheses
+   21. Regular-expression examples
+   22. Identifier pattern
+   23. Number pattern
+   24. Keyword pattern
+   25. Whitespace pattern
+   26. Operator patterns
+   27. Regular expressions and lexical analysis
+   28. Limitations of regular expressions
+   29. Exam-oriented concepts
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. WHAT IS AN ALPHABET?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+An alphabet is a finite, non-empty set of symbols.
+
+An alphabet is usually represented by:
+
+        Σ
+
+(read as "sigma").
+
+Examples:
+
+
+    Σ = {0, 1}
+
+
+This is the binary alphabet.
+
+
+Another example:
+
+
+    Σ = {a, b, c}
+
+
+Another:
+
+
+    Σ = {a, b, ..., z}
+
+
+A programming language can conceptually use a large character alphabet
+containing letters, digits, operators, punctuation, etc.
+
+
+IMPORTANT:
+
+    Alphabet = SET OF SYMBOLS
+
+It does NOT mean a word or sentence.
+
+
+Example:
+
+
+    Σ = {0,1}
+
+    0 and 1 are symbols.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. SYMBOL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+A symbol is a single element of an alphabet.
+
+If:
+
+
+    Σ = {0,1}
+
+
+then:
+
+
+    0 = symbol
+    1 = symbol
+
+
+If:
+
+
+    Σ = {a,b,c}
+
+
+then:
+
+
+    a, b, c
+
+
+are individual symbols.
+
+
+Think:
+
+
+    Alphabet
+        ↓
+    collection of symbols
+
+
+Example:
+
+
+    Σ = {a,b,c}
+
+
+        ┌───── Alphabet ─────┐
+        │                   │
+        │    a    b    c    │
+        │    ↑    ↑    ↑    │
+        │    symbols        │
+        └───────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. STRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+A string is a finite sequence of symbols taken from an alphabet.
+
+If:
+
+
+    Σ = {0,1}
+
+
+then examples of strings are:
+
+
+    0
+    1
+    00
+    01
+    10
+    11
+    101
+    11001
+
+
+For:
+
+
+    Σ = {a,b}
+
+
+examples:
+
+
+    a
+    b
+    aa
+    ab
+    ba
+    abb
+    aabba
+
+
+A string is often represented by:
+
+    w, x, y, z
+
+
+Example:
+
+
+    w = 1011
+
+
+Here:
+
+
+    w is a string over Σ = {0,1}.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. EMPTY STRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+The empty string is a string containing ZERO symbols.
+
+It is represented by:
+
+
+        ε
+
+(read as epsilon).
+
+Therefore:
+
+
+    |ε| = 0
+
+
+Important:
+
+
+    ε is NOT the same as:
+    "0"
+
+
+and:
+
+
+    ε is NOT the same as:
+    " "
+
+
+The empty string contains no symbols.
+
+
+Visualization:
+
+
+    ε
+
+
+    ┌─────────────────────┐
+    │                     │
+    │      NOTHING        │
+    │                     │
+    └─────────────────────┘
+
+
+But it is still considered a valid string.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. LENGTH OF A STRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+The length of a string is the number of symbols it contains.
+
+It is represented by:
+
+
+        |w|
+
+
+Example:
+
+
+    w = 10101
+
+
+Then:
+
+
+    |w| = 5
+
+
+Another:
+
+
+    w = abc
+
+
+    |w| = 3
+
+
+For the empty string:
+
+
+    |ε| = 0
+
+
+Example:
+
+
+    w = "compiler"
+
+
+    c o m p i l e r
+    1 2 3 4 5 6 7 8
+
+
+Therefore:
+
+
+    |compiler| = 8
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. CONCATENATION OF STRINGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+Concatenation means joining two strings together.
+
+If:
+
+
+    x = ab
+
+    y = cd
+
+
+then:
+
+
+    xy = abcd
+
+
+The concatenation operator is usually implied by writing the strings
+next to each other.
+
+
+Example:
+
+
+    x = 101
+
+    y = 001
+
+
+Then:
+
+
+    xy = 101001
+
+
+Important:
+
+
+    |xy| = |x| + |y|
+
+
+Therefore:
+
+
+    |101001| = 3 + 3 = 6
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. SUBSTRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+A substring is a sequence of consecutive symbols occurring within a
+string.
+
+Example:
+
+
+    String:
+
+        compiler
+
+
+Some substrings:
+
+
+    comp
+    pile
+    il
+    ler
+    compiler
+
+
+But:
+
+
+    cml
+
+
+is NOT a substring because its characters are not consecutive.
+
+
+Think:
+
+
+    c o m p i l e r
+    └──────┘
+     substring
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. PREFIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+A prefix of a string is a substring that starts at the beginning of
+the string.
+
+Example:
+
+
+    w = abcde
+
+
+Prefixes include:
+
+
+    ε
+    a
+    ab
+    abc
+    abcd
+    abcde
+
+
+Therefore:
+
+
+    "abc"
+
+
+is a prefix of:
+
+
+    "abcde"
+
+
+But:
+
+
+    "bcd"
+
+
+is not a prefix.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. SUFFIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+A suffix is a substring that ends at the end of the string.
+
+Example:
+
+
+    w = abcde
+
+
+Suffixes:
+
+
+    ε
+    e
+    de
+    cde
+    bcde
+    abcde
+
+
+Therefore:
+
+
+    "cde"
+
+
+is a suffix of:
+
+
+    "abcde"
+
+
+But:
+
+
+    "bcd"
+
+
+is not a suffix.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+A language is a set of strings over an alphabet.
+
+If:
+
+
+    Σ = {0,1}
+
+
+then:
+
+
+    L = {0, 1, 01, 10}
+
+
+is a language over Σ.
+
+
+Another example:
+
+
+    L = { strings containing an even number of 0s }
+
+
+This language can contain:
+
+
+    ε
+    1
+    00
+    11
+    101
+    0011
+    1001
+    ...
+
+
+A language can be:
+
+    • Finite
+    • Infinite
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. FINITE LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A finite language contains a finite number of strings.
+
+Example:
+
+
+    L = {a, b, ab}
+
+
+There are exactly three strings.
+
+
+Therefore:
+
+
+    |L| = 3
+
+
+Another:
+
+
+    L = {0, 1}
+
+
+This language is finite.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. INFINITE LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An infinite language contains infinitely many strings.
+
+Example:
+
+
+    L = { ε, a, aa, aaa, aaaa, ... }
+
+
+This continues forever:
+
+
+    a
+    aa
+    aaa
+    aaaa
+    aaaaa
+    ...
+
+
+Therefore the language is infinite.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. OPERATIONS ON LANGUAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Since a language is a set of strings, normal set operations can be
+applied.
+
+Important operations:
+
+
+    • Union
+    • Intersection
+    • Difference
+    • Complement
+
+
+There is also language concatenation and Kleene closure.
+
+
+These concepts are fundamental for understanding regular expressions.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. UNION OF LANGUAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If:
+
+
+    L1 = {a,b}
+
+    L2 = {b,c}
+
+
+then:
+
+
+    L1 ∪ L2 = {a,b,c}
+
+
+Union means:
+
+    strings belonging to L1 OR L2.
+
+
+In regular expressions, union is commonly represented using:
+
+
+        |
+
+
+Example:
+
+
+    a | b
+
+
+means:
+
+
+    "a OR b"
+
+
+So the language represented is:
+
+
+    {a,b}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. CONCATENATION OF LANGUAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If:
+
+
+    L1 = {a,b}
+
+    L2 = {x,y}
+
+
+then:
+
+
+    L1L2 = {ax, ay, bx, by}
+
+
+Every string from L1 is concatenated with every string from L2.
+
+
+Sky diagram:
+
+
+              L1              L2
+           ┌──────┐        ┌──────┐
+           │ a    │───────►│ x    │ → ax
+           │      │───────►│ y    │ → ay
+           │ b    │───────►│ x    │ → bx
+           │      │───────►│ y    │ → by
+           └──────┘        └──────┘
+
+
+Therefore:
+
+
+    L1L2 = {ax, ay, bx, by}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. REGULAR LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+A regular language is a language that can be described by a regular
+expression and equivalently recognized by a finite automaton.
+
+This gives us a very important relationship:
+
+
+                REGULAR EXPRESSION
+                         ↕
+                  REGULAR LANGUAGE
+                         ↕
+                  FINITE AUTOMATON
+
+
+This equivalence is one of the foundations of lexical analysis.
+
+
+Conceptually:
+
+
+          ┌───────────────────────────┐
+          │     REGULAR LANGUAGE      │
+          └─────────────┬─────────────┘
+                        │
+              ┌─────────┴─────────┐
+              ▼                   ▼
+      Regular Expression      Finite Automaton
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. WHAT IS A REGULAR EXPRESSION?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+A regular expression is a formal notation used to describe a regular
+language or a set of strings satisfying a specified pattern.
+
+Examples:
+
+
+    a
+
+
+represents the language:
+
+
+    {a}
+
+
+Example:
+
+
+    a|b
+
+
+represents:
+
+
+    {a,b}
+
+
+Example:
+
+
+    ab
+
+
+represents:
+
+
+    {ab}
+
+
+Example:
+
+
+    a*
+
+
+represents:
+
+
+    {ε, a, aa, aaa, aaaa, ...}
+
+
+Regular expressions are especially useful for describing tokens.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. BASIC REGULAR-EXPRESSION OPERATORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The three fundamental operations are:
+
+
+    1. UNION
+    2. CONCATENATION
+    3. KLEENE STAR
+
+
+Symbolically:
+
+
+    UNION:
+        r | s
+
+
+    CONCATENATION:
+        rs
+
+
+    KLEENE STAR:
+        r*
+
+
+These three operations are enough to construct regular expressions.
+
+
+Additional notation such as:
+
+
+    +
+    ?
+    [ ]
+    .
+
+
+is commonly used in practical regex systems.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. UNION OPERATOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The union operator is commonly:
+
+
+        |
+
+
+Meaning:
+
+
+        OR
+
+
+Example:
+
+
+    a|b
+
+
+means:
+
+
+    a OR b
+
+
+Language:
+
+
+    {a,b}
+
+
+Another example:
+
+
+    0|1
+
+
+means:
+
+
+    {0,1}
+
+
+Another:
+
+
+    cat|dog
+
+
+means either:
+
+
+    cat
+
+
+or:
+
+
+    dog
+
+
+Sky diagram:
+
+
+             a
+             │
+             ├────► ACCEPT
+             │
+    START ───┤
+             │
+             └────► ACCEPT
+             │
+             b
+
+
+Conceptually, union gives alternative choices.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. CONCATENATION OPERATOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Concatenation means one pattern followed by another.
+
+Example:
+
+
+    ab
+
+
+means:
+
+
+    a followed by b
+
+
+Therefore the language is:
+
+
+    {ab}
+
+
+It does NOT mean:
+
+
+    {a,b}
+
+
+Compare:
+
+
+    a|b
+      ↓
+    a OR b
+
+
+    ab
+      ↓
+    a followed by b
+
+
+This distinction is extremely important.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. KLEENE STAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+The Kleene star means ZERO OR MORE repetitions of a pattern.
+
+Notation:
+
+
+        r*
+
+
+If:
+
+
+    r = a
+
+
+then:
+
+
+    a*
+
+
+represents:
+
+
+    {ε, a, aa, aaa, aaaa, ...}
+
+
+Therefore:
+
+
+    a*
+
+
+means:
+
+
+    zero a's
+    OR
+    one a
+    OR
+    two a's
+    OR
+    three a's
+    OR
+    ...
+
+
+VERY IMPORTANT:
+
+
+    STAR = ZERO OR MORE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. KLEENE STAR EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expression:
+
+
+    (ab)*
+
+
+Means zero or more repetitions of "ab".
+
+
+Valid strings:
+
+
+    ε
+    ab
+    abab
+    ababab
+    abababab
+    ...
+
+
+Invalid:
+
+
+    a
+    b
+    aba
+    abb
+
+
+Because every repetition must contain the complete pattern:
+
+
+    ab
+
+
+Sky:
+
+
+             ┌───────┐
+             │       │
+             ▼       │
+        ───► ab ─────┘
+         │
+         │ zero times
+         ▼
+         ε
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. POSITIVE CLOSURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+Positive closure means ONE OR MORE repetitions.
+
+Notation:
+
+
+        r+
+
+
+If:
+
+
+    r = a
+
+
+then:
+
+
+    a+
+
+
+represents:
+
+
+    {a, aa, aaa, aaaa, ...}
+
+
+Notice that:
+
+
+    ε
+
+
+is NOT included.
+
+
+Compare:
+
+
+    a* = zero or more
+
+    a+ = one or more
+
+
+Therefore:
+
+
+    a* = {ε, a, aa, aaa, ...}
+
+
+    a+ = {a, aa, aaa, ...}
+
+
+VERY IMPORTANT:
+
+
+    STAR:
+        0 or more
+
+
+    PLUS:
+        1 or more
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. RELATION BETWEEN * AND +
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+We can express positive closure using Kleene star:
+
+
+    r+ = rr*
+
+
+Why?
+
+
+    rr*
+
+
+means:
+
+
+    one r
+    followed by
+    zero or more r
+
+
+Therefore:
+
+
+    one or more r
+
+
+Example:
+
+
+    a+
+
+
+is equivalent to:
+
+
+    aa*
+
+
+Both represent:
+
+
+    {a, aa, aaa, aaaa, ...}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. OPTIONAL OPERATOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In many practical regex notations:
+
+
+        ?
+
+
+means:
+
+
+        ZERO OR ONE
+
+
+Example:
+
+
+    a?
+
+
+represents:
+
+
+    {ε, a}
+
+
+Another example:
+
+
+    ab?
+
+
+can match:
+
+
+    a
+
+
+or:
+
+
+    ab
+
+
+depending on the regex notation and context.
+
+
+Important:
+
+    The "?" operator is common in practical regex systems.
+
+    It is not one of the three fundamental classical regular-expression
+    operators.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. PARENTHESES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Parentheses are used to group expressions.
+
+Example:
+
+
+    (a|b)c
+
+
+means:
+
+
+    choose a or b
+          ↓
+    then concatenate c
+
+
+Possible strings:
+
+
+    ac
+    bc
+
+
+Without parentheses:
+
+
+    a|bc
+
+
+normally means:
+
+
+    a OR bc
+
+
+which is different.
+
+
+Therefore grouping matters.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. REGULAR-EXPRESSION PRECEDENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A commonly used precedence order is:
+
+
+    HIGHEST
+       │
+       ▼
+    1. Kleene star *
+       │
+       ▼
+    2. Concatenation
+       │
+       ▼
+    3. Union |
+       │
+       ▼
+    LOWEST
+
+
+So:
+
+
+    a|bc*
+
+
+is interpreted approximately as:
+
+
+    a | (b(c*))
+
+
+not:
+
+
+    (a|b)c*
+
+
+unless parentheses are explicitly provided.
+
+
+Use parentheses when there is any doubt.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. PRECEDENCE EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expression:
+
+
+    a|bc
+
+
+Because concatenation has higher precedence than union:
+
+
+    a | (bc)
+
+
+Language:
+
+
+    {a, bc}
+
+
+NOT:
+
+
+    {ab, c}
+
+
+Another:
+
+
+    ab*
+
+
+means:
+
+
+    a(b*)
+
+
+Therefore valid strings include:
+
+
+    a
+    ab
+    abb
+    abbb
+    ...
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. BASIC REGULAR-EXPRESSION EXAMPLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expression:
+
+
+    a
+
+
+Language:
+
+
+    {a}
+
+
+Expression:
+
+
+    a|b
+
+
+Language:
+
+
+    {a,b}
+
+
+Expression:
+
+
+    ab
+
+
+Language:
+
+
+    {ab}
+
+
+Expression:
+
+
+    a*
+
+
+Language:
+
+
+    {ε,a,aa,aaa,...}
+
+
+Expression:
+
+
+    a+
+
+
+Language:
+
+
+    {a,aa,aaa,...}
+
+
+Expression:
+
+
+    (a|b)*
+
+
+Language:
+
+
+    All strings over {a,b}
+
+
+Examples:
+
+
+    ε
+    a
+    b
+    ab
+    ba
+    aa
+    bb
+    aab
+    bab
+    ...
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. EXAMPLE: STRINGS OVER {0,1}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expression:
+
+
+    (0|1)*
+
+
+This means:
+
+
+    zero or more occurrences of either 0 or 1.
+
+
+Therefore it represents ALL binary strings.
+
+
+Examples:
+
+
+    ε
+    0
+    1
+    00
+    01
+    10
+    11
+    101
+    1100
+    101010
+    ...
+
+
+Therefore:
+
+
+    L((0|1)*) = {0,1}*
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. EXAMPLE: STRINGS ENDING IN 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Alphabet:
+
+
+    Σ = {0,1}
+
+
+We want strings that end in 1.
+
+
+Regular expression:
+
+
+    (0|1)*1
+
+
+Why?
+
+
+    (0|1)*
+        ↓
+    any binary prefix
+
+
+    1
+        ↓
+    final character must be 1
+
+
+Examples:
+
+
+    1
+    01
+    11
+    001
+    101
+    111
+    1001
+
+
+Invalid:
+
+
+    ε
+    0
+    10
+    110
+
+
+because they do not end in 1.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. EXAMPLE: STRINGS STARTING WITH 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Regular expression:
+
+
+    1(0|1)*
+
+
+Meaning:
+
+
+    first character = 1
+
+
+    remaining characters:
+        any number of 0s or 1s
+
+
+Examples:
+
+
+    1
+    10
+    11
+    100
+    101
+    111
+    10101
+
+
+Invalid:
+
+
+    0
+    01
+    001
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. EXAMPLE: STRINGS CONTAINING 101
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Regular expression:
+
+
+    (0|1)*101(0|1)*
+
+
+Explanation:
+
+
+    (0|1)*
+        ↓
+    anything before 101
+
+
+    101
+        ↓
+    required substring
+
+
+    (0|1)*
+        ↓
+    anything after 101
+
+
+Therefore the string must contain:
+
+
+    101
+
+
+somewhere inside it.
+
+
+Examples:
+
+
+    101
+    0101
+    1010
+    11010
+    10111
+    0010100
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. EXAMPLE: EVEN NUMBER OF 0s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For alphabet:
+
+
+    Σ = {0,1}
+
+
+A regular expression for strings containing an even number of 0s is:
+
+
+    1*(01*01*)*
+
+
+Understand the structure:
+
+
+    1*
+       ↓
+    any number of 1s
+
+
+    01*01*
+       ↓
+    exactly two 0s separated by any number of 1s
+
+
+    (...)
+    *
+       ↓
+    repeat pairs of 0s
+
+
+Therefore the number of 0s is:
+
+
+    0
+    2
+    4
+    6
+    ...
+
+
+This is an important type of regular-language construction.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. IDENTIFIER REGULAR EXPRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A common simplified identifier rule is:
+
+
+    letter(letter|digit)*
+
+
+Using character classes in practical regex notation:
+
+
+    [A-Za-z][A-Za-z0-9]*
+
+
+If underscore is allowed:
+
+
+    [A-Za-z_][A-Za-z0-9_]*
+
+
+Examples accepted:
+
+
+    x
+    count
+    total1
+    student123
+    _value
+
+
+depending on the exact language specification.
+
+
+This is directly useful for lexical analysis.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. INTEGER REGULAR EXPRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A simple integer pattern:
+
+
+    digit+
+
+
+In practical notation:
+
+
+    [0-9]+
+
+
+Examples:
+
+
+    0
+    1
+    25
+    100
+    9999
+
+
+All are one or more digits.
+
+
+Remember:
+
+
+    + = one or more
+
+
+Therefore:
+
+
+    [0-9]+
+
+
+does NOT match the empty string.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. WHITESPACE REGULAR EXPRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A simplified whitespace pattern can be:
+
+
+    [ \t\n]+
+
+
+This represents one or more occurrences of:
+
+
+    space
+    tab
+    newline
+
+
+The lexical analyzer can recognize this pattern and generally skip
+the resulting whitespace when appropriate.
+
+
+Pipeline:
+
+
+    whitespace
+        ↓
+    recognize
+        ↓
+    skip
+        ↓
+    continue scanning
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. KEYWORD RECOGNITION USING REGULAR EXPRESSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A keyword such as:
+
+
+    while
+
+
+can itself be described by the literal regular expression:
+
+
+    while
+
+
+However, because it also matches the general identifier pattern, the
+lexer must apply keyword-priority rules.
+
+
+Example:
+
+
+    while
+
+
+could match:
+
+
+    identifier pattern
+
+
+AND:
+
+
+    keyword "while"
+
+
+The lexer ultimately classifies it as:
+
+
+    KEYWORD
+
+
+while:
+
+
+    whileCount
+
+
+is classified as:
+
+
+    IDENTIFIER
+
+
+because it is not exactly the reserved word "while".
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. OPERATOR PATTERNS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Operators can also be described by regular expressions.
+
+
+For example, arithmetic operators:
+
+
+    \+|-|\*|/
+
+
+depending on regex syntax and escaping rules.
+
+
+Relational operators:
+
+
+    <|>|<=|>=|==|!=
+
+
+Again, exact notation depends on the regex system.
+
+
+The lexical analyzer must distinguish:
+
+
+    <
+    <=
+
+
+and:
+
+
+    =
+    ==
+
+
+This is where:
+
+
+    REGULAR EXPRESSIONS
+           +
+       LONGEST MATCH
+           +
+        LOOKAHEAD
+
+
+become important.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. REGULAR EXPRESSION FOR A SIMPLE NUMBER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A simplified unsigned integer:
+
+
+    [0-9]+
+
+
+A simple decimal number might be:
+
+
+    [0-9]+\.[0-9]+
+
+
+Examples:
+
+
+    3.14
+    10.5
+    100.001
+
+
+The dot is escaped in many practical regex systems because "." may
+have a special meaning.
+
+
+Thus conceptually:
+
+
+    digits + literal decimal point + digits
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. REGULAR EXPRESSION FOR SIMPLE FLOATING-POINT SCIENTIFIC NOTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A simplified form could be:
+
+
+    [0-9]+\.[0-9]+([eE][+-]?[0-9]+)?
+
+
+This can describe values such as:
+
+
+    3.14
+    3.14e2
+    3.14E2
+    3.14e-2
+    3.14E+2
+
+
+This demonstrates how regular expressions can become increasingly
+complex while still describing lexical patterns.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. REGULAR EXPRESSIONS AND LEXICAL ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is the MOST IMPORTANT connection of Chapter 5.
+
+
+Programming-language tokens have lexical patterns.
+
+
+Examples:
+
+
+    IDENTIFIER
+         ↓
+    [A-Za-z_][A-Za-z0-9_]*
+
+
+    INTEGER
+         ↓
+    [0-9]+
+
+
+    WHITESPACE
+         ↓
+    [ \t\n]+
+
+
+    KEYWORD "if"
+         ↓
+    if
+
+
+The lexer uses these descriptions to recognize lexemes.
+
+
+Overall:
+
+
+    TOKEN SPECIFICATION
+            │
+            ▼
+    REGULAR EXPRESSIONS
+            │
+            ▼
+       FINITE AUTOMATA
+            │
+            ▼
+    LEXICAL ANALYZER
+            │
+            ▼
+          TOKENS
+
+
+This is the bridge to Chapter 6.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. REGULAR EXPRESSION → FINITE AUTOMATON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+One of the central theoretical results is:
+
+
+    Every regular expression can be converted into
+    an equivalent finite automaton.
+
+
+Conceptually:
+
+
+    REGULAR EXPRESSION
+            │
+            ▼
+    ┌───────────────────┐
+    │ AUTOMATA           │
+    │ CONSTRUCTION       │
+    └─────────┬─────────┘
+              ▼
+        NFA / ε-NFA
+              │
+              ▼
+             DFA
+              │
+              ▼
+       DFA MINIMIZATION
+
+
+We will study this in detail in Chapter 6 and Chapter 7.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. FINITE AUTOMATON → REGULAR EXPRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The relationship also works in the opposite direction:
+
+
+    FINITE AUTOMATON
+          │
+          ▼
+    REGULAR EXPRESSION
+
+
+Therefore:
+
+
+              REGULAR EXPRESSION
+                     ↕
+              REGULAR LANGUAGE
+                     ↕
+               FINITE AUTOMATON
+
+
+This equivalence is one of the central ideas in formal-language theory
+and compiler lexical analysis.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. WHY REGULAR EXPRESSIONS ARE SUITABLE FOR LEXICAL ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Programming-language tokens usually have relatively simple patterns.
+
+
+Examples:
+
+
+    identifier
+    integer
+    floating-point number
+    keyword
+    operator
+    whitespace
+    comment
+
+
+These patterns can generally be described using regular languages.
+
+
+Therefore:
+
+
+    REGEX
+      ↓
+    AUTOMATON
+      ↓
+    LEXER
+
+
+This makes lexical analyzer construction systematic.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. LIMITATIONS OF REGULAR EXPRESSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Regular expressions describe REGULAR LANGUAGES.
+
+Finite automata recognize regular languages.
+
+
+But not every programming-language construct is regular.
+
+
+For example, a language involving arbitrarily nested parentheses:
+
+
+    ()
+    (())
+    ((()))
+    (((())))
+    ...
+
+
+requires remembering an unbounded nesting depth.
+
+
+A finite automaton cannot generally maintain arbitrary nesting depth.
+
+
+This is why programming languages need more powerful mechanisms such
+as:
+
+
+    Context-Free Grammars
+            ↓
+    Pushdown Automata
+            ↓
+    Parsers
+
+
+Therefore:
+
+
+    LEXICAL STRUCTURE
+        ↓
+    Regular expressions / finite automata
+
+
+    SYNTACTIC STRUCTURE
+        ↓
+    Context-free grammars / parsers
+
+
+This distinction is fundamental.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. REGEX vs CFG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Regular expressions are appropriate for patterns such as:
+
+
+    identifiers
+    integers
+    operators
+    simple literals
+    whitespace
+    many comment forms
+
+
+Context-Free Grammars are appropriate for structures such as:
+
+
+    nested parentheses
+    arithmetic-expression structure
+    balanced constructs
+    nested programming-language syntax
+
+
+Conceptual comparison:
+
+
+    REGULAR EXPRESSION
+           ↓
+      FINITE AUTOMATON
+           ↓
+       LEXICAL LEVEL
+
+
+    CFG
+      ↓
+    PARSER
+      ↓
+    SYNTAX LEVEL
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. PRACTICAL REGEX NOTATION VS FORMAL RE NOTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In theory, regular expressions are often written using:
+
+
+    |
+    concatenation
+    *
+    ε
+    ∅
+
+
+In practical tools, you may also see:
+
+
+    +
+    ?
+    [ ]
+    .
+    ^
+    $
+    \
+    ...
+
+
+These are extensions or convenient notation commonly supported by
+practical regex engines.
+
+
+Compiler theory focuses primarily on the formal concepts needed to
+describe regular languages and build finite automata.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. IMPORTANT SPECIAL SYMBOLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ε
+
+
+    Empty string.
+
+
+∅
+
+
+    Empty language.
+
+
+Important difference:
+
+
+    ε = one string of length zero
+
+
+    ∅ = contains NO strings
+
+
+Therefore:
+
+
+    ε ≠ ∅
+
+
+This is an extremely important theoretical distinction.
+
+
+Example:
+
+
+    L = {ε}
+
+
+contains one string.
+
+
+But:
+
+
+    L = ∅
+
+
+contains zero strings.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. EMPTY LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEFINITION:
+
+The empty language is a language containing no strings.
+
+Notation:
+
+
+    ∅
+
+
+Therefore:
+
+
+    |∅| = 0
+
+
+Compare:
+
+
+    {ε}
+
+
+This contains one string: the empty string.
+
+
+Thus:
+
+
+    ∅ ≠ {ε}
+
+
+Remember:
+
+
+        ∅
+        ↓
+    NO STRING
+
+
+        {ε}
+        ↓
+    ONE STRING, WHICH HAS ZERO SYMBOLS
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. KLEENE STAR OF EMPTY LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An important theoretical result:
+
+
+    ∅* = {ε}
+
+
+Why?
+
+
+Kleene star means zero or more repetitions.
+
+Zero repetitions are always possible.
+
+Therefore the empty string is included.
+
+
+Similarly:
+
+
+    ε* = {ε}
+
+
+Because repeating an empty string any number of times still gives the
+empty string.
+
+
+These are common exam concepts.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. KLEENE STAR OF A LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For a language L:
+
+
+    L*
+
+
+means zero or more concatenations of strings from L.
+
+
+Formally:
+
+
+    L* = L⁰ ∪ L¹ ∪ L² ∪ L³ ∪ ...
+
+
+where:
+
+
+    L⁰ = {ε}
+
+
+Example:
+
+
+    L = {a}
+
+
+Then:
+
+
+    L* = {ε,a,aa,aaa,...}
+
+
+Another:
+
+
+    L = {a,b}
+
+
+Then:
+
+
+    L* = {ε,a,b,aa,ab,ba,bb,aaa,aab,...}
+
+
+which is:
+
+
+    {a,b}*
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+53. POSITIVE CLOSURE OF A LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Positive closure:
+
+
+    L+
+
+
+means one or more concatenations.
+
+
+Formally:
+
+
+    L+ = LL*
+
+
+or:
+
+
+    L+ = L¹ ∪ L² ∪ L³ ∪ ...
+
+
+For:
+
+
+    L = {a}
+
+
+we obtain:
+
+
+    L+ = {a,aa,aaa,...}
+
+
+Unlike:
+
+
+    L*
+
+
+it does NOT contain:
+
+
+    ε
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+54. IMPORTANT IDENTITIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Remember these:
+
+
+    r+ = rr*
+
+
+    r* = ε | rr*
+
+
+    r* = ε | r+
+
+
+    ∅* = {ε}
+
+
+    ε* = {ε}
+
+
+    r? = ε | r
+       (in practical regex notation)
+
+
+Also:
+
+
+    r* contains ε
+
+
+    r+ generally does not contain ε
+    (unless r itself can generate ε in formal language contexts,
+     so always consider the exact language definition).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+55. REGULAR EXPRESSION CONSTRUCTION EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem:
+
+Construct a regular expression for all strings over:
+
+
+    Σ = {a,b}
+
+
+that start with:
+
+
+    a
+
+
+Answer:
+
+
+    a(a|b)*
+
+
+Explanation:
+
+
+    a
+    ↓
+    first symbol must be a
+
+
+    (a|b)*
+    ↓
+    any number of remaining a/b symbols
+
+
+Examples:
+
+
+    a
+    aa
+    ab
+    aaa
+    aab
+    aba
+    abb
+    ...
+
+
+Invalid:
+
+
+    ε
+    b
+    ba
+    bbb
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+56. REGULAR EXPRESSION FOR STRINGS ENDING IN "ab"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Alphabet:
+
+
+    Σ = {a,b}
+
+
+Required ending:
+
+
+    ab
+
+
+Expression:
+
+
+    (a|b)*ab
+
+
+Explanation:
+
+
+    (a|b)*
+         ↓
+    arbitrary prefix
+
+
+    ab
+         ↓
+    required ending
+
+
+Examples:
+
+
+    ab
+    aab
+    bab
+    aaab
+    bbab
+    ababab
+
+
+All end in:
+
+
+    ab
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+57. REGULAR EXPRESSION FOR STRINGS CONTAINING AT LEAST ONE a
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expression:
+
+
+    (a|b)*a(a|b)*
+
+
+Explanation:
+
+
+    Anything
+       ↓
+    (a|b)*
+
+
+    At least one a
+       ↓
+    a
+
+
+    Anything
+       ↓
+    (a|b)*
+
+
+Examples:
+
+
+    a
+    aa
+    ba
+    ab
+    bba
+    abab
+    ...
+
+
+Invalid:
+
+
+    ε
+    b
+    bb
+    bbbb
+
+
+because they contain no a.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+58. REGULAR EXPRESSION FOR EXACTLY ONE a
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Over:
+
+
+    Σ = {a,b}
+
+
+We need exactly one a.
+
+
+Expression:
+
+
+    b*ab*
+
+
+Explanation:
+
+
+    b*
+      ↓
+    any number of b's before a
+
+
+    a
+      ↓
+    exactly one required a
+
+
+    b*
+      ↓
+    any number of b's after a
+
+
+Examples:
+
+
+    a
+    ba
+    ab
+    bba
+    abb
+    bbabb
+
+
+Invalid:
+
+
+    aa
+    aba
+    aab
+    baa
+
+
+because they contain more than one a.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+59. REGEX DESIGN THINKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When constructing a regular expression, ask:
+
+    STEP 1:
+        What alphabet am I working with?
+
+    STEP 2:
+        What must ALWAYS occur?
+
+    STEP 3:
+        What can occur optionally?
+
+    STEP 4:
+        What can repeat?
+
+    STEP 5:
+        What must occur at the beginning?
+
+    STEP 6:
+        What must occur at the end?
+
+    STEP 7:
+        What must NOT occur?
+
+Then combine:
+
+
+    UNION
+    CONCATENATION
+    STAR
+    PLUS
+    GROUPING
+
+
+This systematic approach is extremely useful for GATE/exam problems.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+60. REGULAR EXPRESSION → LEXER PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+               TOKEN SPECIFICATIONS
+                       │
+                       ▼
+              ┌─────────────────┐
+              │ REGULAR         │
+              │ EXPRESSIONS     │
+              └────────┬────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │ FINITE          │
+              │ AUTOMATA        │
+              └────────┬────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │ LEXICAL         │
+              │ ANALYZER        │
+              └────────┬────────┘
+                       │
+                       ▼
+                    TOKENS
+                       │
+                       ▼
+                    PARSER
+
+
+This is the CENTRAL CONNECTION between Chapter 5 and compiler design.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+61. CHAPTER 5 — COMPLETE SKY DIAGRAM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+                         FORMAL LANGUAGE
+                              │
+                              ▼
+                         ┌──────────┐
+                         │ LANGUAGE │
+                         └────┬─────┘
+                              │
+                     regular language
+                              │
+                              ▼
+                    ┌─────────────────┐
+                    │ REGULAR         │
+                    │ EXPRESSION      │
+                    └────────┬────────┘
+                             │
+             ┌───────────────┼────────────────┐
+             │               │                │
+             ▼               ▼                ▼
+           UNION       CONCATENATION       STAR
+             │               │                │
+             │               │                │
+             ▼               ▼                ▼
+           r | s              rs             r*
+                                             │
+                                             ▼
+                                        zero or more
+                                          repetitions
+                             │
+                             ▼
+                    POSITIVE CLOSURE
+                             │
+                             ▼
+                            r+
+                             │
+                             ▼
+                       one or more
+                        repetitions
+                             │
+                             ▼
+                     FINITE AUTOMATON
+                             │
+                             ▼
+                          LEXER
+                             │
+                             ▼
+                          TOKENS
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+62. MOST IMPORTANT DIFFERENCES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ALPHABET vs LANGUAGE:
+
+
+    Alphabet:
+        Set of symbols.
+
+
+    Language:
+        Set of strings over an alphabet.
+
+
+STRING vs SYMBOL:
+
+
+    Symbol:
+        One element of alphabet.
+
+
+    String:
+        Finite sequence of symbols.
+
+
+ε vs ∅:
+
+
+    ε:
+        Empty string.
+
+
+    ∅:
+        Empty language.
+
+
+* vs +:
+
+
+    r*:
+        Zero or more repetitions.
+
+
+    r+:
+        One or more repetitions.
+
+
+UNION vs CONCATENATION:
+
+
+    r|s:
+        r OR s
+
+
+    rs:
+        r followed by s
+
+
+REGEX vs FINITE AUTOMATON:
+
+
+    Regular expression:
+        Describes a regular language.
+
+
+    Finite automaton:
+        Recognizes a regular language.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+63. EXAM-READY DEFINITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ALPHABET:
+
+    A finite non-empty set of symbols.
+
+
+STRING:
+
+    A finite sequence of symbols from an alphabet.
+
+
+EMPTY STRING:
+
+    A string containing zero symbols, denoted by ε.
+
+
+LANGUAGE:
+
+    A set of strings over an alphabet.
+
+
+REGULAR LANGUAGE:
+
+    A language that can be represented by a regular expression and
+    recognized by a finite automaton.
+
+
+REGULAR EXPRESSION:
+
+    A formal notation for describing regular languages.
+
+
+UNION:
+
+    An operation representing alternatives, commonly denoted by |.
+
+
+CONCATENATION:
+
+    An operation that joins two strings or language expressions.
+
+
+KLEENE STAR:
+
+    An operation representing zero or more repetitions, denoted by *.
+
+
+POSITIVE CLOSURE:
+
+    An operation representing one or more repetitions, denoted by +.
+
+
+LEXICAL PATTERN:
+
+    A rule describing the form of valid lexemes for a token category.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+64. GATE / EXAM MEMORY TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    ┌──────────────────────┬────────────────────────────────────────┐
+    │ Notation             │ Meaning                               │
+    ├──────────────────────┼────────────────────────────────────────┤
+    │ Σ                    │ Alphabet                              │
+    │ ε                    │ Empty string                         │
+    │ ∅                    │ Empty language                       │
+    │ r|s                  │ r OR s                                │
+    │ rs                   │ r followed by s                      │
+    │ r*                   │ Zero or more r                       │
+    │ r+                   │ One or more r                        │
+    │ r?                   │ Zero or one r (practical regex)       │
+    │ |w|                  │ Length of string w                    │
+    └──────────────────────┴────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+65. FINAL MASTER MEMORY MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+                         CHAPTER 5
+                     REGULAR EXPRESSIONS
+                              │
+          ┌───────────────────┼───────────────────┐
+          │                   │                   │
+          ▼                   ▼                   ▼
+       ALPHABET            STRING             LANGUAGE
+          │                   │                   │
+          │                   │                   ▼
+          │                   │            REGULAR LANGUAGE
+          │                   │                   │
+          └───────────────────┼───────────────────┘
+                              │
+                              ▼
+                    REGULAR EXPRESSION
+                              │
+              ┌───────────────┼────────────────┐
+              │               │                │
+              ▼               ▼                ▼
+             UNION       CONCATENATION       STAR
+              │               │                │
+              │               │                │
+              ▼               ▼                ▼
+             r|s              rs               r*
+                                               │
+                                               ▼
+                                           ZERO OR MORE
+                                               │
+                                               ▼
+                                              r+
+                                               │
+                                               ▼
+                                           ONE OR MORE
+                              │
+                              ▼
+                     FINITE AUTOMATON
+                              │
+                              ▼
+                            LEXER
+                              │
+                              ▼
+                            TOKENS
+                              │
+                              ▼
+                            PARSER
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    CHAPTER 5 — KEY TAKEAWAY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    Regular expressions provide a formal way to describe
+    the lexical patterns of a programming language.
+
+    The fundamental operators are:
+
+        UNION          → r | s
+        CONCATENATION  → rs
+        KLEENE STAR    → r*
+        POSITIVE       → r+
+
+    And the most important compiler connection is:
+
+        TOKEN PATTERN
+             ↓
+        REGULAR EXPRESSION
+             ↓
+        FINITE AUTOMATON
+             ↓
+        LEXICAL ANALYZER
+             ↓
+        TOKEN STREAM
+             ↓
+        PARSER
+
+
+                    ╔══════════════════════╗
+                    ║   CHAPTER 5 COMPLETE ║
+                    ╚══════════════════════╝
+
+                         NEXT CHAPTER:
+
+                    CHAPTER 6 — FINITE
+                         AUTOMATA
+
+                DFA • NFA • ε-NFA •
+          ε-CLOSURE • SUBSET CONSTRUCTION •
+                    DFA MINIMIZATION

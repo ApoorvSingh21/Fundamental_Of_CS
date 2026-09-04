@@ -1,0 +1,1267 @@
+o╔══════════════════════════════════════════════════════════════╗
+║          COMPILER DESIGN — CHAPTER 0: PREREQUISITES         ║
+║              Programming + Mathematics + DS + TOC          ║
+╚══════════════════════════════════════════════════════════════╝
+
+IMPORTANT:
+Chapter 0 is the prerequisite phase of Compiler Design.
+It contains four prerequisite modules:
+
+    0.1 → Programming Fundamentals
+    0.2 → Discrete Mathematics Basics
+    0.3 → Data Structures
+    0.4 → Theory of Computation Basics
+
+These topics prepare you for the actual Compiler Design chapters,
+especially Lexical Analysis, Parsing, Symbol Tables, IR and
+Optimization.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    CHAPTER 0.1
+              PROGRAMMING FUNDAMENTALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. VARIABLES
+──────────────────────────────────────────────────────────────
+
+Definition:
+A variable is a named memory location used to store a value.
+
+Example:
+
+    int age = 20;
+
+Here:
+    int   → data type
+    age   → variable name
+    20    → value
+
+Memory idea:
+
+    Variable
+       │
+       ▼
+    ┌─────────┐
+    │   20    │
+    └─────────┘
+       age
+
+Common types:
+
+    int       → integer
+    float     → decimal number
+    char      → character
+    double    → larger decimal value
+    bool      → true/false
+
+Why compiler designers need this:
+The compiler must understand variables, their types, memory locations
+and scopes.
+
+--------------------------------------------------------------
+
+2. EXPRESSIONS
+──────────────────────────────────────────────────────────────
+
+Definition:
+An expression is a combination of operands and operators that
+produces a value.
+
+Example:
+
+    a + b
+
+    x * 10
+
+    (a + b) * c
+
+For:
+
+    int a = 10;
+    int b = 20;
+
+    int c = a + b;
+
+The expression:
+
+    a + b
+
+produces:
+
+    30
+
+Expression structure:
+
+             +
+            / \
+           a   b
+
+This tree-like representation becomes very important later when
+we study Abstract Syntax Trees (ASTs).
+
+Example:
+
+    a + b * c
+
+Operator precedence gives:
+
+    a + (b * c)
+
+Tree:
+
+             +
+            / \
+           a   *
+              / \
+             b   c
+
+--------------------------------------------------------------
+
+3. STATEMENTS
+──────────────────────────────────────────────────────────────
+
+Definition:
+A statement is an instruction that performs an operation.
+
+Examples:
+
+    int x = 10;
+
+    x = x + 5;
+
+    if (x > 5)
+        printf("Large");
+
+    return 0;
+
+Difference:
+
+    Expression:
+        a + b
+
+    Statement:
+        c = a + b;
+
+An expression produces a value.
+A statement represents an executable instruction.
+
+Compiler connection:
+
+    Source statement
+          ↓
+    Syntax analysis
+          ↓
+    Intermediate representation
+          ↓
+    Machine code
+
+--------------------------------------------------------------
+
+4. FUNCTIONS
+──────────────────────────────────────────────────────────────
+
+Definition:
+A function is a named block of code designed to perform a specific
+operation.
+
+Example:
+
+    int add(int a, int b)
+    {
+        return a + b;
+    }
+
+Calling:
+
+    int result = add(10, 20);
+
+Result:
+
+    result = 30
+
+Function structure:
+
+             FUNCTION
+                │
+       ┌────────┴────────┐
+       │                 │
+    Parameters          Body
+       │                 │
+     a, b             return a+b
+       │
+       └───────┬─────────┘
+               ↓
+            Result
+
+Important compiler concepts connected to functions:
+
+    • Parameters
+    • Return values
+    • Local variables
+    • Scope
+    • Function calls
+    • Activation records
+    • Stack memory
+
+These become important in Chapters 23–25.
+
+--------------------------------------------------------------
+
+5. ARRAYS
+──────────────────────────────────────────────────────────────
+
+Definition:
+An array is a collection of elements of the same type stored using
+a single name.
+
+Example:
+
+    int marks[5] = {90, 80, 70, 85, 95};
+
+Conceptual memory:
+
+    marks
+      │
+      ▼
+    ┌────┬────┬────┬────┬────┐
+    │ 90 │ 80 │ 70 │ 85 │ 95 │
+    └────┴────┴────┴────┴────┘
+      0    1    2    3    4
+    index
+
+Access:
+
+    marks[0] → 90
+    marks[2] → 70
+
+Important compiler connection:
+
+    marks[i]
+
+requires address calculation.
+
+For a simple integer array:
+
+    Address(marks[i])
+      =
+    Base Address + i × element_size
+
+This becomes important when generating intermediate and target code.
+
+--------------------------------------------------------------
+
+6. STRINGS
+──────────────────────────────────────────────────────────────
+
+Definition:
+A string is a sequence of characters.
+
+In C:
+
+    char name[] = "RAM";
+
+Conceptually:
+
+    ┌─────┬─────┬─────┬─────┐
+    │ 'R' │ 'A' │ 'M' │ '\0'│
+    └─────┴─────┴─────┴─────┘
+
+The '\0' represents the string terminator in C.
+
+Strings are important in compiler design because source programs
+contain identifiers, keywords, literals and other textual data.
+
+Example source:
+
+    int total = 100;
+
+The compiler processes characters such as:
+
+    i n t
+    t o t a l
+    =
+    1 0 0
+
+and groups them into tokens.
+
+--------------------------------------------------------------
+
+7. BASIC DATA STRUCTURES
+──────────────────────────────────────────────────────────────
+
+Compiler design heavily uses data structures.
+
+Important ones:
+
+    • Arrays
+    • Linked lists
+    • Stacks
+    • Queues
+    • Trees
+    • Hash tables
+    • Graphs
+
+Rough relationship:
+
+    Compiler
+       │
+       ├── Lexical Analyzer
+       │       └── Symbol information
+       │
+       ├── Parser
+       │       └── Stack / Trees
+       │
+       ├── Symbol Table
+       │       └── Hash table / Tree
+       │
+       ├── AST
+       │       └── Tree
+       │
+       ├── Control Flow
+       │       └── Graph
+       │
+       └── Optimization
+               └── Graph / Data-flow structures
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    CHAPTER 0.2
+             DISCRETE MATHEMATICS BASICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+8. SETS
+──────────────────────────────────────────────────────────────
+
+Definition:
+A set is a collection of distinct objects.
+
+Example:
+
+    A = {1, 2, 3, 4}
+
+Another example:
+
+    V = {a, b, c}
+
+Compiler/TOC connection:
+Sets are used to describe alphabets, states, symbols and languages.
+
+Basic operations:
+
+    Union:
+        A ∪ B
+
+    Intersection:
+        A ∩ B
+
+    Difference:
+        A - B
+
+Example:
+
+    A = {1,2,3}
+    B = {3,4,5}
+
+    A ∪ B = {1,2,3,4,5}
+
+    A ∩ B = {3}
+
+--------------------------------------------------------------
+
+9. RELATIONS
+──────────────────────────────────────────────────────────────
+
+Definition:
+A relation describes a relationship between elements of sets.
+
+Example:
+
+    A = {1,2}
+    B = {a,b}
+
+A relation can contain:
+
+    R = {(1,a), (2,b)}
+
+The ordered pair:
+
+    (1,a)
+
+means 1 is related to a.
+
+Relations are useful in mathematical descriptions of programming
+languages and computation.
+
+--------------------------------------------------------------
+
+10. FUNCTIONS
+──────────────────────────────────────────────────────────────
+
+Definition:
+A function maps elements from a domain to elements of a codomain.
+
+Written as:
+
+    f : A → B
+
+Example:
+
+    A = {1,2,3}
+    B = {2,4,6}
+
+    f(x) = 2x
+
+Therefore:
+
+    f(1) = 2
+    f(2) = 4
+    f(3) = 6
+
+Diagram:
+
+    A                       B
+
+    1 ───────────────────→ 2
+    2 ───────────────────→ 4
+    3 ───────────────────→ 6
+
+Functions are important in formal definitions of languages,
+automata and compiler-related transformations.
+
+--------------------------------------------------------------
+
+11. MATHEMATICAL NOTATION
+──────────────────────────────────────────────────────────────
+
+You should become comfortable with:
+
+    ∈       belongs to
+    ∉       does not belong to
+    ⊆       subset
+    ∪       union
+    ∩       intersection
+    →       mapping / transition
+    ∅       empty set
+    Σ       alphabet
+    Σ*      all finite strings over Σ
+    |x|     length of string x
+
+Example:
+
+    a ∈ Σ
+
+means:
+
+    "a belongs to alphabet Σ."
+
+This notation becomes extremely important in Chapters 5–7.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    CHAPTER 0.3
+                    DATA STRUCTURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+12. ARRAY
+──────────────────────────────────────────────────────────────
+
+An array stores elements in contiguous memory.
+
+Example:
+
+    int A[4] = {10,20,30,40};
+
+    ┌────┬────┬────┬────┐
+    │ 10 │ 20 │ 30 │ 40 │
+    └────┴────┴────┴────┘
+      0    1    2    3
+
+Advantages:
+
+    • Fast indexing
+    • Simple structure
+
+Compiler uses:
+Arrays can store tokens, tables and other structured information.
+
+--------------------------------------------------------------
+
+13. LINKED LIST
+──────────────────────────────────────────────────────────────
+
+Definition:
+A linked list consists of nodes where each node contains data and
+a link to another node.
+
+Example:
+
+    ┌──────┬─────┐     ┌──────┬─────┐     ┌──────┬─────┐
+    │ DATA │  ───┼────→│ DATA │  ───┼────→│ DATA │NULL │
+    └──────┴─────┘     └──────┴─────┘     └──────┴─────┘
+
+Useful when dynamic insertion/deletion is required.
+
+--------------------------------------------------------------
+
+14. STACK
+──────────────────────────────────────────────────────────────
+
+Definition:
+A stack follows LIFO:
+
+    Last In → First Out
+
+Operations:
+
+    PUSH
+    POP
+    TOP/PEEK
+
+Diagram:
+
+             TOP
+              ↓
+          ┌───────┐
+          │   30  │ ← POP
+          ├───────┤
+          │   20  │
+          ├───────┤
+          │   10  │
+          └───────┘
+
+If:
+
+    PUSH(10)
+    PUSH(20)
+    PUSH(30)
+
+Then:
+
+    POP() → 30
+
+Compiler connection:
+
+    • Parsing
+    • Function calls
+    • Recursion
+    • Expression evaluation
+
+--------------------------------------------------------------
+
+15. QUEUE
+──────────────────────────────────────────────────────────────
+
+Definition:
+A queue follows FIFO:
+
+    First In → First Out
+
+Operations:
+
+    ENQUEUE
+    DEQUEUE
+
+Diagram:
+
+    FRONT                         REAR
+      ↓                             ↓
+    ┌────┬────┬────┬────┐
+    │ 10 │ 20 │ 30 │ 40 │
+    └────┴────┴────┴────┘
+      ↑                       ↑
+    remove                   insert
+
+Queues are useful in scheduling and various processing systems.
+
+--------------------------------------------------------------
+
+16. TREE
+──────────────────────────────────────────────────────────────
+
+Definition:
+A tree is a hierarchical data structure consisting of nodes.
+
+Example:
+
+                A
+              /   \
+             B     C
+            / \
+           D   E
+
+Important terms:
+
+    Root
+    Parent
+    Child
+    Leaf
+    Height
+    Depth
+    Subtree
+
+Compiler connection:
+
+    Parse Tree
+    Abstract Syntax Tree
+    Expression Tree
+
+Example expression:
+
+    a + b * c
+
+Tree:
+
+                +
+               / \
+              a   *
+                 / \
+                b   c
+
+--------------------------------------------------------------
+
+17. HASH TABLE
+──────────────────────────────────────────────────────────────
+
+Definition:
+A hash table stores key-value information using a hash function.
+
+Example:
+
+    key = "count"
+
+Hash function:
+
+    h("count") → 5
+
+Concept:
+
+    Key
+     │
+     ▼
+    Hash Function
+     │
+     ▼
+    Index
+     │
+     ▼
+    Table Entry
+
+Compiler connection:
+Hash tables are commonly used to implement symbol tables.
+
+Example symbol table:
+
+    ┌──────────┬────────┬───────┐
+    │ Name     │ Type   │ Scope │
+    ├──────────┼────────┼───────┤
+    │ count    │ int    │ local │
+    │ total    │ float  │ global│
+    └──────────┴────────┴───────┘
+
+--------------------------------------------------------------
+
+18. GRAPH
+──────────────────────────────────────────────────────────────
+
+Definition:
+A graph consists of vertices and edges.
+
+Example:
+
+       A ───── B
+       │       │
+       │       │
+       C ───── D
+
+Vertices:
+
+    A, B, C, D
+
+Edges:
+
+    (A,B), (A,C), (B,D), (C,D)
+
+Compiler connection:
+
+    • Control Flow Graph
+    • Data-flow analysis
+    • Register allocation
+    • Dependency graphs
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    CHAPTER 0.4
+             THEORY OF COMPUTATION BASICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+19. ALPHABET
+──────────────────────────────────────────────────────────────
+
+Definition:
+An alphabet is a finite, non-empty set of symbols.
+
+Usually represented by:
+
+    Σ
+
+Example:
+
+    Σ = {0,1}
+
+Another example:
+
+    Σ = {a,b}
+
+The symbols themselves are not strings until arranged into sequences.
+
+--------------------------------------------------------------
+
+20. STRING
+──────────────────────────────────────────────────────────────
+
+Definition:
+A string is a finite sequence of symbols from an alphabet.
+
+If:
+
+    Σ = {0,1}
+
+then:
+
+    101
+    001
+    1110
+
+are strings over Σ.
+
+String length:
+
+    |101| = 3
+
+Empty string:
+
+    ε
+
+Length:
+
+    |ε| = 0
+
+--------------------------------------------------------------
+
+21. LANGUAGE
+──────────────────────────────────────────────────────────────
+
+Definition:
+A language is a set of strings over an alphabet.
+
+If:
+
+    Σ = {0,1}
+
+then:
+
+    L = {0, 1, 01, 10, 101}
+
+is a language over Σ.
+
+Important:
+
+    Alphabet → symbols
+    String   → sequence of symbols
+    Language → set of strings
+
+Relationship:
+
+    Alphabet
+       ↓
+    Symbols
+       ↓
+    Strings
+       ↓
+    Language
+
+--------------------------------------------------------------
+
+22. REGULAR LANGUAGE
+──────────────────────────────────────────────────────────────
+
+Definition:
+A regular language is a language that can be described by a regular
+expression and recognized by a finite automaton.
+
+Important relationship:
+
+    Regular Expression
+           ↕
+    Finite Automaton
+           ↕
+    Regular Language
+
+Example language:
+
+    L = strings over {0,1} ending in 0
+
+Examples belonging to L:
+
+    0
+    10
+    110
+    1010
+
+Examples not belonging:
+
+    1
+    101
+    111
+
+This concept becomes central to lexical analysis.
+
+--------------------------------------------------------------
+
+23. REGULAR EXPRESSIONS
+──────────────────────────────────────────────────────────────
+
+A regular expression is a formal notation for describing patterns
+of strings.
+
+For example:
+
+    (0|1)*
+
+means any finite sequence of 0s and 1s, including the empty string.
+
+Basic operators:
+
+    Union:
+        R | S
+
+    Concatenation:
+        RS
+
+    Kleene Star:
+        R*
+
+Example:
+
+    0(0|1)*
+
+describes binary strings beginning with 0.
+
+Regular expressions are heavily used to specify tokens.
+
+Example:
+
+    identifier:
+        letter(letter|digit)*
+
+Conceptually:
+
+    letter
+       ↓
+    letter/digit
+       ↓
+    letter/digit
+       ↓
+      ...
+
+--------------------------------------------------------------
+
+24. FINITE AUTOMATA
+──────────────────────────────────────────────────────────────
+
+Definition:
+A finite automaton is a mathematical model of computation having
+a finite number of states.
+
+Basic components:
+
+    • States
+    • Input alphabet
+    • Transition function
+    • Start state
+    • Accept/final states
+
+General diagram:
+
+                  input
+                    │
+                    ▼
+              ┌──────────┐
+              │  State 0 │
+              └────┬─────┘
+                   │
+                  0/1
+                   ▼
+              ┌──────────┐
+              │  State 1 │
+              └────┬─────┘
+                   │
+                   ▼
+                ACCEPT
+
+Types:
+
+    DFA
+    NFA
+    ε-NFA
+
+These will be studied in detail later.
+
+--------------------------------------------------------------
+
+25. CONTEXT-FREE GRAMMAR
+──────────────────────────────────────────────────────────────
+
+Definition:
+A Context-Free Grammar (CFG) is a formal grammar used to describe
+languages whose structures can be represented hierarchically.
+
+A CFG consists of:
+
+    G = (V, T, P, S)
+
+where:
+
+    V = variables/non-terminals
+    T = terminals
+    P = productions
+    S = start symbol
+
+Example:
+
+    E → E + T
+    E → T
+    T → id
+
+Here:
+
+    E, T → non-terminals
+    +, id → terminals
+    →    → production
+    E    → start symbol (if designated as such)
+
+CFGs are extremely important for syntax analysis/parsing.
+
+--------------------------------------------------------------
+
+26. PUSHdown AUTOMATA
+──────────────────────────────────────────────────────────────
+
+Definition:
+A Pushdown Automaton (PDA) is a finite automaton equipped with a
+stack.
+
+Basic idea:
+
+    Finite Automaton + Stack = PDA
+
+Diagram:
+
+             Input
+               │
+               ▼
+        ┌─────────────┐
+        │ Finite      │
+        │ Control     │
+        └──────┬──────┘
+               │
+               ▼
+            ┌─────┐
+            │Stack│
+            ├─────┤
+            │  A  │
+            ├─────┤
+            │  B  │
+            └─────┘
+
+PDA is associated with context-free languages.
+
+Important relationship:
+
+    Regular Language
+          ↓
+    Finite Automaton
+
+    Context-Free Language
+          ↓
+    Pushdown Automaton
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                 WHY CHAPTER 0 MATTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Compiler Design is built on all four prerequisite areas:
+
+    Programming
+         ↓
+    Data Structures
+         ↓
+    Theory of Computation
+         ↓
+    Discrete Mathematics
+         ↓
+    COMPILER DESIGN
+
+Examples:
+
+    Lexical Analyzer
+        ↓
+    Regular Expressions + DFA/NFA
+
+    Parser
+        ↓
+    CFG + Stack + Parsing Algorithms
+
+    Symbol Table
+        ↓
+    Hash Tables / Trees
+
+    AST
+        ↓
+    Trees
+
+    Control Flow Graph
+        ↓
+    Graphs
+
+    Optimization
+        ↓
+    Graphs + Data-flow concepts
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                     QUICK REVISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VARIABLE
+→ Named memory location storing a value.
+
+EXPRESSION
+→ Combination of operands/operators producing a value.
+
+STATEMENT
+→ Instruction executed by a program.
+
+FUNCTION
+→ Named block of code performing a specific operation.
+
+ARRAY
+→ Collection of same-type elements.
+
+SET
+→ Collection of distinct objects.
+
+FUNCTION (MATHEMATICS)
+→ Mapping from domain to codomain.
+
+STACK
+→ LIFO data structure.
+
+QUEUE
+→ FIFO data structure.
+
+TREE
+→ Hierarchical data structure.
+
+HASH TABLE
+→ Key-value structure using hashing.
+
+GRAPH
+→ Vertices connected by edges.
+
+ALPHABET
+→ Finite set of symbols.
+
+STRING
+→ Finite sequence of symbols.
+
+LANGUAGE
+→ Set of strings.
+
+REGULAR LANGUAGE
+→ Language recognizable by finite automata.
+
+REGULAR EXPRESSION
+→ Formal notation describing regular-language patterns.
+
+FINITE AUTOMATON
+→ Finite-state computational model.
+
+CFG
+→ Grammar used to describe context-free languages.
+
+PDA
+→ Finite automaton with a stack.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    PRACTICE QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LEVEL 1 — BASIC
+──────────────────────────────────────────────────────────────
+
+1. What is a variable? Give an example.
+
+2. Differentiate between an expression and a statement.
+
+3. What is a function? Why are functions important in compilers?
+
+4. What is an array?
+
+5. Explain LIFO and FIFO.
+
+6. Define:
+   a) Set
+   b) Relation
+   c) Function
+
+7. What is an alphabet in Theory of Computation?
+
+8. Define string and language.
+
+9. What is a regular language?
+
+10. What is a finite automaton?
+
+
+LEVEL 2 — UNDERSTANDING
+──────────────────────────────────────────────────────────────
+
+11. Draw the expression tree for:
+
+        a + b * c
+
+12. Explain how an array element address can be calculated.
+
+13. Why are stacks important in compiler design?
+
+14. Why are trees important in parsing?
+
+15. Explain how a hash table can be used for a symbol table.
+
+16. Differentiate between:
+        Alphabet
+        String
+        Language
+
+17. Explain the relationship:
+
+        Regular Expression
+                ↕
+        Finite Automaton
+                ↕
+        Regular Language
+
+18. Explain the difference between a finite automaton and a PDA.
+
+19. Write the components of:
+
+        G = (V, T, P, S)
+
+20. Explain why data structures are important in compiler design.
+
+
+LEVEL 3 — COMPILER CONNECTION
+──────────────────────────────────────────────────────────────
+
+21. For the expression:
+
+        a + b * c - d
+
+    draw the expression tree.
+
+22. Identify suitable data structures for:
+
+    a) Symbol Table
+    b) Parse Tree
+    c) Function-call management
+    d) Control Flow Graph
+
+23. Given:
+
+        Σ = {0,1}
+
+    write five strings over Σ.
+
+24. Is the following a valid language over Σ = {a,b}?
+
+        L = {a, ab, abb, abbb}
+
+    Explain.
+
+25. Explain:
+
+        Regular Expression
+              ↓
+            Lexer
+              ↓
+           Tokens
+
+26. Explain:
+
+        CFG
+         ↓
+       Parser
+         ↓
+      Parse Tree
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                 EXAM QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Define alphabet, string and language with examples.
+
+2. Explain the role of data structures in compiler construction.
+
+3. Explain stack and its applications in compiler design.
+
+4. Explain regular languages and finite automata.
+
+5. Differentiate between DFA, NFA and PDA.
+
+6. Explain Context-Free Grammar with an example.
+
+7. Explain the relationship between regular expressions and finite
+   automata.
+
+8. Draw an expression tree for:
+
+        (a + b) * (c - d)
+
+9. Explain the role of trees, graphs and hash tables in compiler
+   implementation.
+
+10. Explain why Theory of Computation is a prerequisite for
+    Compiler Design.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                   CHAPTER 0 COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NEXT CHAPTER:
+    Chapter 1 — Introduction to Compilers
+
+In Chapter 1 we will learn:
+
+    • What is a compiler?
+    • Why do we need a compiler?
+    • Compiler vs Interpreter
+    • Compiler vs Assembler
+    • Compiler vs Linker
+    • Compiler vs Loader
+    • Source program
+    • Target program
+    • Compilation process
+    • Front End and Back End
+    • Compiler passes
+    • Compiler phases
+    • Single-pass compiler
+    • Multi-pass compiler
+    • Cross compiler
+    • Bootstrap compiler
+    • Self-hosting compiler
+
+And we will draw the complete compiler pipeline.

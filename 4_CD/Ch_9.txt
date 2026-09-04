@@ -1,0 +1,2522 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    COMPILER DESIGN — CHAPTER 9                              ║
+║                    CONTEXT-FREE GRAMMARS (CFG)                              ║
+║                    Beginner → Advanced Level                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                         CHAPTER 9 — OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 9 begins the study of SYNTAX ANALYSIS / PARSING.
+
+In Chapter 8:
+
+        SOURCE CHARACTERS
+              ↓
+        LEXICAL ANALYZER
+              ↓
+            TOKENS
+
+Now we must determine whether those tokens form a valid structure
+according to the grammar of the programming language.
+
+Therefore:
+
+
+        TOKENS
+          │
+          ▼
+      ┌─────────┐
+      │ PARSER  │
+      └────┬────┘
+           │
+           ▼
+       PARSE TREE
+           │
+           ▼
+          AST
+
+
+The mathematical model used to describe programming-language syntax
+is primarily the:
+
+                    CONTEXT-FREE GRAMMAR
+                           (CFG)
+
+
+Chapter 9 topics:
+
+
+    1. Context-Free Grammar
+    2. Productions
+    3. Derivation
+    4. Sentential forms
+    5. Leftmost derivation
+    6. Rightmost derivation
+    7. Parse trees
+    8. Ambiguous grammar
+    9. Removing ambiguity
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. WHAT IS SYNTAX?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SYNTAX describes the rules for constructing valid statements or
+expressions in a language.
+
+
+Example:
+
+
+        x + y
+
+
+may be syntactically valid.
+
+
+But:
+
+
+        + x y
+
+
+may not be valid according to the grammar of a conventional
+infix-expression language.
+
+
+Think of natural language:
+
+
+        "The student reads a book."
+
+
+has a valid grammatical structure.
+
+
+Similarly, programming languages have grammatical rules:
+
+
+        expression → expression + term
+
+
+Therefore:
+
+
+        SYNTAX
+           =
+        STRUCTURE / FORM of valid programs
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHY DO WE NEED A GRAMMAR?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A programming language may contain millions of possible programs.
+
+We cannot manually specify every valid program.
+
+Instead, we describe the language using a compact set of rules.
+
+
+For example:
+
+
+        expression → expression + number
+        expression → number
+
+
+These rules can describe infinitely many expressions:
+
+
+        5
+        5 + 7
+        5 + 7 + 10
+        5 + 7 + 10 + 20
+        ...
+
+
+Therefore:
+
+
+        SMALL SET OF RULES
+                ↓
+        DESCRIBES LARGE / INFINITE LANGUAGE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. CONTEXT-FREE GRAMMAR — DEFINITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A CONTEXT-FREE GRAMMAR is formally defined as a 4-tuple:
+
+
+                    G = (V, T, P, S)
+
+
+where:
+
+
+        V = set of nonterminals
+
+        T = set of terminals
+
+        P = set of productions
+
+        S = start symbol
+
+
+Therefore:
+
+
+        CFG = (V, T, P, S)
+
+
+This is one of the most important definitions in compiler design.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. COMPONENT 1 — NONTERMINALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A NONTERMINAL is a grammatical variable representing a syntactic
+category.
+
+
+Examples:
+
+
+        E
+        T
+        F
+        Statement
+        Expression
+        Term
+        Factor
+
+
+They represent structures that can be expanded further.
+
+
+Example:
+
+
+        E
+
+
+can represent:
+
+
+        Expression
+
+
+and may be expanded into:
+
+
+        E → E + T
+
+
+Therefore:
+
+
+        NONTERMINAL
+             ↓
+        can be replaced using a production rule
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. COMPONENT 2 — TERMINALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A TERMINAL is a symbol that appears in the final generated string and
+cannot be expanded further by grammar productions.
+
+
+Examples:
+
+
+        id
+        +
+        *
+        (
+        )
+        if
+        else
+        ;
+        number
+
+
+For example:
+
+
+        E → E + T
+
+
+Here:
+
+
+        E, T
+
+
+are nonterminals.
+
+
+        +
+
+
+is a terminal.
+
+
+In a real compiler, terminals often correspond to TOKENS produced by
+the lexical analyzer.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. TERMINALS VS NONTERMINALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        NONTERMINALS                  TERMINALS
+        ────────────                  ─────────
+        E                             id
+        T                             +
+        F                             *
+        Expression                     (
+        Statement                     )
+        Factor                        number
+
+
+Nonterminal:
+
+
+        can be expanded.
+
+
+Terminal:
+
+
+        cannot be expanded.
+
+
+Memory trick:
+
+
+        NONTERMINAL → still under construction
+
+
+        TERMINAL → final output
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. COMPONENT 3 — PRODUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A PRODUCTION is a grammar rule describing how a nonterminal can be
+replaced by a sequence of terminals and/or nonterminals.
+
+
+General form:
+
+
+        A → α
+
+
+where:
+
+
+        A = nonterminal
+
+        α = sequence of terminals and/or nonterminals
+
+
+Example:
+
+
+        E → E + T
+
+
+Another:
+
+
+        T → id
+
+
+Another:
+
+
+        F → ( E )
+
+
+Productions are the rules of the grammar.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. COMPONENT 4 — START SYMBOL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The START SYMBOL is the nonterminal from which derivation begins.
+
+
+Usually written:
+
+
+        S
+
+
+Example:
+
+
+        S → E
+
+
+If:
+
+
+        E → E + T
+        E → T
+        T → id
+
+
+then:
+
+
+        S
+
+
+or:
+
+
+        E
+
+
+may be designated as the start symbol.
+
+
+Every valid string generated by the grammar begins from the start
+symbol.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. COMPLETE CFG EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+
+        G = (V, T, P, S)
+
+
+where:
+
+
+        V = {S, A}
+
+
+        T = {a, b}
+
+
+        P:
+            S → aA
+            A → b
+
+
+        Start symbol:
+            S
+
+
+Then:
+
+
+        S
+        ↓
+        aA
+        ↓
+        ab
+
+
+Therefore the grammar generates:
+
+
+        ab
+
+
+This is a very small CFG.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. ANOTHER CFG — ARITHMETIC EXPRESSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+
+        E → E + T
+        E → T
+
+        T → T * F
+        T → F
+
+        F → ( E )
+        F → id
+
+
+Here:
+
+
+        E = Expression
+        T = Term
+        F = Factor
+
+
+Terminals:
+
+
+        +
+        *
+        (
+        )
+        id
+
+
+Nonterminals:
+
+
+        E
+        T
+        F
+
+
+This grammar can describe expressions such as:
+
+
+        id
+
+
+        id + id
+
+
+        id * id
+
+
+        id + id * id
+
+
+        ( id + id )
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. WHAT IS A LANGUAGE GENERATED BY A GRAMMAR?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A grammar generates a set of terminal strings.
+
+
+This set is called the LANGUAGE generated by the grammar.
+
+
+Notation:
+
+
+        L(G)
+
+
+means:
+
+
+        language generated by grammar G
+
+
+Therefore:
+
+
+        G
+        │
+        ▼
+     derivations
+        │
+        ▼
+     terminal strings
+        │
+        ▼
+       L(G)
+
+
+Example:
+
+
+        S → aS
+        S → b
+
+
+can generate:
+
+
+        b
+        ab
+        aab
+        aaab
+        ...
+
+
+Therefore:
+
+
+        L(G) = { aⁿb | n ≥ 0 }
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. DERIVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DERIVATION is the process of applying production rules to generate a
+string from the start symbol.
+
+
+Example grammar:
+
+
+        S → aS
+        S → b
+
+
+Derivation:
+
+
+        S
+        ↓
+        aS
+        ↓
+        aaS
+        ↓
+        aab
+
+
+Thus:
+
+
+        S ⇒ aS ⇒ aaS ⇒ aab
+
+
+The symbol:
+
+
+        ⇒
+
+
+means:
+
+
+        "derives in one or more production steps"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. ONE-STEP DERIVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If exactly one production is applied, we use:
+
+
+        ⇒
+
+
+Example:
+
+
+        S → aS
+
+
+Then:
+
+
+        S ⇒ aS
+
+
+This is a one-step derivation.
+
+
+If multiple steps are performed:
+
+
+        S ⇒* aab
+
+
+The symbol:
+
+
+        ⇒*
+
+
+means:
+
+
+        zero or more derivation steps.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. SENTENTIAL FORM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A SENTENTIAL FORM is any string derived from the start symbol, where
+the string may contain terminals and/or nonterminals.
+
+
+Example:
+
+
+        S → aS
+        S → b
+
+
+Derivation:
+
+
+        S
+        ↓
+        aS
+        ↓
+        aaS
+        ↓
+        aab
+
+
+The following are sentential forms:
+
+
+        S
+        aS
+        aaS
+        aab
+
+
+Notice:
+
+
+        aS
+
+
+contains both terminal and nonterminal symbols.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. SENTENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A SENTENCE is a sentential form containing ONLY TERMINALS.
+
+
+Example:
+
+
+        S ⇒ aS ⇒ aaS ⇒ aab
+
+
+Here:
+
+
+        S
+        aS
+        aaS
+
+
+are sentential forms.
+
+
+But:
+
+
+        aab
+
+
+is a SENTENCE because it contains only terminals.
+
+
+Therefore:
+
+
+        SENTENTIAL FORM
+              │
+              ├── may contain nonterminals
+              │
+              ▼
+           SENTENCE
+              │
+              └── contains only terminals
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. LEFTMOST DERIVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In a LEFTMOST DERIVATION, at every step we replace the LEFTMOST
+nonterminal first.
+
+
+Consider:
+
+
+        E → E + T
+        E → T
+        T → id
+
+
+To derive:
+
+
+        id + id
+
+
+Leftmost derivation:
+
+
+        E
+        ⇒ E + T
+        ⇒ T + T
+        ⇒ id + T
+        ⇒ id + id
+
+
+At every step, the leftmost available nonterminal is expanded.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. LEFTMOST DERIVATION — STEP ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Start:
+
+
+        E
+
+
+Step 1:
+
+
+        E ⇒ E + T
+
+
+Leftmost nonterminal:
+
+
+        E
+
+
+Step 2:
+
+
+        E + T ⇒ T + T
+
+
+Leftmost nonterminal:
+
+
+        E
+
+
+Step 3:
+
+
+        T + T ⇒ id + T
+
+
+Leftmost nonterminal:
+
+
+        T
+
+
+Step 4:
+
+
+        id + T ⇒ id + id
+
+
+Leftmost nonterminal:
+
+
+        T
+
+
+Final:
+
+
+        id + id
+
+
+Only terminals remain.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. RIGHTMOST DERIVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In a RIGHTMOST DERIVATION, at every step we replace the RIGHTMOST
+nonterminal first.
+
+
+Using:
+
+
+        E → E + T
+        E → T
+        T → id
+
+
+Derive:
+
+
+        id + id
+
+
+Rightmost derivation:
+
+
+        E
+        ⇒ E + T
+        ⇒ E + id
+        ⇒ T + id
+        ⇒ id + id
+
+
+Notice that the rightmost nonterminal is expanded first.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. LEFTMOST VS RIGHTMOST DERIVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        LEFTMOST DERIVATION
+
+
+        Expand:
+        ← leftmost nonterminal first
+
+
+        RIGHTMOST DERIVATION
+
+
+        Expand:
+                      → rightmost nonterminal first
+
+
+Example:
+
+
+        E + T
+
+
+        LEFTMOST:
+        expand E first
+
+
+        RIGHTMOST:
+        expand T first
+
+
+Comparison:
+
+
+    ┌──────────────────────┬────────────────────────┐
+    │ LEFTMOST             │ RIGHTMOST              │
+    ├──────────────────────┼────────────────────────┤
+    │ Expand leftmost      │ Expand rightmost       │
+    │ nonterminal          │ nonterminal            │
+    │                      │                        │
+    │ Used in describing   │ Important for bottom-  │
+    │ top-down derivation  │ up parsing theory      │
+    └──────────────────────┴────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. PARSE TREE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A PARSE TREE, also called a DERIVATION TREE, represents the syntactic
+structure generated by a grammar.
+
+
+For:
+
+
+        E → E + T
+        E → T
+        T → id
+
+
+and string:
+
+
+        id + id
+
+
+a parse tree can be:
+
+
+                         E
+                       / | \
+                      E  +  T
+                      |     |
+                      T     id
+                      |
+                     id
+
+
+Reading the leaves from left to right:
+
+
+        id + id
+
+
+The parse tree shows the hierarchical structure of the expression.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. PARTS OF A PARSE TREE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A parse tree contains:
+
+
+    • Root
+    • Internal nodes
+    • Leaf nodes
+    • Edges
+
+
+The ROOT is the start symbol.
+
+
+INTERNAL NODES are usually nonterminals.
+
+
+LEAVES contain terminals or ε.
+
+
+Example:
+
+
+                         E       ← ROOT
+                       / | \
+                      E  +  T
+                      |     |
+                      T     id
+                      |
+                     id
+
+
+Root:
+
+
+        E
+
+
+Internal nodes:
+
+
+        E, T
+
+
+Leaves:
+
+
+        id, +, id
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. YIELD OF A PARSE TREE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The YIELD of a parse tree is obtained by reading its leaves from left
+to right.
+
+
+Example:
+
+
+                         E
+                       / | \
+                      E  +  T
+                      |     |
+                     id    id
+
+
+Leaves:
+
+
+        id + id
+
+
+Therefore the yield is:
+
+
+        id + id
+
+
+The yield must be a string of terminals.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. DERIVATION VS PARSE TREE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DERIVATION:
+
+
+    Describes the sequence in which production rules are applied.
+
+
+PARSE TREE:
+
+
+    Shows the hierarchical structure produced by those rules.
+
+
+Think:
+
+
+        DERIVATION
+            =
+        "How did we generate it?"
+
+
+        PARSE TREE
+            =
+        "What is its structure?"
+
+
+Both represent the same grammatical generation process from different
+perspectives.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. PARSE TREE FOR AN EXPRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+
+        E → E + T
+        E → T
+
+        T → T * F
+        T → F
+
+        F → (E)
+        F → id
+
+
+For:
+
+
+        id + id * id
+
+
+a parse tree can be:
+
+
+                         E
+                       / | \
+                      E  +  T
+                      |    /|\
+                      T   T * F
+                      |   |   |
+                      F  F   id
+                      |  |
+                     id id
+
+
+The tree shows that multiplication is deeper inside the tree than
+addition.
+
+This is how grammar structure can encode operator precedence.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. OPERATOR PRECEDENCE THROUGH GRAMMAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+
+        E → E + T
+        T → T * F
+        F → id
+
+
+The hierarchy is:
+
+
+        E
+        │
+        ▼
+        T
+        │
+        ▼
+        F
+
+
+This gives:
+
+
+        +    lower precedence
+
+
+        *    higher precedence
+
+
+Therefore:
+
+
+        id + id * id
+
+
+is interpreted as:
+
+
+        id + (id * id)
+
+
+rather than:
+
+
+        (id + id) * id
+
+
+Grammar structure can therefore enforce precedence.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. ASSOCIATIVITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Associativity determines how operators of the same precedence group.
+
+
+For example:
+
+
+        a - b - c
+
+
+If subtraction is LEFT ASSOCIATIVE:
+
+
+        (a - b) - c
+
+
+A grammar such as:
+
+
+        E → E - T
+        E → T
+
+
+naturally represents left association.
+
+
+For right-associative operators such as exponentiation, a different
+grammar structure is generally used.
+
+
+Example conceptually:
+
+
+        E → T ^ E
+        E → T
+
+
+which can produce:
+
+
+        a ^ (b ^ c)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. AMBIGUOUS GRAMMAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A grammar is AMBIGUOUS if there exists at least one string in the
+language that has MORE THAN ONE distinct parse tree.
+
+
+Equivalent idea:
+
+
+        ONE STRING
+             │
+             ├────► PARSE TREE 1
+             │
+             └────► PARSE TREE 2
+
+
+If both are different:
+
+
+        GRAMMAR = AMBIGUOUS
+
+
+This is extremely important in compiler design.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. CLASSIC AMBIGUOUS GRAMMAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+
+        E → E + E
+        E → E * E
+        E → (E)
+        E → id
+
+
+Now consider:
+
+
+        id + id * id
+
+
+There can be different interpretations:
+
+
+        id + (id * id)
+
+
+or:
+
+
+        (id + id) * id
+
+
+Therefore the grammar does not specify precedence between + and *.
+
+
+This grammar is ambiguous.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. TWO PARSE TREES FOR AMBIGUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For:
+
+
+        id + id * id
+
+
+Interpretation 1:
+
+
+                    E
+                  / | \
+                 E  +  E
+                 |    /|\
+                id   E * E
+                     |   |
+                    id  id
+
+
+Meaning:
+
+
+        id + (id * id)
+
+
+Interpretation 2:
+
+
+                    E
+                  / | \
+                 E  *  E
+               / | \     |
+              E  +  E   id
+              |    |
+             id   id
+
+
+Meaning:
+
+
+        (id + id) * id
+
+
+Two different parse trees:
+
+
+        SAME STRING
+             │
+        ┌────┴────┐
+        ▼         ▼
+      TREE 1    TREE 2
+
+
+Therefore:
+
+
+        AMBIGUOUS
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. AMBIGUITY — FORMAL DEFINITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A CFG G is ambiguous if there exists a string:
+
+
+        w ∈ L(G)
+
+
+such that w has more than one distinct parse tree.
+
+
+Equivalently, w has more than one leftmost derivation.
+
+
+Or more than one rightmost derivation.
+
+
+Therefore:
+
+
+        AMBIGUITY
+
+
+        ⇔ multiple parse trees
+
+
+        ⇔ multiple leftmost derivations
+
+
+        ⇔ multiple rightmost derivations
+
+
+for at least one string.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. WHY AMBIGUITY IS A PROBLEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+
+        a + b * c
+
+
+has two possible structures.
+
+
+The compiler cannot reliably determine which operation should happen
+first from the grammar alone.
+
+
+That can produce different meanings:
+
+
+        a + (b * c)
+
+
+versus:
+
+
+        (a + b) * c
+
+
+Therefore:
+
+
+        AMBIGUITY
+            ↓
+        MULTIPLE STRUCTURES
+            ↓
+        MULTIPLE POSSIBLE MEANINGS
+            ↓
+        PARSING PROBLEM
+
+
+Compiler designers therefore try to remove or otherwise resolve
+ambiguity.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. REMOVING AMBIGUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+One common technique is to redesign the grammar so that precedence
+and associativity are explicitly represented.
+
+
+Ambiguous:
+
+
+        E → E + E
+        E → E * E
+        E → (E)
+        E → id
+
+
+Unambiguous version:
+
+
+        E → E + T
+        E → T
+
+        T → T * F
+        T → F
+
+        F → (E)
+        F → id
+
+
+Now:
+
+
+        E
+        │
+        ├── handles +
+        │
+        ▼
+        T
+        │
+        ├── handles *
+        │
+        ▼
+        F
+        │
+        └── handles primary expressions
+
+
+This establishes:
+
+
+        *  >  +
+
+
+in precedence.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. WHY E, T AND F ARE USED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A conventional expression grammar uses:
+
+
+        E = Expression
+        T = Term
+        F = Factor
+
+
+Hierarchy:
+
+
+        Expression
+             │
+             ▼
+           Term
+             │
+             ▼
+          Factor
+
+
+Meaning:
+
+
+        E
+        ↓
+        +
+
+
+        T
+        ↓
+        *
+
+
+        F
+        ↓
+        id / (E)
+
+
+Therefore:
+
+
+        E → E + T
+
+
+prevents the right side of + from directly becoming another arbitrary
+expression.
+
+
+This helps encode precedence.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. CFG AND PARSING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The parser receives tokens:
+
+
+        id + id * id
+
+
+The grammar describes valid structures:
+
+
+        E → E + T
+        E → T
+        T → T * F
+        T → F
+        F → id
+
+
+The parser tries to determine whether the token sequence can be
+generated by the grammar.
+
+
+Therefore:
+
+
+        TOKEN STREAM
+              │
+              ▼
+            PARSER
+              │
+              ▼
+       CFG / PRODUCTIONS
+              │
+              ▼
+          PARSE TREE
+              │
+              ▼
+             AST
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. CFG VS REGULAR GRAMMAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Regular languages are generally sufficient for lexical structure.
+
+
+Context-free grammars are more expressive and are used to describe
+nested syntactic structures.
+
+
+Example:
+
+
+        Parentheses:
+
+
+            ( ( ) )
+
+
+require matching/nested structure.
+
+
+CFG can represent:
+
+
+        S → (S)
+        S → SS
+        S → ε
+
+
+The key idea:
+
+
+        REGEX / FA
+             ↓
+        LEXICAL STRUCTURE
+
+
+        CFG / PDA
+             ↓
+        SYNTACTIC STRUCTURE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. CFG AND PUSH-DOWN AUTOMATA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Context-free grammars are closely related to PUSH-DOWN AUTOMATA (PDA).
+
+
+Conceptually:
+
+
+        CONTEXT-FREE GRAMMAR
+                 ↕
+        PUSH-DOWN AUTOMATON
+
+
+The PDA adds a STACK to finite-state processing.
+
+
+This is useful for nested structures such as:
+
+
+        ( ( ( ) ) )
+
+
+The stack remembers unmatched structures.
+
+
+Compiler parsing algorithms are generally based on CFGs and use
+techniques corresponding to this expressive power.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. CONTEXT-FREE — WHAT DOES "CONTEXT-FREE" MEAN?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A production has the general form:
+
+
+        A → α
+
+
+where A is a SINGLE NONTERMINAL.
+
+
+The replacement of A does not depend on the symbols surrounding A.
+
+
+For example:
+
+
+        A → aAb
+
+
+can be applied whenever A appears, regardless of its surrounding
+context.
+
+
+This is why the grammar is called:
+
+
+        CONTEXT-FREE.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. DERIVATION EXAMPLE — BALANCED PARENTHESES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+
+        S → (S)
+        S → SS
+        S → ε
+
+
+Derive:
+
+
+        ()
+
+
+Derivation:
+
+
+        S
+        ⇒ (S)
+        ⇒ (ε)
+        ⇒ ()
+
+
+Therefore:
+
+
+        ()
+
+
+belongs to the language.
+
+
+For:
+
+
+        (())
+
+
+we can derive:
+
+
+        S
+        ⇒ (S)
+        ⇒ ((S))
+        ⇒ (())
+        
+
+The grammar handles nesting naturally.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. EPSILON (ε)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ε represents the EMPTY STRING.
+
+
+A production:
+
+
+        A → ε
+
+
+means:
+
+
+        A can disappear.
+
+
+Example:
+
+
+        S → aS
+        S → ε
+
+
+can generate:
+
+
+        ε
+        a
+        aa
+        aaa
+        ...
+
+
+Derivation of ε:
+
+
+        S
+        ⇒ ε
+
+
+The empty string is different from having no derivation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. PRODUCTION WITH MULTIPLE ALTERNATIVES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instead of:
+
+
+        E → E + T
+        E → T
+
+
+we often write:
+
+
+        E → E + T | T
+
+
+The symbol:
+
+
+        |
+
+
+means:
+
+
+        OR
+
+
+Therefore:
+
+
+        E → E + T | T
+
+
+means:
+
+
+        E → E + T
+
+
+OR:
+
+
+        E → T
+
+
+Both notations mean the same thing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. GRAMMAR NOTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Common notation:
+
+
+        E → E + T
+
+
+Left side:
+
+
+        E
+
+
+Right side:
+
+
+        E + T
+
+
+Arrow:
+
+
+        →
+
+
+means:
+
+
+        "can be replaced by"
+
+
+Alternative:
+
+
+        E → E + T | T
+
+
+means two possible productions.
+
+
+Parentheses and other notation may be used depending on the grammar
+formalism.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. GRAMMAR FOR SIMPLE ASSIGNMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+
+        x = y + 10;
+
+
+A simplified grammar:
+
+
+        S → id = E ;
+
+        E → E + T
+        E → T
+
+        T → id
+        T → number
+
+
+The token sequence:
+
+
+        id = id + number ;
+
+
+can be generated by this grammar.
+
+
+A possible structure:
+
+
+                         S
+                 ______/ | \______
+                id       =       E ;
+                               /   \
+                              E     +
+                              |      \
+                              T       T
+                              |       |
+                             id     number
+
+
+This is how grammar describes program syntax.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. SYNTAX ERROR USING CFG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose grammar allows:
+
+
+        E → E + T
+        E → T
+        T → id
+
+
+Input:
+
+
+        id +
+
+
+The parser reaches:
+
+
+        id +
+
+
+and cannot complete the required:
+
+
+        T
+
+
+after +.
+
+
+Therefore:
+
+
+        id +
+
+
+cannot be derived as a complete sentence.
+
+
+Result:
+
+
+        SYNTAX ERROR
+
+
+This is fundamentally different from a lexical error.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. LEXICAL ERROR VS SYNTAX ERROR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        SOURCE
+          │
+          ▼
+        LEXER
+          │
+          ├── invalid character
+          │       ↓
+          │   LEXICAL ERROR
+          │
+          ▼
+        TOKENS
+          │
+          ▼
+        PARSER
+          │
+          ├── invalid token arrangement
+          │       ↓
+          │   SYNTAX ERROR
+          │
+          ▼
+        PARSE TREE
+
+
+Example lexical error:
+
+
+        int x = @;
+
+
+if @ is not a valid character.
+
+
+Example syntax error:
+
+
+        int = x;
+
+
+if the grammar does not permit that arrangement.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. IMPORTANT PROPERTY — GENERATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A grammar is a GENERATIVE MODEL.
+
+
+It starts with:
+
+
+        START SYMBOL
+
+
+and repeatedly applies:
+
+
+        PRODUCTIONS
+
+
+until:
+
+
+        ONLY TERMINALS
+
+
+remain.
+
+
+Therefore:
+
+
+        START
+          ↓
+        RULE
+          ↓
+        SENTENTIAL FORM
+          ↓
+        RULE
+          ↓
+        SENTENTIAL FORM
+          ↓
+        ...
+          ↓
+        SENTENCE
+
+
+This is called DERIVATION.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. IMPORTANT PROPERTY — RECOGNITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A parser performs the opposite conceptual task.
+
+
+Generation:
+
+
+        Grammar
+           ↓
+        string
+
+
+Recognition:
+
+
+        string
+           ↓
+        grammar
+           ↓
+        valid / invalid
+
+
+Therefore:
+
+
+        CFG
+         │
+         ▼
+       PARSER
+         │
+         ▼
+     "Is this token sequence
+      syntactically valid?"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. TOP-DOWN AND BOTTOM-UP CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The grammar concepts learned here are the foundation for the next
+chapters.
+
+
+TOP-DOWN PARSING:
+
+
+        START SYMBOL
+             ↓
+        expand grammar
+             ↓
+        input string
+
+
+BOTTOM-UP PARSING:
+
+
+        input string
+             ↓
+        reduce structures
+             ↓
+        START SYMBOL
+
+
+Therefore:
+
+
+        CHAPTER 9 — CFG
+                 ↓
+        CHAPTER 10 — GRAMMAR TRANSFORMATIONS
+                 ↓
+        CHAPTER 11 — TOP-DOWN PARSING
+                 ↓
+        CHAPTER 12 — BOTTOM-UP PARSING
+                 ↓
+        CHAPTER 13 — LR PARSING
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. GATE / EXAM IMPORTANT FACTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Remember these exactly:
+
+
+    1. CFG is represented as:
+
+            G = (V, T, P, S)
+
+
+    2. V = nonterminals.
+
+
+    3. T = terminals.
+
+
+    4. P = productions.
+
+
+    5. S = start symbol.
+
+
+    6. A production in a CFG has a single nonterminal on the left side.
+
+
+    7. A sentential form may contain terminals and nonterminals.
+
+
+    8. A sentence contains only terminals.
+
+
+    9. Leftmost derivation expands the leftmost nonterminal.
+
+
+   10. Rightmost derivation expands the rightmost nonterminal.
+
+
+   11. A parse tree represents grammatical structure.
+
+
+   12. A grammar is ambiguous if at least one string has multiple
+       parse trees.
+
+
+   13. Ambiguity can often be removed by redesigning the grammar.
+
+
+   14. Operator precedence and associativity can be encoded through
+       grammar structure.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. COMMON CONFUSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONFUSION 1:
+
+
+    Token vs terminal
+
+
+    TOKEN:
+        Output category from lexer.
+
+
+    TERMINAL:
+        Symbol used by the grammar.
+
+
+    In many compiler descriptions, terminals correspond directly to
+    token types.
+
+
+------------------------------------------------------------
+
+CONFUSION 2:
+
+
+    Lexeme vs token
+
+
+    LEXEME:
+        actual source text
+
+
+    TOKEN:
+        category
+
+
+    Example:
+
+
+        Lexeme = count
+        Token  = ID
+
+
+------------------------------------------------------------
+
+CONFUSION 3:
+
+
+    Sentential form vs sentence
+
+
+    Sentential form:
+        terminals + nonterminals possible
+
+
+    Sentence:
+        terminals only
+
+
+------------------------------------------------------------
+
+CONFUSION 4:
+
+
+    Derivation vs parse tree
+
+
+    Derivation:
+        sequence of rule applications
+
+
+    Parse tree:
+        hierarchical representation
+
+
+------------------------------------------------------------
+
+CONFUSION 5:
+
+
+    Ambiguous grammar vs invalid grammar
+
+
+    Ambiguous grammar:
+        valid string has multiple structures.
+
+
+    Invalid string:
+        cannot be generated by grammar.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. CHAPTER 9 — MASTER SKY DIAGRAM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+                         SOURCE PROGRAM
+                               │
+                               ▼
+                       LEXICAL ANALYZER
+                               │
+                               ▼
+                          TOKEN STREAM
+                               │
+                               ▼
+                    ┌────────────────────┐
+                    │   CONTEXT-FREE     │
+                    │     GRAMMAR        │
+                    └─────────┬──────────┘
+                              │
+                 ┌────────────┼────────────┐
+                 │            │            │
+                 ▼            ▼            ▼
+             TERMINALS   NONTERMINALS  PRODUCTIONS
+                 │            │            │
+                 └────────────┼────────────┘
+                              │
+                              ▼
+                        START SYMBOL
+                              │
+                              ▼
+                         DERIVATION
+                              │
+             ┌────────────────┼────────────────┐
+             │                                 │
+             ▼                                 ▼
+      LEFTMOST DERIVATION              RIGHTMOST DERIVATION
+             │                                 │
+             └────────────────┬────────────────┘
+                              │
+                              ▼
+                         PARSE TREE
+                              │
+                              ▼
+                         VALID SYNTAX
+                              │
+                              ▼
+                             AST
+
+
+                 AMBIGUITY PATH
+
+
+                    STRING
+                      │
+                ┌─────┴─────┐
+                ▼           ▼
+             TREE 1       TREE 2
+                │           │
+                └─────┬─────┘
+                      ▼
+                 AMBIGUOUS CFG
+                      │
+                      ▼
+               REDESIGN GRAMMAR
+                      │
+                      ▼
+              PRECEDENCE / ASSOCIATIVITY
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. CHAPTER 9 — COMPLETE MEMORY MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+        CFG
+         │
+         ├── V → Nonterminals
+         │
+         ├── T → Terminals
+         │
+         ├── P → Productions
+         │
+         └── S → Start symbol
+                 │
+                 ▼
+             DERIVATION
+                 │
+          ┌──────┴──────┐
+          ▼             ▼
+      LEFTMOST      RIGHTMOST
+          │             │
+          └──────┬──────┘
+                 ▼
+             SENTENTIAL
+               FORMS
+                 │
+                 ▼
+              SENTENCE
+                 │
+                 ▼
+             PARSE TREE
+                 │
+                 ▼
+             STRUCTURE
+                 │
+                 ▼
+          SYNTAX ANALYSIS
+
+
+        AMBIGUITY
+             │
+             ▼
+        MULTIPLE PARSE TREES
+             │
+             ▼
+        MULTIPLE DERIVATIONS
+             │
+             ▼
+        GRAMMAR REDESIGN
+             │
+             ▼
+        PRECEDENCE + ASSOCIATIVITY
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. CHAPTER 9 — FINAL TAKEAWAY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The central idea of Chapter 9 is:
+
+
+        PROGRAM
+           ↓
+        TOKENS
+           ↓
+        CONTEXT-FREE GRAMMAR
+           ↓
+        DERIVATION
+           ↓
+        PARSE TREE
+           ↓
+        SYNTACTIC STRUCTURE
+
+
+The CFG gives the compiler a mathematical way to describe the syntax
+of a programming language.
+
+
+The most important chain to remember:
+
+
+        CFG
+         ↓
+        (V, T, P, S)
+         ↓
+        PRODUCTIONS
+         ↓
+        DERIVATION
+         ↓
+        SENTENTIAL FORM
+         ↓
+        SENTENCE
+         ↓
+        PARSE TREE
+         ↓
+        AMBIGUITY
+         ↓
+        PRECEDENCE / ASSOCIATIVITY
+         ↓
+        PARSING
+
+
+And the complete compiler connection:
+
+
+        SOURCE CODE
+             ↓
+        LEXICAL ANALYZER
+             ↓
+           TOKENS
+             ↓
+        CONTEXT-FREE GRAMMAR
+             ↓
+           PARSER
+             ↓
+         PARSE TREE
+             ↓
+            AST
+             ↓
+       SEMANTIC ANALYSIS
+             ↓
+            IR
+             ↓
+         OPTIMIZATION
+             ↓
+       CODE GENERATION
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                         CHAPTER 9 COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
