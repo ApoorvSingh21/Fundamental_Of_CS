@@ -1,0 +1,2485 @@
+====================================================================
+CHAPTER 1 — WEB FUNDAMENTALS
+API ENGINEERING — ZERO TO MASTER
+====================================================================
+
+CHAPTER OBJECTIVE
+-----------------
+Before learning APIs deeply, you must understand how the Web works.
+
+By the end of this chapter, you will understand:
+
+1. How the Web works
+2. Browser → Server communication
+3. Request-Response Cycle
+4. HTTP
+5. HTTPS
+6. TCP/IP basics
+7. TLS basics
+8. Cookies
+9. Sessions
+10. Cache
+11. Proxy
+12. Reverse Proxy
+13. CDN
+14. Load Balancer
+15. How all these components work together in a real API system
+
+
+====================================================================
+1. HOW THE WEB WORKS
+====================================================================
+
+The Web is a system that allows computers to communicate with
+each other over the Internet.
+
+Example:
+
+You open:
+
+    https://example.com
+
+Your computer needs to communicate with a server somewhere on the
+Internet.
+
+Basic architecture:
+
+    YOU
+     |
+     | Request
+     ↓
+    INTERNET
+     |
+     ↓
+    WEB SERVER
+     |
+     | Response
+     ↓
+    YOU
+
+
+A more realistic architecture:
+
+    +-------------+
+    |   Browser   |
+    |   Client    |
+    +------+------+
+           |
+           | HTTP/HTTPS
+           ↓
+    +-------------+
+    |   Internet  |
+    +------+------+
+           |
+           ↓
+    +-------------+
+    | Load        |
+    | Balancer    |
+    +------+------+
+           |
+           ↓
+    +-------------+
+    | API Server  |
+    +------+------+
+           |
+           ↓
+    +-------------+
+    | Database    |
+    +-------------+
+
+
+The browser is usually the CLIENT.
+
+The API server is usually the SERVER.
+
+The client sends a REQUEST.
+
+The server sends a RESPONSE.
+
+
+====================================================================
+2. CLIENT
+====================================================================
+
+A client is a program/device that requests a service or resource
+from another computer.
+
+Examples:
+
+    Web Browser
+    Mobile App
+    Desktop Application
+    Postman
+    cURL
+    Another Backend Service
+
+
+Example:
+
+    Chrome
+       |
+       | GET /users
+       ↓
+    API Server
+
+
+Chrome is the client.
+
+The API server is the server.
+
+
+IMPORTANT:
+
+Client does NOT necessarily mean browser.
+
+For APIs:
+
+    Mobile App → API Server
+    React App  → API Server
+    Postman    → API Server
+    Backend A  → Backend B
+
+
+All of them can act as API clients.
+
+
+====================================================================
+3. SERVER
+====================================================================
+
+A server is a computer/program that receives requests and provides
+services or resources.
+
+Example:
+
+    Client:
+        "Give me user with ID 10"
+
+    Server:
+        "Here is user 10"
+
+
+A server may perform operations such as:
+
+    Authentication
+    Business Logic
+    Database Access
+    File Processing
+    Payment Processing
+    Sending Notifications
+
+
+Example:
+
+    Client
+      |
+      | GET /users/10
+      ↓
+    API Server
+      |
+      | SQL Query
+      ↓
+    Database
+      |
+      | User Data
+      ↓
+    API Server
+      |
+      | JSON Response
+      ↓
+    Client
+
+
+====================================================================
+4. CLIENT-SERVER ARCHITECTURE
+====================================================================
+
+The Client-Server model separates responsibilities.
+
+CLIENT:
+
+    Sends requests
+    Displays results
+    Collects user input
+    Stores some client-side data
+
+
+SERVER:
+
+    Receives requests
+    Processes requests
+    Applies business rules
+    Communicates with database
+    Returns responses
+
+
+Example:
+
+Online Shopping:
+
+    Browser
+       |
+       | GET /products
+       ↓
+    API Server
+       |
+       | SELECT * FROM products
+       ↓
+    Database
+
+
+The browser does not normally directly access the database.
+
+Instead:
+
+    Client → API → Database
+
+
+This separation is extremely important in software architecture.
+
+
+====================================================================
+5. INTERNET
+====================================================================
+
+The Internet is a global network of interconnected computer
+networks.
+
+It allows devices to communicate.
+
+Simplified:
+
+    Computer A
+         |
+         ↓
+      Router
+         |
+         ↓
+      ISP
+         |
+         ↓
+    Internet
+         |
+         ↓
+      Server
+
+
+ISP = Internet Service Provider.
+
+
+Examples:
+
+    Jio
+    Airtel
+    BSNL
+    Vodafone Idea
+
+
+When you call an API over the Internet, packets travel through
+multiple network devices before reaching the destination.
+
+
+====================================================================
+6. WEB
+====================================================================
+
+Internet and Web are NOT exactly the same thing.
+
+INTERNET:
+
+    The underlying global network infrastructure.
+
+WEB:
+
+    A service running on the Internet using technologies such as
+    HTTP, URLs, browsers and web servers.
+
+
+Other services can also use the Internet:
+
+    Email
+    SSH
+    FTP
+    DNS
+    Online gaming
+
+
+Think:
+
+    Internet = Road network
+
+    Web = One type of transportation/service using those roads
+
+
+====================================================================
+7. REQUEST-RESPONSE MODEL
+====================================================================
+
+Most traditional Web/API communication follows:
+
+    REQUEST
+       ↓
+    SERVER
+       ↓
+    RESPONSE
+
+
+Example:
+
+Client:
+
+    GET /users/10
+
+
+Server:
+
+    200 OK
+
+    {
+        "id": 10,
+        "name": "Apoorv"
+    }
+
+
+The client asks.
+
+The server answers.
+
+
+This is one of the most important concepts in API development.
+
+
+====================================================================
+8. REQUEST
+====================================================================
+
+An HTTP request is a message sent by a client to a server.
+
+A request can contain:
+
+    Method
+    URL
+    Headers
+    Body
+
+
+Example:
+
+    GET /users/10 HTTP/1.1
+    Host: api.example.com
+    Accept: application/json
+
+
+Here:
+
+    GET
+        ↓
+    HTTP method
+
+    /users/10
+        ↓
+    Path
+
+    Host
+        ↓
+    Header
+
+    Accept
+        ↓
+    Header
+
+
+A POST request can also contain a body:
+
+    POST /users HTTP/1.1
+    Host: api.example.com
+    Content-Type: application/json
+
+    {
+        "name": "Apoorv",
+        "email": "user@example.com"
+    }
+
+
+====================================================================
+9. RESPONSE
+====================================================================
+
+The server sends an HTTP response.
+
+A response generally contains:
+
+    Status Code
+    Headers
+    Body
+
+
+Example:
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    {
+        "id": 10,
+        "name": "Apoorv"
+    }
+
+
+Here:
+
+    200
+        ↓
+    Status code
+
+    Content-Type
+        ↓
+    Header
+
+    JSON
+        ↓
+    Response body
+
+
+====================================================================
+10. COMPLETE REQUEST-RESPONSE CYCLE
+====================================================================
+
+Suppose you open:
+
+    https://api.example.com/users/10
+
+
+Step 1:
+    Browser receives the URL.
+
+Step 2:
+    Browser determines the protocol:
+
+    HTTPS
+
+
+Step 3:
+    Browser determines the domain:
+
+    api.example.com
+
+
+Step 4:
+    DNS is used to find the server's IP address.
+
+Step 5:
+    A network connection is established.
+
+Step 6:
+    HTTPS/TLS security is established.
+
+Step 7:
+    Browser sends HTTP request.
+
+Step 8:
+    Server receives request.
+
+Step 9:
+    Server processes request.
+
+Step 10:
+    Server may query database.
+
+Step 11:
+    Database returns data.
+
+Step 12:
+    Server creates HTTP response.
+
+Step 13:
+    Response travels back to client.
+
+Step 14:
+    Browser/application processes response.
+
+Conceptually:
+
+    URL
+     |
+     ↓
+    DNS
+     |
+     ↓
+    IP Address
+     |
+     ↓
+    Network Connection
+     |
+     ↓
+    TLS
+     |
+     ↓
+    HTTP Request
+     |
+     ↓
+    Server
+     |
+     ↓
+    Application Logic
+     |
+     ↓
+    Database
+     |
+     ↓
+    Response
+     |
+     ↓
+    Client
+
+
+====================================================================
+11. HTTP
+====================================================================
+
+HTTP = HyperText Transfer Protocol.
+
+It is an application-layer protocol used for communication between
+clients and servers.
+
+HTTP defines how messages are structured and exchanged.
+
+
+Basic model:
+
+    Client
+       |
+       | HTTP Request
+       ↓
+    Server
+       |
+       | HTTP Response
+       ↓
+    Client
+
+
+HTTP is fundamental to REST APIs.
+
+
+Example:
+
+    GET /products/100
+
+
+Server:
+
+    200 OK
+
+    {
+        "id": 100,
+        "name": "Laptop"
+    }
+
+
+====================================================================
+12. HTTP IS A PROTOCOL
+====================================================================
+
+A protocol is a set of rules for communication.
+
+Human communication:
+
+    Person A:
+        "Hello"
+
+    Person B:
+        "Hello"
+
+
+Computer communication needs standardized rules.
+
+HTTP defines things such as:
+
+    Request methods
+    Headers
+    Status codes
+    Message format
+    Request/response semantics
+
+
+Without agreed rules, different systems would not know how to
+communicate reliably.
+
+
+====================================================================
+13. HTTPS
+====================================================================
+
+HTTPS = HTTP Secure.
+
+HTTPS uses HTTP together with TLS to provide secure communication.
+
+Conceptually:
+
+    HTTP
+      +
+    TLS
+      =
+    HTTPS
+
+
+Without HTTPS:
+
+    Client
+       |
+       | HTTP
+       ↓
+    Server
+
+
+With HTTPS:
+
+    Client
+       |
+       | Encrypted communication
+       ↓
+    Server
+
+
+HTTPS helps provide:
+
+    Confidentiality
+    Integrity
+    Server authentication
+
+
+Confidentiality:
+
+    Attackers should not be able to read protected traffic.
+
+Integrity:
+
+    Traffic should not be modified unnoticed.
+
+Authentication:
+
+    The client can verify the server's identity through TLS
+    certificates.
+
+
+IMPORTANT:
+
+HTTPS does NOT mean the API itself is secure.
+
+An API can still have:
+
+    Broken authentication
+    Broken authorization
+    SQL injection
+    Bad input validation
+    Excessive data exposure
+
+HTTPS protects the communication channel; it does not automatically
+make application logic secure.
+
+
+====================================================================
+14. TCP/IP BASICS
+====================================================================
+
+To understand APIs deeply, you need a basic understanding of
+networking.
+
+TCP/IP refers to the family of networking protocols used for
+Internet communication.
+
+
+Simplified layers:
+
+    +-------------------------+
+    | Application             |
+    | HTTP, DNS, etc.         |
+    +-------------------------+
+    | Transport               |
+    | TCP, UDP                |
+    +-------------------------+
+    | Internet                |
+    | IP                      |
+    +-------------------------+
+    | Link / Network Access   |
+    +-------------------------+
+
+
+For a typical HTTPS API request:
+
+    Application
+        ↓
+    HTTP
+
+    Transport
+        ↓
+    TCP
+
+    Internet
+        ↓
+    IP
+
+    Network Access
+        ↓
+    Ethernet / Wi-Fi
+
+
+Modern HTTP versions can use different transport mechanisms;
+HTTP/3 uses QUIC, which runs over UDP.
+
+
+====================================================================
+15. IP ADDRESS
+====================================================================
+
+An IP address identifies a network interface/address for
+communication.
+
+Example IPv4:
+
+    192.168.1.10
+
+
+Public IP:
+
+    Used for communication over the public Internet.
+
+Private IP:
+
+    Used inside private networks.
+
+Examples of private IPv4 ranges include:
+
+    10.0.0.0/8
+    172.16.0.0/12
+    192.168.0.0/16
+
+
+IPv6 example:
+
+    2001:db8::1
+
+
+For APIs, you will frequently encounter:
+
+    Domain → DNS → IP
+
+
+====================================================================
+16. PORT
+====================================================================
+
+A port identifies a service endpoint on a host.
+
+Think of an IP address as a building address.
+
+Think of a port as a specific door/service.
+
+
+Example:
+
+    192.168.1.10:8080
+
+
+Here:
+
+    IP Address = 192.168.1.10
+    Port       = 8080
+
+
+Common ports:
+
+    HTTP       → 80
+    HTTPS      → 443
+    SSH        → 22
+    DNS        → 53
+
+
+Development APIs often run on ports such as:
+
+    3000
+    5000
+    8000
+    8080
+
+
+Example:
+
+    http://localhost:8000
+
+
+====================================================================
+17. DNS
+====================================================================
+
+DNS = Domain Name System.
+
+Humans prefer:
+
+    google.com
+
+Computers communicate using IP addresses.
+
+DNS maps domain names to IP information.
+
+Conceptually:
+
+    api.example.com
+           |
+           ↓
+          DNS
+           |
+           ↓
+      203.0.113.10
+
+
+Then the client can communicate with the destination.
+
+
+DNS can involve:
+
+    Recursive resolvers
+    Root DNS servers
+    TLD servers
+    Authoritative DNS servers
+    DNS caching
+
+
+For API engineering, DNS becomes very important when working with:
+
+    Load Balancers
+    Cloud
+    Microservices
+    Service Discovery
+    CDNs
+    Failover
+
+
+====================================================================
+18. URL
+====================================================================
+
+URL = Uniform Resource Locator.
+
+Example:
+
+    https://api.example.com:443/users/10?active=true
+
+
+Break it down:
+
+    https
+      ↓
+    Scheme / protocol
+
+    api.example.com
+      ↓
+    Host
+
+    443
+      ↓
+    Port
+
+    /users/10
+      ↓
+    Path
+
+    ?active=true
+      ↓
+    Query string
+
+
+General structure:
+
+    scheme://host:port/path?query#fragment
+
+
+Example:
+
+    https://example.com/products?page=2&limit=20
+
+
+Path:
+
+    /products
+
+
+Query parameters:
+
+    page=2
+    limit=20
+
+
+====================================================================
+19. URI VS URL
+====================================================================
+
+URI = Uniform Resource Identifier.
+
+URL is a type of URI that provides a location/access mechanism.
+
+In everyday API development, developers commonly use the terms
+URL and URI somewhat interchangeably, but technically they are not
+identical concepts.
+
+
+Example:
+
+    https://example.com/users/10
+
+
+This identifies a resource and provides a way to locate/access it.
+
+
+====================================================================
+20. WEB SERVER
+====================================================================
+
+A web server is software that accepts network requests and serves
+web resources or forwards requests to application software.
+
+Examples:
+
+    NGINX
+    Apache HTTP Server
+
+
+A web server can handle:
+
+    HTTP connections
+    Static files
+    TLS termination
+    Reverse proxying
+    Request routing
+
+
+Example:
+
+    Client
+      |
+      ↓
+    NGINX
+      |
+      ↓
+    Application
+
+
+====================================================================
+21. APPLICATION SERVER
+====================================================================
+
+The application server/application process executes application
+logic.
+
+Examples:
+
+    Spring Boot application
+    Node.js application
+    FastAPI application
+    Django application
+
+
+Example:
+
+    Client
+      |
+      ↓
+    NGINX
+      |
+      ↓
+    Spring Boot
+      |
+      ↓
+    PostgreSQL
+
+
+The distinction between "web server" and "application server" can
+vary by technology and architecture, but this conceptual separation
+is useful for beginners.
+
+
+====================================================================
+22. API SERVER
+====================================================================
+
+An API server exposes API endpoints.
+
+Example:
+
+    GET /api/users
+    POST /api/users
+    GET /api/users/10
+    PUT /api/users/10
+    DELETE /api/users/10
+
+
+The server receives requests and returns structured responses,
+often JSON.
+
+
+Example:
+
+    GET /api/users/10
+
+
+Response:
+
+    {
+        "id": 10,
+        "name": "Apoorv",
+        "role": "student"
+    }
+
+
+====================================================================
+23. COOKIES
+====================================================================
+
+A cookie is a small piece of data that a server asks a browser to
+store and send with subsequent requests according to cookie rules.
+
+
+Example:
+
+Server response:
+
+    Set-Cookie: session_id=abc123
+
+
+Browser stores it.
+
+Later:
+
+    Cookie: session_id=abc123
+
+
+Cookies are commonly used for:
+
+    Login sessions
+    Preferences
+    Tracking
+    Some authentication mechanisms
+
+
+Example:
+
+    Login
+      |
+      ↓
+    Server
+      |
+      | Set-Cookie
+      ↓
+    Browser
+      |
+      | Cookie
+      ↓
+    Server
+
+
+Important cookie attributes include:
+
+    Secure
+    HttpOnly
+    SameSite
+    Domain
+    Path
+    Max-Age / Expires
+
+
+Secure:
+
+    Send cookie only over secure connections.
+
+HttpOnly:
+
+    Prevent JavaScript from directly reading the cookie.
+
+SameSite:
+
+    Controls cross-site cookie sending behavior.
+
+
+====================================================================
+24. SESSION
+====================================================================
+
+HTTP is fundamentally stateless.
+
+Stateless means:
+
+    Each request can be processed independently unless the
+    application uses some mechanism to maintain state.
+
+
+But applications often need to remember users.
+
+Example:
+
+    User logs in.
+
+Server needs to know:
+
+    "This request belongs to Apoorv."
+
+
+A session can be used.
+
+Simplified:
+
+    Login
+      |
+      ↓
+    Server creates session
+      |
+      ↓
+    Session ID
+      |
+      ↓
+    Browser stores session ID
+      |
+      ↓
+    Future request includes session ID
+      |
+      ↓
+    Server identifies session
+
+
+Common session architecture:
+
+    Browser
+       |
+       | Session Cookie
+       ↓
+    API Server
+       |
+       ↓
+    Session Store
+       |
+       ↓
+    User Session
+
+
+Session storage can be:
+
+    Memory
+    Database
+    Redis
+    Distributed cache
+
+
+====================================================================
+25. STATEFUL VS STATELESS
+====================================================================
+
+STATEFUL:
+
+Server keeps client-related state.
+
+Example:
+
+    Server A stores session information.
+
+    Client → Server A
+                |
+                ↓
+             Session
+
+
+Problem when scaling:
+
+    Client
+      |
+      ↓
+    Server A
+      |
+      | Session exists here
+      ↓
+
+
+If the next request goes to Server B:
+
+    Client
+      |
+      ↓
+    Server B
+      |
+      | Session not found
+      ↓
+    Problem
+
+
+Solutions include:
+
+    Shared session store
+    Sticky sessions
+    Stateless authentication
+
+
+STATELESS:
+
+Each request contains enough information for the server to process
+it without relying on local session state.
+
+Example:
+
+    Client
+      |
+      | Access Token
+      ↓
+    Server A
+
+    Next request:
+
+    Client
+      |
+      | Access Token
+      ↓
+    Server B
+
+
+Stateless architecture is particularly useful for horizontally
+scaled APIs, although statelessness does not mean "no state exists
+anywhere."
+
+
+====================================================================
+26. CACHE
+====================================================================
+
+A cache stores data temporarily so that future requests can be
+served faster or with less work.
+
+Without cache:
+
+    Client
+      |
+      ↓
+    API
+      |
+      ↓
+    Database
+      |
+      ↓
+    Response
+
+
+With cache:
+
+    Client
+      |
+      ↓
+    API
+      |
+      ↓
+    Cache
+      |
+      | Cache HIT
+      ↓
+    Response
+
+
+If data is not available:
+
+    Cache MISS
+        |
+        ↓
+    Database
+        |
+        ↓
+    Cache
+        |
+        ↓
+    Response
+
+
+Example:
+
+    GET /products/100
+
+
+First request:
+
+    API → Redis → MISS
+              ↓
+          Database
+              ↓
+            Redis
+              ↓
+          Response
+
+
+Second request:
+
+    API → Redis → HIT
+              ↓
+          Response
+
+
+Caching improves:
+
+    Latency
+    Throughput
+    Database load
+
+
+But caching introduces challenges:
+
+    Cache invalidation
+    Stale data
+    Cache consistency
+    Memory limits
+    Cache stampede
+
+
+A famous practical lesson:
+
+    "There are only two hard things in Computer Science:
+     cache invalidation and naming things."
+
+The quote is commonly attributed to Phil Karlton.
+
+
+====================================================================
+27. TYPES OF CACHE
+====================================================================
+
+Common cache locations:
+
+    Browser Cache
+    CDN Cache
+    Reverse Proxy Cache
+    Application Cache
+    Distributed Cache
+    Database Cache
+
+
+Example architecture:
+
+    Browser
+       |
+       ↓
+    CDN Cache
+       |
+       ↓
+    Reverse Proxy
+       |
+       ↓
+    Redis
+       |
+       ↓
+    API
+       |
+       ↓
+    Database
+
+
+====================================================================
+28. PROXY
+====================================================================
+
+A proxy is an intermediary between a client and another server.
+
+Basic architecture:
+
+    Client
+       |
+       ↓
+    Proxy
+       |
+       ↓
+    Destination Server
+
+
+The client communicates through the proxy.
+
+
+A forward proxy generally acts on behalf of clients.
+
+Example:
+
+    Employee Computer
+           |
+           ↓
+       Corporate
+         Proxy
+           |
+           ↓
+       Internet
+
+
+The destination server sees the proxy as the immediate client,
+subject to the network configuration and headers involved.
+
+
+====================================================================
+29. REVERSE PROXY
+====================================================================
+
+A reverse proxy sits in front of servers and receives requests on
+their behalf.
+
+Architecture:
+
+    Client
+       |
+       ↓
+    Reverse Proxy
+       |
+       +--------→ API Server 1
+       |
+       +--------→ API Server 2
+       |
+       +--------→ API Server 3
+
+
+Examples:
+
+    NGINX
+    HAProxy
+    Envoy
+
+
+A reverse proxy can provide:
+
+    TLS termination
+    Load balancing
+    Routing
+    Caching
+    Compression
+    Security controls
+    Request filtering
+
+
+This is extremely important in production API architecture.
+
+
+====================================================================
+30. FORWARD PROXY VS REVERSE PROXY
+====================================================================
+
+FORWARD PROXY:
+
+    Represents clients.
+
+    Client
+       ↓
+    Forward Proxy
+       ↓
+    Internet
+
+
+REVERSE PROXY:
+
+    Represents/stands in front of servers.
+
+    Client
+       ↓
+    Reverse Proxy
+       ↓
+    Servers
+
+
+Memory trick:
+
+    Forward Proxy:
+        Protects/represents CLIENT SIDE.
+
+    Reverse Proxy:
+        Protects/represents SERVER SIDE.
+
+
+====================================================================
+31. LOAD BALANCER
+====================================================================
+
+A load balancer distributes incoming traffic across multiple
+servers.
+
+Without load balancing:
+
+    Client
+      |
+      ↓
+    Server
+      |
+      ↓
+    Server overloaded
+
+
+With load balancing:
+
+                +--> Server 1
+                |
+    Client → Load Balancer → Server 2
+                |
+                +--> Server 3
+
+
+Benefits:
+
+    Scalability
+    Availability
+    Fault tolerance
+    Traffic distribution
+
+
+Example:
+
+    10,000 requests
+
+             ↓
+       Load Balancer
+       /     |      \
+      ↓      ↓       ↓
+     API1   API2    API3
+
+
+====================================================================
+32. LOAD BALANCING ALGORITHMS
+====================================================================
+
+Common approaches:
+
+    Round Robin
+
+    Request 1 → Server A
+    Request 2 → Server B
+    Request 3 → Server C
+    Request 4 → Server A
+
+
+    Least Connections
+
+    Send traffic to the server with fewer active connections.
+
+
+    Weighted Load Balancing
+
+    Server A → Weight 5
+    Server B → Weight 3
+    Server C → Weight 2
+
+
+    Consistent Hashing
+
+    Requests are distributed according to a hashing strategy,
+    useful for some stateful/distributed systems.
+
+
+====================================================================
+33. HEALTH CHECK
+====================================================================
+
+A load balancer needs to know whether a server is healthy.
+
+Example:
+
+    GET /health
+
+
+Healthy:
+
+    200 OK
+
+
+Unhealthy:
+
+    Timeout
+    500
+    Connection failure
+
+
+If Server 2 fails:
+
+    Load Balancer
+
+       X → Server 2
+
+       ↓
+
+    Send requests to:
+
+       Server 1
+       Server 3
+
+
+This improves availability.
+
+
+====================================================================
+34. CDN
+====================================================================
+
+CDN = Content Delivery Network.
+
+A CDN is a distributed network of servers located in different
+geographical regions.
+
+Its primary purpose is to deliver content closer to users.
+
+Example:
+
+    User in India
+         |
+         ↓
+    Nearby CDN Edge
+         |
+         ↓
+    Content
+
+
+Instead of:
+
+    India User
+         |
+         ↓
+    Origin Server in another region
+         |
+         ↓
+    Content
+
+
+CDNs are especially useful for:
+
+    Images
+    JavaScript
+    CSS
+    Videos
+    Static files
+    Some cacheable API responses
+
+
+Examples of CDN providers include:
+
+    Cloudflare
+    Amazon CloudFront
+    Fastly
+
+
+====================================================================
+35. CDN ARCHITECTURE
+====================================================================
+
+    User
+      |
+      ↓
+    CDN Edge
+      |
+      | Cache HIT
+      ↓
+    Response
+
+
+If cache MISS:
+
+    User
+      |
+      ↓
+    CDN Edge
+      |
+      | MISS
+      ↓
+    Origin Server
+      |
+      ↓
+    Response
+      |
+      ↓
+    CDN Cache
+      |
+      ↓
+    User
+
+
+CDN reduces:
+
+    Latency
+    Origin traffic
+    Bandwidth usage
+
+
+====================================================================
+36. WEB SERVER + REVERSE PROXY + API SERVER
+====================================================================
+
+A production system may look like:
+
+    Client
+       |
+       | HTTPS
+       ↓
+    Internet
+       |
+       ↓
+    CDN
+       |
+       ↓
+    Load Balancer
+       |
+       ↓
+    NGINX / Reverse Proxy
+       |
+       +--------+
+       |        |
+       ↓        ↓
+    API 1     API 2
+       |        |
+       +----+---+
+            |
+            ↓
+          Redis
+            |
+            ↓
+        Database
+
+
+This architecture is common in real-world systems.
+
+
+====================================================================
+37. COMPLETE API REQUEST JOURNEY
+====================================================================
+
+Suppose a mobile application calls:
+
+    GET https://api.shop.com/products/100
+
+
+The journey can look like:
+
+    STEP 1
+    ------
+    Mobile App creates request.
+
+
+    STEP 2
+    ------
+    DNS resolves:
+
+        api.shop.com
+              ↓
+        IP address
+
+
+    STEP 3
+    ------
+    Client establishes secure connection.
+
+
+    STEP 4
+    ------
+    TLS protects the connection.
+
+
+    STEP 5
+    ------
+    HTTPS request is sent.
+
+
+    STEP 6
+    ------
+    CDN/reverse proxy/load balancer may receive request.
+
+
+    STEP 7
+    ------
+    Request is routed to API server.
+
+
+    STEP 8
+    ------
+    API authenticates the request if required.
+
+
+    STEP 9
+    ------
+    API validates input.
+
+
+    STEP 10
+    -------
+    API checks cache.
+
+
+    STEP 11
+    -------
+    If cache MISS, API queries database.
+
+
+    STEP 12
+    -------
+    Database returns product.
+
+
+    STEP 13
+    -------
+    API creates JSON response.
+
+
+    STEP 14
+    -------
+    Response travels back.
+
+
+    STEP 15
+    -------
+    Client receives JSON.
+
+
+Final:
+
+    {
+        "id": 100,
+        "name": "Laptop",
+        "price": 65000
+    }
+
+
+====================================================================
+38. COMPLETE PRODUCTION ARCHITECTURE
+====================================================================
+
+                         INTERNET
+                            |
+                            ↓
+                         CLIENT
+                    Browser / Mobile App
+                            |
+                            ↓
+                           DNS
+                            |
+                            ↓
+                           CDN
+                            |
+                            ↓
+                    Load Balancer
+                            |
+                            ↓
+                     Reverse Proxy
+                            |
+                 +----------+----------+
+                 |                     |
+                 ↓                     ↓
+             API Server 1          API Server 2
+                 |                     |
+                 +----------+----------+
+                            |
+                            ↓
+                     API Application
+                            |
+             +--------------+--------------+
+             |              |              |
+             ↓              ↓              ↓
+          Cache          Database       Queue
+          Redis        PostgreSQL       Kafka
+             |              |              |
+             +--------------+--------------+
+                            |
+                            ↓
+                       Other Services
+
+
+This is the foundation of modern API architecture.
+
+
+====================================================================
+39. WHY THIS CHAPTER MATTERS FOR API ENGINEERING
+====================================================================
+
+If you do not understand:
+
+    HTTP
+    DNS
+    TCP/IP
+    TLS
+    Cookies
+    Sessions
+    Cache
+    Proxy
+    Reverse Proxy
+    CDN
+    Load Balancer
+
+then advanced API topics will become difficult.
+
+For example:
+
+JWT:
+    Requires understanding authentication over HTTP.
+
+OAuth:
+    Requires understanding HTTP redirects, tokens and TLS.
+
+Rate Limiting:
+    Requires understanding requests and distributed servers.
+
+API Gateway:
+    Requires understanding reverse proxies and routing.
+
+Microservices:
+    Requires understanding network communication.
+
+WebSockets:
+    Requires understanding HTTP connection establishment.
+
+gRPC:
+    Requires understanding networking and serialization.
+
+API System Design:
+    Requires understanding load balancing, caching,
+    networking and distributed systems.
+
+
+====================================================================
+40. IMPORTANT TERMINOLOGY
+====================================================================
+
+CLIENT
+    Program that sends requests.
+
+SERVER
+    Program/system that receives requests and provides services.
+
+REQUEST
+    Message sent by client.
+
+RESPONSE
+    Message returned by server.
+
+HTTP
+    Application-layer protocol used for Web communication.
+
+HTTPS
+    HTTP protected using TLS.
+
+IP
+    Network addressing protocol.
+
+PORT
+    Identifies a service endpoint on a host.
+
+DNS
+    Converts/resolves domain names to network addressing information.
+
+URL
+    Identifies a resource and indicates how/where it can be accessed.
+
+COOKIE
+    Small browser-managed data sent with applicable requests.
+
+SESSION
+    Server/application-managed state associated with a client/session.
+
+CACHE
+    Temporary storage used to serve data faster.
+
+PROXY
+    Intermediary for client-side communication.
+
+REVERSE PROXY
+    Intermediary placed in front of servers.
+
+LOAD BALANCER
+    Distributes traffic among servers.
+
+CDN
+    Distributed infrastructure that serves content closer to users.
+
+API SERVER
+    Server application exposing API functionality.
+
+
+====================================================================
+41. MOST IMPORTANT DIFFERENCES
+====================================================================
+
+HTTP vs HTTPS
+
+HTTP:
+    Communication without TLS protection.
+
+HTTPS:
+    HTTP over TLS.
+
+
+Internet vs Web
+
+Internet:
+    Global networking infrastructure.
+
+Web:
+    Services/resources using Web technologies over the Internet.
+
+
+Client vs Server
+
+Client:
+    Requests service.
+
+Server:
+    Provides service.
+
+
+Forward Proxy vs Reverse Proxy
+
+Forward Proxy:
+    Represents clients.
+
+Reverse Proxy:
+    Represents/stands in front of servers.
+
+
+Cookie vs Session
+
+Cookie:
+    Client/browser-managed piece of data.
+
+Session:
+    Server/application-side state associated with a client.
+
+
+Cache vs Database
+
+Cache:
+    Optimized temporary/derived storage for faster access.
+
+Database:
+    Primary persistent data store in many applications.
+
+
+Load Balancer vs CDN
+
+Load Balancer:
+    Distributes requests among backend servers.
+
+CDN:
+    Distributes content delivery geographically.
+
+
+Web Server vs API Server
+
+Web Server:
+    Handles HTTP-level serving/proxying/static content.
+
+API Server:
+    Runs application/API logic.
+
+A single modern component can perform multiple roles.
+
+
+====================================================================
+42. MASTER CONCEPT MAP
+====================================================================
+
+                         USER
+                           |
+                           ↓
+                        CLIENT
+                           |
+                           ↓
+                          URL
+                           |
+                           ↓
+                          DNS
+                           |
+                           ↓
+                       IP ADDRESS
+                           |
+                           ↓
+                    NETWORK CONNECTION
+                           |
+                           ↓
+                          TLS
+                           |
+                           ↓
+                         HTTPS
+                           |
+                           ↓
+                          CDN
+                           |
+                           ↓
+                    LOAD BALANCER
+                           |
+                           ↓
+                    REVERSE PROXY
+                           |
+                           ↓
+                       API SERVER
+                           |
+                +----------+----------+
+                |                     |
+                ↓                     ↓
+              CACHE                LOGIC
+                |                     |
+                |                     ↓
+                |                  DATABASE
+                |                     |
+                +----------+----------+
+                           |
+                           ↓
+                       RESPONSE
+                           |
+                           ↓
+                         CLIENT
+
+
+====================================================================
+43. EXAM-READY POINTS
+====================================================================
+
+Remember these:
+
+1. API communication commonly follows the request-response model.
+
+2. HTTP is an application-layer protocol.
+
+3. HTTPS uses TLS to protect HTTP communication.
+
+4. DNS resolves domain names to IP-related information.
+
+5. A port identifies a service endpoint on a host.
+
+6. HTTP itself is stateless.
+
+7. Cookies can be used to maintain client-related information
+   across requests.
+
+8. Sessions allow applications to maintain user-related state.
+
+9. A cache reduces latency and backend workload.
+
+10. A forward proxy represents clients.
+
+11. A reverse proxy sits in front of servers.
+
+12. A load balancer distributes traffic across backend instances.
+
+13. A CDN serves content from geographically distributed edge
+    locations.
+
+14. API servers commonly communicate with databases and other
+    services.
+
+15. HTTPS protects the communication channel but does not
+    automatically secure application logic.
+
+
+====================================================================
+44. INTERVIEW QUESTIONS
+====================================================================
+
+BEGINNER:
+
+Q1. What is a client?
+
+Q2. What is a server?
+
+Q3. What is HTTP?
+
+Q4. What is HTTPS?
+
+Q5. What is DNS?
+
+Q6. What is an IP address?
+
+Q7. What is a port?
+
+Q8. What is a URL?
+
+Q9. What is a cookie?
+
+Q10. What is a session?
+
+
+INTERMEDIATE:
+
+Q11. Why is HTTP called stateless?
+
+Q12. What is the difference between HTTP and HTTPS?
+
+Q13. What is the difference between a proxy and reverse proxy?
+
+Q14. What is a load balancer?
+
+Q15. Why do we need a CDN?
+
+Q16. What happens when you enter a URL in a browser?
+
+Q17. What is the role of DNS in an API request?
+
+Q18. Why is caching used?
+
+Q19. What is the difference between stateful and stateless
+     architecture?
+
+Q20. What happens if one API server fails?
+
+
+ADVANCED:
+
+Q21. Where can TLS be terminated?
+
+Q22. How does a reverse proxy route requests?
+
+Q23. How would you scale a stateless API horizontally?
+
+Q24. What problems can occur with distributed sessions?
+
+Q25. What is cache invalidation?
+
+Q26. What is cache stampede?
+
+Q27. How does a CDN reduce latency?
+
+Q28. What is the difference between L4 and L7 load balancing?
+
+Q29. Why might an API use both CDN and Redis?
+
+Q30. Design the network path for a high-traffic API.
+
+
+====================================================================
+45. PRACTICAL EXERCISE
+====================================================================
+
+Use a browser and observe:
+
+    https://example.com
+
+
+Then identify:
+
+    Scheme:
+    Host:
+    Port:
+    Path:
+
+
+Default HTTPS port:
+
+    443
+
+
+Now try:
+
+    https://example.com/
+
+
+Observe the response using browser developer tools.
+
+Look for:
+
+    Request URL
+    Request Method
+    Status Code
+    Response Headers
+    Request Headers
+    Content-Type
+
+
+You can also use cURL:
+
+    curl -v https://example.com
+
+
+This allows you to see details of the HTTP/TLS interaction.
+
+
+====================================================================
+46. MINI PRACTICAL API EXAMPLE
+====================================================================
+
+Suppose we have:
+
+    GET /api/users/10
+
+
+Client sends:
+
+    GET /api/users/10 HTTP/1.1
+    Host: api.example.com
+    Accept: application/json
+
+
+Server:
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    {
+        "id": 10,
+        "name": "Apoorv"
+    }
+
+
+Flow:
+
+    Client
+       |
+       | GET /api/users/10
+       ↓
+    Reverse Proxy
+       |
+       ↓
+    API Server
+       |
+       ↓
+    Database
+       |
+       ↓
+    API Server
+       |
+       ↓
+    JSON Response
+       |
+       ↓
+    Client
+
+
+This simple example is the foundation for everything that comes
+later in API engineering.
+
+
+====================================================================
+47. CHAPTER 1 FINAL SUMMARY
+====================================================================
+
+WEB:
+
+    A collection of services and resources operating using
+    Web technologies over the Internet.
+
+
+CLIENT:
+
+    Sends requests.
+
+
+SERVER:
+
+    Processes requests and returns responses.
+
+
+HTTP:
+
+    Protocol used for Web communication.
+
+
+HTTPS:
+
+    HTTP protected by TLS.
+
+
+DNS:
+
+    Resolves domain names to network destinations.
+
+
+IP:
+
+    Provides network addressing.
+
+
+PORT:
+
+    Identifies a service endpoint.
+
+
+REQUEST:
+
+    Client → Server
+
+
+RESPONSE:
+
+    Server → Client
+
+
+COOKIE:
+
+    Browser-managed data associated with requests.
+
+
+SESSION:
+
+    Mechanism for maintaining application state across requests.
+
+
+CACHE:
+
+    Faster temporary/derived storage.
+
+
+PROXY:
+
+    Intermediary for client-side traffic.
+
+
+REVERSE PROXY:
+
+    Intermediary in front of backend servers.
+
+
+LOAD BALANCER:
+
+    Distributes traffic across servers.
+
+
+CDN:
+
+    Distributes content closer to users.
+
+
+FINAL ARCHITECTURE:
+
+    Client
+       ↓
+    DNS
+       ↓
+    Internet
+       ↓
+    CDN
+       ↓
+    Load Balancer
+       ↓
+    Reverse Proxy
+       ↓
+    API Server
+       ↓
+    Cache / Database / Other Services
+       ↓
+    Response
+       ↓
+    Client
+
+
+====================================================================
+CHAPTER 1 STATUS
+====================================================================
+
+[✓] How the Web Works
+[✓] Browser → Server Communication
+[✓] Request-Response Cycle
+[✓] HTTP
+[✓] HTTPS
+[✓] TCP/IP Basics
+[✓] TLS Basics
+[✓] Cookies
+[✓] Sessions
+[✓] Cache
+[✓] Proxy
+[✓] Reverse Proxy
+[✓] CDN
+[✓] Load Balancer
+
+CHAPTER 1 COMPLETE.
+
+NEXT PENDING CHAPTER:
+    CHAPTER 2 — WHAT IS AN API?
+
+IMPORTANT:
+    According to your learning rule, we will NOT move to Chapter 2
+    until you type:
+
+        NEXT
+====================================================================
