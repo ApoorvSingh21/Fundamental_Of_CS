@@ -1,0 +1,2643 @@
+Absolutely. Below is the complete Chapter 1 explanation in a single code block, from beginner → university level → deep concepts → Linux practical → interview → exam preparation.
+
+======================================================================
+              OPERATING SYSTEMS — CHAPTER 01
+              OPERATING SYSTEM FUNDAMENTALS
+======================================================================
+
+LEVEL:
+    M.Tech 1st Year
+    Job-Ready + University + Interview + GATE Foundation
+
+CHAPTER GOAL:
+    Understand what an Operating System is, why it is required,
+    how it interacts with hardware and applications, how an OS
+    provides services, how kernels work at a high level, how
+    computers boot, and how Linux provides a practical environment.
+
+LEARNING PATH:
+    Basic → Conceptual → Formal → Deep → Practical → Interview
+
+
+======================================================================
+1.1 INTRODUCTION TO OPERATING SYSTEM
+======================================================================
+
+1.1.1 WHAT IS AN OPERATING SYSTEM?
+----------------------------------------------------------------------
+
+An Operating System (OS) is system software that manages computer
+hardware and provides services to application programs.
+
+Simple definition:
+
+    Operating System = Manager of Computer Resources
+
+Examples:
+
+    Windows
+    Linux
+    macOS
+    Android
+    iOS
+
+A computer has resources such as:
+
+    CPU
+    RAM
+    Storage
+    Keyboard
+    Mouse
+    Display
+    Network
+    GPU
+    I/O devices
+
+Many programs want to use these resources at the same time.
+
+The Operating System manages access to these resources.
+
+Example:
+
+    User
+      ↓
+    Application
+      ↓
+    Operating System
+      ↓
+    Hardware
+
+
+----------------------------------------------------------------------
+
+1.1.2 WHY DO WE NEED AN OPERATING SYSTEM?
+----------------------------------------------------------------------
+
+Imagine a computer without an Operating System.
+
+Suppose a program wants to:
+
+    • read a file
+    • write a file
+    • use RAM
+    • use CPU
+    • communicate with a network
+    • print a document
+
+The program would need to directly understand the hardware.
+
+For example, to access storage it would need to understand:
+
+    • storage controller
+    • storage blocks
+    • device commands
+    • hardware registers
+    • device timing
+    • error handling
+
+This would make software development extremely difficult.
+
+The OS hides much of this complexity.
+
+Instead of directly controlling hardware, an application can request
+services from the OS.
+
+Example:
+
+    Application:
+        "I want to read data.txt"
+
+              ↓
+
+    Operating System:
+        Finds the file
+        Checks permissions
+        Communicates with storage
+        Reads data
+        Returns data
+
+              ↓
+
+    Application receives data
+
+
+----------------------------------------------------------------------
+
+1.1.3 OS AS AN INTERFACE
+----------------------------------------------------------------------
+
+The OS provides an interface between:
+
+    USER
+      ↓
+    APPLICATION
+      ↓
+    OPERATING SYSTEM
+      ↓
+    HARDWARE
+
+The user normally does not directly communicate with hardware.
+
+For example:
+
+    User:
+        Opens a file
+
+    Application:
+        Requests file access
+
+    OS:
+        Manages file-system operation
+
+    Storage device:
+        Provides stored data
+
+
+----------------------------------------------------------------------
+
+1.1.4 OS AS A RESOURCE MANAGER
+----------------------------------------------------------------------
+
+One of the most important definitions for interviews:
+
+    "An Operating System is a Resource Manager."
+
+Resources include:
+
+    1. CPU
+    2. Main Memory
+    3. Storage
+    4. I/O Devices
+    5. Network resources
+
+Suppose these applications are running:
+
+    Chrome
+    VS Code
+    Oracle
+    Music Player
+
+All applications require CPU and memory.
+
+The OS decides:
+
+    • which process gets CPU
+    • how much CPU time it receives
+    • how much memory it receives
+    • which files it can access
+    • which devices it can use
+
+Conceptually:
+
+                         CPU
+                          |
+             +------------+------------+
+             |            |            |
+           Chrome       VS Code      Oracle
+
+
+                         RAM
+                          |
+             +------------+------------+
+             |            |            |
+           Chrome       VS Code      Oracle
+
+
+The OS manages this sharing.
+
+
+----------------------------------------------------------------------
+
+1.1.5 OS AS A CONTROL PROGRAM
+----------------------------------------------------------------------
+
+The OS also acts as a control program.
+
+It controls:
+
+    • program execution
+    • hardware access
+    • resource usage
+    • errors
+    • security
+    • protection
+
+For example:
+
+    Process A
+        |
+        X
+        |
+    Process B's protected memory
+
+The OS prevents unauthorized access.
+
+This provides isolation and protection.
+
+
+----------------------------------------------------------------------
+
+1.1.6 OS AS AN EXTENDED MACHINE
+----------------------------------------------------------------------
+
+Hardware is complex.
+
+The OS provides simpler abstractions over hardware.
+
+This concept is called:
+
+    ABSTRACTION
+
+Example:
+
+A user sees:
+
+    file.txt
+
+But the physical storage device does not fundamentally work in terms
+of "file.txt".
+
+The OS's file-system layer translates the logical file operation
+into lower-level storage operations.
+
+Concept:
+
+    Application
+        |
+        | open("file.txt")
+        ↓
+    Operating System
+        |
+        ↓
+    File System
+        |
+        ↓
+    Storage Driver
+        |
+        ↓
+    Storage Controller
+        |
+        ↓
+    SSD/HDD
+
+Therefore:
+
+    OS = Abstraction + Resource Management
+
+
+======================================================================
+1.2 GOALS OF OPERATING SYSTEM
+======================================================================
+
+The major goals are:
+
+    1. Convenience
+    2. Efficiency
+    3. Resource Management
+    4. Protection
+    5. Security
+    6. Reliability
+    7. Scalability
+
+
+----------------------------------------------------------------------
+
+1.2.1 CONVENIENCE
+----------------------------------------------------------------------
+
+The OS makes computers easier to use.
+
+Without OS:
+
+    Complex hardware operations
+
+With OS:
+
+    Simple commands
+    APIs
+    Applications
+    File systems
+
+
+----------------------------------------------------------------------
+
+1.2.2 EFFICIENCY
+----------------------------------------------------------------------
+
+The OS attempts to use hardware efficiently.
+
+For example, if one process is waiting for I/O:
+
+    Process A → Waiting for disk
+
+The CPU can execute:
+
+    Process B
+
+instead of remaining idle.
+
+This improves CPU utilization.
+
+
+----------------------------------------------------------------------
+
+1.2.3 RESOURCE MANAGEMENT
+----------------------------------------------------------------------
+
+The OS manages:
+
+    CPU
+    RAM
+    Storage
+    I/O
+    Network
+
+
+----------------------------------------------------------------------
+
+1.2.4 PROTECTION
+----------------------------------------------------------------------
+
+Protection means controlling access to system resources.
+
+Example:
+
+    Process A
+        ↓
+    Own memory
+
+    Process B
+        ↓
+    Own memory
+
+The OS attempts to prevent:
+
+    Process A → unauthorized access → Process B
+
+
+----------------------------------------------------------------------
+
+1.2.5 SECURITY
+----------------------------------------------------------------------
+
+Security protects the system from unauthorized access and attacks.
+
+Examples:
+
+    Authentication
+    Authorization
+    File permissions
+    Privilege levels
+    Process isolation
+
+
+----------------------------------------------------------------------
+
+1.2.6 RELIABILITY
+----------------------------------------------------------------------
+
+The OS detects and handles errors where possible.
+
+Examples:
+
+    • invalid memory access
+    • device failure
+    • file-system problems
+    • illegal instructions
+
+
+----------------------------------------------------------------------
+
+1.2.7 SCALABILITY
+----------------------------------------------------------------------
+
+An OS should be capable of supporting increasing:
+
+    • CPU cores
+    • memory
+    • processes
+    • users
+    • devices
+
+Modern operating systems must support large and complex systems.
+
+
+======================================================================
+1.3 COMPUTER SYSTEM ORGANIZATION
+======================================================================
+
+A computer system can be viewed as four major components:
+
+    1. Hardware
+    2. Operating System
+    3. Application Programs
+    4. Users
+
+
+                         USERS
+                           |
+                           ↓
+                  APPLICATION PROGRAMS
+                           |
+                           ↓
+                   OPERATING SYSTEM
+                           |
+                           ↓
+                       HARDWARE
+
+
+----------------------------------------------------------------------
+
+1.3.1 HARDWARE
+----------------------------------------------------------------------
+
+Hardware includes:
+
+    CPU
+    Main Memory
+    Storage
+    Input Devices
+    Output Devices
+    Network Devices
+
+
+----------------------------------------------------------------------
+
+1.3.2 CPU
+----------------------------------------------------------------------
+
+CPU = Central Processing Unit
+
+It executes instructions.
+
+Important CPU concepts for OS:
+
+    • registers
+    • program counter
+    • instruction execution
+    • CPU modes
+    • interrupts
+    • context switching
+
+These will be studied deeply in later chapters.
+
+
+----------------------------------------------------------------------
+
+1.3.3 MAIN MEMORY
+----------------------------------------------------------------------
+
+Main memory usually refers to RAM.
+
+RAM stores:
+
+    • currently executing programs
+    • program data
+    • OS data
+    • temporary information
+
+RAM is:
+
+    Fast
+    Volatile
+    Directly accessible by CPU through the memory system
+
+
+----------------------------------------------------------------------
+
+1.3.4 SECONDARY STORAGE
+----------------------------------------------------------------------
+
+Examples:
+
+    HDD
+    SSD
+
+Used for persistent storage.
+
+Unlike RAM, data remains after power is removed.
+
+The OS manages:
+
+    • files
+    • directories
+    • storage allocation
+    • free space
+
+
+----------------------------------------------------------------------
+
+1.3.5 INPUT/OUTPUT DEVICES
+----------------------------------------------------------------------
+
+Examples:
+
+    Keyboard
+    Mouse
+    Monitor
+    Printer
+    Network card
+    USB devices
+
+The OS provides mechanisms to communicate with these devices.
+
+
+======================================================================
+1.4 OPERATING SYSTEM SERVICES
+======================================================================
+
+An operating system provides services to programs and users.
+
+Major services:
+
+    1. Program execution
+    2. I/O operations
+    3. File-system manipulation
+    4. Communication
+    5. Error detection
+    6. Resource allocation
+    7. Accounting
+    8. Protection
+    9. Security
+
+
+----------------------------------------------------------------------
+
+1.4.1 PROGRAM EXECUTION
+----------------------------------------------------------------------
+
+The OS helps:
+
+    • load a program
+    • start execution
+    • allocate resources
+    • terminate execution
+    • handle execution-related errors
+
+Example:
+
+    User runs:
+
+        ./program
+
+    OS:
+        Loads program
+        Creates process
+        Allocates memory
+        Starts execution
+
+
+----------------------------------------------------------------------
+
+1.4.2 I/O OPERATIONS
+----------------------------------------------------------------------
+
+Programs frequently need I/O.
+
+I/O = Input/Output
+
+Examples:
+
+    Keyboard → input
+    Mouse → input
+    Display → output
+    Disk → input/output
+    Network → input/output
+
+The OS provides controlled access to these devices.
+
+
+----------------------------------------------------------------------
+
+1.4.3 FILE-SYSTEM MANIPULATION
+----------------------------------------------------------------------
+
+The OS allows programs to:
+
+    Create files
+    Delete files
+    Open files
+    Close files
+    Read files
+    Write files
+    Rename files
+    Create directories
+    Delete directories
+
+Example:
+
+    Application
+        ↓
+    open("data.txt")
+        ↓
+    Operating System
+        ↓
+    File System
+        ↓
+    Storage
+
+
+----------------------------------------------------------------------
+
+1.4.4 COMMUNICATION
+----------------------------------------------------------------------
+
+Processes may need to communicate.
+
+This is called:
+
+    IPC = Inter-Process Communication
+
+Major mechanisms include:
+
+    • shared memory
+    • message passing
+    • pipes
+    • signals
+    • sockets
+
+IPC will be studied in a dedicated chapter.
+
+
+----------------------------------------------------------------------
+
+1.4.5 ERROR DETECTION
+----------------------------------------------------------------------
+
+The OS attempts to detect errors in:
+
+    • CPU execution
+    • memory
+    • I/O devices
+    • storage
+    • programs
+
+Example:
+
+    Program accesses invalid memory
+              ↓
+        Hardware detects
+              ↓
+        OS handles exception
+
+
+----------------------------------------------------------------------
+
+1.4.6 RESOURCE ALLOCATION
+----------------------------------------------------------------------
+
+When multiple programs compete for resources, the OS allocates them.
+
+Example:
+
+    CPU:
+        Process A
+        Process B
+        Process C
+
+The scheduler decides how CPU time is distributed.
+
+
+----------------------------------------------------------------------
+
+1.4.7 ACCOUNTING
+----------------------------------------------------------------------
+
+The OS may maintain information about resource usage.
+
+Examples:
+
+    CPU time
+    memory usage
+    process information
+    storage usage
+
+
+----------------------------------------------------------------------
+
+1.4.8 PROTECTION AND SECURITY
+----------------------------------------------------------------------
+
+The OS controls access to resources.
+
+Examples:
+
+    User permissions
+    File permissions
+    Process isolation
+    Memory protection
+    Privileged operations
+
+
+======================================================================
+1.5 USER INTERFACE
+======================================================================
+
+The OS provides ways for users to interact with the system.
+
+Two major interfaces:
+
+    1. CLI
+    2. GUI
+
+
+----------------------------------------------------------------------
+
+1.5.1 CLI — COMMAND LINE INTERFACE
+----------------------------------------------------------------------
+
+CLI allows users to interact using commands.
+
+Linux example:
+
+    $ pwd
+    $ ls
+    $ cd Documents
+    $ mkdir project
+
+
+----------------------------------------------------------------------
+
+1.5.2 SHELL
+----------------------------------------------------------------------
+
+A shell is a command interpreter.
+
+Example:
+
+    Bash
+
+When you type:
+
+    ls
+
+The shell interprets the command and starts the required program.
+
+
+Conceptually:
+
+    User
+      |
+      ↓
+    Shell
+      |
+      ↓
+    OS
+      |
+      ↓
+    Hardware
+
+
+----------------------------------------------------------------------
+
+1.5.3 GUI — GRAPHICAL USER INTERFACE
+----------------------------------------------------------------------
+
+GUI allows users to interact through:
+
+    Windows
+    Icons
+    Menus
+    Buttons
+    Pointer
+
+
+Example:
+
+    Windows Desktop
+    GNOME
+    KDE
+
+
+======================================================================
+1.6 TYPES OF OPERATING SYSTEMS
+======================================================================
+
+Operating systems can be classified based on how they manage
+programs, users, CPUs, and timing requirements.
+
+
+----------------------------------------------------------------------
+
+1.6.1 BATCH OPERATING SYSTEM
+----------------------------------------------------------------------
+
+In a batch OS, jobs are collected and processed in batches.
+
+Concept:
+
+    Jobs
+      ↓
+    Batch
+      ↓
+    OS
+      ↓
+    Execution
+      ↓
+    Output
+
+Characteristics:
+
+    • little/no interactive operation
+    • jobs processed in batches
+    • suitable for repetitive workloads
+
+Disadvantage:
+
+    Poor interactive response.
+
+
+----------------------------------------------------------------------
+
+1.6.2 MULTIPROGRAMMING OPERATING SYSTEM
+----------------------------------------------------------------------
+
+Multiple programs can reside in memory.
+
+Example:
+
+    RAM
+    +-------------------+
+    | Program A          |
+    +-------------------+
+    | Program B          |
+    +-------------------+
+    | Program C          |
+    +-------------------+
+
+If Program A waits for I/O:
+
+    CPU → Program B
+
+Main objective:
+
+    Increase CPU utilization.
+
+
+----------------------------------------------------------------------
+
+1.6.3 MULTITASKING OPERATING SYSTEM
+----------------------------------------------------------------------
+
+Allows multiple tasks to appear to run simultaneously.
+
+Example:
+
+    Chrome
+    VS Code
+    Music Player
+
+The CPU rapidly switches between runnable tasks.
+
+This involves:
+
+    CPU Scheduling
+    Context Switching
+
+
+----------------------------------------------------------------------
+
+1.6.4 TIME-SHARING OPERATING SYSTEM
+----------------------------------------------------------------------
+
+CPU time is divided into small time intervals.
+
+Example:
+
+    Process A → 10 ms
+    Process B → 10 ms
+    Process C → 10 ms
+    Process A → 10 ms
+
+This provides interactive response.
+
+Round Robin scheduling is strongly associated with time-sharing.
+
+
+----------------------------------------------------------------------
+
+1.6.5 MULTIPROCESSING OPERATING SYSTEM
+----------------------------------------------------------------------
+
+Supports multiple processors/CPU cores.
+
+Example:
+
+    CPU Core 1 → Process A
+    CPU Core 2 → Process B
+    CPU Core 3 → Process C
+    CPU Core 4 → Process D
+
+This can allow genuine parallel execution.
+
+
+----------------------------------------------------------------------
+
+1.6.6 DISTRIBUTED OPERATING SYSTEM
+----------------------------------------------------------------------
+
+Manages resources across multiple networked computers with the goal
+of providing coordinated system behavior.
+
+Concept:
+
+    Computer A ←→ Computer B ←→ Computer C
+
+Resources may be distributed across machines.
+
+
+----------------------------------------------------------------------
+
+1.6.7 NETWORK OPERATING SYSTEM
+----------------------------------------------------------------------
+
+Designed to provide network-related services.
+
+Examples of capabilities:
+
+    • file sharing
+    • printer sharing
+    • remote access
+    • network administration
+
+
+----------------------------------------------------------------------
+
+1.6.8 REAL-TIME OPERATING SYSTEM
+----------------------------------------------------------------------
+
+An RTOS is designed for systems where timing requirements are
+important.
+
+Two categories:
+
+    Hard Real-Time
+    Soft Real-Time
+
+
+Hard real-time:
+
+    Missing an important deadline may constitute system failure.
+
+Soft real-time:
+
+    Missing a deadline is undesirable but may be tolerated.
+
+
+Examples of applications:
+
+    • industrial control
+    • robotics
+    • embedded systems
+    • automotive systems
+
+
+----------------------------------------------------------------------
+
+1.6.9 EMBEDDED OPERATING SYSTEM
+----------------------------------------------------------------------
+
+Used in dedicated devices.
+
+Examples:
+
+    • IoT devices
+    • routers
+    • appliances
+    • controllers
+    • automotive systems
+
+
+----------------------------------------------------------------------
+
+1.6.10 MOBILE OPERATING SYSTEM
+----------------------------------------------------------------------
+
+Examples:
+
+    Android
+    iOS
+
+Designed for:
+
+    • mobile hardware
+    • touch interfaces
+    • battery constraints
+    • mobile networking
+    • mobile security
+
+
+======================================================================
+1.7 OPERATING SYSTEM STRUCTURES
+======================================================================
+
+An OS can be organized using different architectural approaches.
+
+
+----------------------------------------------------------------------
+
+1.7.1 MONOLITHIC KERNEL
+----------------------------------------------------------------------
+
+A monolithic kernel places many OS services within the kernel.
+
+Concept:
+
+    +------------------------------+
+    |          USER SPACE          |
+    +------------------------------+
+    |            KERNEL            |
+    |                              |
+    | Process Management           |
+    | Memory Management             |
+    | File System                   |
+    | Device Drivers                |
+    | Networking                    |
+    +------------------------------+
+    |           HARDWARE           |
+    +------------------------------+
+
+Advantages:
+
+    • high performance
+    • direct communication among kernel components
+
+Disadvantages:
+
+    • large kernel
+    • faults in kernel components can have broad impact
+    • complex maintenance
+
+
+----------------------------------------------------------------------
+
+1.7.2 LAYERED ARCHITECTURE
+----------------------------------------------------------------------
+
+The OS is divided into layers.
+
+Example:
+
+    Layer 5 → User Interface
+    Layer 4 → System Services
+    Layer 3 → Process Management
+    Layer 2 → Memory/I/O
+    Layer 1 → Hardware Interface
+    Layer 0 → Hardware
+
+Each layer generally uses services of lower layers.
+
+
+----------------------------------------------------------------------
+
+1.7.3 MICROKERNEL
+----------------------------------------------------------------------
+
+A microkernel keeps only essential functionality in the kernel.
+
+Concept:
+
+    User Space:
+        File Service
+        Network Service
+        Device Service
+
+    Kernel:
+        Basic scheduling
+        Basic memory management
+        IPC
+
+Main idea:
+
+    Minimize kernel responsibilities.
+
+Potential advantages:
+
+    • better isolation
+    • modularity
+    • reliability
+
+Potential disadvantage:
+
+    • communication overhead between components
+
+
+----------------------------------------------------------------------
+
+1.7.4 MODULAR KERNEL
+----------------------------------------------------------------------
+
+The kernel can load/unload components dynamically.
+
+Example:
+
+    Kernel
+      |
+      +-- Process Management
+      +-- Memory Management
+      +-- Network Module
+      +-- Device Driver Module
+
+
+----------------------------------------------------------------------
+
+1.7.5 HYBRID KERNEL
+----------------------------------------------------------------------
+
+Combines ideas from multiple kernel architectures.
+
+The term is commonly associated with systems that combine
+microkernel-inspired organization with performance-oriented
+kernel components.
+
+
+----------------------------------------------------------------------
+
+1.7.6 EXOKERNEL
+----------------------------------------------------------------------
+
+An exokernel attempts to provide very low-level hardware resource
+management while allowing applications or libraries greater control
+over resource use.
+
+Important idea:
+
+    Minimal abstraction + protected resource allocation
+
+
+======================================================================
+1.8 KERNEL
+======================================================================
+
+The kernel is the core privileged component of an operating system.
+
+It is responsible for critical system operations.
+
+
+----------------------------------------------------------------------
+
+1.8.1 KERNEL RESPONSIBILITIES
+----------------------------------------------------------------------
+
+Major responsibilities:
+
+    Process Management
+    Memory Management
+    File-System Support
+    Device Management
+    Networking
+    Security
+    Interrupt Handling
+
+
+----------------------------------------------------------------------
+
+1.8.2 USER SPACE
+----------------------------------------------------------------------
+
+User-space applications normally execute with restricted privileges.
+
+Examples:
+
+    Chrome
+    VS Code
+    Python programs
+    Shells
+    Text editors
+
+
+----------------------------------------------------------------------
+
+1.8.3 KERNEL SPACE
+----------------------------------------------------------------------
+
+Kernel-space code executes with elevated privileges and can perform
+operations unavailable to ordinary user programs.
+
+Examples:
+
+    • manage hardware
+    • manage page tables
+    • handle interrupts
+    • schedule processes
+    • manage kernel data structures
+
+
+----------------------------------------------------------------------
+
+1.8.4 USER MODE
+----------------------------------------------------------------------
+
+User mode provides restricted execution.
+
+An ordinary application cannot arbitrarily:
+
+    • modify kernel memory
+    • execute arbitrary privileged instructions
+    • directly control hardware
+
+
+----------------------------------------------------------------------
+
+1.8.5 KERNEL MODE
+----------------------------------------------------------------------
+
+Kernel mode allows privileged operations.
+
+Concept:
+
+    User Mode
+        |
+        | System Call / Exception / Interrupt
+        ↓
+    Kernel Mode
+        |
+        | Perform privileged operation
+        ↓
+    User Mode
+
+
+This separation is fundamental to OS protection.
+
+
+======================================================================
+1.9 USER SPACE VS KERNEL SPACE
+======================================================================
+
+USER SPACE:
+
+    • application programs
+    • restricted privileges
+    • application memory
+    • libraries
+
+KERNEL SPACE:
+
+    • kernel
+    • device drivers
+    • kernel data structures
+    • privileged operations
+
+
+Comparison:
+
+    +----------------------+----------------------+
+    | User Space           | Kernel Space         |
+    +----------------------+----------------------+
+    | Applications         | Kernel               |
+    | Restricted           | Privileged           |
+    | User programs        | OS core              |
+    | Limited hardware     | Hardware access      |
+    +----------------------+----------------------+
+
+
+Why separation?
+
+    SECURITY
+    PROTECTION
+    STABILITY
+
+
+======================================================================
+1.10 SYSTEM BOOT PROCESS
+======================================================================
+
+Booting means starting the computer and loading the operating system.
+
+
+Basic sequence:
+
+    Power ON
+       ↓
+    Firmware
+       ↓
+    Hardware Initialization
+       ↓
+    Bootloader
+       ↓
+    Kernel
+       ↓
+    System Initialization
+       ↓
+    Services
+       ↓
+    Login / User Environment
+
+
+----------------------------------------------------------------------
+
+1.10.1 POWER ON
+----------------------------------------------------------------------
+
+When the computer is powered on, the processor begins executing
+firmware-defined startup code.
+
+
+----------------------------------------------------------------------
+
+1.10.2 BIOS / UEFI
+----------------------------------------------------------------------
+
+Traditional systems commonly used BIOS.
+
+Modern systems commonly use UEFI.
+
+Firmware performs early initialization and identifies boot targets.
+
+
+----------------------------------------------------------------------
+
+1.10.3 HARDWARE INITIALIZATION
+----------------------------------------------------------------------
+
+Initial hardware checks and setup may include:
+
+    CPU
+    Memory
+    Storage
+    Input devices
+    Other hardware
+
+
+----------------------------------------------------------------------
+
+1.10.4 BOOTLOADER
+----------------------------------------------------------------------
+
+The bootloader loads or helps load the OS kernel.
+
+Example:
+
+    GRUB
+
+Concept:
+
+    Firmware
+       ↓
+    Bootloader
+       ↓
+    Kernel
+
+
+----------------------------------------------------------------------
+
+1.10.5 KERNEL LOADING
+----------------------------------------------------------------------
+
+The kernel is placed into memory and begins initialization.
+
+It initializes important OS subsystems such as:
+
+    • memory management
+    • process management
+    • device management
+    • file-system support
+
+
+----------------------------------------------------------------------
+
+1.10.6 SYSTEM INITIALIZATION
+----------------------------------------------------------------------
+
+After kernel initialization, user-space initialization occurs.
+
+On many Linux systems:
+
+    systemd
+
+is used as the system and service manager.
+
+It starts required services and prepares the system for users.
+
+
+======================================================================
+1.11 INTERRUPTS
+======================================================================
+
+An interrupt is a mechanism that causes the CPU to temporarily stop
+its current flow of execution and handle an event.
+
+Example:
+
+    CPU executing Program A
+            ↓
+    Keyboard input arrives
+            ↓
+        Interrupt
+            ↓
+    CPU handles event
+            ↓
+    Execution continues
+
+
+----------------------------------------------------------------------
+
+1.11.1 WHY INTERRUPTS ARE REQUIRED
+----------------------------------------------------------------------
+
+Without interrupts, the CPU might need to continuously check devices.
+
+This is called polling.
+
+Polling:
+
+    CPU:
+        "Did keyboard input arrive?"
+        "Did keyboard input arrive?"
+        "Did keyboard input arrive?"
+
+Interrupt-driven approach:
+
+    CPU continues useful work.
+
+    Keyboard:
+        "Input arrived!"
+
+    Device generates interrupt.
+
+
+----------------------------------------------------------------------
+
+1.11.2 HARDWARE INTERRUPT
+----------------------------------------------------------------------
+
+Generated by hardware devices or hardware mechanisms.
+
+Examples:
+
+    • keyboard event
+    • timer
+    • network device
+    • storage device
+
+
+----------------------------------------------------------------------
+
+1.11.3 SOFTWARE INTERRUPT
+----------------------------------------------------------------------
+
+Triggered through software mechanisms.
+
+Historically and architecturally, software interrupt mechanisms can
+be used to request OS/kernel services.
+
+
+----------------------------------------------------------------------
+
+1.11.4 EXCEPTION
+----------------------------------------------------------------------
+
+An exception is an event generated as a consequence of executing
+an instruction.
+
+Examples:
+
+    • invalid operation
+    • divide-by-zero
+    • page fault
+    • protection violation
+
+
+----------------------------------------------------------------------
+
+1.11.5 TRAP
+----------------------------------------------------------------------
+
+A trap is a synchronous exception commonly used for deliberate
+transfer to operating-system handling, including some system-call
+mechanisms.
+
+
+----------------------------------------------------------------------
+
+1.11.6 INTERRUPT HANDLING
+----------------------------------------------------------------------
+
+Conceptual sequence:
+
+    Event occurs
+         ↓
+    CPU recognizes event
+         ↓
+    Save required execution state
+         ↓
+    Transfer control to handler
+         ↓
+    Handler executes
+         ↓
+    Restore state
+         ↓
+    Continue execution
+
+
+======================================================================
+1.12 SYSTEM PROGRAMS
+======================================================================
+
+System programs provide a convenient environment for users and
+developers.
+
+Examples:
+
+    File utilities
+    Process utilities
+    Editors
+    Compilers
+    Debuggers
+    System monitoring tools
+    Networking utilities
+
+
+----------------------------------------------------------------------
+
+Examples in Linux:
+
+    ls
+    cp
+    mv
+    rm
+    ps
+    top
+    grep
+    gcc
+    gdb
+
+
+Important distinction:
+
+    System Program
+        ≠
+    System Call
+
+A system program is software.
+
+A system call is an interface through which a program requests
+services from the OS kernel.
+
+
+======================================================================
+1.13 OS RESOURCE MANAGEMENT
+======================================================================
+
+The OS manages several categories of resources.
+
+
+----------------------------------------------------------------------
+
+1.13.1 CPU MANAGEMENT
+----------------------------------------------------------------------
+
+The OS:
+
+    • selects processes/threads
+    • schedules CPU time
+    • performs context switching
+    • manages priorities
+
+
+----------------------------------------------------------------------
+
+1.13.2 MEMORY MANAGEMENT
+----------------------------------------------------------------------
+
+The OS:
+
+    • allocates memory
+    • deallocates memory
+    • protects memory
+    • manages virtual memory
+    • maintains address translation structures
+
+
+----------------------------------------------------------------------
+
+1.13.3 STORAGE MANAGEMENT
+----------------------------------------------------------------------
+
+The OS:
+
+    • manages files
+    • manages directories
+    • manages free space
+    • allocates storage
+    • maintains file-system metadata
+
+
+----------------------------------------------------------------------
+
+1.13.4 I/O MANAGEMENT
+----------------------------------------------------------------------
+
+The OS manages:
+
+    • device drivers
+    • I/O requests
+    • buffering
+    • caching
+    • device access
+
+
+----------------------------------------------------------------------
+
+1.13.5 NETWORK MANAGEMENT
+----------------------------------------------------------------------
+
+The OS provides networking support such as:
+
+    • network interfaces
+    • sockets
+    • network protocols
+    • connection management
+
+
+======================================================================
+1.14 PROTECTION AND SECURITY
+======================================================================
+
+Protection and security are related but not identical.
+
+
+----------------------------------------------------------------------
+
+1.14.1 PROTECTION
+----------------------------------------------------------------------
+
+Protection controls how processes/users access system resources.
+
+Example:
+
+    Process A
+       ↓
+    Own resources
+
+    Process B
+       ↓
+    Own resources
+
+
+----------------------------------------------------------------------
+
+1.14.2 SECURITY
+----------------------------------------------------------------------
+
+Security protects the system from unauthorized access and malicious
+activity.
+
+Security goals are often summarized as:
+
+    CIA
+
+    C = Confidentiality
+    I = Integrity
+    A = Availability
+
+
+----------------------------------------------------------------------
+
+1.14.3 AUTHENTICATION
+----------------------------------------------------------------------
+
+Authentication answers:
+
+    "Who are you?"
+
+Examples:
+
+    Password
+    OTP
+    Biometrics
+    Security key
+
+
+----------------------------------------------------------------------
+
+1.14.4 AUTHORIZATION
+----------------------------------------------------------------------
+
+Authorization answers:
+
+    "What are you allowed to do?"
+
+Example:
+
+    User A:
+        Read file
+
+    User B:
+        Read + Write file
+
+
+----------------------------------------------------------------------
+
+1.14.5 LEAST PRIVILEGE
+----------------------------------------------------------------------
+
+Give a user/process only the privileges required to perform its task.
+
+This reduces security risk.
+
+
+======================================================================
+1.15 IMPORTANT OS CONCEPTS
+======================================================================
+
+
+----------------------------------------------------------------------
+
+1.15.1 PROGRAM VS PROCESS
+----------------------------------------------------------------------
+
+Program:
+
+    Passive collection of instructions.
+
+Process:
+
+    Program currently in execution.
+
+Example:
+
+    program.exe
+        ↓
+    loaded and executing
+        ↓
+    process
+
+
+----------------------------------------------------------------------
+
+1.15.2 PROCESS VS THREAD
+----------------------------------------------------------------------
+
+Process:
+
+    An executing program with its own process resources/address space.
+
+Thread:
+
+    An execution unit within a process.
+
+A process can contain multiple threads.
+
+Example:
+
+    Process
+      |
+      +-- Thread 1
+      +-- Thread 2
+      +-- Thread 3
+
+
+----------------------------------------------------------------------
+
+1.15.3 KERNEL VS OPERATING SYSTEM
+----------------------------------------------------------------------
+
+Operating System:
+
+    Complete system software environment including the kernel and
+    other system components.
+
+Kernel:
+
+    Core privileged component of the OS.
+
+
+----------------------------------------------------------------------
+
+1.15.4 USER MODE VS KERNEL MODE
+----------------------------------------------------------------------
+
+User Mode:
+
+    Restricted execution.
+
+Kernel Mode:
+
+    Privileged execution.
+
+
+----------------------------------------------------------------------
+
+1.15.5 SYSTEM CALL VS FUNCTION CALL
+----------------------------------------------------------------------
+
+Function call:
+
+    Calls a function within the program/library context.
+
+System call:
+
+    Requests an OS/kernel service.
+
+Concept:
+
+    Application
+        ↓
+    Library/API
+        ↓
+    System Call
+        ↓
+    Kernel
+        ↓
+    Hardware/resource
+
+
+----------------------------------------------------------------------
+
+1.15.6 CONCURRENCY VS PARALLELISM
+----------------------------------------------------------------------
+
+Concurrency:
+
+    Multiple tasks make progress during overlapping periods.
+
+Parallelism:
+
+    Multiple tasks execute simultaneously on multiple execution
+    resources.
+
+Example:
+
+    Single CPU:
+        Concurrency through scheduling
+
+    Multiple CPU cores:
+        Parallel execution may occur
+
+
+----------------------------------------------------------------------
+
+1.15.7 MULTIPROGRAMMING VS MULTITASKING
+----------------------------------------------------------------------
+
+Multiprogramming:
+
+    Keep multiple programs available so CPU utilization can improve.
+
+Multitasking:
+
+    Rapidly share CPU among tasks to provide interactive execution.
+
+
+======================================================================
+1.16 LINUX PRACTICAL FOUNDATION
+======================================================================
+
+Linux is extremely important for job-ready OS knowledge.
+
+You should become comfortable with the Linux command line.
+
+
+----------------------------------------------------------------------
+
+1.16.1 BASIC COMMANDS
+----------------------------------------------------------------------
+
+Current directory:
+
+    pwd
+
+List files:
+
+    ls
+
+Change directory:
+
+    cd
+
+Create directory:
+
+    mkdir project
+
+Create file:
+
+    touch file.txt
+
+Copy:
+
+    cp file.txt backup.txt
+
+Move/rename:
+
+    mv file.txt newfile.txt
+
+Delete:
+
+    rm file.txt
+
+Display file:
+
+    cat file.txt
+
+
+----------------------------------------------------------------------
+
+1.16.2 SYSTEM INFORMATION
+----------------------------------------------------------------------
+
+Kernel/system information:
+
+    uname -a
+
+CPU information:
+
+    lscpu
+
+Memory information:
+
+    free -h
+
+System uptime:
+
+    uptime
+
+Disk usage:
+
+    df -h
+
+Directory size:
+
+    du -sh .
+
+
+----------------------------------------------------------------------
+
+1.16.3 PROCESS OBSERVATION
+----------------------------------------------------------------------
+
+Display processes:
+
+    ps
+
+Detailed process list:
+
+    ps aux
+
+Live process monitoring:
+
+    top
+
+Process tree:
+
+    pstree
+
+
+----------------------------------------------------------------------
+
+1.16.4 MANUAL
+----------------------------------------------------------------------
+
+Linux documentation:
+
+    man ls
+
+Help:
+
+    ls --help
+
+
+======================================================================
+1.17 /PROC AND /SYS — LINUX PRACTICAL CONCEPT
+======================================================================
+
+Linux exposes a large amount of kernel/system information through
+special virtual file systems.
+
+
+----------------------------------------------------------------------
+
+1.17.1 /proc
+----------------------------------------------------------------------
+
+/proc provides information about processes and various kernel/system
+state.
+
+Examples:
+
+    /proc/cpuinfo
+    /proc/meminfo
+    /proc/<PID>/
+
+
+For example:
+
+    cat /proc/cpuinfo
+
+can display CPU-related information.
+
+
+----------------------------------------------------------------------
+
+1.17.2 /sys
+----------------------------------------------------------------------
+
+/sys exposes information about devices, drivers, and kernel device
+model structures.
+
+It is useful when studying:
+
+    • hardware
+    • devices
+    • drivers
+    • kernel interfaces
+
+
+======================================================================
+1.18 COMPLETE OS ARCHITECTURE VIEW
+======================================================================
+
+At this point, you should understand the following overall picture:
+
+
+                         USER
+                           |
+                           ↓
+                +---------------------+
+                | APPLICATION PROGRAM |
+                +---------------------+
+                           |
+                           ↓
+                +---------------------+
+                | LIBRARIES / APIs    |
+                +---------------------+
+                           |
+                           ↓
+                +---------------------+
+                |    SYSTEM CALLS     |
+                +---------------------+
+                           |
+                           ↓
+                +---------------------+
+                |       KERNEL        |
+                |                     |
+                | Process Management  |
+                | Memory Management   |
+                | File Systems        |
+                | I/O Management      |
+                | Networking          |
+                | Security            |
+                +---------------------+
+                           |
+                           ↓
+                +---------------------+
+                |      HARDWARE       |
+                |                     |
+                | CPU                 |
+                | RAM                 |
+                | SSD/HDD             |
+                | Devices             |
+                +---------------------+
+
+
+======================================================================
+1.19 REAL-WORLD EXAMPLE
+======================================================================
+
+Suppose you open a text editor.
+
+Step 1:
+    User clicks the application.
+
+Step 2:
+    OS starts the application.
+
+Step 3:
+    OS creates/manages a process.
+
+Step 4:
+    OS provides memory to the process.
+
+Step 5:
+    CPU executes its instructions.
+
+Step 6:
+    Application requests a file.
+
+Step 7:
+    Request enters the OS through an OS interface/system call.
+
+Step 8:
+    File system locates the requested data.
+
+Step 9:
+    Storage device performs the required I/O.
+
+Step 10:
+    Data is returned to the application.
+
+Step 11:
+    Application displays the data.
+
+This single operation involves:
+
+    Process Management
+    Memory Management
+    CPU Scheduling
+    System Calls
+    File Systems
+    I/O Management
+    Device Drivers
+    Protection
+
+
+======================================================================
+1.20 INTERVIEW-LEVEL QUESTIONS
+======================================================================
+
+Q1. What is an Operating System?
+
+ANSWER:
+    An Operating System is system software that manages hardware
+    resources and provides services to application programs.
+
+Q2. Why is OS called a resource manager?
+
+ANSWER:
+    Because it allocates and controls resources such as CPU,
+    memory, storage, and I/O devices among competing programs.
+
+Q3. What is a kernel?
+
+ANSWER:
+    The kernel is the core privileged component of an operating
+    system responsible for critical resource and hardware management.
+
+Q4. What is user mode?
+
+ANSWER:
+    A restricted execution mode in which ordinary applications run.
+
+Q5. What is kernel mode?
+
+ANSWER:
+    A privileged execution mode in which the kernel can perform
+    operations requiring elevated hardware privileges.
+
+Q6. What is the difference between program and process?
+
+ANSWER:
+    A program is a passive set of instructions, whereas a process
+    is a program in execution.
+
+Q7. What is the difference between process and thread?
+
+ANSWER:
+    A process is an executing program/resource container, while a
+    thread is an execution unit within a process.
+
+Q8. What is a system call?
+
+ANSWER:
+    A system call is an interface used by a program to request
+    services from the operating-system kernel.
+
+Q9. What is an interrupt?
+
+ANSWER:
+    An interrupt is an event that causes the processor to transfer
+    control to an interrupt handler so that the event can be handled.
+
+Q10. What happens during booting?
+
+ANSWER:
+
+    Power ON
+       ↓
+    Firmware
+       ↓
+    Bootloader
+       ↓
+    Kernel
+       ↓
+    System initialization
+       ↓
+    Services
+       ↓
+    User environment
+
+
+======================================================================
+1.21 IMPORTANT DIFFERENCES
+======================================================================
+
+
+OPERATING SYSTEM vs KERNEL
+----------------------------------------------------------------------
+
+Operating System:
+    Complete system environment.
+
+Kernel:
+    Core privileged component of OS.
+
+
+PROGRAM vs PROCESS
+----------------------------------------------------------------------
+
+Program:
+    Passive instructions.
+
+Process:
+    Program in execution.
+
+
+PROCESS vs THREAD
+----------------------------------------------------------------------
+
+Process:
+    Resource/address-space context containing execution state.
+
+Thread:
+    Execution unit within a process.
+
+
+USER MODE vs KERNEL MODE
+----------------------------------------------------------------------
+
+User Mode:
+    Restricted.
+
+Kernel Mode:
+    Privileged.
+
+
+INTERRUPT vs EXCEPTION
+----------------------------------------------------------------------
+
+Interrupt:
+    Generally associated with an external/asynchronous event.
+
+Exception:
+    Synchronous event resulting from instruction execution.
+
+
+MULTIPROGRAMMING vs MULTITASKING
+----------------------------------------------------------------------
+
+Multiprogramming:
+    Multiple programs kept available to improve utilization.
+
+Multitasking:
+    CPU time shared among tasks to support interactive execution.
+
+
+PROTECTION vs SECURITY
+----------------------------------------------------------------------
+
+Protection:
+    Controls access to resources.
+
+Security:
+    Protects the system and information against unauthorized
+    access and threats.
+
+
+======================================================================
+1.22 GATE / UNIVERSITY EXAM FOCUS
+======================================================================
+
+HIGH-PRIORITY CONCEPTS:
+
+    ★ Operating System definition
+    ★ OS functions
+    ★ OS services
+    ★ OS as resource manager
+    ★ Kernel
+    ★ User mode / Kernel mode
+    ★ System calls
+    ★ Interrupts
+    ★ Exceptions
+    ★ OS structures
+    ★ Types of OS
+    ★ Multiprogramming
+    ★ Multitasking
+    ★ Multiprocessing
+    ★ Real-time OS
+    ★ Protection
+    ★ Security
+
+
+IMPORTANT QUESTIONS:
+
+    1. Define Operating System.
+    2. Explain major OS services.
+    3. Explain OS as resource manager.
+    4. Explain OS structures.
+    5. Explain kernel.
+    6. Explain user mode and kernel mode.
+    7. Differentiate multiprogramming and multitasking.
+    8. Differentiate process and program.
+    9. Explain interrupts.
+   10. Explain system boot process.
+
+
+======================================================================
+1.23 JOB-READY PRACTICAL CHECKLIST
+======================================================================
+
+You should be able to execute and understand:
+
+    [ ] pwd
+    [ ] ls
+    [ ] cd
+    [ ] mkdir
+    [ ] touch
+    [ ] cp
+    [ ] mv
+    [ ] rm
+    [ ] cat
+
+System information:
+
+    [ ] uname -a
+    [ ] lscpu
+    [ ] free -h
+    [ ] uptime
+    [ ] df -h
+    [ ] du -sh .
+
+Process information:
+
+    [ ] ps
+    [ ] ps aux
+    [ ] top
+    [ ] pstree
+
+Kernel/system information:
+
+    [ ] /proc
+    [ ] /sys
+
+
+======================================================================
+1.24 CHAPTER 1 MINI PRACTICAL
+======================================================================
+
+TASK:
+
+    Create a basic Linux system-information report.
+
+Commands:
+
+    uname -a
+    lscpu
+    free -h
+    uptime
+    df -h
+    ps aux
+
+Understand what each command tells you.
+
+Example workflow:
+
+    $ uname -a
+
+    → Kernel/system information
+
+
+    $ lscpu
+
+    → CPU information
+
+
+    $ free -h
+
+    → Memory information
+
+
+    $ uptime
+
+    → System uptime and load information
+
+
+    $ df -h
+
+    → File-system disk-space information
+
+
+    $ ps aux
+
+    → Running process information
+
+
+======================================================================
+1.25 CHAPTER 1 MENTAL MODEL
+======================================================================
+
+Remember this model:
+
+
+                    USER
+                      |
+                      ↓
+                 APPLICATION
+                      |
+                      ↓
+                SYSTEM CALL/API
+                      |
+                      ↓
+                    KERNEL
+                      |
+       +--------------+--------------+
+       |              |              |
+       ↓              ↓              ↓
+      CPU            RAM           STORAGE
+       |              |              |
+       +--------------+--------------+
+                      |
+                      ↓
+                    I/O
+
+
+The OS sits between applications/users and hardware and manages
+resources while providing useful abstractions and protection.
+
+
+======================================================================
+1.26 CHAPTER 1 QUICK REVISION
+======================================================================
+
+Operating System:
+    System software that manages resources and provides services.
+
+Main resources:
+    CPU
+    Memory
+    Storage
+    I/O
+    Network
+
+Main OS responsibilities:
+    Process Management
+    Memory Management
+    File Management
+    I/O Management
+    Storage Management
+    Security
+    Protection
+    Networking
+
+Kernel:
+    Core privileged part of OS.
+
+User Mode:
+    Restricted execution.
+
+Kernel Mode:
+    Privileged execution.
+
+System Call:
+    Interface for requesting OS services.
+
+Interrupt:
+    Event that causes control transfer to an interrupt handler.
+
+Boot:
+    Firmware → Bootloader → Kernel → System Initialization.
+
+Linux:
+    Important practical platform for learning OS and system
+    programming.
+
+
+======================================================================
+1.27 CHAPTER 1 MASTERY CHECKLIST
+======================================================================
+
+CONCEPTUAL
+    [ ] I can define Operating System.
+    [ ] I can explain why an OS is required.
+    [ ] I can explain OS as a resource manager.
+    [ ] I can explain OS as an extended machine.
+    [ ] I can explain OS goals.
+    [ ] I can explain OS services.
+
+ARCHITECTURE
+    [ ] I understand hardware.
+    [ ] I understand user space.
+    [ ] I understand kernel space.
+    [ ] I understand kernel.
+    [ ] I understand system calls.
+    [ ] I understand user/kernel modes.
+
+OS TYPES
+    [ ] Batch OS
+    [ ] Multiprogramming OS
+    [ ] Multitasking OS
+    [ ] Time-sharing OS
+    [ ] Multiprocessing OS
+    [ ] Distributed OS
+    [ ] Network OS
+    [ ] Real-time OS
+    [ ] Embedded OS
+    [ ] Mobile OS
+
+OS STRUCTURES
+    [ ] Monolithic
+    [ ] Layered
+    [ ] Microkernel
+    [ ] Modular
+    [ ] Hybrid
+    [ ] Exokernel
+
+SYSTEM STARTUP
+    [ ] Boot process
+    [ ] BIOS
+    [ ] UEFI
+    [ ] Bootloader
+    [ ] Kernel loading
+    [ ] System initialization
+
+INTERRUPTS
+    [ ] Hardware interrupt
+    [ ] Software interrupt
+    [ ] Exception
+    [ ] Trap
+    [ ] Interrupt handler
+
+LINUX
+    [ ] Basic commands
+    [ ] Process commands
+    [ ] System-information commands
+    [ ] /proc
+    [ ] /sys
+
+INTERVIEW
+    [ ] Explain OS in 30 seconds.
+    [ ] Explain kernel.
+    [ ] Explain user/kernel mode.
+    [ ] Explain OS resource management.
+    [ ] Explain boot process.
+    [ ] Explain interrupt.
+    [ ] Explain system call.
+
+
+======================================================================
+CHAPTER 1 — FINAL KNOWLEDGE MAP
+======================================================================
+
+                 OPERATING SYSTEM
+                         |
+       +-----------------+------------------+
+       |                 |                  |
+       ↓                 ↓                  ↓
+   MANAGEMENT         SERVICES         PROTECTION
+       |                 |                  |
+       ↓                 ↓                  ↓
+   CPU                  I/O             Security
+   Memory               Files           Authentication
+   Storage              IPC             Authorization
+   Processes            Errors          Isolation
+   Devices              Allocation
+       |
+       ↓
+     KERNEL
+       |
+       +-----------------------------+
+       |                             |
+       ↓                             ↓
+   USER SPACE                   HARDWARE
+       |                             |
+   Applications                  CPU
+   Shell                         RAM
+   Utilities                     Storage
+                                 Devices
+
+
+======================================================================
+END OF CHAPTER 1 — OPERATING SYSTEM FUNDAMENTALS
+======================================================================
+
+NEXT CHAPTER:
+
+    CHAPTER 02 — SYSTEM CALLS
+
+Main concepts:
+    • What is a system call?
+    • Why system calls are required
+    • User mode → Kernel mode
+    • System Call Interface
+    • System call execution
+    • Process-control system calls
+    • File-management system calls
+    • I/O system calls
+    • Linux system calls
+    • fork()
+    • exec()
+    • wait()
+    • exit()
+    • open()
+    • read()
+    • write()
+    • close()
+    • Practical C programs
+    • strace
+    • Interview questions
+
+COMMAND:
+
+    Type NEXT
+
+    to move to Chapter 2 → Topic 2.1.
+======================================================================

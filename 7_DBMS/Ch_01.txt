@@ -1,0 +1,2197 @@
+Below is Chapter 1 — Introduction to Database Systems, explained from absolute beginner level to M.Tech/job-interview level in a single code block.
+
+======================================================================
+                    DBMS — CHAPTER 01
+              INTRODUCTION TO DATABASE SYSTEMS
+======================================================================
+
+LEVEL:
+    Beginner → M.Tech Foundation → Interview Ready
+
+OBJECTIVES:
+    After completing this chapter, you should be able to:
+
+    1. Explain data, information, and database.
+    2. Explain what a DBMS is and why it is needed.
+    3. Compare DBMS with a traditional file system.
+    4. Understand database users and their responsibilities.
+    5. Explain real-world DBMS applications.
+    6. Understand database architecture.
+    7. Differentiate DDL, DML, DQL, DCL, and TCL.
+    8. Differentiate DBMS and RDBMS.
+    9. Explain the advantages and limitations of DBMS.
+   10. Answer basic DBMS interview questions.
+
+
+======================================================================
+1.1 DATA
+======================================================================
+
+WHAT IS DATA?
+
+    Data means raw facts or observations that have not yet been
+    processed into meaningful information.
+
+Example:
+
+    Student Name: Apoorv
+    Age: 23
+    Marks: 85
+    Course: MCA
+
+These individual values are DATA.
+
+Another example:
+
+    101
+    Apoorv
+    85
+    MCA
+
+These values by themselves may not tell us much.
+
+IMPORTANT:
+
+    Data = Raw facts
+
+
+REAL-WORLD EXAMPLES OF DATA:
+
+    Banking:
+        Account Number
+        Customer Name
+        Account Balance
+        Transaction Amount
+
+    College:
+        Student ID
+        Student Name
+        Course
+        Marks
+
+    E-commerce:
+        Product ID
+        Product Name
+        Price
+        Quantity
+
+    Hospital:
+        Patient ID
+        Patient Name
+        Blood Pressure
+        Doctor ID
+
+
+CHARACTERISTICS OF DATA:
+
+    - It can be numerical.
+    - It can be textual.
+    - It can be images.
+    - It can be audio.
+    - It can be video.
+    - It can be dates and times.
+    - It can be structured or unstructured.
+
+
+======================================================================
+1.2 INFORMATION
+======================================================================
+
+WHAT IS INFORMATION?
+
+    Information is processed and organized data that has meaning
+    and is useful for decision-making.
+
+Example:
+
+    Raw Data:
+
+        Student A → 80
+        Student B → 90
+        Student C → 70
+
+    Processed Information:
+
+        "Student B obtained the highest marks."
+
+The raw marks are DATA.
+
+The conclusion obtained after processing the marks is INFORMATION.
+
+
+DATA vs INFORMATION
+
+    DATA
+        ↓
+    Processing
+        ↓
+    INFORMATION
+
+
+Example:
+
+    Data:
+        80, 90, 70, 60
+
+    Processing:
+        Calculate average
+
+    Information:
+        Average = 75
+
+
+KEY DIFFERENCE:
+
+    Data:
+        Raw facts
+
+    Information:
+        Meaningful processed data
+
+
+======================================================================
+1.3 DATABASE
+======================================================================
+
+WHAT IS A DATABASE?
+
+    A database is an organized collection of related data that can
+    be stored, accessed, managed, and updated efficiently.
+
+Simple definition:
+
+    DATABASE = Organized collection of related data
+
+
+Example:
+
+    Suppose a college stores information about students.
+
+    STUDENT DATABASE
+
+    +--------+---------+------+-------+
+    | ID     | Name    | Age  | Marks |
+    +--------+---------+------+-------+
+    | 101    | Apoorv  | 23   | 85    |
+    | 102    | Rahul   | 22   | 78    |
+    | 103    | Neha    | 23   | 91    |
+    +--------+---------+------+-------+
+
+This collection of related student records can be a database.
+
+
+IMPORTANT:
+
+    A database is not simply a collection of random files.
+
+    The data should be:
+        - Organized
+        - Related
+        - Accessible
+        - Manageable
+
+
+======================================================================
+1.4 WHY DO WE NEED DATABASES?
+======================================================================
+
+Imagine a college has 50,000 students.
+
+The college needs to store:
+
+    Student information
+    ↓
+    Courses
+    ↓
+    Teachers
+    ↓
+    Attendance
+    ↓
+    Marks
+    ↓
+    Fees
+    ↓
+    Examinations
+
+
+If all information is maintained manually in separate files,
+many problems can occur.
+
+PROBLEMS:
+
+    1. Data duplication
+    2. Data inconsistency
+    3. Difficult data searching
+    4. Difficult data sharing
+    5. Poor security
+    6. Difficult backup
+    7. Difficult recovery
+    8. Concurrent access problems
+    9. Data integrity problems
+
+
+A database system is designed to solve these problems.
+
+
+======================================================================
+1.5 TRADITIONAL FILE SYSTEM
+======================================================================
+
+Before modern DBMSs became common, organizations often stored
+information using separate files.
+
+Example:
+
+    College System
+
+        students.txt
+        teachers.txt
+        courses.txt
+        fees.txt
+        marks.txt
+
+
+Example:
+
+    students.txt
+
+        101, Apoorv, MCA
+        102, Rahul, MCA
+        103, Neha, MSc
+
+
+    fees.txt
+
+        101, Apoorv, 50000
+        102, Rahul, 45000
+        103, Neha, 40000
+
+
+This approach works for small systems.
+
+But as the amount of data grows, serious problems appear.
+
+
+======================================================================
+1.6 PROBLEMS WITH FILE SYSTEM
+======================================================================
+
+-----------------------------
+1. DATA REDUNDANCY
+-----------------------------
+
+Redundancy means unnecessary duplication of data.
+
+Example:
+
+    students.txt
+
+        101, Apoorv, MCA
+
+
+    fees.txt
+
+        101, Apoorv, 50000
+
+
+    attendance.txt
+
+        101, Apoorv, 90%
+
+
+The name "Apoorv" is stored repeatedly.
+
+This is DATA REDUNDANCY.
+
+
+Problem:
+
+    More storage
+    +
+    More maintenance
+    +
+    Greater chance of inconsistency
+
+
+-----------------------------
+2. DATA INCONSISTENCY
+-----------------------------
+
+Suppose:
+
+    students.txt
+
+        101, Apoorv Singh
+
+
+    fees.txt
+
+        101, Apoorv Singh Rathor
+
+
+The same student has different names in different files.
+
+This is DATA INCONSISTENCY.
+
+Definition:
+
+    Data inconsistency occurs when multiple copies of the same
+    data contain different values.
+
+
+-----------------------------
+3. DIFFICULT DATA ACCESS
+-----------------------------
+
+Suppose the administrator asks:
+
+    "Find all students whose marks are greater than 80."
+
+With many separate files, finding this information can be difficult.
+
+A DBMS provides SQL to make this much easier.
+
+Example:
+
+    SELECT *
+    FROM Student
+    WHERE Marks > 80;
+
+
+-----------------------------
+4. DATA ISOLATION
+-----------------------------
+
+Data may be distributed among different files and formats.
+
+Example:
+
+    students.txt
+    marks.csv
+    fees.xlsx
+    attendance.dat
+
+
+Combining information from these files can be difficult.
+
+This problem is called DATA ISOLATION.
+
+
+-----------------------------
+5. INTEGRITY PROBLEMS
+-----------------------------
+
+Integrity means maintaining correctness and validity of data.
+
+Example:
+
+    Student age = -10
+
+This is invalid.
+
+A DBMS can enforce constraints such as:
+
+    Age > 0
+
+
+Example:
+
+    Account balance should not become invalid.
+
+
+-----------------------------
+6. ATOMICITY PROBLEMS
+-----------------------------
+
+Suppose a bank transfer occurs:
+
+    Account A:
+        ₹10,000
+
+    Account B:
+        ₹5,000
+
+
+Transfer:
+
+    ₹2,000 from A → B
+
+
+Correct result:
+
+    A = ₹8,000
+    B = ₹7,000
+
+
+But suppose:
+
+    A is debited
+        ↓
+    System crashes
+        ↓
+    B is not credited
+
+
+Now the database is incorrect.
+
+A DBMS uses TRANSACTIONS to help ensure that such operations
+are handled reliably.
+
+
+-----------------------------
+7. CONCURRENT ACCESS PROBLEMS
+-----------------------------
+
+Multiple users may access the same data at the same time.
+
+Example:
+
+    User A → Withdraw ₹5,000
+    User B → Withdraw ₹5,000
+
+Both users access the same account simultaneously.
+
+Without proper control, incorrect results may occur.
+
+DBMS provides CONCURRENCY CONTROL.
+
+
+-----------------------------
+8. SECURITY PROBLEMS
+-----------------------------
+
+Not every user should be allowed to access every piece of data.
+
+Example:
+
+    Student:
+        Can view own marks.
+
+    Teacher:
+        Can enter/update marks.
+
+    Administrator:
+        Can manage student records.
+
+A DBMS provides authentication and authorization mechanisms.
+
+
+-----------------------------
+9. BACKUP AND RECOVERY PROBLEMS
+-----------------------------
+
+Suppose a server crashes.
+
+Important database information may be lost.
+
+A DBMS provides mechanisms for:
+
+    Backup
+    Recovery
+    Logging
+    Crash recovery
+
+
+======================================================================
+1.7 DBMS
+======================================================================
+
+WHAT IS DBMS?
+
+    DBMS stands for:
+
+        DATABASE MANAGEMENT SYSTEM
+
+
+Definition:
+
+    A DBMS is software used to create, store, organize, retrieve,
+    update, manage, secure, and control access to databases.
+
+
+Simple understanding:
+
+    Database:
+        Stores data.
+
+    DBMS:
+        Manages the database.
+
+
+Think of it as:
+
+    USER
+      |
+      ↓
+    DBMS
+      |
+      ↓
+    DATABASE
+
+
+Examples of DBMS:
+
+    - Oracle Database
+    - MySQL
+    - PostgreSQL
+    - Microsoft SQL Server
+    - SQLite
+
+
+MongoDB is generally classified separately as a NoSQL DBMS/database
+system rather than a traditional relational DBMS.
+
+
+======================================================================
+1.8 WHAT DOES A DBMS DO?
+======================================================================
+
+A DBMS provides facilities for:
+
+    1. Data storage
+    2. Data retrieval
+    3. Data insertion
+    4. Data modification
+    5. Data deletion
+    6. Security
+    7. Integrity enforcement
+    8. Concurrency control
+    9. Transaction management
+   10. Backup
+   11. Recovery
+   12. Query processing
+
+
+Basic operations:
+
+    CREATE
+    ↓
+    INSERT
+    ↓
+    SELECT
+    ↓
+    UPDATE
+    ↓
+    DELETE
+
+
+Example:
+
+    INSERT INTO Student
+    VALUES (101, 'Apoorv', 23, 'MCA');
+
+
+    SELECT *
+    FROM Student;
+
+
+    UPDATE Student
+    SET Marks = 90
+    WHERE ID = 101;
+
+
+    DELETE FROM Student
+    WHERE ID = 101;
+
+
+======================================================================
+1.9 CHARACTERISTICS OF DBMS
+======================================================================
+
+A good DBMS generally provides:
+
+    1. Data abstraction
+    2. Data independence
+    3. Data security
+    4. Data integrity
+    5. Concurrency control
+    6. Transaction management
+    7. Backup and recovery
+    8. Efficient data access
+    9. Data sharing
+   10. Reduced redundancy
+
+
+======================================================================
+1.10 ADVANTAGES OF DBMS
+======================================================================
+
+1. REDUCED DATA REDUNDANCY
+
+    DBMS can reduce unnecessary duplication through proper
+    database design.
+
+2. DATA CONSISTENCY
+
+    Centralized management and constraints help maintain
+    consistent data.
+
+3. DATA SECURITY
+
+    Users can be given different permissions.
+
+4. DATA INTEGRITY
+
+    Constraints help ensure valid data.
+
+5. DATA SHARING
+
+    Multiple users/applications can access the database.
+
+6. CONCURRENCY CONTROL
+
+    DBMS manages simultaneous access.
+
+7. BACKUP AND RECOVERY
+
+    DBMS supports mechanisms to recover from failures.
+
+8. TRANSACTION MANAGEMENT
+
+    DBMS supports reliable execution of database operations.
+
+9. DATA INDEPENDENCE
+
+    Changes at one database level can often be made without
+    requiring changes at another level.
+
+10. CENTRALIZED CONTROL
+
+    Database administration can be managed systematically.
+
+
+======================================================================
+1.11 DISADVANTAGES OF DBMS
+======================================================================
+
+DBMS also has disadvantages.
+
+1. COST
+
+    Enterprise database systems and infrastructure can be expensive.
+
+2. COMPLEXITY
+
+    Database systems are more complex than simple files.
+
+3. HARDWARE REQUIREMENTS
+
+    Large database systems may require significant CPU, RAM,
+    and storage resources.
+
+4. ADMINISTRATION
+
+    Skilled database administrators may be required.
+
+5. FAILURE IMPACT
+
+    If a centralized database system becomes unavailable,
+    many applications may be affected.
+
+6. MAINTENANCE
+
+    Database software requires monitoring, backup, updates,
+    security management, and maintenance.
+
+
+======================================================================
+1.12 DBMS vs FILE SYSTEM
+======================================================================
+
++----------------------+---------------------------+--------------------------+
+| Feature              | File System               | DBMS                     |
++----------------------+---------------------------+--------------------------+
+| Data organization    | Separate files            | Structured database      |
+| Redundancy           | Usually higher            | Can be reduced           |
+| Consistency          | Difficult to maintain     | Better control           |
+| Security             | Basic/limited             | Advanced controls        |
+| Data sharing         | Limited                   | Supported                |
+| Concurrent access    | Limited                   | Concurrency control      |
+| Transactions         | Limited                   | Supported                |
+| Recovery             | Usually application-based | Built-in mechanisms      |
+| Querying             | Difficult for complex     | SQL/query languages      |
+| Integrity            | Difficult                 | Constraints supported    |
+| Relationships        | Difficult                 | Easily modeled           |
+| Scalability          | Limited                   | Generally better         |
+| Administration      | Simple                    | More complex             |
++----------------------+---------------------------+--------------------------+
+
+
+INTERVIEW ANSWER:
+
+    "A DBMS provides centralized mechanisms for data management,
+    security, integrity, concurrency, transactions, backup and
+    recovery that are difficult to implement reliably using
+    traditional file systems."
+
+
+======================================================================
+1.13 DATABASE USERS
+======================================================================
+
+Different people interact with a database in different ways.
+
+
+-----------------------------
+1. DATABASE ADMINISTRATOR (DBA)
+-----------------------------
+
+DBA = Database Administrator
+
+Responsibilities:
+
+    - Database installation
+    - Configuration
+    - User management
+    - Security
+    - Backup
+    - Recovery
+    - Performance monitoring
+    - Database maintenance
+    - Storage management
+
+
+Example:
+
+    DBA creates a database user:
+
+        CREATE USER developer IDENTIFIED BY password;
+
+
+    DBA can assign privileges:
+
+        GRANT SELECT ON Student TO developer;
+
+
+-----------------------------
+2. DATABASE DESIGNER
+-----------------------------
+
+Responsibilities:
+
+    - Analyze requirements
+    - Identify entities
+    - Identify relationships
+    - Design schema
+    - Create ER diagrams
+    - Define constraints
+
+
+Example:
+
+    University system:
+
+        Student
+        Course
+        Teacher
+        Department
+        Enrollment
+
+
+-----------------------------
+3. APPLICATION PROGRAMMER / DEVELOPER
+-----------------------------
+
+Developers write applications that interact with databases.
+
+Example:
+
+    Python / Java / C# / JavaScript application
+                     |
+                     ↓
+                  DBMS
+                     |
+                     ↓
+                Database
+
+
+Example:
+
+    Login application
+    ↓
+    Application server
+    ↓
+    SQL query
+    ↓
+    Database
+
+
+-----------------------------
+4. END USER
+-----------------------------
+
+An end user uses the application/database without necessarily
+knowing its internal implementation.
+
+Examples:
+
+    Bank customer
+    Student
+    Online shopper
+    Railway passenger
+
+
+-----------------------------
+5. DATA ANALYST
+-----------------------------
+
+A data analyst retrieves and analyzes data.
+
+Typical activities:
+
+    - SQL queries
+    - Reports
+    - Aggregation
+    - Data analysis
+    - Business insights
+
+
+======================================================================
+1.14 DATABASE ADMINISTRATOR (DBA) IN DETAIL
+======================================================================
+
+A DBA is responsible for managing the database environment.
+
+Major responsibilities:
+
+    SECURITY
+        ↓
+    BACKUP
+        ↓
+    RECOVERY
+        ↓
+    PERFORMANCE
+        ↓
+    MONITORING
+        ↓
+    USER MANAGEMENT
+        ↓
+    AVAILABILITY
+
+
+Important DBA tasks:
+
+    1. Create database users.
+    2. Grant/revoke privileges.
+    3. Monitor database performance.
+    4. Configure storage.
+    5. Manage backups.
+    6. Perform recovery.
+    7. Monitor locks and transactions.
+    8. Manage indexes.
+    9. Apply database updates.
+   10. Troubleshoot database problems.
+
+
+======================================================================
+1.15 DATABASE DESIGNER
+======================================================================
+
+Database designers focus on how data should be structured.
+
+Example requirement:
+
+    "A university wants to store student and course information."
+
+
+Designer identifies:
+
+    STUDENT
+        |
+        | enrolls
+        ↓
+    COURSE
+
+
+Possible tables:
+
+    STUDENT
+    COURSE
+    ENROLLMENT
+
+
+The designer determines:
+
+    - Attributes
+    - Keys
+    - Relationships
+    - Constraints
+    - Normalization
+
+
+======================================================================
+1.16 END USERS
+======================================================================
+
+End users can be classified based on how they interact with
+the database.
+
+1. NAIVE/PARAMETRIC USERS
+
+    Use predefined applications.
+
+    Example:
+
+        Bank clerk
+        Railway booking operator
+
+
+2. CASUAL USERS
+
+    Access the database occasionally.
+
+    Example:
+
+        Manager
+
+
+3. SOPHISTICATED USERS
+
+    Understand database tools and write complex queries.
+
+    Example:
+
+        Data analyst
+        Database developer
+
+
+4. SPECIALIZED USERS
+
+    Develop specialized database applications.
+
+    Example:
+
+        Scientific database developers
+
+
+======================================================================
+1.17 REAL-WORLD APPLICATIONS OF DBMS
+======================================================================
+
+DBMS is used almost everywhere.
+
+
+-----------------------------
+BANKING
+-----------------------------
+
+Stores:
+
+    Customer information
+    Account information
+    Transactions
+    Loans
+    Payments
+
+Example:
+
+    Transfer ₹10,000
+
+    Account A
+        ↓
+    Transaction
+        ↓
+    Account B
+
+
+Important DBMS concepts:
+
+    - Transactions
+    - ACID
+    - Concurrency
+    - Security
+
+
+-----------------------------
+E-COMMERCE
+-----------------------------
+
+Examples:
+
+    Amazon
+    Flipkart
+    eBay
+
+Stores:
+
+    Users
+    Products
+    Orders
+    Payments
+    Inventory
+    Reviews
+
+
+-----------------------------
+EDUCATION
+-----------------------------
+
+Stores:
+
+    Students
+    Teachers
+    Courses
+    Attendance
+    Marks
+    Examinations
+
+
+-----------------------------
+HEALTHCARE
+-----------------------------
+
+Stores:
+
+    Patients
+    Doctors
+    Appointments
+    Prescriptions
+    Medical records
+    Billing
+
+
+-----------------------------
+RAILWAY/AIRLINE RESERVATION
+-----------------------------
+
+Stores:
+
+    Passengers
+    Flights/Trains
+    Seats
+    Reservations
+    Payments
+
+
+-----------------------------
+TELECOMMUNICATION
+-----------------------------
+
+Stores:
+
+    Customers
+    Phone numbers
+    Call records
+    Data usage
+    Billing
+
+
+-----------------------------
+SOCIAL MEDIA
+-----------------------------
+
+Stores:
+
+    Users
+    Posts
+    Comments
+    Likes
+    Followers
+    Messages
+
+
+======================================================================
+1.18 DATABASE MANAGEMENT SYSTEM EXAMPLE
+======================================================================
+
+Consider a banking application.
+
+USER:
+
+    "Transfer ₹5,000 from Account A to Account B."
+
+                USER
+                  |
+                  ↓
+            BANKING APPLICATION
+                  |
+                  ↓
+                 DBMS
+                  |
+        +---------+---------+
+        |                   |
+        ↓                   ↓
+    Account A            Account B
+    ₹20,000               ₹10,000
+
+
+DBMS must ensure:
+
+    Account A → ₹15,000
+    Account B → ₹15,000
+
+
+If something goes wrong during the operation:
+
+    Either:
+        BOTH operations succeed
+
+    OR:
+        BOTH operations are rolled back
+
+
+This is one of the reasons transactions are important.
+
+
+======================================================================
+1.19 DBMS INTERNAL HIGH-LEVEL VIEW
+======================================================================
+
+A simplified DBMS architecture:
+
+                    USER
+                      |
+                      ↓
+                SQL QUERY
+                      |
+                      ↓
+             +----------------+
+             | Query Processor|
+             +----------------+
+                      |
+                      ↓
+             +----------------+
+             | Storage Manager|
+             +----------------+
+                      |
+          +-----------+-----------+
+          |           |           |
+          ↓           ↓           ↓
+       Data Files   Indexes     Logs
+          |
+          ↓
+       DATABASE
+
+
+QUERY PROCESSOR:
+
+    Responsible for processing SQL queries.
+
+STORAGE MANAGER:
+
+    Responsible for managing data stored on storage devices.
+
+DATA FILES:
+
+    Store database data.
+
+INDEXES:
+
+    Help locate data efficiently.
+
+LOGS:
+
+    Help with recovery and transaction management.
+
+
+NOTE:
+
+    This is a simplified conceptual view.
+    Detailed DBMS architecture will be studied in later chapters.
+
+
+======================================================================
+1.20 DATABASE LANGUAGES
+======================================================================
+
+Database languages are commonly categorized as:
+
+    DDL
+    DML
+    DQL
+    DCL
+    TCL
+
+
+======================================================================
+1.21 DDL — DATA DEFINITION LANGUAGE
+======================================================================
+
+DDL is used to define or modify the structure of database objects.
+
+Common commands:
+
+    CREATE
+    ALTER
+    DROP
+    TRUNCATE
+
+
+Example:
+
+    CREATE TABLE Student (
+        Student_ID INT,
+        Name VARCHAR(100),
+        Age INT
+    );
+
+
+ALTER:
+
+    ALTER TABLE Student
+    ADD Email VARCHAR(100);
+
+
+DROP:
+
+    DROP TABLE Student;
+
+
+TRUNCATE:
+
+    TRUNCATE TABLE Student;
+
+
+IMPORTANT:
+
+    DDL deals primarily with DATABASE STRUCTURE.
+
+
+======================================================================
+1.22 DML — DATA MANIPULATION LANGUAGE
+======================================================================
+
+DML is used to manipulate data stored in tables.
+
+Common commands:
+
+    INSERT
+    UPDATE
+    DELETE
+
+
+Example:
+
+    INSERT INTO Student
+    VALUES (101, 'Apoorv', 23);
+
+
+    UPDATE Student
+    SET Age = 24
+    WHERE Student_ID = 101;
+
+
+    DELETE FROM Student
+    WHERE Student_ID = 101;
+
+
+DML deals with:
+
+    DATA
+
+
+======================================================================
+1.23 DQL — DATA QUERY LANGUAGE
+======================================================================
+
+DQL is commonly used to refer to commands used for querying data.
+
+Main command:
+
+    SELECT
+
+
+Example:
+
+    SELECT *
+    FROM Student;
+
+
+Specific SQL standards and database products may classify SELECT
+differently, but "DQL" is widely used in teaching/interview contexts.
+
+
+======================================================================
+1.24 DCL — DATA CONTROL LANGUAGE
+======================================================================
+
+DCL deals with access privileges.
+
+Main commands:
+
+    GRANT
+    REVOKE
+
+
+Example:
+
+    GRANT SELECT
+    ON Student
+    TO developer;
+
+
+REVOKE:
+
+    REVOKE SELECT
+    ON Student
+    FROM developer;
+
+
+Purpose:
+
+    Control who can access what data.
+
+
+======================================================================
+1.25 TCL — TRANSACTION CONTROL LANGUAGE
+======================================================================
+
+TCL is used to control transactions.
+
+Common commands:
+
+    COMMIT
+    ROLLBACK
+    SAVEPOINT
+
+
+Example:
+
+    UPDATE Account
+    SET Balance = Balance - 5000
+    WHERE Account_ID = 101;
+
+    UPDATE Account
+    SET Balance = Balance + 5000
+    WHERE Account_ID = 102;
+
+    COMMIT;
+
+
+If something goes wrong:
+
+    ROLLBACK;
+
+
+SAVEPOINT:
+
+    SAVEPOINT transfer_start;
+
+
+TCL will be studied deeply in the Transaction chapter.
+
+
+======================================================================
+1.26 SQL COMMAND CLASSIFICATION
+======================================================================
+
+                    SQL
+                     |
+       +-------------+-------------+
+       |             |             |
+       ↓             ↓             ↓
+      DDL           DML           DCL
+       |             |             |
+    CREATE        INSERT         GRANT
+    ALTER         UPDATE         REVOKE
+    DROP          DELETE
+    TRUNCATE
+                     |
+                     ↓
+                    DQL
+                     |
+                   SELECT
+
+                     +
+                     |
+                     ↓
+                    TCL
+                     |
+            COMMIT / ROLLBACK
+            / SAVEPOINT
+
+
+======================================================================
+1.27 DBMS vs RDBMS
+======================================================================
+
+DBMS:
+
+    Database Management System
+
+
+RDBMS:
+
+    Relational Database Management System
+
+
+RDBMS is a database management system based on the
+RELATIONAL MODEL.
+
+In an RDBMS, data is typically represented using:
+
+    TABLES
+      |
+      +---- Rows
+      |
+      +---- Columns
+
+
+Example:
+
+    STUDENT
+
+    +----+---------+-----+-------+
+    | ID | Name    | Age | Marks |
+    +----+---------+-----+-------+
+    | 1  | Apoorv  | 23  | 85    |
+    | 2  | Rahul   | 22  | 78    |
+    +----+---------+-----+-------+
+
+
+Examples of relational DBMSs:
+
+    - Oracle Database
+    - PostgreSQL
+    - MySQL
+    - Microsoft SQL Server
+    - SQLite
+
+
+======================================================================
+1.28 DBMS vs RDBMS — IMPORTANT INTERVIEW CONCEPT
+======================================================================
+
+Historically, educational material often describes differences such
+as relationships and normalization between "DBMS" and "RDBMS".
+
+However, in modern usage:
+
+    DBMS = broad category of database management software.
+
+    RDBMS = DBMS specifically based on the relational model.
+
+
+Therefore:
+
+    RDBMS ⊂ DBMS
+
+Meaning:
+
+    Every RDBMS is a DBMS,
+    but not every DBMS is relational.
+
+
+Examples:
+
+    Relational:
+        PostgreSQL
+        Oracle
+        MySQL
+        SQL Server
+
+    Non-relational:
+        MongoDB
+        Redis
+        Cassandra
+
+
+======================================================================
+1.29 DBMS vs RDBMS — COMPARISON
+======================================================================
+
++----------------------+--------------------------+-------------------------+
+| Feature              | DBMS                     | RDBMS                   |
++----------------------+--------------------------+-------------------------+
+| Meaning              | Broad DB management      | Relational DBMS         |
+| Data model           | May vary                 | Relational              |
+| Tables               | Depends on model         | Core representation     |
+| Relationships        | Model-dependent          | Explicitly supported    |
+| SQL                  | Depends on system        | Commonly supported      |
+| Constraints          | Depends on system        | Strongly supported      |
+| Normalization        | Relational concept       | Commonly used           |
+| Examples              | Broad category           | Oracle, MySQL, etc.     |
++----------------------+--------------------------+-------------------------+
+
+
+======================================================================
+1.30 DATABASE SYSTEM
+======================================================================
+
+A DATABASE SYSTEM is more than just the database.
+
+Conceptually:
+
+    DATABASE SYSTEM
+          |
+    +-----+-----+
+    |           |
+    ↓           ↓
+  DATABASE     DBMS
+                 |
+                 ↓
+              USERS
+                 |
+                 ↓
+           APPLICATIONS
+
+
+A complete database environment can include:
+
+    Hardware
+    +
+    Software
+    +
+    Database
+    +
+    Users
+    +
+    Procedures
+
+
+======================================================================
+1.31 DATABASE SYSTEM COMPONENTS
+======================================================================
+
+A database environment can be viewed as consisting of:
+
+    1. Hardware
+    2. Software
+    3. Data
+    4. Procedures
+    5. People/users
+
+
+-----------------------------
+1. HARDWARE
+-----------------------------
+
+Examples:
+
+    Servers
+    Storage devices
+    RAM
+    CPU
+    Network devices
+
+
+-----------------------------
+2. SOFTWARE
+-----------------------------
+
+Examples:
+
+    DBMS
+    Operating System
+    Database applications
+    Development tools
+
+
+-----------------------------
+3. DATA
+-----------------------------
+
+Actual information stored in the database.
+
+
+-----------------------------
+4. PROCEDURES
+-----------------------------
+
+Rules and instructions for:
+
+    Backup
+    Recovery
+    Security
+    Database operation
+
+
+-----------------------------
+5. PEOPLE
+-----------------------------
+
+Examples:
+
+    DBA
+    Developers
+    Designers
+    Analysts
+    End users
+
+
+======================================================================
+1.32 CENTRALIZED DATABASE
+======================================================================
+
+In a centralized database, the database is primarily maintained
+at a central location/system.
+
+Example:
+
+                  USERS
+             /      |      \
+            /       |       \
+           ↓        ↓        ↓
+        User A    User B   User C
+             \      |      /
+              \     |     /
+                   ↓
+              CENTRAL DB
+
+
+Advantages:
+
+    - Centralized management
+    - Easier administration
+    - Centralized security
+
+
+Disadvantages:
+
+    - Central point of failure
+    - Network dependency
+    - Scalability challenges
+
+
+Distributed databases will be studied later.
+
+
+======================================================================
+1.33 DATABASE APPLICATION EXAMPLE
+======================================================================
+
+Consider an E-COMMERCE WEBSITE.
+
+User:
+
+    Searches for:
+        "Laptop"
+
+Application:
+
+    Sends SQL query to DBMS.
+
+DBMS:
+
+    Processes query.
+
+Database:
+
+    Contains:
+
+        Product
+        Seller
+        Inventory
+        Price
+        Review
+
+
+Simplified flow:
+
+    USER
+      ↓
+    WEBSITE
+      ↓
+    APPLICATION SERVER
+      ↓
+    DBMS
+      ↓
+    DATABASE
+      ↓
+    RESULT
+      ↓
+    USER
+
+
+This architecture is fundamental to modern software development.
+
+
+======================================================================
+1.34 WHY DBMS IS IMPORTANT FOR SOFTWARE DEVELOPERS
+======================================================================
+
+As a software developer, you will frequently work with databases.
+
+Typical application:
+
+    Frontend
+       ↓
+    Backend
+       ↓
+    Database
+
+
+Example:
+
+    React / HTML / Android
+              ↓
+        Java / Python /
+        Node.js / C#
+              ↓
+        PostgreSQL / MySQL
+              ↓
+             Data
+
+
+A developer should understand:
+
+    - SQL
+    - Tables
+    - Keys
+    - Relationships
+    - Transactions
+    - Indexes
+    - Constraints
+    - Query optimization
+    - Security
+
+
+Therefore, DBMS is one of the most important CS fundamentals
+for software-development jobs.
+
+
+======================================================================
+1.35 IMPORTANT DBMS TERMINOLOGY
+======================================================================
+
+DATA
+    Raw facts.
+
+INFORMATION
+    Processed meaningful data.
+
+DATABASE
+    Organized collection of related data.
+
+DBMS
+    Software that manages databases.
+
+RDBMS
+    DBMS based on relational model.
+
+TABLE
+    Collection of related rows and columns.
+
+ROW
+    A record/tuple in a relational table.
+
+COLUMN
+    An attribute/field.
+
+SCHEMA
+    Structure/definition of a database.
+
+QUERY
+    Request for data or database operation.
+
+TRANSACTION
+    Logical unit of database work.
+
+CONSTRAINT
+    Rule that restricts invalid data.
+
+PRIMARY KEY
+    Attribute(s) used to uniquely identify rows.
+
+FOREIGN KEY
+    Attribute(s) used to represent a relationship to another table.
+
+
+======================================================================
+1.36 COMPLETE CONCEPT MAP
+======================================================================
+
+                         DATABASE SYSTEM
+                               |
+               +---------------+---------------+
+               |                               |
+               ↓                               ↓
+            DATABASE                          DBMS
+               |                               |
+        Stores data                    Manages data
+                                               |
+                +------------------------------+----------------+
+                |              |               |                |
+                ↓              ↓               ↓                ↓
+             Security      Transactions     Queries          Recovery
+                |              |               |                |
+                ↓              ↓               ↓                ↓
+             Access          ACID             SQL            Backup
+                                              |
+                      +-----------------------+----------------+
+                      |         |        |        |            |
+                      ↓         ↓        ↓        ↓            ↓
+                     DDL       DML      DQL      DCL          TCL
+                      |         |        |        |            |
+                   CREATE     INSERT   SELECT   GRANT       COMMIT
+                   ALTER      UPDATE            REVOKE      ROLLBACK
+                   DROP      DELETE                         SAVEPOINT
+
+
+======================================================================
+1.37 IMPORTANT INTERVIEW QUESTIONS
+======================================================================
+
+Q1. What is DBMS?
+
+ANSWER:
+
+    DBMS stands for Database Management System. It is software
+    used to create, store, retrieve, update, secure, and manage
+    data in databases.
+
+
+Q2. What is a database?
+
+ANSWER:
+
+    A database is an organized collection of related data that
+    can be efficiently stored, accessed, and managed.
+
+
+Q3. What is the difference between data and information?
+
+ANSWER:
+
+    Data is raw facts, whereas information is processed data
+    that has meaningful context and is useful for decision-making.
+
+
+Q4. Why do we need DBMS?
+
+ANSWER:
+
+    DBMS helps manage large amounts of data and provides mechanisms
+    for security, integrity, concurrency, transactions, backup,
+    recovery, and efficient data access.
+
+
+Q5. What is data redundancy?
+
+ANSWER:
+
+    Data redundancy is unnecessary duplication of the same data.
+
+
+Q6. What is data inconsistency?
+
+ANSWER:
+
+    Data inconsistency occurs when different copies of the same
+    data contain different values.
+
+
+Q7. What is RDBMS?
+
+ANSWER:
+
+    RDBMS stands for Relational Database Management System.
+    It manages data according to the relational model, usually
+    representing data as tables.
+
+
+Q8. Give examples of RDBMS.
+
+ANSWER:
+
+    Oracle
+    PostgreSQL
+    MySQL
+    Microsoft SQL Server
+    SQLite
+
+
+Q9. What is the difference between DBMS and RDBMS?
+
+ANSWER:
+
+    DBMS is the general category of database management systems,
+    while RDBMS specifically refers to DBMSs based on the relational
+    data model.
+
+
+Q10. What is a DBA?
+
+ANSWER:
+
+    DBA stands for Database Administrator. A DBA manages database
+    security, users, backup, recovery, performance, availability,
+    and maintenance.
+
+
+Q11. What is DDL?
+
+ANSWER:
+
+    DDL stands for Data Definition Language. It is used to define
+    and modify database structures.
+
+    Examples:
+        CREATE
+        ALTER
+        DROP
+        TRUNCATE
+
+
+Q12. What is DML?
+
+ANSWER:
+
+    DML stands for Data Manipulation Language.
+
+    Examples:
+        INSERT
+        UPDATE
+        DELETE
+
+
+Q13. What is DQL?
+
+ANSWER:
+
+    DQL is commonly used to refer to querying data using SELECT.
+
+
+Q14. What is DCL?
+
+ANSWER:
+
+    DCL stands for Data Control Language.
+
+    Examples:
+        GRANT
+        REVOKE
+
+
+Q15. What is TCL?
+
+ANSWER:
+
+    TCL stands for Transaction Control Language.
+
+    Examples:
+        COMMIT
+        ROLLBACK
+        SAVEPOINT
+
+
+Q16. What are the major problems of file systems?
+
+ANSWER:
+
+    - Data redundancy
+    - Data inconsistency
+    - Data isolation
+    - Difficult data access
+    - Integrity problems
+    - Security problems
+    - Concurrent access problems
+    - Backup/recovery difficulties
+
+
+Q17. What is data independence?
+
+ANSWER:
+
+    Data independence is the ability to change the schema at one
+    level of database architecture without requiring changes at
+    higher levels.
+
+    Detailed study:
+        Chapter 02
+
+
+Q18. What is a transaction?
+
+ANSWER:
+
+    A transaction is a logical unit of database operations that
+    should be executed reliably as a unit.
+
+    Detailed study:
+        Chapter 16
+
+
+======================================================================
+1.38 EXAM-IMPORTANT POINTS
+======================================================================
+
+REMEMBER THESE:
+
+    DBMS
+        ↓
+    Database Management System
+
+    Database
+        ↓
+    Organized collection of related data
+
+    Data
+        ↓
+    Raw facts
+
+    Information
+        ↓
+    Processed meaningful data
+
+    DBA
+        ↓
+    Database Administrator
+
+    DDL
+        ↓
+    CREATE, ALTER, DROP, TRUNCATE
+
+    DML
+        ↓
+    INSERT, UPDATE, DELETE
+
+    DQL
+        ↓
+    SELECT
+
+    DCL
+        ↓
+    GRANT, REVOKE
+
+    TCL
+        ↓
+    COMMIT, ROLLBACK, SAVEPOINT
+
+    RDBMS
+        ↓
+    Relational Database Management System
+
+
+======================================================================
+1.39 ONE-LINE REVISION
+======================================================================
+
+    Data
+        = Raw facts
+
+    Information
+        = Meaningful processed data
+
+    Database
+        = Organized collection of related data
+
+    DBMS
+        = Software that manages databases
+
+    RDBMS
+        = Relational DBMS
+
+    DBA
+        = Person responsible for database administration
+
+    DDL
+        = Defines database structure
+
+    DML
+        = Modifies stored data
+
+    DQL
+        = Retrieves data
+
+    DCL
+        = Controls privileges
+
+    TCL
+        = Controls transactions
+
+    File System
+        = Traditional file-based data storage
+
+    DBMS
+        = Managed database environment with security,
+          integrity, concurrency, transactions, and recovery
+
+
+======================================================================
+1.40 CHAPTER 1 FINAL SUMMARY
+======================================================================
+
+The evolution can be understood as:
+
+    RAW DATA
+       ↓
+    DATA FILES
+       ↓
+    PROBLEMS
+       |
+       +---- Redundancy
+       +---- Inconsistency
+       +---- Security problems
+       +---- Integrity problems
+       +---- Concurrent access problems
+       +---- Backup/recovery problems
+       ↓
+    DBMS
+       |
+       +---- Data Management
+       +---- Security
+       +---- Integrity
+       +---- Transactions
+       +---- Concurrency Control
+       +---- Backup
+       +---- Recovery
+       +---- Query Processing
+       ↓
+    MODERN DATABASE SYSTEM
+       |
+       +---- Relational DB
+       +---- NoSQL
+       +---- Distributed DB
+       +---- Cloud DB
+       +---- Replication
+       +---- Sharding
+       +---- Caching
+
+
+======================================================================
+                    CHAPTER 1 CHECKPOINT
+======================================================================
+
+Before moving to Chapter 2, you should be able to explain:
+
+    [✓] What is data?
+    [✓] What is information?
+    [✓] What is a database?
+    [✓] What is DBMS?
+    [✓] Why is DBMS needed?
+    [✓] Problems of file systems
+    [✓] Advantages of DBMS
+    [✓] Disadvantages of DBMS
+    [✓] Database users
+    [✓] DBA responsibilities
+    [✓] Real-world DBMS applications
+    [✓] DDL
+    [✓] DML
+    [✓] DQL
+    [✓] DCL
+    [✓] TCL
+    [✓] DBMS vs RDBMS
+    [✓] Basic database architecture
+
+
+======================================================================
+IMPORTANT LEARNING RULE
+======================================================================
+
+Do NOT move to Chapter 2 until you understand Chapter 1.
+
+Next chapter:
+
+    CHAPTER 02 — DATABASE ARCHITECTURE & DATA ABSTRACTION
+
+It will cover deeply:
+
+    2.1 Levels of Data Abstraction
+    2.2 Three-Schema Architecture
+    2.3 External Schema
+    2.4 Conceptual Schema
+    2.5 Internal Schema
+    2.6 Physical Data Independence
+    2.7 Logical Data Independence
+    2.8 Schema vs Instance
+    2.9 Database Models
+    2.10 Database System Components
+    2.11 Query Processor
+    2.12 Storage Manager
+    2.13 Buffer Manager
+    2.14 Transaction Manager
+    2.15 Authorization Manager
+
+Type "NEXT" when you are ready for Chapter 2.
+======================================================================
