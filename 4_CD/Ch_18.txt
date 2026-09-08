@@ -1,0 +1,2714 @@
+Absolutely. Below is Chapter 18 — Attribute Grammars, following your Compiler Design master-syllabus position and beginner → GATE → interview → practical progression.
+
+====================================================================
+              COMPILER DESIGN — CHAPTER 18
+                  ATTRIBUTE GRAMMARS
+        Beginner → Core → GATE → Interview → Practical
+====================================================================
+
+MASTER SYLLABUS POSITION
+------------------------
+PHASE 4 — SEMANTIC ANALYSIS
+
+Chapter 15 → Semantic Analysis Fundamentals
+Chapter 16 → Symbol Tables
+Chapter 17 → Type Systems
+Chapter 18 → Attribute Grammars        ← CURRENT
+Chapter 19 → Intermediate Representation
+
+
+====================================================================
+1. WHAT IS AN ATTRIBUTE GRAMMAR?
+====================================================================
+
+An Attribute Grammar is a formal method used to attach
+INFORMATION (attributes) to grammar symbols and define how
+that information is calculated using SEMANTIC RULES.
+
+In simple words:
+
+    CFG + Attributes + Semantic Rules
+              ↓
+       Attribute Grammar
+
+It helps a compiler describe semantic information associated
+with a program's syntax.
+
+For example:
+
+    3 + 5
+
+The grammar tells us:
+
+    Expression → Expression + Term
+
+But we may also want to calculate:
+
+    value(Expression) = 8
+
+The attribute grammar can specify this calculation.
+
+
+--------------------------------------------------------------------
+Simple analogy
+--------------------------------------------------------------------
+
+Think about a student mark sheet.
+
+Grammar gives the structure:
+
+    Student → Name Marks
+
+Attributes contain information:
+
+    Name = Apoorv
+    Marks = 85
+    Result = PASS
+
+The grammar tells us HOW the structure is formed.
+
+Attributes tell us INFORMATION associated with that structure.
+
+
+====================================================================
+2. WHY DO WE NEED ATTRIBUTE GRAMMARS?
+====================================================================
+
+A context-free grammar mainly describes SYNTAX.
+
+Example:
+
+    E → E + T
+    E → T
+    T → number
+
+This can tell us whether:
+
+    10 + 20
+
+has a valid syntactic structure.
+
+But a compiler also needs semantic information such as:
+
+    • What is the value?
+    • What is the data type?
+    • What is the variable name?
+    • What is the memory location?
+    • What type should an expression have?
+    • What code should be generated?
+
+Attribute grammars help attach this information to grammar
+symbols.
+
+
+====================================================================
+3. BASIC STRUCTURE
+====================================================================
+
+An attribute grammar contains:
+
+    1. Context-Free Grammar
+    2. Attributes
+    3. Semantic Rules
+
+Conceptually:
+
+    Grammar
+       +
+    Attributes
+       +
+    Semantic Rules
+       ↓
+    Attribute Grammar
+
+
+Example:
+
+    E → E1 + T
+
+Attributes:
+
+    E.val
+    E1.val
+    T.val
+
+Semantic rule:
+
+    E.val = E1.val + T.val
+
+
+Here:
+
+    E.val   = attribute of E
+    E1.val  = attribute of E1
+    T.val   = attribute of T
+
+
+====================================================================
+4. WHAT IS AN ATTRIBUTE?
+====================================================================
+
+An attribute is a property or piece of information associated
+with a grammar symbol.
+
+Example:
+
+    E.val
+
+means:
+
+    val attribute of E.
+
+
+Another example:
+
+    E.type
+
+means:
+
+    type attribute of E.
+
+
+Possible compiler attributes:
+
+    • value
+    • type
+    • name
+    • address
+    • width
+    • place
+    • code
+    • temporary variable
+    • symbol-table information
+
+
+====================================================================
+5. GRAMMAR SYMBOLS AND ATTRIBUTES
+====================================================================
+
+Consider:
+
+    E → E1 + T
+
+We can attach attributes:
+
+    E.val
+    E1.val
+    T.val
+
+Semantic rule:
+
+    E.val = E1.val + T.val
+
+
+For:
+
+    3 + 5
+
+we may get:
+
+    E1.val = 3
+    T.val  = 5
+
+Therefore:
+
+    E.val = 3 + 5
+          = 8
+
+
+====================================================================
+6. SYNTHESIZED ATTRIBUTES
+====================================================================
+
+A SYNTHESIZED ATTRIBUTE is calculated from the attributes
+of CHILDREN of a parse-tree node.
+
+In simple language:
+
+    Information flows UP the parse tree.
+
+Direction:
+
+                 Parent
+                    ↑
+                    |
+                 Child
+                    ↑
+                    |
+                 Child
+
+Therefore:
+
+    CHILD → PARENT
+
+
+--------------------------------------------------------------------
+Example
+--------------------------------------------------------------------
+
+Grammar:
+
+    E → E1 + T
+
+Semantic rule:
+
+    E.val = E1.val + T.val
+
+
+Here E.val is synthesized because it is calculated from:
+
+    E1.val
+    T.val
+
+which belong to children.
+
+
+====================================================================
+7. EXAMPLE OF SYNTHESIZED ATTRIBUTE
+====================================================================
+
+Grammar:
+
+    E → E1 + T
+    E → T
+    T → number
+
+Semantic rules:
+
+    E.val = E1.val + T.val
+
+    E.val = T.val
+
+    T.val = number.lexval
+
+
+For:
+
+    3 + 5
+
+
+Parse tree:
+
+              E
+           /  |  \
+          E   +   T
+          |       |
+          3       5
+
+
+Values:
+
+    E(left).val = 3
+    T.val       = 5
+
+Therefore:
+
+    E.val = 3 + 5
+         = 8
+
+
+Information moves upward.
+
+
+====================================================================
+8. SYNTHESIZED ATTRIBUTE — IMPORTANT DEFINITION
+====================================================================
+
+Definition:
+
+A synthesized attribute of a grammar symbol is computed from
+attributes associated with its children in the parse tree.
+
+Memory trick:
+
+    SYNTHESIZED = UPWARD FLOW
+
+                  Parent
+                     ↑
+                     |
+                  Children
+
+
+====================================================================
+9. INHERITED ATTRIBUTES
+====================================================================
+
+An INHERITED ATTRIBUTE is calculated using information from:
+
+    • Parent
+    • Siblings
+
+In simple language:
+
+    Information flows DOWN or SIDEWAYS in the parse tree.
+
+
+Direction:
+
+                 Parent
+                    |
+                    ↓
+                  Child
+
+or:
+
+    Left sibling → Right sibling
+
+
+Therefore:
+
+    Parent/Sibling → Child
+
+
+====================================================================
+10. EXAMPLE OF INHERITED ATTRIBUTE
+====================================================================
+
+Suppose we have:
+
+    Declaration → Type List
+
+and the declaration:
+
+    int a, b, c
+
+The type "int" needs to be passed to:
+
+    a
+    b
+    c
+
+Conceptually:
+
+    Declaration
+       |
+       | type = int
+       ↓
+      List
+       |
+       ↓
+    identifiers
+
+The type information can be inherited by the identifier list.
+
+
+Example semantic rule:
+
+    List.in = Type.type
+
+
+Then:
+
+    a.type = List.in
+    b.type = List.in
+    c.type = List.in
+
+
+So:
+
+    int → a
+    int → b
+    int → c
+
+
+This is inherited information.
+
+
+====================================================================
+11. INHERITED ATTRIBUTE — IMPORTANT DEFINITION
+====================================================================
+
+An inherited attribute of a grammar symbol is computed using
+attributes of its parent and/or siblings.
+
+Memory trick:
+
+    INHERITED = DOWN/SIDEWAYS FLOW
+
+
+                  Parent
+                     |
+                     ↓
+                   Child
+
+or:
+
+    Sibling → Child
+
+
+====================================================================
+12. SYNTHESIZED vs INHERITED
+====================================================================
+
++----------------------+------------------------------+
+| Feature              | Synthesized                  |
++----------------------+------------------------------+
+| Direction            | Upward                       |
+| Source                | Children                     |
+| Goes to               | Parent                       |
+| Example               | E.val                        |
+| Common use            | Expression evaluation       |
++----------------------+------------------------------+
+
++----------------------+------------------------------+
+| Feature              | Inherited                    |
++----------------------+------------------------------+
+| Direction            | Downward/sideways            |
+| Source                | Parent/siblings              |
+| Goes to               | Child                        |
+| Example               | Type information             |
+| Common use            | Declaration/type propagation |
++----------------------+------------------------------+
+
+
+MEMORY:
+
+    Synthesized:
+        Child → Parent
+
+    Inherited:
+        Parent/Sibling → Child
+
+
+====================================================================
+13. ATTRIBUTE GRAMMAR EXAMPLE
+====================================================================
+
+Consider:
+
+    E → E1 + T
+
+Attribute:
+
+    val
+
+Semantic rule:
+
+    E.val = E1.val + T.val
+
+
+This is a synthesized attribute.
+
+Another grammar:
+
+    D → T L
+
+Semantic rule:
+
+    L.in = T.type
+
+Here:
+
+    L.in
+
+is inherited.
+
+
+====================================================================
+14. SEMANTIC RULES
+====================================================================
+
+A semantic rule specifies how an attribute is calculated.
+
+Example:
+
+    E → E1 + T
+
+    E.val = E1.val + T.val
+
+
+Another:
+
+    D → T L
+
+    L.in = T.type
+
+
+Semantic rules connect syntax with semantic information.
+
+
+====================================================================
+15. SYNTAX-DIRECTED DEFINITION (SDD)
+====================================================================
+
+A Syntax-Directed Definition, or SDD, is a context-free grammar
+with:
+
+    • attributes
+    • semantic rules
+
+So:
+
+    CFG + Attributes + Semantic Rules
+              ↓
+             SDD
+
+
+An SDD describes how semantic information is associated with
+grammar productions.
+
+
+====================================================================
+16. SDD EXAMPLE
+====================================================================
+
+Grammar:
+
+    E → E1 + T
+    E → T
+    T → number
+
+Attributes:
+
+    E.val
+    T.val
+    number.lexval
+
+Semantic rules:
+
+    E.val = E1.val + T.val
+
+    E.val = T.val
+
+    T.val = number.lexval
+
+
+This is a syntax-directed definition.
+
+
+====================================================================
+17. SYNTAX-DIRECTED TRANSLATION (SDT)
+====================================================================
+
+Syntax-Directed Translation means performing translation actions
+during parsing according to grammar productions.
+
+Semantic actions can be embedded directly into productions.
+
+Conceptually:
+
+    Grammar + Actions
+            ↓
+    Syntax-Directed Translation
+
+
+Example:
+
+    E → E + T { print("+"); }
+
+
+When the production is used, the semantic action can execute.
+
+
+====================================================================
+18. SDD vs SDT
+====================================================================
+
+SDD:
+
+    Describes semantic rules associated with attributes.
+
+SDT:
+
+    Embeds semantic actions into grammar productions.
+
+Simple difference:
+
+    SDD → WHAT semantic information is computed
+
+    SDT → WHEN/HOW translation actions are executed
+
+
+Example SDD:
+
+    E.val = E1.val + T.val
+
+
+Example SDT:
+
+    E → E + T { generate("+") }
+
+
+====================================================================
+19. ATTRIBUTE EVALUATION
+====================================================================
+
+Attribute evaluation means determining the values of all
+attributes in a parse tree according to semantic rules.
+
+
+Example:
+
+    E → E1 + T
+
+    E.val = E1.val + T.val
+
+
+Suppose:
+
+    E1.val = 10
+    T.val  = 20
+
+Then:
+
+    E.val = 10 + 20
+          = 30
+
+
+The compiler must evaluate attributes in an order that respects
+their dependencies.
+
+
+====================================================================
+20. DEPENDENCY GRAPH
+====================================================================
+
+A dependency graph represents dependencies between attributes.
+
+Suppose:
+
+    E.val = E1.val + T.val
+
+
+Then:
+
+    E1.val ─────┐
+                ↓
+              E.val
+                ↑
+    T.val ──────┘
+
+
+Graphically:
+
+    E1.val ───→ E.val ←─── T.val
+
+
+This means:
+
+    E.val
+
+depends on:
+
+    E1.val
+    T.val
+
+
+====================================================================
+21. WHY DEPENDENCY GRAPHS ARE IMPORTANT
+====================================================================
+
+A dependency graph tells us:
+
+    • Which attribute depends on which?
+    • What should be evaluated first?
+    • Is an evaluation order possible?
+    • Is there a dependency cycle?
+
+Example:
+
+    A → B → C
+
+Then:
+
+    C depends on B
+    B depends on A
+
+Therefore:
+
+    A must be evaluated before B
+    B must be evaluated before C
+
+
+====================================================================
+22. ATTRIBUTE EVALUATION ORDER
+====================================================================
+
+Suppose:
+
+    A → B C
+
+Rules:
+
+    B.x = A.y
+    C.z = B.x + 1
+
+
+Dependencies:
+
+    A.y → B.x → C.z
+
+
+Therefore evaluation order:
+
+    1. A.y
+    2. B.x
+    3. C.z
+
+
+This is basically a topological ordering of the dependency
+relationships when the dependency graph is acyclic.
+
+
+====================================================================
+23. CYCLIC DEPENDENCY
+====================================================================
+
+Consider:
+
+    A.x depends on B.y
+
+and:
+
+    B.y depends on A.x
+
+
+Dependency:
+
+    A.x → B.y
+      ↑      |
+      |______|
+
+
+This creates a cycle.
+
+Therefore a straightforward attribute evaluation order
+does not exist.
+
+IMPORTANT:
+
+    Cyclic dependencies are problematic for attribute evaluation.
+
+
+====================================================================
+24. PARSE TREE ANNOTATION
+====================================================================
+
+Parse tree annotation means writing attribute values at the
+appropriate nodes of the parse tree.
+
+Example:
+
+    3 + 5
+
+
+Grammar:
+
+    E → E1 + T
+
+
+Annotated tree:
+
+                 E.val = 8
+                 / | \
+                /  |  \
+               E   +   T
+               |       |
+             val=3    val=5
+
+
+Calculation:
+
+    E.val = 3 + 5
+          = 8
+
+
+This is called an annotated parse tree.
+
+
+====================================================================
+25. SYNTHESIZED ATTRIBUTE EVALUATION
+====================================================================
+
+For a purely synthesized system:
+
+    Start from leaves.
+
+    ↓
+
+    Compute child attributes.
+
+    ↓
+
+    Compute parent attributes.
+
+Therefore evaluation is naturally:
+
+    Bottom → Up
+
+
+Example:
+
+                 E
+                ↑
+              E   T
+              ↑   ↑
+              3   5
+
+
+Calculate:
+
+    3
+    5
+    ↓
+    3 + 5
+    ↓
+    8
+
+
+====================================================================
+26. S-ATTRIBUTED DEFINITIONS
+====================================================================
+
+An S-attributed definition is an SDD in which ALL attributes
+are synthesized attributes.
+
+That means:
+
+    NO inherited attributes.
+
+Therefore:
+
+    SDD
+     ↓
+    Only synthesized attributes
+     ↓
+    S-attributed
+
+
+Memory:
+
+    S = Synthesized
+
+
+====================================================================
+27. EXAMPLE OF S-ATTRIBUTED DEFINITION
+====================================================================
+
+Grammar:
+
+    E → E1 + T
+    E → T
+    T → number
+
+Rules:
+
+    E.val = E1.val + T.val
+
+    E.val = T.val
+
+    T.val = number.lexval
+
+
+All attributes are synthesized.
+
+Therefore:
+
+    This is S-attributed.
+
+
+====================================================================
+28. IMPORTANT PROPERTY OF S-ATTRIBUTED DEFINITIONS
+====================================================================
+
+Because all attributes are synthesized:
+
+    Information flows upward.
+
+Therefore they are especially convenient for bottom-up parsing.
+
+
+Memory:
+
+    S-attributed
+        ↓
+    Synthesized only
+        ↓
+    Bottom-up friendly
+
+
+====================================================================
+29. L-ATTRIBUTED DEFINITIONS
+====================================================================
+
+An L-attributed definition is a class of attribute grammars
+that restricts how inherited attributes can depend on other
+attributes.
+
+For a production:
+
+    A → X1 X2 ... Xn
+
+an inherited attribute of Xi may depend on:
+
+    • inherited attributes of A
+    • attributes of symbols X1, X2, ..., X(i-1)
+      to the LEFT of Xi
+
+It must not depend on attributes of symbols to the right
+of Xi in a way that violates the left-to-right restriction.
+
+
+Simple memory:
+
+    L = Left-to-right
+
+Information can come from:
+
+    Parent
+    +
+    Left-side siblings
+
+
+====================================================================
+30. L-ATTRIBUTED DEFINITION — CONCEPT
+====================================================================
+
+For:
+
+    A → X1 X2 X3
+
+When computing an inherited attribute of X3, it may depend on:
+
+    A's attributes
+    X1's attributes
+    X2's attributes
+
+But not on:
+
+    X3's right-side siblings
+    or symbols appearing to its right.
+
+
+Conceptually:
+
+    A
+    |
+    +---- X1
+    |
+    +---- X2
+    |
+    +---- X3
+
+Information can flow:
+
+    A  → X1
+    A  → X2
+    X1 → X2
+    X2 → X3
+
+subject to the formal L-attributed dependency restrictions.
+
+
+====================================================================
+31. S-ATTRIBUTED vs L-ATTRIBUTED
+====================================================================
+
++-----------------------+----------------------------+
+| S-Attributed          | L-Attributed              |
++-----------------------+----------------------------+
+| Only synthesized      | Allows inherited          |
+| attributes            | attributes under rules    |
++-----------------------+----------------------------+
+| Simple restriction    | More general              |
+|                        |                            |
++-----------------------+----------------------------+
+| Child → Parent        | Left-to-right dependencies|
++-----------------------+----------------------------+
+| Bottom-up friendly    | Top-down/left-to-right    |
+|                        | evaluation friendly       |
++-----------------------+----------------------------+
+
+
+IMPORTANT RELATION:
+
+    Every S-attributed definition is L-attributed.
+
+But:
+
+    Every L-attributed definition is NOT necessarily
+    S-attributed.
+
+
+Therefore:
+
+    S-attributed ⊂ L-attributed
+
+
+This is a very important exam concept.
+
+
+====================================================================
+32. WHY S-ATTRIBUTED IS L-ATTRIBUTED
+====================================================================
+
+S-attributed definitions contain only synthesized attributes.
+
+Synthesized attributes do not require the restricted inherited
+attribute flow that L-attributed definitions regulate.
+
+Therefore they satisfy the L-attributed restrictions.
+
+Hence:
+
+    S-attributed ⊆ L-attributed
+
+
+====================================================================
+33. ATTRIBUTE FLOW
+====================================================================
+
+Three useful directions:
+
+    1. Synthesized
+
+       Child → Parent
+
+    2. Inherited
+
+       Parent → Child
+
+       or permitted left sibling → right-side child
+
+    3. Dependency
+
+       Any semantic dependency represented in a dependency graph
+
+
+Memory diagram:
+
+                   Parent
+                  ↑     |
+                  |     ↓
+             synthesized inherited
+                  |     |
+                 Child ← Left sibling
+
+
+====================================================================
+34. EXAMPLE — EXPRESSION VALUE
+====================================================================
+
+Grammar:
+
+    E → E1 + T
+    E → T
+    T → number
+
+Semantic rules:
+
+    E.val = E1.val + T.val
+    E.val = T.val
+    T.val = number.lexval
+
+
+Input:
+
+    2 + 7
+
+
+Evaluation:
+
+    T.val = 2
+    T.val = 7
+
+    E.val = 2 + 7
+
+    E.val = 9
+
+
+All values are synthesized.
+
+
+Therefore:
+
+    S-attributed definition.
+
+
+====================================================================
+35. EXAMPLE — TYPE PROPAGATION
+====================================================================
+
+Declaration:
+
+    int a, b, c
+
+
+Grammar:
+
+    D → T L
+
+Suppose:
+
+    T.type = int
+
+Semantic rule:
+
+    L.in = T.type
+
+
+Then:
+
+    L.in = int
+
+
+The information "int" is passed downward into the list.
+
+Therefore:
+
+    inherited attribute.
+
+
+This is a typical use of inherited attributes.
+
+
+====================================================================
+36. ANOTHER TYPE EXAMPLE
+====================================================================
+
+Consider:
+
+    float x
+
+
+Grammar:
+
+    D → T id
+
+Attributes:
+
+    T.type
+    id.type
+
+
+Semantic rule:
+
+    id.type = T.type
+
+
+Information:
+
+    T.type → id.type
+
+
+The type is propagated from the type specification to
+the identifier.
+
+
+====================================================================
+37. ATTRIBUTE GRAMMAR AND TYPE CHECKING
+====================================================================
+
+Attribute grammars can describe type checking.
+
+Example:
+
+    E → E1 + E2
+
+
+Semantic rule:
+
+    if E1.type == int AND E2.type == int
+        then E.type = int
+    else
+        type error
+
+
+For:
+
+    10 + 20
+
+
+we get:
+
+    E1.type = int
+    E2.type = int
+
+Therefore:
+
+    E.type = int
+
+
+For:
+
+    10 + "hello"
+
+
+the semantic rule may report:
+
+    TYPE ERROR
+
+
+This connects Chapter 18 with Chapter 17.
+
+
+====================================================================
+38. ATTRIBUTE GRAMMAR AND SYMBOL TABLE
+====================================================================
+
+Attributes can carry information obtained from the symbol table.
+
+Example:
+
+    x + 10
+
+
+If symbol table contains:
+
+    x → type=int
+
+
+Then semantic analysis may determine:
+
+    x.type = int
+
+and:
+
+    10.type = int
+
+
+Then:
+
+    E.type = int
+
+
+Therefore:
+
+    Symbol Table
+          ↓
+      Attributes
+          ↓
+    Semantic Analysis
+
+
+====================================================================
+39. ATTRIBUTE GRAMMAR AND AST
+====================================================================
+
+A compiler often builds an AST.
+
+Example:
+
+    x + 10
+
+
+AST:
+
+             +
+            / \
+           x   10
+
+
+Attributes may be attached conceptually:
+
+             +(type=int)
+              /       \
+        x(type=int)   10(type=int)
+
+
+This allows semantic information to travel through the
+compiler's representation.
+
+
+====================================================================
+40. ATTRIBUTE GRAMMAR AND INTERMEDIATE CODE
+====================================================================
+
+Attributes can also help generate intermediate representation.
+
+Example:
+
+    a + b * c
+
+
+Suppose an expression has attribute:
+
+    place
+
+where place represents the location/temporary containing
+the expression result.
+
+For:
+
+    E → E1 + T
+
+semantic action could conceptually be:
+
+    E.place = newtemp()
+    emit(E.place = E1.place + T.place)
+
+
+Example:
+
+    t1 = b * c
+    t2 = a + t1
+
+
+Then:
+
+    E.place = t2
+
+
+Thus attributes can connect parsing/semantic analysis to
+IR generation.
+
+
+====================================================================
+41. ATTRIBUTE GRAMMAR IN THE COMPILER PIPELINE
+====================================================================
+
+Complete picture:
+
+    Source Program
+          ↓
+    Lexical Analysis
+          ↓
+        Tokens
+          ↓
+    Syntax Analysis
+          ↓
+    Parse Tree / AST
+          ↓
+    Semantic Analysis
+          ↓
+    Attribute Evaluation
+          ↓
+    Type Information
+    Scope Information
+    Value Information
+    Other Semantic Information
+          ↓
+    Intermediate Representation
+          ↓
+    Optimization
+          ↓
+    Code Generation
+          ↓
+    Target Code
+
+
+====================================================================
+42. SYNTAX vs SEMANTICS vs ATTRIBUTES
+====================================================================
+
+Syntax:
+
+    Is the program structurally valid?
+
+Semantics:
+
+    Does the structurally valid program make sense?
+
+Attributes:
+
+    What semantic information is associated with the
+    syntactic structure?
+
+
+Example:
+
+    int x;
+    x = 10;
+
+
+Syntax:
+
+    Correct statement structure.
+
+
+Semantics:
+
+    x has been declared and assignment is type-compatible.
+
+
+Attributes:
+
+    x.type = int
+    10.type = int
+    assignment is valid.
+
+
+====================================================================
+43. ATTRIBUTE EVALUATION METHODS
+====================================================================
+
+Different attribute systems may support different evaluation
+strategies.
+
+Common conceptual approaches include:
+
+    • Dependency-based evaluation
+    • Bottom-up evaluation
+    • Left-to-right evaluation
+    • Topological ordering of dependencies
+
+
+For an acyclic dependency graph:
+
+    Construct dependency graph
+
+            ↓
+
+    Find valid evaluation order
+
+            ↓
+
+    Evaluate attributes
+
+
+====================================================================
+44. DEPENDENCY GRAPH — STEP-BY-STEP
+====================================================================
+
+Suppose:
+
+    E → E1 + T
+
+Rule:
+
+    E.val = E1.val + T.val
+
+
+Step 1:
+
+    Identify attributes:
+
+    E.val
+    E1.val
+    T.val
+
+
+Step 2:
+
+    Identify dependencies:
+
+    E1.val → E.val
+    T.val  → E.val
+
+
+Step 3:
+
+    Build graph:
+
+    E1.val ───→ E.val
+    T.val  ───→ E.val
+
+
+Step 4:
+
+    Evaluate dependencies first.
+
+
+====================================================================
+45. TOP-DOWN vs BOTTOM-UP VIEW
+====================================================================
+
+Synthesized attributes:
+
+    Leaves
+      ↓
+    Internal nodes
+      ↓
+    Root
+
+Therefore:
+
+    Bottom → Up
+
+
+Inherited attributes:
+
+    Root
+      ↓
+    Internal nodes
+      ↓
+    Leaves
+
+Therefore generally:
+
+    Top → Down
+
+
+IMPORTANT:
+
+    This is a conceptual flow description.
+
+Actual evaluation order depends on dependencies and
+the parsing/evaluation strategy.
+
+
+====================================================================
+46. S-ATTRIBUTED DEFINITIONS AND LR PARSING
+====================================================================
+
+S-attributed definitions contain only synthesized attributes.
+
+LR parsing is bottom-up.
+
+Therefore synthesized information can naturally be computed
+when reductions occur.
+
+Example:
+
+    E → E1 + T
+
+When the parser reduces:
+
+    E1 + T → E
+
+the values of E1 and T are already available.
+
+Therefore:
+
+    E.val = E1.val + T.val
+
+
+This is why S-attributed definitions are convenient with
+bottom-up parsing.
+
+
+====================================================================
+47. L-ATTRIBUTED DEFINITIONS AND LL PARSING
+====================================================================
+
+L-attributed definitions permit controlled inherited
+information flow from:
+
+    • parent
+    • left siblings
+
+This matches a left-to-right processing style.
+
+Therefore L-attributed definitions are particularly useful
+with top-down/left-to-right translation schemes.
+
+
+====================================================================
+48. IMPORTANT GATE RELATION
+====================================================================
+
+Remember:
+
+    S-attributed ⊂ L-attributed
+
+More accurately:
+
+    Every S-attributed SDD is L-attributed.
+
+But:
+
+    Some L-attributed SDDs contain inherited attributes.
+
+Therefore:
+
+    L-attributed is more general than S-attributed.
+
+
+====================================================================
+49. SDD vs SDT — EXAM VIEW
+====================================================================
+
+SDD:
+
+    Semantic rules are associated with productions.
+
+SDT:
+
+    Semantic actions are placed within productions.
+
+
+Example SDD:
+
+    E → E1 + T
+
+    E.val = E1.val + T.val
+
+
+Example SDT:
+
+    E → E + T { action }
+
+
+Remember:
+
+    SDD = Attribute-based semantic specification
+
+    SDT = Action-based translation scheme
+
+
+====================================================================
+50. SYNTHESIZED vs INHERITED — GATE TRAP
+====================================================================
+
+TRAP:
+
+    "Synthesized attributes always belong only to terminals."
+
+FALSE.
+
+Synthesized attributes can belong to:
+
+    • Nonterminals
+    • Terminals, depending on the attribute definition/context
+
+Typical compiler examples use synthesized attributes on
+nonterminals.
+
+
+TRAP:
+
+    "Inherited attributes always come only from the parent."
+
+Incomplete.
+
+They can depend on:
+
+    • Parent
+    • Appropriate siblings
+
+especially under L-attributed restrictions.
+
+
+====================================================================
+51. GATE IMPORTANT FACTS
+====================================================================
+
+FACT 1:
+
+    Synthesized attribute:
+
+        Child → Parent
+
+
+FACT 2:
+
+    Inherited attribute:
+
+        Parent/Sibling → Child
+
+
+FACT 3:
+
+    S-attributed:
+
+        Only synthesized attributes.
+
+
+FACT 4:
+
+    L-attributed:
+
+        Allows inherited attributes under left-to-right
+        dependency restrictions.
+
+
+FACT 5:
+
+    Every S-attributed definition is L-attributed.
+
+
+FACT 6:
+
+    Not every L-attributed definition is S-attributed.
+
+
+FACT 7:
+
+    Dependency graph represents attribute dependencies.
+
+
+FACT 8:
+
+    Cyclic dependency prevents a straightforward topological
+    evaluation order.
+
+
+FACT 9:
+
+    S-attributed definitions are naturally suitable for
+    bottom-up evaluation.
+
+
+FACT 10:
+
+    L-attributed definitions are suitable for left-to-right
+    evaluation strategies.
+
+
+====================================================================
+52. GATE QUESTION TYPE 1 — IDENTIFY ATTRIBUTE
+====================================================================
+
+Production:
+
+    E → E1 + T
+
+Rule:
+
+    E.val = E1.val + T.val
+
+
+Question:
+
+    What type of attribute is E.val?
+
+Answer:
+
+    SYNTHESIZED
+
+
+Reason:
+
+    E.val is calculated from child attributes.
+
+
+====================================================================
+53. GATE QUESTION TYPE 2 — IDENTIFY INHERITED
+====================================================================
+
+Production:
+
+    D → T L
+
+Rule:
+
+    L.in = T.type
+
+
+Question:
+
+    What type of attribute is L.in?
+
+Answer:
+
+    INHERITED
+
+
+Reason:
+
+    Information flows from T/parent-side context into L.
+
+
+====================================================================
+54. GATE QUESTION TYPE 3
+====================================================================
+
+Question:
+
+    Which definition contains only synthesized attributes?
+
+Answer:
+
+    S-attributed definition.
+
+
+Memory:
+
+    S = Synthesized only.
+
+
+====================================================================
+55. GATE QUESTION TYPE 4
+====================================================================
+
+Question:
+
+    Which is more general?
+
+    A. S-attributed
+    B. L-attributed
+
+
+Answer:
+
+    B. L-attributed
+
+
+Because:
+
+    S-attributed ⊂ L-attributed
+
+
+====================================================================
+56. GATE QUESTION TYPE 5
+====================================================================
+
+Given:
+
+    A → B C
+
+Rules:
+
+    A.x = B.x + C.x
+
+What is A.x?
+
+Answer:
+
+    Synthesized.
+
+
+Reason:
+
+    A.x depends on child attributes.
+
+
+====================================================================
+57. GATE QUESTION TYPE 6
+====================================================================
+
+Given:
+
+    A → B C
+
+Rule:
+
+    B.x = A.y
+
+
+What is B.x?
+
+Answer:
+
+    Inherited.
+
+
+Reason:
+
+    B.x receives information from its parent A.
+
+
+====================================================================
+58. GATE QUESTION TYPE 7 — DEPENDENCY GRAPH
+====================================================================
+
+Given:
+
+    A.x = B.y + C.z
+
+Dependencies:
+
+    B.y → A.x
+
+    C.z → A.x
+
+
+Therefore:
+
+    B.y ───→ A.x ←─── C.z
+
+
+A.x must be evaluated after:
+
+    B.y
+    C.z
+
+
+====================================================================
+59. GATE QUESTION TYPE 8 — CYCLE
+====================================================================
+
+Suppose:
+
+    A.x depends on B.y
+
+and:
+
+    B.y depends on A.x
+
+
+Then:
+
+    A.x → B.y → A.x
+
+
+There is a cycle.
+
+Therefore no ordinary topological evaluation ordering
+exists for these dependencies.
+
+
+====================================================================
+60. PRACTICAL COMPILER EXAMPLE
+====================================================================
+
+Consider:
+
+    int x;
+    x = 10 + 20;
+
+
+During semantic processing:
+
+Step 1:
+
+    Declaration:
+
+        x : int
+
+
+Step 2:
+
+    Expression:
+
+        10 + 20
+
+
+Step 3:
+
+    Attribute evaluation:
+
+        10.type = int
+        20.type = int
+
+
+Step 4:
+
+    Expression type:
+
+        (10 + 20).type = int
+
+
+Step 5:
+
+    Assignment:
+
+        x.type = int
+
+        RHS.type = int
+
+
+Step 6:
+
+    Type compatibility:
+
+        int ← int
+
+        VALID
+
+
+Step 7:
+
+    Generate IR:
+
+        t1 = 10 + 20
+        x = t1
+
+
+Attribute information helps the compiler move from
+syntax to semantic understanding and eventually translation.
+
+
+====================================================================
+61. PRACTICAL EXAMPLE — SIMPLE TYPE SYSTEM
+====================================================================
+
+Suppose:
+
+    E → E1 + E2
+
+
+Semantic rule:
+
+    if E1.type = int and E2.type = int
+        E.type = int
+    else
+        ERROR
+
+
+Input:
+
+    5 + 10
+
+
+Attributes:
+
+    E1.type = int
+    E2.type = int
+
+
+Therefore:
+
+    E.type = int
+
+
+Input:
+
+    5 + 3.5
+
+
+Depending on the language's type rules:
+
+    int + float
+
+may:
+
+    • be allowed with coercion
+    • produce float
+    • or produce an error
+
+The exact result depends on the language's semantic rules.
+
+
+====================================================================
+62. PRACTICAL EXAMPLE — SYMBOL TABLE
+====================================================================
+
+Program:
+
+    int x;
+    x = 20;
+
+
+Symbol table:
+
+    +------+------+
+    | Name | Type |
+    +------+------+
+    | x    | int  |
+    +------+------+
+
+When processing:
+
+    x = 20
+
+
+Semantic attributes may determine:
+
+    x.type = int
+    20.type = int
+
+
+Then:
+
+    assignment.type-compatible = TRUE
+
+
+====================================================================
+63. PRACTICAL EXAMPLE — CONSTANT EVALUATION
+====================================================================
+
+Expression:
+
+    2 + 3 * 4
+
+
+Attribute:
+
+    val
+
+
+Assume:
+
+    3 * 4 = 12
+
+Then:
+
+    2 + 12 = 14
+
+
+Attribute evaluation can compute:
+
+    expression.val = 14
+
+
+This concept can contribute to constant folding during
+later optimization.
+
+
+====================================================================
+64. ATTRIBUTE GRAMMARS AND SEMANTIC ANALYSIS
+====================================================================
+
+Chapter 15:
+
+    Semantic Analysis
+
+Chapter 16:
+
+    Symbol Table
+
+Chapter 17:
+
+    Type System
+
+Chapter 18:
+
+    Attribute Grammar
+
+
+These concepts are closely connected:
+
+    AST
+     ↓
+    Symbol Table
+     ↓
+    Type Information
+     ↓
+    Attributes
+     ↓
+    Semantic Rules
+     ↓
+    Annotated AST
+     ↓
+    IR
+
+
+====================================================================
+65. ATTRIBUTE GRAMMARS AND PARSER
+====================================================================
+
+Parser:
+
+    Checks syntax.
+
+Attribute grammar:
+
+    Defines semantic information associated with syntax.
+
+Therefore:
+
+    Parser
+       ↓
+    Parse tree
+       ↓
+    Attribute evaluation
+       ↓
+    Semantic information
+
+
+In actual compiler implementations, semantic actions may be
+integrated into parsing or semantic analysis rather than using
+a literal standalone "attribute grammar engine."
+
+
+====================================================================
+66. COMMON ATTRIBUTE NAMES IN COMPILERS
+====================================================================
+
+Some common conceptual attributes include:
+
+    val
+    type
+    place
+    code
+    width
+    offset
+    addr
+    name
+    entry
+    symbol
+
+
+Example:
+
+    E.type
+    E.val
+    E.place
+
+
+These are not universal fixed attribute names.
+
+They depend on the compiler design.
+
+
+====================================================================
+67. IMPORTANT TERMINOLOGY
+====================================================================
+
+ATTRIBUTE:
+
+    Information associated with a grammar symbol.
+
+
+SEMANTIC RULE:
+
+    Rule that computes an attribute.
+
+
+SDD:
+
+    Syntax-Directed Definition.
+
+
+SDT:
+
+    Syntax-Directed Translation.
+
+
+SYNTHESIZED:
+
+    Computed from children.
+
+
+INHERITED:
+
+    Computed from parent/siblings.
+
+
+DEPENDENCY GRAPH:
+
+    Graph showing attribute dependencies.
+
+
+ANNOTATED PARSE TREE:
+
+    Parse tree with attribute values/information attached.
+
+
+S-ATTRIBUTED:
+
+    Only synthesized attributes.
+
+
+L-ATTRIBUTED:
+
+    Attribute dependencies satisfy the left-to-right
+    inherited-attribute restriction.
+
+
+====================================================================
+68. COMMON MISTAKES
+====================================================================
+
+MISTAKE 1:
+
+    "Synthesized means calculated at compile time."
+
+Incorrect.
+
+"Synthesized" describes ATTRIBUTE FLOW, not simply compile time.
+
+
+MISTAKE 2:
+
+    "Inherited means inherited from the parent only."
+
+Incomplete.
+
+Inherited attributes can depend on parent and permitted siblings.
+
+
+MISTAKE 3:
+
+    "S-attributed and L-attributed are unrelated."
+
+False.
+
+    S-attributed ⊂ L-attributed
+
+
+MISTAKE 4:
+
+    "Every attribute grammar is S-attributed."
+
+False.
+
+
+MISTAKE 5:
+
+    "Every L-attributed definition is S-attributed."
+
+False.
+
+
+MISTAKE 6:
+
+    "Attribute grammar is the same as CFG."
+
+False.
+
+CFG describes syntactic structure.
+
+Attribute grammar adds semantic information and rules.
+
+
+====================================================================
+69. VERY IMPORTANT COMPARISON
+====================================================================
+
++-------------------+----------------------------------+
+| Concept           | Meaning                          |
++-------------------+----------------------------------+
+| CFG               | Describes syntax                 |
+| Attribute         | Information/property             |
+| Semantic Rule     | Computes attribute               |
+| SDD               | CFG + attributes + semantic      |
+|                   | rules                            |
+| SDT               | Grammar + embedded actions       |
+| Synthesized       | Child → Parent                   |
+| Inherited         | Parent/Sibling → Child           |
+| Dependency Graph  | Shows attribute dependencies     |
+| S-attributed      | Synthesized only                 |
+| L-attributed      | Left-to-right restricted attrs   |
++-------------------+----------------------------------+
+
+
+====================================================================
+70. INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is an attribute grammar?
+
+Answer:
+
+An attribute grammar extends a context-free grammar with
+attributes and semantic rules to describe semantic information.
+
+
+Q2. What is a synthesized attribute?
+
+Answer:
+
+An attribute calculated from attributes of child nodes.
+
+
+Q3. What is an inherited attribute?
+
+Answer:
+
+An attribute calculated using attributes of the parent and/or
+appropriate siblings.
+
+
+Q4. What is an S-attributed definition?
+
+Answer:
+
+An SDD containing only synthesized attributes.
+
+
+Q5. What is an L-attributed definition?
+
+Answer:
+
+An SDD whose inherited attributes obey the allowed
+left-to-right dependency restrictions.
+
+
+Q6. Which is more general, S-attributed or L-attributed?
+
+Answer:
+
+L-attributed.
+
+
+Q7. Is every S-attributed definition L-attributed?
+
+Answer:
+
+Yes.
+
+
+Q8. Is every L-attributed definition S-attributed?
+
+Answer:
+
+No.
+
+
+Q9. What is a dependency graph?
+
+Answer:
+
+A graph showing dependencies among attributes and helping
+determine a valid evaluation order.
+
+
+Q10. What is an annotated parse tree?
+
+Answer:
+
+A parse tree with computed attribute information attached
+to its nodes.
+
+
+Q11. Difference between SDD and SDT?
+
+Answer:
+
+SDD specifies semantic rules using attributes, while SDT
+places semantic actions within grammar productions.
+
+
+Q12. Why are synthesized attributes convenient for LR parsing?
+
+Answer:
+
+LR parsing works bottom-up, and synthesized attributes naturally
+flow from children to parent during reductions.
+
+
+====================================================================
+71. GATE QUICK REVISION
+====================================================================
+
+MEMORIZE THESE:
+
+    Synthesized:
+        Child → Parent
+
+    Inherited:
+        Parent/Sibling → Child
+
+    S-attributed:
+        Only synthesized
+
+    L-attributed:
+        Controlled left-to-right inherited dependencies
+
+    Relationship:
+
+        S-attributed ⊂ L-attributed
+
+
+    Dependency graph:
+
+        Shows attribute dependencies.
+
+
+    Cycle:
+
+        No ordinary topological evaluation order.
+
+
+    Annotated parse tree:
+
+        Parse tree + attribute information.
+
+
+    SDD:
+
+        Attributes + semantic rules.
+
+
+    SDT:
+
+        Embedded semantic actions.
+
+
+====================================================================
+72. ONE-MINUTE MEMORY MAP
+====================================================================
+
+                    ATTRIBUTE GRAMMAR
+                           |
+             +-------------+-------------+
+             |             |             |
+         Attributes    Semantic Rules   CFG
+             |
+       +-----+------+
+       |            |
+  Synthesized    Inherited
+       |            |
+   Child→Parent  Parent/Sibling→Child
+       |
+       ↓
+  S-attributed
+       |
+       ↓
+  subset of
+       |
+       ↓
+  L-attributed
+       |
+       ↓
+  Left-to-right
+  restrictions
+
+
+====================================================================
+73. MASTER CONCEPT MAP
+====================================================================
+
+                 COMPILER
+                    |
+                    ↓
+              Syntax Tree
+                    |
+                    ↓
+           Attribute Grammar
+                    |
+          +---------+---------+
+          |                   |
+      Synthesized          Inherited
+          |                   |
+     Child → Parent      Parent/Sibling
+          |                   ↓
+          |                Child
+          |
+          ↓
+    S-attributed
+          |
+          ↓
+    L-attributed relation
+          |
+          ↓
+    Dependency Graph
+          |
+          ↓
+    Attribute Evaluation
+          |
+          ↓
+    Annotated Parse Tree
+          |
+          ↓
+    Semantic Information
+          |
+          ↓
+        Type / Scope /
+       Value / Address
+          |
+          ↓
+          IR
+
+
+====================================================================
+74. CHAPTER 18 — FINAL SUMMARY
+====================================================================
+
+Attribute grammar provides a formal way to associate semantic
+information with grammar symbols.
+
+Core formula:
+
+    Attribute Grammar =
+        CFG + Attributes + Semantic Rules
+
+
+Two major attribute types:
+
+    1. Synthesized
+       Child → Parent
+
+    2. Inherited
+       Parent/Sibling → Child
+
+
+S-attributed:
+
+    Only synthesized attributes.
+
+
+L-attributed:
+
+    Supports inherited attributes under left-to-right
+    dependency restrictions.
+
+
+Important relationship:
+
+    Every S-attributed definition is L-attributed.
+
+    S-attributed ⊂ L-attributed
+
+
+Dependency graph:
+
+    Represents dependencies between attributes.
+
+
+Attribute evaluation:
+
+    Computes attributes in an order consistent with
+    dependencies.
+
+
+Annotated parse tree:
+
+    Parse tree + attribute information.
+
+
+SDD:
+
+    Attribute-based semantic specification.
+
+
+SDT:
+
+    Semantic actions embedded in productions.
+
+
+Compiler connection:
+
+    Parse Tree/AST
+          ↓
+    Attributes + Semantic Rules
+          ↓
+    Semantic Information
+          ↓
+    Type Checking / Translation
+          ↓
+    Intermediate Representation
+
+
+====================================================================
+75. CHAPTER 18 — EXAM CHEAT SHEET
+====================================================================
+
+    SYNTHESIZED
+        = Child → Parent
+        = Upward
+        = S-attributed uses these
+
+    INHERITED
+        = Parent/Sibling → Child
+        = Downward/left-to-right
+
+    S-ATTRIBUTED
+        = Only synthesized
+
+    L-ATTRIBUTED
+        = Left-to-right inherited dependency restriction
+
+    RELATION
+        = S-attributed ⊂ L-attributed
+
+    SDD
+        = CFG + Attributes + Semantic Rules
+
+    SDT
+        = Grammar + Embedded Semantic Actions
+
+    DEPENDENCY GRAPH
+        = Attribute dependency representation
+
+    ANNOTATED PARSE TREE
+        = Parse tree with attribute values
+
+    CYCLIC DEPENDENCY
+        = No straightforward topological evaluation order
+
+
+====================================================================
+CHAPTER 18 COMPLETE
+====================================================================
+
+NEXT MASTER-SYLLABUS CHAPTER:
+
+    CHAPTER 19 — INTERMEDIATE REPRESENTATION (IR)
+
+Topics include:
+
+    • Why Intermediate Representation?
+    • Requirements of IR
+    • Parse Tree vs AST
+    • Abstract Syntax Tree
+    • DAG
+    • Control Flow Graph
+    • Linear IR
+    • Static Single Assignment (SSA)
+    • Stack Machine IR
+    • IR design
+    • Practical examples
+    • GATE concepts
+    • GATE traps
+    • Interview questions
+    • Practical compiler connection
+
+Type:
+
+    NEXT
+
+to move to Chapter 19.
+====================================================================

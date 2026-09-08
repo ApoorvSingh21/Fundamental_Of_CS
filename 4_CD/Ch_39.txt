@@ -1,0 +1,1677 @@
+CHAPTER 39 — ERROR HANDLING IN COMPILER DESIGN
+
+============================================================
+CHAPTER 39 — ERROR HANDLING IN COMPILER DESIGN
+============================================================
+
+LEVEL:
+Beginner → Intermediate → Advanced → GATE → Interview
+
+PURPOSE:
+Learn how a compiler detects, reports, and handles errors
+while compiling a program.
+
+------------------------------------------------------------
+1. WHAT IS ERROR HANDLING?
+------------------------------------------------------------
+
+Error handling is the part of compiler design responsible for:
+
+1. Detecting errors
+2. Reporting errors
+3. Recovering from errors
+4. Continuing compilation when possible
+
+Example:
+
+    int x = ;
+
+The compiler should not simply stop without explanation.
+
+A good compiler may report:
+
+    error: expected expression after '='
+    line 1, column 9
+
+The goal is to help the programmer understand:
+
+    WHAT went wrong?
+    WHERE did it go wrong?
+    WHY did it go wrong?
+    HOW can it be fixed?
+
+------------------------------------------------------------
+2. WHY ERROR HANDLING IS IMPORTANT
+------------------------------------------------------------
+
+A compiler is not useful only when programs are correct.
+
+Programmers frequently make mistakes.
+
+Example:
+
+    int x = 10
+    printf("%d", x);
+
+Missing semicolon.
+
+A compiler should:
+
+    Detect → Report → Recover → Continue
+
+rather than producing confusing errors for the rest
+of the program.
+
+------------------------------------------------------------
+3. TYPES OF ERRORS
+------------------------------------------------------------
+
+The major categories are:
+
+    1. Lexical errors
+    2. Syntax errors
+    3. Semantic errors
+    4. Runtime errors
+    5. Logical errors
+
+IMPORTANT:
+
+Not all errors are detected by the compiler.
+
+------------------------------------------------------------
+4. LEXICAL ERRORS
+------------------------------------------------------------
+
+Lexical errors occur during lexical analysis.
+
+The lexical analyzer converts:
+
+    source characters
+          ↓
+       tokens
+
+If a sequence of characters cannot form a valid token,
+a lexical error occurs.
+
+Example:
+
+    int x = 10 @ 20;
+
+Suppose '@' is not a valid operator in the language.
+
+Then:
+
+    @
+
+may produce a lexical error.
+
+Another example:
+
+    int 123abc;
+
+If identifiers cannot start with a digit, the lexical
+structure is invalid.
+
+------------------------------------------------------------
+5. COMMON LEXICAL ERRORS
+------------------------------------------------------------
+
+Examples:
+
+    Invalid character
+    Invalid identifier
+    Malformed number
+    Unterminated string
+    Unterminated comment
+
+Example:
+
+    printf("Hello);
+
+The string is not terminated.
+
+Possible diagnostic:
+
+    Error: unterminated string literal
+
+------------------------------------------------------------
+6. LEXICAL ERROR DETECTION
+------------------------------------------------------------
+
+The lexical analyzer usually uses:
+
+    Regular Expressions
+             +
+    Finite Automata
+
+to recognize valid tokens.
+
+If the input cannot be matched with a valid token pattern,
+a lexical error is reported.
+
+Example:
+
+    IDENTIFIER → letter(letter|digit)*
+
+If the input violates the pattern, the lexer may report
+an error.
+
+------------------------------------------------------------
+7. LEXICAL ERROR RECOVERY
+------------------------------------------------------------
+
+The lexer should attempt to recover whenever possible.
+
+Common strategies:
+
+    1. Delete an invalid character
+    2. Insert a missing character
+    3. Replace a character
+    4. Transpose adjacent characters
+    5. Skip input until a valid token is found
+
+------------------------------------------------------------
+8. EXAMPLE — CHARACTER DELETION
+------------------------------------------------------------
+
+Suppose:
+
+    int x = 10#;
+
+and '#' is invalid.
+
+The lexer can delete '#':
+
+    int x = 10;
+
+Then continue scanning.
+
+------------------------------------------------------------
+9. EXAMPLE — CHARACTER INSERTION
+------------------------------------------------------------
+
+Suppose:
+
+    "hello
+
+was intended to be:
+
+    "hello"
+
+The compiler may detect that the closing quote is missing.
+
+It can report:
+
+    Unterminated string literal
+
+Actual recovery depends on the compiler.
+
+------------------------------------------------------------
+10. SYNTAX ERRORS
+------------------------------------------------------------
+
+Syntax errors occur when the sequence of tokens does not
+follow the grammar of the programming language.
+
+Example:
+
+    int x = ;
+
+The tokens may be:
+
+    int
+    identifier
+    =
+    ;
+
+But the grammar expects an expression after '='.
+
+Therefore:
+
+    Syntax Error
+
+------------------------------------------------------------
+11. SYNTAX ERROR EXAMPLE
+------------------------------------------------------------
+
+Correct:
+
+    if (x > 10)
+        y = 20;
+
+Incorrect:
+
+    if x > 10
+        y = 20;
+
+The syntax expected by the grammar may require:
+
+    if (condition)
+
+Therefore the parser detects the error.
+
+------------------------------------------------------------
+12. SYNTAX ANALYZER AND ERRORS
+------------------------------------------------------------
+
+The syntax analyzer is also called:
+
+    Parser
+
+Input:
+
+    Tokens
+
+Output:
+
+    Parse Tree / AST
+
+The parser checks whether the token sequence conforms
+to the grammar.
+
+Conceptually:
+
+    Source Code
+        ↓
+    Lexical Analyzer
+        ↓
+      Tokens
+        ↓
+       Parser
+        ↓
+    Syntax checking
+        ↓
+    Parse Tree / AST
+
+------------------------------------------------------------
+13. SEMANTIC ERRORS
+------------------------------------------------------------
+
+A semantic error occurs when the program is syntactically
+valid but its meaning is invalid.
+
+Example:
+
+    int x;
+    x = "hello";
+
+The syntax may be valid.
+
+But assigning a string to an integer variable may violate
+the type rules.
+
+Therefore:
+
+    Semantic Error
+
+------------------------------------------------------------
+14. MORE SEMANTIC ERROR EXAMPLES
+------------------------------------------------------------
+
+Example 1:
+
+    int x;
+    x = true;
+
+Possible type mismatch.
+
+Example 2:
+
+    int x;
+    y = 10;
+
+If y has not been declared:
+
+    undeclared identifier
+
+Example 3:
+
+    int x;
+    int x;
+
+Duplicate declaration may be illegal depending on scope
+and language rules.
+
+Example 4:
+
+    10 + "hello"
+
+Potential type incompatibility.
+
+------------------------------------------------------------
+15. SEMANTIC ERROR DETECTION
+------------------------------------------------------------
+
+Semantic analysis uses:
+
+    Symbol Table
+    Type System
+    Attribute Information
+    Semantic Rules
+
+Example:
+
+    int x;
+
+The symbol table may contain:
+
+    Name       Type
+    ----------------
+    x          int
+
+Later:
+
+    x = "hello";
+
+Semantic analysis checks:
+
+    type(x) = int
+    type("hello") = string
+
+Therefore:
+
+    int ← string
+
+is incompatible under the language's rules.
+
+------------------------------------------------------------
+16. RUNTIME ERRORS
+------------------------------------------------------------
+
+Runtime errors occur while the program is executing.
+
+Examples:
+
+    Division by zero
+    Array index out of bounds
+    Null pointer dereference
+    Stack overflow
+    Invalid memory access
+
+Example:
+
+    int x = 10 / 0;
+
+Depending on the language and execution environment,
+this may produce a runtime error.
+
+IMPORTANT:
+
+Compilation may succeed even though a runtime error
+can occur.
+
+------------------------------------------------------------
+17. LOGICAL ERRORS
+------------------------------------------------------------
+
+A logical error means:
+
+    Program runs
+    Program produces incorrect result
+
+Example:
+
+    int a = 10;
+    int b = 20;
+
+    int average = a + b / 2;
+
+The programmer may intend:
+
+    (a + b) / 2
+
+The program can compile and execute successfully but
+produce the wrong result.
+
+Logical errors are generally programmer mistakes rather
+than compiler-detected errors.
+
+------------------------------------------------------------
+18. ERROR CLASSIFICATION TABLE
+------------------------------------------------------------
+
++----------------+----------------------+----------------------+
+| Error          | Usually detected by  | Example              |
++----------------+----------------------+----------------------+
+| Lexical        | Lexical Analyzer     | Invalid character    |
+| Syntax         | Parser               | Missing ')'          |
+| Semantic       | Semantic Analyzer    | Type mismatch        |
+| Runtime        | Runtime Environment  | Division by zero     |
+| Logical        | Usually programmer   | Wrong algorithm      |
++----------------+----------------------+----------------------+
+
+------------------------------------------------------------
+19. ERROR DETECTION
+------------------------------------------------------------
+
+Error detection means identifying that something is wrong.
+
+Different compiler phases detect different errors.
+
+    Source
+      ↓
+    Lexer
+      ↓
+    Parser
+      ↓
+    Semantic Analyzer
+      ↓
+    IR
+      ↓
+    Optimization
+      ↓
+    Code Generation
+
+Examples:
+
+    Lexer       → invalid token
+    Parser      → invalid token sequence
+    Semantic    → invalid meaning/type
+    Later phases → implementation-specific errors
+
+------------------------------------------------------------
+20. ERROR REPORTING
+------------------------------------------------------------
+
+Detecting an error is not enough.
+
+The compiler should provide useful diagnostics.
+
+A good diagnostic should ideally contain:
+
+    1. Error type
+    2. Error message
+    3. Source location
+    4. Relevant source text
+    5. Possibly a suggestion
+
+Example:
+
+    test.c:5:10:
+    error: expected ')' before '{'
+
+Here:
+
+    test.c  → file
+    5       → line
+    10      → column
+    error   → severity
+    message → explanation
+
+------------------------------------------------------------
+21. GOOD VS BAD ERROR MESSAGE
+------------------------------------------------------------
+
+BAD:
+
+    Error!
+
+GOOD:
+
+    line 12, column 8:
+    error: expected ';' after variable declaration
+
+Better diagnostics reduce debugging time.
+
+------------------------------------------------------------
+22. ERROR RECOVERY
+------------------------------------------------------------
+
+Error recovery means attempting to continue compilation
+after an error has been detected.
+
+Why?
+
+Suppose a program contains 10 errors.
+
+If the compiler stops after the first error:
+
+    Error 1
+       ↓
+    STOP
+
+The programmer must repeatedly compile the program.
+
+A compiler may instead attempt:
+
+    Error 1
+       ↓
+    Recover
+       ↓
+    Continue
+       ↓
+    Error 2
+       ↓
+    Recover
+       ↓
+    Continue
+
+This can produce multiple diagnostics in one compilation.
+
+------------------------------------------------------------
+23. GOALS OF ERROR RECOVERY
+------------------------------------------------------------
+
+A good error recovery mechanism should:
+
+    1. Detect errors quickly
+    2. Report meaningful errors
+    3. Recover safely
+    4. Avoid infinite loops
+    5. Avoid cascading errors
+    6. Continue compilation when possible
+    7. Preserve correct parts of the program
+
+------------------------------------------------------------
+24. ERROR RECOVERY IN PARSING
+------------------------------------------------------------
+
+Parsing has several important recovery strategies.
+
+Major techniques:
+
+    1. Panic-mode recovery
+    2. Phrase-level recovery
+    3. Error productions
+    4. Global correction
+
+These are extremely important for exams.
+
+------------------------------------------------------------
+25. PANIC-MODE ERROR RECOVERY
+------------------------------------------------------------
+
+Panic mode is one of the simplest and most widely discussed
+error recovery techniques.
+
+Basic idea:
+
+    Skip input tokens until a synchronizing token is found.
+
+Example:
+
+    int x = 10
+    int y = 20;
+
+Suppose ';' is missing after:
+
+    int x = 10
+
+The parser may skip tokens until it finds a synchronization
+point such as:
+
+    ;
+    }
+    statement-starting token
+
+Then parsing resumes.
+
+------------------------------------------------------------
+26. PANIC-MODE CONCEPT
+------------------------------------------------------------
+
+Suppose input is:
+
+    A B C ERROR X Y ; Z
+
+Parser detects an error at:
+
+    ERROR
+
+It may discard:
+
+    ERROR X Y
+
+until:
+
+    ;
+
+is found.
+
+Then parsing continues after ';'.
+
+Concept:
+
+    Detect error
+         ↓
+    Skip tokens
+         ↓
+    Synchronizing token
+         ↓
+    Resume parsing
+
+------------------------------------------------------------
+27. SYNCHRONIZING TOKENS
+------------------------------------------------------------
+
+Typical synchronization tokens can include:
+
+    ;
+    }
+    )
+    ]
+    end
+    keywords such as if, while, return
+
+The actual set depends on the grammar and parser design.
+
+------------------------------------------------------------
+28. ADVANTAGES OF PANIC MODE
+------------------------------------------------------------
+
+Advantages:
+
+    Simple
+    Easy to implement
+    Prevents parser from getting stuck
+    Usually guarantees progress
+    Useful for compiler construction
+
+Disadvantage:
+
+    May skip more input than necessary.
+
+------------------------------------------------------------
+29. PHRASE-LEVEL RECOVERY
+------------------------------------------------------------
+
+Phrase-level recovery attempts a small local correction
+to the input or parser state.
+
+Possible corrections:
+
+    Insert token
+    Delete token
+    Replace token
+    Modify parser state
+
+Example:
+
+    if (x > 10
+        y = 20;
+
+Parser expects:
+
+    )
+
+It may conceptually insert:
+
+    )
+
+and continue.
+
+Actual compilers may use more sophisticated mechanisms.
+
+------------------------------------------------------------
+30. PANIC MODE VS PHRASE LEVEL
+------------------------------------------------------------
+
+PANIC MODE:
+
+    Skip tokens until synchronization point.
+
+PHRASE LEVEL:
+
+    Make a local correction to continue.
+
+Example:
+
+    Missing ';'
+
+Phrase-level:
+
+    Insert ';'
+
+Panic-mode:
+
+    Skip input until a suitable synchronization token.
+
+------------------------------------------------------------
+31. ERROR PRODUCTIONS
+------------------------------------------------------------
+
+Error productions explicitly include common erroneous
+constructs in the grammar.
+
+Normal production:
+
+    statement → id = expression ;
+
+An error-aware grammar might contain a special production
+for a common malformed form.
+
+Concept:
+
+    Common mistake
+          ↓
+    Special grammar rule
+          ↓
+    Specific diagnostic
+
+This allows the parser to give a more precise message.
+
+------------------------------------------------------------
+32. WHY ERROR PRODUCTIONS ARE USEFUL
+------------------------------------------------------------
+
+Without a specialized rule:
+
+    syntax error
+
+With an error production:
+
+    error: assignment requires an expression
+
+This can improve diagnostics for known common mistakes.
+
+------------------------------------------------------------
+33. GLOBAL CORRECTION
+------------------------------------------------------------
+
+Global correction attempts to find a minimum-cost sequence
+of changes that transforms an erroneous input into a valid
+sentence according to the grammar.
+
+Possible operations:
+
+    Insert
+    Delete
+    Replace
+
+Goal:
+
+    Find the smallest correction.
+
+Example:
+
+    Correct:
+        a + b ;
+
+    Input:
+        a + ;
+
+The system searches for a minimal correction.
+
+------------------------------------------------------------
+34. GLOBAL CORRECTION — THEORY
+------------------------------------------------------------
+
+Given erroneous input:
+
+    w
+
+Find a valid sentence:
+
+    w'
+
+such that the cost of transforming:
+
+    w → w'
+
+is minimized.
+
+This is theoretically attractive but generally expensive.
+
+Therefore practical compilers usually prefer simpler
+recovery techniques.
+
+------------------------------------------------------------
+35. ERROR HANDLING IN LEXICAL ANALYSIS
+------------------------------------------------------------
+
+Lexer responsibilities include:
+
+    Detect invalid characters
+    Detect malformed tokens
+    Report location
+    Recover where possible
+    Continue scanning
+
+Example:
+
+    int x = 12.34.56;
+
+If floating-point syntax does not allow this form,
+the lexer must determine an appropriate diagnostic/recovery.
+
+------------------------------------------------------------
+36. ERROR HANDLING IN SYNTAX ANALYSIS
+------------------------------------------------------------
+
+Parser responsibilities:
+
+    Detect grammar violations
+    Report unexpected tokens
+    Identify expected tokens when possible
+    Recover
+    Continue parsing
+
+Example:
+
+    while (x > 0 {
+        x--;
+    }
+
+Parser expects:
+
+    )
+
+but encounters:
+
+    {
+
+Possible diagnostic:
+
+    error: expected ')' before '{'
+
+------------------------------------------------------------
+37. ERROR HANDLING IN SEMANTIC ANALYSIS
+------------------------------------------------------------
+
+Semantic analyzer may report:
+
+    Undeclared variable
+    Duplicate declaration
+    Type mismatch
+    Invalid conversion
+    Wrong number of arguments
+    Invalid return type
+    Scope violation
+
+Example:
+
+    int add(int a, int b);
+
+    add(10);
+
+Error:
+
+    too few arguments to function 'add'
+
+------------------------------------------------------------
+38. CASCADING ERRORS
+------------------------------------------------------------
+
+One error can cause many misleading errors.
+
+Example:
+
+    int x =
+
+If parser does not recover properly, it may produce:
+
+    Error 1: missing expression
+    Error 2: unexpected token
+    Error 3: invalid statement
+    Error 4: unexpected end of input
+
+Some of these may be consequences of the first error.
+
+These are called:
+
+    Cascading errors
+
+------------------------------------------------------------
+39. HOW TO REDUCE CASCADING ERRORS
+------------------------------------------------------------
+
+A compiler can reduce cascading errors by:
+
+    1. Good synchronization points
+    2. Accurate source locations
+    3. Context-aware diagnostics
+    4. Carefully designed recovery
+    5. Avoiding repeated reports for the same cause
+
+------------------------------------------------------------
+40. ERROR RECOVERY AND PARSE TREES
+------------------------------------------------------------
+
+When recovery occurs, the parser may construct a partial
+parse tree.
+
+Example:
+
+    Valid statement
+        ↓
+    Parse tree
+
+For erroneous input:
+
+    Partial parse tree
+        +
+    Error node / recovery
+        ↓
+    Continue parsing
+
+Modern compiler front ends often use AST-oriented
+diagnostics and recovery techniques.
+
+------------------------------------------------------------
+41. ERROR HANDLING PIPELINE
+------------------------------------------------------------
+
+Complete conceptual pipeline:
+
+    SOURCE PROGRAM
+          |
+          v
+    +-------------+
+    |   LEXER     |
+    +-------------+
+          |
+       Tokens
+          |
+       Error?
+       /    \
+     Yes     No
+      |       |
+    Report    v
+      |     Parser
+      |       |
+      |    Error?
+      |     /   \
+      |   Yes    No
+      |    |      |
+      |  Recover  v
+      |    |   Semantic
+      |    |   Analysis
+      |    |      |
+      |    |   Error?
+      |    |    /   \
+      |    |  Yes    No
+      |    |   |      |
+      |    | Report   IR
+      |    |          |
+      +----+----------+
+               |
+             Continue
+
+------------------------------------------------------------
+42. COMPILER DIAGNOSTICS
+------------------------------------------------------------
+
+Compiler diagnostics are messages generated by the compiler
+to communicate problems or useful information.
+
+Common categories:
+
+    Error
+    Warning
+    Note
+    Remark / Information
+
+Example:
+
+    warning: variable 'x' is unused
+
+Warnings may not prevent compilation.
+
+Errors generally prevent generation of a valid executable,
+although exact behavior depends on the compiler.
+
+------------------------------------------------------------
+43. ERROR VS WARNING
+------------------------------------------------------------
+
+ERROR:
+
+    Program violates a required rule.
+
+WARNING:
+
+    Program may be valid but suspicious or potentially
+    problematic.
+
+Example:
+
+    int x;
+    x = 10;
+
+If x is never used:
+
+    warning: unused variable 'x'
+
+The compiler may still compile the program.
+
+------------------------------------------------------------
+44. SOURCE LOCATION TRACKING
+------------------------------------------------------------
+
+For good diagnostics, the compiler tracks:
+
+    File
+    Line
+    Column
+    Token position
+    Sometimes source range
+
+Example:
+
+    main.c:8:15:
+    error: undeclared identifier 'total'
+
+Source location is extremely important for IDEs and
+developer tools.
+
+------------------------------------------------------------
+45. ERROR HANDLING IN MODERN COMPILERS
+------------------------------------------------------------
+
+Modern compilers often provide:
+
+    Precise locations
+    Source ranges
+    Contextual messages
+    Notes
+    Suggestions
+    Fix-it hints
+    Multiple diagnostics
+
+Example conceptual diagnostic:
+
+    error: expected ';' after expression
+      |
+    10 | x = a + b
+      |          ^
+      |
+    help: add ';'
+
+This makes debugging easier.
+
+------------------------------------------------------------
+46. ERROR HANDLING — COMPLETE EXAMPLE
+------------------------------------------------------------
+
+Consider:
+
+    int main() {
+        int x = ;
+        y = 10;
+        printf("Hello)
+    }
+
+Possible problems:
+
+    1. int x = ;
+       → syntax error
+
+    2. y = 10;
+       → semantic error if y is undeclared
+
+    3. printf("Hello)
+       → lexical/string-literal error
+
+A compiler should ideally identify multiple problems rather
+than stopping at the first one.
+
+------------------------------------------------------------
+47. ERROR HANDLING BY COMPILER PHASE
+------------------------------------------------------------
+
++----------------------+-------------------------------+
+| Compiler Phase       | Typical Errors               |
++----------------------+-------------------------------+
+| Lexical Analysis     | Invalid token                |
+| Syntax Analysis      | Grammar violation            |
+| Semantic Analysis    | Type/scope errors            |
+| IR Generation        | Internal consistency issues  |
+| Optimization         | Usually preserves semantics |
+| Code Generation      | Target-related issues        |
++----------------------+-------------------------------+
+
+NOTE:
+
+Optimization and code generation are not normally the
+primary places where source-language errors are detected.
+
+------------------------------------------------------------
+48. ERROR RECOVERY COMPARISON
+------------------------------------------------------------
+
++-------------------+--------------------------------------+
+| Technique         | Main Idea                            |
++-------------------+--------------------------------------+
+| Panic mode        | Skip tokens                         |
+| Phrase level      | Local correction                    |
+| Error productions | Grammar handles known mistakes      |
+| Global correction | Find minimum-cost correction        |
++-------------------+--------------------------------------+
+
+------------------------------------------------------------
+49. IMPORTANT EXAM CONCEPT
+------------------------------------------------------------
+
+Question:
+
+Which error recovery method is simplest?
+
+Answer:
+
+    Panic-mode recovery
+
+Question:
+
+Which recovery method attempts minimum changes?
+
+Answer:
+
+    Global correction
+
+Question:
+
+Which method uses grammar rules for common errors?
+
+Answer:
+
+    Error productions
+
+Question:
+
+Which method performs local corrections?
+
+Answer:
+
+    Phrase-level recovery
+
+------------------------------------------------------------
+50. GATE TRAPS
+------------------------------------------------------------
+
+TRAP 1:
+
+"Every error is detected at compile time."
+
+FALSE.
+
+Runtime errors and logical errors may not be detected
+during compilation.
+
+------------------------------------------------------------
+
+TRAP 2:
+
+"Syntax error means semantic error."
+
+FALSE.
+
+Syntax concerns grammatical structure.
+
+Semantics concerns meaning/rules.
+
+------------------------------------------------------------
+
+TRAP 3:
+
+"Lexical analysis checks program meaning."
+
+FALSE.
+
+Lexical analysis primarily recognizes tokens.
+
+------------------------------------------------------------
+
+TRAP 4:
+
+"Panic mode tries to find the globally optimal correction."
+
+FALSE.
+
+Panic mode skips input until synchronization.
+
+------------------------------------------------------------
+
+TRAP 5:
+
+"Global correction is always used because it is optimal."
+
+FALSE.
+
+It can be computationally expensive.
+
+Practical parsers generally use more efficient recovery
+strategies.
+
+------------------------------------------------------------
+
+TRAP 6:
+
+"Warnings and errors are identical."
+
+FALSE.
+
+Warnings usually indicate suspicious or potentially
+problematic constructs, while errors indicate violations
+that prevent successful compilation under the language/tool
+rules.
+
+------------------------------------------------------------
+51. GATE-STYLE QUICK QUESTIONS
+------------------------------------------------------------
+
+Q1.
+An invalid character is primarily detected during:
+
+A. Lexical analysis
+B. Syntax analysis
+C. Semantic analysis
+D. Code generation
+
+ANSWER:
+
+    A
+
+------------------------------------------------------------
+
+Q2.
+Type mismatch is primarily detected during:
+
+A. Lexical analysis
+B. Syntax analysis
+C. Semantic analysis
+D. Linking
+
+ANSWER:
+
+    C
+
+------------------------------------------------------------
+
+Q3.
+Which recovery method skips input until a synchronization
+token is found?
+
+A. Global correction
+B. Panic mode
+C. Code optimization
+D. Register allocation
+
+ANSWER:
+
+    B
+
+------------------------------------------------------------
+
+Q4.
+Which technique uses special grammar productions to handle
+common errors?
+
+A. Panic mode
+B. Error productions
+C. Mark-and-sweep
+D. Backpatching
+
+ANSWER:
+
+    B
+
+------------------------------------------------------------
+
+Q5.
+Which error is generally not a compiler syntax error?
+
+A. Missing parenthesis
+B. Missing semicolon
+C. Type mismatch
+D. Incorrect algorithm
+
+ANSWER:
+
+    D
+
+------------------------------------------------------------
+52. INTERVIEW QUESTIONS
+------------------------------------------------------------
+
+Q1. What is error handling in compiler design?
+
+Answer:
+
+It is the process of detecting, reporting, and recovering
+from errors during compilation.
+
+------------------------------------------------------------
+
+Q2. What are the major types of errors?
+
+Answer:
+
+    Lexical
+    Syntax
+    Semantic
+    Runtime
+    Logical
+
+------------------------------------------------------------
+
+Q3. What is panic-mode recovery?
+
+Answer:
+
+The parser discards input tokens until it reaches a
+synchronizing token, then resumes parsing.
+
+------------------------------------------------------------
+
+Q4. Why is error recovery needed?
+
+Answer:
+
+To continue compilation after errors and report multiple
+useful diagnostics instead of stopping at the first error.
+
+------------------------------------------------------------
+
+Q5. What is a cascading error?
+
+Answer:
+
+An error caused or triggered by an earlier error, which can
+lead to multiple misleading diagnostics.
+
+------------------------------------------------------------
+
+Q6. Difference between lexical and syntax errors?
+
+Answer:
+
+Lexical error:
+    Invalid character/token formation.
+
+Syntax error:
+    Invalid arrangement of valid tokens according to grammar.
+
+------------------------------------------------------------
+
+Q7. Difference between syntax and semantic error?
+
+Answer:
+
+Syntax:
+    Structure is invalid.
+
+Semantic:
+    Structure may be valid, but meaning/rules are invalid.
+
+------------------------------------------------------------
+53. REAL-WORLD COMPILER EXAMPLE
+------------------------------------------------------------
+
+Source:
+
+    int x = 10
+    int y = 20;
+
+Suppose ';' is required.
+
+Parser may detect:
+
+    expected ';' after declaration
+
+A recovery mechanism can synchronize at:
+
+    int
+
+and continue parsing the next declaration.
+
+This is why a compiler can report:
+
+    line 1: expected ';'
+    
+instead of becoming completely lost while parsing line 2.
+
+------------------------------------------------------------
+54. ERROR HANDLING VS ERROR RECOVERY
+------------------------------------------------------------
+
+ERROR HANDLING:
+
+    Broad concept
+
+Includes:
+
+    Detection
+    Reporting
+    Recovery
+    Diagnostics
+
+ERROR RECOVERY:
+
+    Specific process of continuing after an error.
+
+Therefore:
+
+    Error handling
+          >
+    Error recovery
+
+------------------------------------------------------------
+55. CONNECTION WITH PREVIOUS CHAPTERS
+------------------------------------------------------------
+
+Chapter 4–8:
+
+    Lexical Analysis
+           ↓
+    Lexical errors
+
+Chapter 9–14:
+
+    Syntax Analysis
+           ↓
+    Syntax errors
+           ↓
+    Error recovery
+
+Chapter 15–18:
+
+    Semantic Analysis
+           ↓
+    Semantic errors
+
+Chapter 19–21:
+
+    Intermediate Representation
+           ↓
+    Correctness depends on successful analysis
+
+Chapter 22–25:
+
+    Runtime Environment
+           ↓
+    Runtime errors may occur during execution
+
+Chapter 39:
+
+    ERROR HANDLING
+           ↓
+    Detect + Report + Recover
+
+------------------------------------------------------------
+56. BIG PICTURE
+------------------------------------------------------------
+
+                  SOURCE PROGRAM
+                         |
+                         v
+                +----------------+
+                | LEXICAL ANALYZER|
+                +----------------+
+                         |
+                  Lexical Error
+                         |
+                         v
+                     TOKENS
+                         |
+                         v
+                  +-------------+
+                  |    PARSER   |
+                  +-------------+
+                         |
+                   Syntax Error
+                         |
+                         v
+                     PARSE TREE
+                         |
+                         v
+                +----------------+
+                |    SEMANTIC    |
+                |    ANALYSIS    |
+                +----------------+
+                         |
+                  Semantic Error
+                         |
+                         v
+                         IR
+                         |
+                         v
+                  Optimization
+                         |
+                         v
+                  Code Generation
+                         |
+                         v
+                   Target Code
+
+At each stage:
+
+    DETECT
+      ↓
+    REPORT
+      ↓
+    RECOVER when possible
+      ↓
+    CONTINUE
+
+------------------------------------------------------------
+57. ONE-PAGE REVISION
+------------------------------------------------------------
+
+ERROR HANDLING
+│
+├── Error Types
+│   ├── Lexical
+│   ├── Syntax
+│   ├── Semantic
+│   ├── Runtime
+│   └── Logical
+│
+├── Detection
+│   ├── Lexer
+│   ├── Parser
+│   └── Semantic Analyzer
+│
+├── Reporting
+│   ├── Error message
+│   ├── File
+│   ├── Line
+│   ├── Column
+│   └── Suggestions
+│
+└── Recovery
+    ├── Panic Mode
+    ├── Phrase Level
+    ├── Error Productions
+    └── Global Correction
+
+KEY MEMORY:
+
+    Lexical → Token problem
+    Syntax  → Grammar problem
+    Semantic → Meaning/type problem
+    Runtime → Execution problem
+    Logical → Wrong result
+
+RECOVERY:
+
+    Panic Mode → Skip
+    Phrase Level → Local correction
+    Error Production → Special grammar rule
+    Global Correction → Minimum-cost correction
+
+------------------------------------------------------------
+58. MOST IMPORTANT FORMULA-LIKE MEMORY
+------------------------------------------------------------
+
+Compiler Error Handling:
+
+    ERROR HANDLING
+        =
+    DETECTION
+      +
+    REPORTING
+      +
+    RECOVERY
+
+Parser Error Recovery:
+
+    PANIC MODE
+        =
+    SKIP INPUT
+        UNTIL
+    SYNCHRONIZING TOKEN
+
+Global Correction:
+
+    Find valid input
+    with minimum correction cost.
+
+------------------------------------------------------------
+59. CHAPTER 39 EXAM CHECKLIST
+------------------------------------------------------------
+
+Before moving ahead, you should be able to explain:
+
+[✓] What is error handling?
+[✓] Why is error handling needed?
+[✓] Lexical errors
+[✓] Syntax errors
+[✓] Semantic errors
+[✓] Runtime errors
+[✓] Logical errors
+[✓] Error detection
+[✓] Error reporting
+[✓] Error recovery
+[✓] Panic-mode recovery
+[✓] Synchronizing tokens
+[✓] Phrase-level recovery
+[✓] Error productions
+[✓] Global correction
+[✓] Cascading errors
+[✓] Compiler diagnostics
+[✓] Error handling in lexer
+[✓] Error handling in parser
+[✓] Error handling in semantic analysis
+[✓] GATE traps
+[✓] Interview questions
+
+============================================================
+CHAPTER 39 COMPLETE
+============================================================
+
+NEXT CHAPTER:
+
+    CHAPTER 40 — ERROR RECOVERY
+
+Topics:
+    • Error recovery in depth
+    • Lexical recovery
+    • Parser recovery
+    • Panic-mode implementation
+    • Phrase-level recovery
+    • Error productions
+    • Global correction
+    • Synchronizing sets
+    • LL/LR parser recovery
+    • Recovery examples
+    • Error recovery comparison
+    • GATE problems
+    • Interview questions
+    • Practical compiler diagnostics
+
+Type:
+
+    NEXT
+
+to continue to Chapter 40.
+============================================================

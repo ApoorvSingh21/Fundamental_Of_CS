@@ -1,0 +1,2189 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║             COMPILER DESIGN — CHAPTER 36: MODERN COMPILER ARCHITECTURE      ║
+║                    Beginner → Intermediate → Advanced                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+SYLLABUS POSITION
+──────────────────────────────────────────────────────────────────────────────
+PHASE 9 — ADVANCED COMPILER CONCEPTS
+Chapter 36 — Modern Compiler Architecture
+
+Main topics:
+1. Modern compiler architecture
+2. Front End, Middle End, Back End
+3. Intermediate Representations
+4. SSA — Static Single Assignment
+5. LLVM architecture
+6. GCC architecture
+7. JVM Bytecode
+8. Static/AOT compilation
+9. JIT compilation
+10. Hybrid compilation
+11. Optimization pipeline
+12. Compiler passes
+13. Target-independent vs target-dependent optimization
+14. Lowering
+15. Modern compiler toolchains
+16. Practical examples
+17. GATE concepts
+18. Interview questions
+
+
+══════════════════════════════════════════════════════════════════════════════
+1. WHAT IS MODERN COMPILER ARCHITECTURE?
+══════════════════════════════════════════════════════════════════════════════
+
+A modern compiler is not simply:
+
+        Source Code
+             ↓
+          Compiler
+             ↓
+        Machine Code
+
+Modern compilers usually contain several layers and multiple
+Intermediate Representations (IRs).
+
+A simplified architecture is:
+
+        SOURCE PROGRAM
+              │
+              ▼
+     ┌─────────────────┐
+     │    FRONT END    │
+     │                 │
+     │ Lexical Analysis│
+     │ Syntax Analysis │
+     │ Semantic Analysis
+     └────────┬────────┘
+              │
+              ▼
+       Intermediate
+       Representation
+              │
+              ▼
+     ┌─────────────────┐
+     │   MIDDLE END    │
+     │                 │
+     │ Optimization    │
+     │ Data-flow       │
+     │ SSA             │
+     │ Loop optimization
+     └────────┬────────┘
+              │
+              ▼
+       Lowered IR
+              │
+              ▼
+     ┌─────────────────┐
+     │    BACK END     │
+     │                 │
+     │ Instruction     │
+     │ Selection       │
+     │ Register        │
+     │ Allocation      │
+     │ Scheduling      │
+     └────────┬────────┘
+              │
+              ▼
+        MACHINE CODE
+
+The three major conceptual parts are:
+
+    FRONT END  → Understand the program
+    MIDDLE END → Improve the program
+    BACK END   → Generate target-machine code
+
+
+══════════════════════════════════════════════════════════════════════════════
+2. FRONT END
+══════════════════════════════════════════════════════════════════════════════
+
+The front end analyzes the SOURCE LANGUAGE.
+
+Its main responsibility is:
+
+        "Is this program valid, and what does it mean?"
+
+Typical stages:
+
+    Source Code
+        ↓
+    Lexical Analysis
+        ↓
+    Tokens
+        ↓
+    Syntax Analysis
+        ↓
+    Parse Tree / AST
+        ↓
+    Semantic Analysis
+        ↓
+    Typed / Annotated AST or IR
+
+Example:
+
+    int x = a + b;
+
+Lexical analysis:
+
+    int
+    x
+    =
+    a
+    +
+    b
+    ;
+
+Syntax analysis determines structure:
+
+             =
+            / \
+           x   +
+              / \
+             a   b
+
+Semantic analysis checks things such as:
+
+    Is x declared?
+    Are a and b declared?
+    Are their types compatible?
+    Is assignment legal?
+
+The front end may produce an AST and/or a high-level IR.
+
+
+══════════════════════════════════════════════════════════════════════════════
+3. MIDDLE END
+══════════════════════════════════════════════════════════════════════════════
+
+The middle end operates mainly on IR.
+
+Its major purpose:
+
+        Optimize the program
+
+Important optimizations include:
+
+    • Constant folding
+    • Constant propagation
+    • Dead code elimination
+    • Common subexpression elimination
+    • Copy propagation
+    • Strength reduction
+    • Loop optimization
+    • Function inlining
+    • Control-flow optimization
+    • Data-flow optimization
+
+Example:
+
+    int x = 10 * 20;
+
+Constant folding:
+
+    10 * 20 = 200
+
+So compiler can transform:
+
+    int x = 10 * 20;
+
+into:
+
+    int x = 200;
+
+The middle end should ideally be largely independent of
+the specific target CPU.
+
+
+══════════════════════════════════════════════════════════════════════════════
+4. BACK END
+══════════════════════════════════════════════════════════════════════════════
+
+The back end converts optimized/lowered IR into target-specific code.
+
+Typical tasks:
+
+    • Instruction selection
+    • Register allocation
+    • Register assignment
+    • Instruction scheduling
+    • Addressing-mode selection
+    • Machine-code generation
+
+Example target:
+
+    x86-64
+
+The compiler may produce instructions such as:
+
+    MOV
+    ADD
+    SUB
+    IMUL
+    JMP
+
+For ARM, the instructions are different.
+
+Therefore:
+
+        Same source program
+                ↓
+             Same IR
+             /     \
+            /       \
+        x86-64      ARM
+          ↓           ↓
+      x86 code      ARM code
+
+
+══════════════════════════════════════════════════════════════════════════════
+5. WHY SEPARATE FRONT END, MIDDLE END AND BACK END?
+══════════════════════════════════════════════════════════════════════════════
+
+This separation provides portability and reuse.
+
+Imagine:
+
+    3 programming languages
+
+        C
+        C++
+        Rust
+
+and:
+
+    3 target architectures
+
+        x86
+        ARM
+        RISC-V
+
+Without a reusable architecture, many language-target combinations
+would require separate compiler implementations.
+
+With a shared IR:
+
+        C ───────┐
+        C++ ─────┼──→ Common IR → x86
+        Rust ────┘              → ARM
+                               → RISC-V
+
+This creates modularity.
+
+IMPORTANT IDEA:
+
+    Front end is mainly language-dependent.
+
+    Back end is mainly target-machine-dependent.
+
+    Middle end is largely target-independent.
+
+
+══════════════════════════════════════════════════════════════════════════════
+6. COMPILER PIPELINE IN A MODERN SYSTEM
+══════════════════════════════════════════════════════════════════════════════
+
+A more detailed modern pipeline can look like:
+
+    Source
+      │
+      ▼
+    Preprocessing
+      │
+      ▼
+    Lexical Analysis
+      │
+      ▼
+    Parsing
+      │
+      ▼
+    Semantic Analysis
+      │
+      ▼
+    AST
+      │
+      ▼
+    High-Level IR
+      │
+      ▼
+    Optimization
+      │
+      ▼
+    SSA-based IR
+      │
+      ▼
+    Lowering
+      │
+      ▼
+    Target-specific IR
+      │
+      ▼
+    Instruction Selection
+      │
+      ▼
+    Register Allocation
+      │
+      ▼
+    Instruction Scheduling
+      │
+      ▼
+    Machine Code
+      │
+      ▼
+    Assembler / Object File
+      │
+      ▼
+    Linker
+      │
+      ▼
+    Executable
+
+
+══════════════════════════════════════════════════════════════════════════════
+7. INTERMEDIATE REPRESENTATION — IR
+══════════════════════════════════════════════════════════════════════════════
+
+IR = Intermediate Representation.
+
+It is an internal representation of a program used by the compiler.
+
+Instead of directly translating:
+
+    C → Machine Code
+
+the compiler often does:
+
+    C → IR → Machine Code
+
+Why?
+
+Because IR makes analysis and optimization easier.
+
+Examples of IR:
+
+    • AST
+    • DAG
+    • Three-address code
+    • CFG
+    • SSA
+    • LLVM IR
+    • GCC GIMPLE
+    • GCC RTL
+    • JVM bytecode
+
+
+══════════════════════════════════════════════════════════════════════════════
+8. MULTIPLE IRs
+══════════════════════════════════════════════════════════════════════════════
+
+Modern compilers frequently use more than one IR.
+
+Example:
+
+    Source
+      ↓
+    AST
+      ↓
+    High-level IR
+      ↓
+    SSA IR
+      ↓
+    Lower-level IR
+      ↓
+    Machine IR
+      ↓
+    Machine Code
+
+Why multiple IRs?
+
+Because each representation is useful for different tasks.
+
+High-level IR:
+
+    Easier to understand program structure.
+
+Low-level IR:
+
+    Easier to perform machine-oriented optimization.
+
+Machine IR:
+
+    Represents target-specific operations.
+
+
+══════════════════════════════════════════════════════════════════════════════
+9. SSA — STATIC SINGLE ASSIGNMENT
+══════════════════════════════════════════════════════════════════════════════
+
+SSA = Static Single Assignment.
+
+SSA is an important representation used by modern optimizing compilers.
+
+MAIN RULE:
+
+    Each SSA variable is assigned exactly once.
+
+Normal code:
+
+    x = 10
+    x = 20
+    y = x + 5
+
+Here x is assigned multiple times.
+
+SSA transformation:
+
+    x1 = 10
+    x2 = 20
+    y1 = x2 + 5
+
+Each SSA name is assigned once.
+
+
+══════════════════════════════════════════════════════════════════════════════
+10. WHY SSA IS IMPORTANT
+══════════════════════════════════════════════════════════════════════════════
+
+SSA makes data-flow relationships easier to analyze.
+
+Consider:
+
+    x = a + b
+    x = x * 2
+    y = x + 5
+
+SSA:
+
+    x1 = a + b
+    x2 = x1 * 2
+    y1 = x2 + 5
+
+Now every use of x can be associated directly with a definition.
+
+This simplifies:
+
+    • Constant propagation
+    • Dead code elimination
+    • Value numbering
+    • Data-flow analysis
+    • Some forms of common subexpression elimination
+    • Optimization of branches and loops
+
+
+══════════════════════════════════════════════════════════════════════════════
+11. PHI FUNCTION
+══════════════════════════════════════════════════════════════════════════════
+
+SSA introduces a special operation called:
+
+        φ (phi)
+
+It is used when a value can come from different control-flow paths.
+
+Example:
+
+             START
+               |
+             condition
+             /       \
+           yes       no
+            |         |
+          x = 10     x = 20
+             \       /
+              \     /
+               JOIN
+                 |
+               y = x
+
+In SSA:
+
+          if condition
+          /          \
+       x1 = 10      x2 = 20
+          \          /
+           \        /
+            x3 = φ(x1, x2)
+                 |
+              y1 = x3
+
+Meaning:
+
+    x3 receives the value from the predecessor
+    corresponding to the path taken.
+
+IMPORTANT:
+
+    φ is not usually a normal CPU instruction.
+
+It is an IR-level operation representing control-flow-dependent
+value selection.
+
+
+══════════════════════════════════════════════════════════════════════════════
+12. SSA AND BASIC BLOCKS
+══════════════════════════════════════════════════════════════════════
+
+SSA is closely related to Control Flow Graphs (CFGs).
+
+Example:
+
+             B1
+              |
+          condition
+           /     \
+         B2       B3
+           \     /
+             B4
+
+If a variable has different definitions reaching B4:
+
+    B2: x1 = 10
+    B3: x2 = 20
+
+then B4 may contain:
+
+    x3 = φ(x1, x2)
+
+Therefore:
+
+    CFG + SSA
+        ↓
+    powerful optimization framework
+
+
+══════════════════════════════════════════════════════════════════════════════
+13. LLVM
+══════════════════════════════════════════════════════════════════════════════
+
+LLVM is a compiler infrastructure/project widely used for
+building compilers and language tools.
+
+LLVM provides reusable components for:
+
+    • Front ends
+    • IR
+    • Optimization
+    • Code generation
+    • Target support
+    • Tooling
+
+A simplified LLVM-style architecture:
+
+       C / C++ / Rust / Swift / ...
+                  │
+                  ▼
+            Language Front End
+                  │
+                  ▼
+             LLVM IR
+                  │
+                  ▼
+          LLVM Optimization
+                  │
+                  ▼
+          Target-specific CodeGen
+                  │
+          ┌───────┼────────┐
+          ▼       ▼        ▼
+         x86     ARM      RISC-V
+
+
+══════════════════════════════════════════════════════════════════════════════
+14. LLVM IR
+══════════════════════════════════════════════════════════════════════════════
+
+LLVM IR = Intermediate Representation used by LLVM.
+
+It is designed to support optimization and code generation.
+
+LLVM IR has concepts such as:
+
+    • Functions
+    • Basic blocks
+    • Instructions
+    • SSA values
+    • Types
+    • Control flow
+    • Memory operations
+
+Simple conceptual example:
+
+    Source:
+
+        int add(int a, int b) {
+            return a + b;
+        }
+
+Conceptually:
+
+        function add
+            entry:
+                result = add a, b
+                return result
+
+Actual LLVM IR syntax is more detailed, but the key idea is:
+
+        Source program
+              ↓
+        LLVM IR
+              ↓
+        Optimization
+              ↓
+        Machine code
+
+
+══════════════════════════════════════════════════════════════════════════════
+15. LLVM PASSES
+══════════════════════════════════════════════════════════════════════════════
+
+A compiler pass is a transformation or analysis performed over
+some compiler representation.
+
+Examples:
+
+    Pass 1:
+        Constant folding
+
+    Pass 2:
+        Dead code elimination
+
+    Pass 3:
+        Function inlining
+
+    Pass 4:
+        Loop optimization
+
+    Pass 5:
+        Register allocation
+
+Conceptually:
+
+       IR
+        ↓
+    Pass A
+        ↓
+    Improved IR
+        ↓
+    Pass B
+        ↓
+    Improved IR
+        ↓
+    Pass C
+        ↓
+    Lowered IR
+
+
+══════════════════════════════════════════════════════════════════════════════
+16. ANALYSIS PASS vs TRANSFORMATION PASS
+══════════════════════════════════════════════════════════════════════════════
+
+Compiler passes can be broadly thought of as:
+
+    ANALYSIS PASS
+        ↓
+    gathers information
+
+and
+
+    TRANSFORMATION PASS
+        ↓
+    changes the representation
+
+Example:
+
+    Data-flow analysis
+        ↓
+    determines information about variables
+
+Then:
+
+    Dead code elimination
+        ↓
+    removes unnecessary code
+
+Some passes both analyze and transform.
+
+
+══════════════════════════════════════════════════════════════════════════════
+17. GCC
+══════════════════════════════════════════════════════════════════════════════
+
+GCC = GNU Compiler Collection.
+
+GCC supports many languages and target architectures.
+
+Conceptually:
+
+      C / C++ / Fortran / ...
+                │
+                ▼
+            GCC Front End
+                │
+                ▼
+             GIMPLE
+                │
+                ▼
+         Optimization passes
+                │
+                ▼
+              RTL
+                │
+                ▼
+       Target-specific backend
+                │
+                ▼
+           Machine Code
+
+
+══════════════════════════════════════════════════════════════════════════════
+18. GIMPLE
+══════════════════════════════════════════════════════════════════════════════
+
+GIMPLE is an intermediate representation used within GCC.
+
+It is a simplified representation designed to make
+optimization easier.
+
+High-level source:
+
+    a = b + c * d;
+
+A simplified three-address-like form might conceptually become:
+
+    t1 = c * d
+    t2 = b + t1
+    a = t2
+
+The exact GCC internal representation and transformations
+are more sophisticated, but the basic idea is:
+
+    Complex source constructs
+             ↓
+       simplified IR
+             ↓
+        optimization
+
+
+══════════════════════════════════════════════════════════════════════════════
+19. RTL IN GCC
+══════════════════════════════════════════════════════════════════════════════
+
+RTL = Register Transfer Language.
+
+GCC uses RTL in later stages of compilation.
+
+It is closer to machine-level representation than GIMPLE.
+
+Conceptual pipeline:
+
+    Source
+      ↓
+    GIMPLE
+      ↓
+    Optimizations
+      ↓
+    RTL
+      ↓
+    Target-dependent processing
+      ↓
+    Machine instructions
+
+Therefore:
+
+    GIMPLE → relatively higher-level
+    RTL    → closer to target machine
+
+
+══════════════════════════════════════════════════════════════════════════════
+20. LLVM vs GCC — HIGH-LEVEL COMPARISON
+══════════════════════════════════════════════════════════════════════════════
+
+    LLVM:
+        LLVM IR
+        LLVM optimization infrastructure
+        LLVM target backends
+
+    GCC:
+        GIMPLE
+        RTL
+        GCC optimization infrastructure
+        Target-specific backends
+
+Both are compiler infrastructures.
+
+Do NOT think:
+
+    LLVM = only a compiler
+
+LLVM is better understood as a collection of reusable
+compiler infrastructure/components.
+
+
+══════════════════════════════════════════════════════════════════════════════
+21. JVM AND BYTECODE
+══════════════════════════════════════════════════════════════════════════════
+
+JVM = Java Virtual Machine.
+
+Java commonly follows a different execution model from
+traditional ahead-of-time native compilation.
+
+Typical process:
+
+       Java Source
+            │
+            ▼
+       javac compiler
+            │
+            ▼
+       Java Bytecode
+            │
+            ▼
+           JVM
+            │
+            ▼
+      Interpretation and/or
+       JIT compilation
+            │
+            ▼
+       Native machine code
+
+
+══════════════════════════════════════════════════════════════════════════════
+22. WHAT IS JVM BYTECODE?
+══════════════════════════════════════════════════════════════════════════════
+
+JVM bytecode is an intermediate instruction format executed
+by the Java Virtual Machine.
+
+Example Java:
+
+    int c = a + b;
+
+Conceptually, bytecode uses stack-oriented operations such as:
+
+    load a
+    load b
+    add
+    store c
+
+The exact bytecode instructions depend on the generated class file.
+
+Important idea:
+
+    Java source
+        ↓
+    Bytecode
+        ↓
+    JVM
+        ↓
+    Native execution
+
+
+══════════════════════════════════════════════════════════════════════════════
+23. WHY USE BYTECODE?
+══════════════════════════════════════════════════════════════════════════════
+
+One major advantage is portability.
+
+Java source:
+
+       Java
+        ↓
+      Bytecode
+        ↓
+   ┌────┼─────┐
+   ↓    ↓     ↓
+ Windows Linux macOS
+   ↓    ↓     ↓
+  JVM  JVM   JVM
+
+The same bytecode can execute on different platforms
+provided a compatible JVM exists.
+
+This is the basic idea behind:
+
+        "Write once, run anywhere"
+
+It is not magic; the JVM provides the platform-specific
+execution environment.
+
+
+══════════════════════════════════════════════════════════════════════════════
+24. JVM INTERPRETER
+══════════════════════════════════════════════════════════════════════════════
+
+An interpreter executes instructions by processing them
+during program execution.
+
+Conceptually:
+
+    Bytecode
+       ↓
+    Interpreter
+       ↓
+    Execute instructions
+
+Advantages:
+
+    • Simple execution model
+    • Portable
+    • Can start execution without compiling the whole program
+      into native code first
+
+Disadvantage:
+
+    • Repeated interpretation can be slower than optimized
+      native machine code
+
+
+══════════════════════════════════════════════════════════════════════════════
+25. JIT — JUST-IN-TIME COMPILATION
+══════════════════════════════════════════════════════════════════════════════
+
+JIT = Just-In-Time compiler.
+
+Instead of compiling everything to native machine code before
+the program starts, JIT compilation can compile selected code
+during execution.
+
+Concept:
+
+       Bytecode
+          ↓
+       JVM
+          ↓
+    Identify hot code
+          ↓
+       JIT compile
+          ↓
+    Native machine code
+          ↓
+       Execute faster
+
+
+══════════════════════════════════════════════════════════════════════════════
+26. HOT CODE
+══════════════════════════════════════════════════════════════════════════════
+
+A JIT compiler can monitor program execution.
+
+Suppose:
+
+    function calculate()
+
+is called millions of times.
+
+The JVM can detect that this code is "hot."
+
+Then:
+
+    calculate()
+         ↓
+      JIT
+         ↓
+    optimized native code
+
+This is called:
+
+        Hotspot-based optimization
+
+The JVM can optimize based on information available
+at runtime.
+
+
+══════════════════════════════════════════════════════════════════════════════
+27. WHY JIT CAN BE POWERFUL
+══════════════════════════════════════════════════════════════════════════════
+
+A traditional static compiler has information available
+mainly at compile time.
+
+A JIT compiler can observe actual runtime behavior.
+
+For example:
+
+    if condition A
+        occurs 99% of the time
+
+The JIT may optimize based on this runtime behavior.
+
+It may also use:
+
+    • Method inlining
+    • Speculative optimization
+    • Runtime profiling
+    • Deoptimization
+    • Escape analysis
+    • Dynamic dispatch optimization
+
+
+══════════════════════════════════════════════════════════════════════════════
+28. SPECULATIVE OPTIMIZATION
+══════════════════════════════════════════════════════════════════════════════
+
+JIT compilers can sometimes make assumptions based on
+observed runtime behavior.
+
+Example:
+
+    A virtual method call repeatedly targets class A.
+
+The JIT may optimize assuming:
+
+    "This call usually targets A."
+
+If that assumption later becomes invalid:
+
+    JIT can deoptimize
+
+That means:
+
+    optimized code
+         ↓
+    assumption fails
+         ↓
+    deoptimization
+         ↓
+    safer execution path
+
+
+══════════════════════════════════════════════════════════════════════════════
+29. AOT — AHEAD-OF-TIME COMPILATION
+══════════════════════════════════════════════════════════════════════════════
+
+AOT = Ahead-of-Time compilation.
+
+The program is compiled into native machine code before execution.
+
+Example:
+
+    Source
+      ↓
+    Compiler
+      ↓
+    Native executable
+      ↓
+    Execute
+
+Traditional C/C++ compilation commonly follows this model.
+
+Advantages:
+
+    • No JIT compilation overhead during startup
+    • Native executable can be distributed
+    • Strong compile-time optimization opportunities
+
+Disadvantages:
+
+    • Runtime behavior is not known as precisely
+    • Target/platform-specific compilation may be required
+
+
+══════════════════════════════════════════════════════════════════════════════
+30. STATIC/AOT vs JIT
+══════════════════════════════════════════════════════════════════════════════
+
+    AOT COMPILATION
+
+        Source
+          ↓
+        Compiler
+          ↓
+      Native Code
+          ↓
+       Execution
+
+    JIT COMPILATION
+
+        Source
+          ↓
+       Bytecode/IR
+          ↓
+        Runtime
+          ↓
+          JIT
+          ↓
+      Native Code
+          ↓
+       Execution
+
+
+Comparison:
+
+    AOT:
+        Compilation mostly before execution.
+
+    JIT:
+        Compilation occurs during execution.
+
+AOT can have faster startup because compilation does not
+need to happen at runtime.
+
+JIT can exploit runtime information for optimization.
+
+
+══════════════════════════════════════════════════════════════════════════════
+31. HYBRID COMPILATION
+══════════════════════════════════════════════════════════════════════════════
+
+Modern systems may combine techniques.
+
+Example:
+
+       Source
+          ↓
+       Compiler
+          ↓
+      Intermediate
+       code/bytecode
+          ↓
+        Runtime
+          ↓
+    Interpreter initially
+          ↓
+     Profile execution
+          ↓
+      JIT hot code
+          ↓
+    Optimized native code
+
+This is a hybrid approach.
+
+Benefits:
+
+    • Good portability
+    • Fast initial execution
+    • Runtime optimization
+    • Adaptive optimization
+
+
+══════════════════════════════════════════════════════════════════════════════
+32. TARGET-INDEPENDENT OPTIMIZATION
+══════════════════════════════════════════════════════════════════════════════
+
+Target-independent optimization does not depend heavily
+on a specific CPU.
+
+Examples:
+
+    Constant folding:
+
+        x = 10 + 20
+
+        ↓
+
+        x = 30
+
+    Dead code elimination:
+
+        x = 10
+        x = 20
+        print(x)
+
+    If x=10 is never used:
+
+        x = 10     ← remove
+
+        x = 20
+        print(x)
+
+Other examples:
+
+    • Common subexpression elimination
+    • Constant propagation
+    • Copy propagation
+    • Many data-flow optimizations
+    • Some loop transformations
+
+
+══════════════════════════════════════════════════════════════════════════════
+33. TARGET-DEPENDENT OPTIMIZATION
+══════════════════════════════════════════════════════════════════════════════
+
+Target-dependent optimization considers the actual target CPU.
+
+Examples:
+
+    • Register allocation
+    • Instruction selection
+    • Instruction scheduling
+    • Target-specific instruction patterns
+    • CPU-specific vectorization
+    • Addressing-mode selection
+
+Example:
+
+    CPU A:
+        instruction X is very efficient
+
+    CPU B:
+        instruction Y is more efficient
+
+The backend can choose appropriately.
+
+
+══════════════════════════════════════════════════════════════════════════════
+34. LOWERING
+══════════════════════════════════════════════════════════════════════════════
+
+Lowering means converting a higher-level representation
+into a lower-level representation.
+
+Example:
+
+    High-level operation:
+
+        array[i] = x
+
+may be lowered into operations involving:
+
+    • address calculation
+    • pointer arithmetic
+    • load/store operations
+    • machine registers
+
+Conceptually:
+
+    High-level IR
+         ↓
+       Lowering
+         ↓
+    Low-level IR
+         ↓
+    Machine code
+
+Lowering can happen in multiple stages.
+
+
+══════════════════════════════════════════════════════════════════════════════
+35. EXAMPLE — FULL MODERN PIPELINE
+══════════════════════════════════════════════════════════════════════════════
+
+Source:
+
+    int square(int x) {
+        return x * x;
+    }
+
+STEP 1 — Lexical analysis
+
+    int
+    square
+    (
+    int
+    x
+    )
+    {
+    return
+    x
+    *
+    x
+    ;
+    }
+
+STEP 2 — Parsing
+
+             function
+                |
+             square
+                |
+              return
+                |
+                *
+               / \
+              x   x
+
+STEP 3 — Semantic analysis
+
+    Check:
+
+        x is declared
+        x has type int
+        x * x is valid
+        return type is compatible
+
+STEP 4 — IR
+
+    Conceptually:
+
+        t1 = x * x
+        return t1
+
+STEP 5 — SSA
+
+    x1 = parameter
+    t1 = x1 * x1
+    return t1
+
+STEP 6 — Optimization
+
+    Compiler may identify opportunities depending on
+    surrounding program context.
+
+STEP 7 — Lowering
+
+    Convert generic operations into target-specific forms.
+
+STEP 8 — Register allocation
+
+    Assign values to physical registers.
+
+STEP 9 — Instruction selection
+
+    Choose actual CPU instructions.
+
+STEP 10 — Machine code
+
+    Produce target-specific instructions.
+
+STEP 11 — Linking
+
+    Combine object code and required libraries.
+
+STEP 12 — Executable
+
+    Final program ready for execution.
+
+
+══════════════════════════════════════════════════════════════════════════════
+36. COMPILER PASS
+══════════════════════════════════════════════════════════════════════════════
+
+A pass is one logical processing stage over a compiler representation.
+
+Example:
+
+       IR
+        ↓
+    Constant Folding Pass
+        ↓
+       IR'
+        ↓
+    Dead Code Elimination Pass
+        ↓
+       IR''
+        ↓
+    Loop Optimization Pass
+        ↓
+       IR'''
+        
+Modern compilers may perform many passes.
+
+Important:
+
+    More passes ≠ automatically better performance.
+
+The order of passes can matter.
+
+Example:
+
+    Pass A may expose an opportunity for Pass B.
+
+Therefore:
+
+    A → B
+
+may produce a better result than:
+
+    B → A
+
+
+══════════════════════════════════════════════════════════════════════════════
+37. OPTIMIZATION PIPELINE
+══════════════════════════════════════════════════════════════════════════════
+
+A simplified optimization pipeline:
+
+        IR
+         │
+         ▼
+    Build CFG
+         │
+         ▼
+    Data-flow analysis
+         │
+         ▼
+    Constant propagation
+         │
+         ▼
+    Dead code elimination
+         │
+         ▼
+    Common subexpression elimination
+         │
+         ▼
+    Inlining
+         │
+         ▼
+    Loop optimization
+         │
+         ▼
+    Vectorization
+         │
+         ▼
+    Lowering
+         │
+         ▼
+    Code generation
+
+Actual modern compiler pipelines are much more complex.
+
+
+══════════════════════════════════════════════════════════════════════════════
+38. INLINING
+══════════════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    int square(int x) {
+        return x*x;
+    }
+
+and:
+
+    y = square(5);
+
+The compiler may replace the function call conceptually with:
+
+    y = 5*5;
+
+This is called:
+
+        Function Inlining
+
+Benefits:
+
+    • Removes function-call overhead
+    • Can expose additional optimization opportunities
+
+Potential disadvantage:
+
+    • Excessive inlining can increase code size
+
+
+══════════════════════════════════════════════════════════════════════════════
+39. DEOPTIMIZATION
+══════════════════════════════════════════════════════════════════════════════
+
+Deoptimization is especially important in dynamic/JIT systems.
+
+Suppose JIT compiler assumes:
+
+    "This operation always uses type A."
+
+Then runtime behavior changes:
+
+    Type B appears.
+
+The optimized code may no longer be valid under that assumption.
+
+The runtime can:
+
+    optimized code
+          ↓
+    assumption fails
+          ↓
+     deoptimize
+          ↓
+    recover execution
+          ↓
+    continue safely
+
+This allows aggressive runtime optimization while maintaining correctness.
+
+
+══════════════════════════════════════════════════════════════════════════════
+40. STATIC COMPILER vs JIT COMPILER
+══════════════════════════════════════════════════════════════════════════════
+
+STATIC COMPILER:
+
+    Compile time:
+        source → native code
+
+    Runtime:
+        execute native code
+
+JIT:
+
+    Compile time:
+        source → intermediate form
+
+    Runtime:
+        execute/profile
+              ↓
+             JIT
+              ↓
+        optimized native code
+
+Static compiler:
+    Strong ahead-of-time optimization.
+
+JIT:
+    Can exploit runtime information.
+
+
+══════════════════════════════════════════════════════════════════════════════
+41. MODERN COMPILER ECOSYSTEM
+══════════════════════════════════════════════════════════════════════════════
+
+A real software toolchain may contain:
+
+    Source code
+       ↓
+    Preprocessor
+       ↓
+    Compiler
+       ↓
+    Assembler
+       ↓
+    Object file
+       ↓
+    Linker
+       ↓
+    Executable
+       ↓
+    Loader
+       ↓
+    Runtime libraries
+       ↓
+    CPU
+
+For managed languages:
+
+    Source
+       ↓
+    Compiler
+       ↓
+    Bytecode
+       ↓
+    Virtual Machine
+       ↓
+    Interpreter/JIT
+       ↓
+    Native execution
+
+
+══════════════════════════════════════════════════════════════════════════════
+42. LLVM vs JVM BYTECODE — IMPORTANT DIFFERENCE
+══════════════════════════════════════════════════════════════════════════════
+
+LLVM IR and JVM bytecode are both intermediate representations,
+but their roles differ.
+
+LLVM IR:
+
+    Primarily compiler infrastructure IR.
+
+    It is used for:
+        optimization
+        analysis
+        code generation
+
+JVM bytecode:
+
+    A standardized execution format for the JVM.
+
+    It is designed to be executed by:
+        JVM interpreter
+        and/or JIT compiler
+
+Simplified:
+
+    LLVM:
+
+        Source → LLVM IR → Native Code
+
+    JVM:
+
+        Source → JVM Bytecode → JVM → Native Code
+
+
+══════════════════════════════════════════════════════════════════════════════
+43. COMPILER PORTABILITY
+══════════════════════════════════════════════════════════════════════════════
+
+Compiler portability can be improved by separating:
+
+    Language front end
+           +
+    Common IR
+           +
+    Target back ends
+
+Example:
+
+    Front End A ──┐
+    Front End B ──┼──→ IR ──→ Backend X
+    Front End C ──┘          Backend Y
+                              Backend Z
+
+This architecture allows reuse.
+
+This is one of the most important reasons for modern compiler
+infrastructure.
+
+
+══════════════════════════════════════════════════════════════════════════════
+44. CROSS COMPILER
+══════════════════════════════════════════════════════════════════════════════
+
+A cross compiler runs on one platform but produces code
+for another platform.
+
+Example:
+
+    Compiler runs on:
+        x86 Linux
+
+    Produces:
+        ARM embedded code
+
+Conceptually:
+
+        Host Machine
+             │
+             ▼
+        Cross Compiler
+             │
+             ▼
+        Target Machine Code
+
+
+══════════════════════════════════════════════════════════════════════════════
+45. COMPILER HOST, TARGET AND BUILD
+══════════════════════════════════════════════════════════════════════════════
+
+Three terms can appear:
+
+    Build machine:
+        Where compiler is built.
+
+    Host machine:
+        Where compiler executes.
+
+    Target machine:
+        For which compiler generates code.
+
+These distinctions become important in cross-compilation
+and compiler bootstrapping.
+
+
+══════════════════════════════════════════════════════════════════════════════
+46. MODERN COMPILER ARCHITECTURE — COMPLETE VIEW
+══════════════════════════════════════════════════════════════════════════════
+
+                         SOURCE
+                            │
+                            ▼
+                    ┌──────────────┐
+                    │   FRONT END  │
+                    ├──────────────┤
+                    │ Lexer        │
+                    │ Parser       │
+                    │ Semantic     │
+                    │ AST          │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    HIGH-LEVEL IR
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │ MIDDLE END   │
+                    ├──────────────┤
+                    │ CFG          │
+                    │ SSA          │
+                    │ Data Flow    │
+                    │ Optimization │
+                    │ Loop Opt.    │
+                    └──────┬───────┘
+                           │
+                           ▼
+                       LOWERING
+                           │
+                           ▼
+                    LOW-LEVEL IR
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  BACK END    │
+                    ├──────────────┤
+                    │ Instruction  │
+                    │ Selection    │
+                    │ Register     │
+                    │ Allocation   │
+                    │ Scheduling   │
+                    └──────┬───────┘
+                           │
+                           ▼
+                     MACHINE CODE
+                           │
+                           ▼
+                        LINKER
+                           │
+                           ▼
+                       EXECUTABLE
+                           │
+                           ▼
+                        RUNTIME
+
+
+══════════════════════════════════════════════════════════════════════════════
+47. CONNECTION WITH PREVIOUS CHAPTERS
+══════════════════════════════════════════════════════════════════════════════
+
+Chapter 4–8:
+    Lexical Analysis
+          ↓
+    tokens
+
+Chapter 9–14:
+    Syntax Analysis
+          ↓
+    parse tree / AST
+
+Chapter 15–18:
+    Semantic Analysis
+          ↓
+    type/scope information
+          ↓
+    annotated representation
+
+Chapter 19–21:
+    Intermediate Representation
+          ↓
+    TAC / CFG / SSA / control flow
+
+Chapter 22–25:
+    Runtime Environment
+          ↓
+    stack / heap / activation records
+
+Chapter 26–29:
+    Code Generation
+          ↓
+    machine instructions
+
+Chapter 30–34:
+    Optimization
+          ↓
+    improved IR/code
+
+Chapter 35:
+    Garbage Collection
+          ↓
+    runtime memory management
+
+Chapter 36:
+    Modern Compiler Architecture
+          ↓
+    combines these ideas into modern compiler systems
+
+
+══════════════════════════════════════════════════════════════════════════════
+48. GATE EXAM — VERY IMPORTANT CONCEPTS
+══════════════════════════════════════════════════════════════════════════════
+
+Remember:
+
+1. Front end:
+       Mainly source-language dependent.
+
+2. Back end:
+       Mainly target-machine dependent.
+
+3. Middle end:
+       Mainly optimization and target-independent processing.
+
+4. SSA:
+       Each SSA variable has exactly one definition.
+
+5. φ-function:
+       Combines values coming from different CFG predecessors.
+
+6. LLVM:
+       Compiler infrastructure with LLVM IR and target backends.
+
+7. GCC:
+       Uses representations including GIMPLE and RTL.
+
+8. JVM:
+       Executes JVM bytecode through interpretation and/or
+       JIT compilation.
+
+9. AOT:
+       Compilation before execution.
+
+10. JIT:
+       Compilation during execution.
+
+11. JIT can use:
+       Runtime profiling and runtime information.
+
+12. Lowering:
+       High-level representation → lower-level representation.
+
+13. Target-independent optimization:
+       Does not primarily depend on a specific CPU.
+
+14. Target-dependent optimization:
+       Uses characteristics of the target architecture.
+
+
+══════════════════════════════════════════════════════════════════════════════
+49. GATE TRAPS
+══════════════════════════════════════════════════════════════════════════════
+
+TRAP 1:
+    "SSA means each variable is assigned only once during
+     actual program execution."
+
+    WRONG.
+
+    SSA is a compiler representation in which each SSA name
+    has one definition.
+
+TRAP 2:
+    "φ is directly executed by the CPU."
+
+    WRONG.
+
+    It is an IR-level construct.
+
+TRAP 3:
+    "JIT compiles the entire program before execution."
+
+    Not necessarily.
+
+    JIT commonly compiles selected code during execution.
+
+TRAP 4:
+    "LLVM is a programming language."
+
+    WRONG.
+
+    LLVM is compiler infrastructure/project.
+
+TRAP 5:
+    "JVM bytecode is native machine code."
+
+    WRONG.
+
+    It is an intermediate instruction format for the JVM.
+
+TRAP 6:
+    "All optimization is target-independent."
+
+    WRONG.
+
+    Some optimization is target-specific.
+
+TRAP 7:
+    "Front end generates only machine code."
+
+    WRONG.
+
+    Front end analyzes the source and generally produces
+    an intermediate representation.
+
+TRAP 8:
+    "Inlining always improves performance."
+
+    WRONG.
+
+    Excessive inlining can increase code size and instruction-cache
+    pressure.
+
+
+══════════════════════════════════════════════════════════════════════════════
+50. INTERVIEW QUESTIONS
+══════════════════════════════════════════════════════════════════════════════
+
+Q1. What is modern compiler architecture?
+
+Answer:
+It is a modular compiler design that separates source-language
+analysis, intermediate representation and optimization, and
+target-specific code generation.
+
+Q2. What are front end, middle end and back end?
+
+Answer:
+Front end analyzes source code, middle end performs IR-based
+analysis and optimization, and back end generates target-specific
+machine code.
+
+Q3. What is SSA?
+
+Answer:
+Static Single Assignment is an IR form in which each SSA variable
+has exactly one definition.
+
+Q4. What is a phi function?
+
+Answer:
+A φ-function selects a value from multiple control-flow predecessors
+when converting a program into SSA form.
+
+Q5. What is LLVM?
+
+Answer:
+LLVM is a compiler infrastructure/project providing IR,
+optimization infrastructure, target support and related tools.
+
+Q6. What is GCC GIMPLE?
+
+Answer:
+GIMPLE is a simplified intermediate representation used within GCC,
+especially for optimization.
+
+Q7. What is GCC RTL?
+
+Answer:
+RTL is a lower-level GCC representation closer to machine-level
+operations and used in later compilation stages.
+
+Q8. What is JVM bytecode?
+
+Answer:
+JVM bytecode is an intermediate instruction format executed by the
+Java Virtual Machine.
+
+Q9. What is JIT compilation?
+
+Answer:
+JIT compilation compiles code during program execution, often using
+runtime profiling to optimize frequently executed code.
+
+Q10. What is AOT compilation?
+
+Answer:
+Ahead-of-Time compilation generates executable/native code before
+the program executes.
+
+Q11. Why is JIT sometimes faster after warm-up?
+
+Answer:
+Because it can optimize frequently executed code using runtime
+information.
+
+Q12. What is lowering?
+
+Answer:
+Lowering transforms a higher-level compiler representation into
+a lower-level representation.
+
+
+══════════════════════════════════════════════════════════════════════════════
+51. ONE-PAGE REVISION
+══════════════════════════════════════════════════════════════════════════════
+
+MODERN COMPILER ARCHITECTURE
+
+    FRONT END
+        ↓
+    Lexical
+        ↓
+    Syntax
+        ↓
+    Semantic
+        ↓
+    AST / High-level IR
+
+    MIDDLE END
+        ↓
+    CFG
+        ↓
+    SSA
+        ↓
+    Optimization
+        ↓
+    Lowering
+
+    BACK END
+        ↓
+    Instruction Selection
+        ↓
+    Register Allocation
+        ↓
+    Scheduling
+        ↓
+    Machine Code
+
+LLVM:
+    LLVM IR → optimization → target backend
+
+GCC:
+    GIMPLE → optimization → RTL → target backend
+
+JVM:
+    Source → Bytecode → JVM → Interpreter/JIT → Native Code
+
+AOT:
+    Compile before execution.
+
+JIT:
+    Compile during execution.
+
+SSA:
+    One definition per SSA name.
+
+φ:
+    Merge values from different control-flow paths.
+
+Target-independent:
+    Mostly CPU-independent optimizations.
+
+Target-dependent:
+    Architecture-specific optimizations.
+
+
+══════════════════════════════════════════════════════════════════════════════
+52. CONCEPT MAP
+══════════════════════════════════════════════════════════════════════════════
+
+                 MODERN COMPILER
+                        │
+          ┌─────────────┼──────────────┐
+          │             │              │
+      FRONT END      MIDDLE END     BACK END
+          │             │              │
+       Lexer           IR          Instruction
+       Parser          SSA         Selection
+       Semantic        CFG         Register
+       AST              │          Allocation
+          │         Optimization   Scheduling
+          │             │              │
+          └─────────────┼──────────────┘
+                        │
+                  MACHINE CODE
+
+
+            MODERN IR / INFRASTRUCTURE
+                        │
+         ┌──────────────┼─────────────┐
+         │              │             │
+       LLVM            GCC           JVM
+         │              │             │
+     LLVM IR         GIMPLE        Bytecode
+                        │
+                       RTL
+
+
+                    EXECUTION MODELS
+                         │
+             ┌───────────┼───────────┐
+             │           │           │
+            AOT       Interpreter    JIT
+             │           │           │
+          Before       Runtime      Runtime
+         execution     execute      compile
+
+
+══════════════════════════════════════════════════════════════════════════════
+53. FINAL EXAM CHECKLIST
+══════════════════════════════════════════════════════════════════════════════
+
+Before considering Chapter 36 complete, you should be able to explain:
+
+[ ] What modern compiler architecture means
+[ ] Front end
+[ ] Middle end
+[ ] Back end
+[ ] Why IR is required
+[ ] Why multiple IRs are used
+[ ] SSA
+[ ] Why SSA helps optimization
+[ ] φ-function
+[ ] CFG and SSA relationship
+[ ] LLVM
+[ ] LLVM IR
+[ ] Compiler passes
+[ ] GCC
+[ ] GIMPLE
+[ ] RTL
+[ ] JVM
+[ ] JVM bytecode
+[ ] Interpreter
+[ ] JIT
+[ ] Hot code
+[ ] Runtime profiling
+[ ] Speculative optimization
+[ ] Deoptimization
+[ ] AOT compilation
+[ ] JIT vs AOT
+[ ] Hybrid compilation
+[ ] Target-independent optimization
+[ ] Target-dependent optimization
+[ ] Lowering
+[ ] Compiler portability
+[ ] Cross compilation
+[ ] Modern compiler toolchain
+
+
+══════════════════════════════════════════════════════════════════════════════
+54. MOST IMPORTANT FORMULA-LIKE FACTS TO MEMORIZE
+══════════════════════════════════════════════════════════════════════════════
+
+    FRONT END
+        =
+    Source-language analysis
+
+    MIDDLE END
+        =
+    IR analysis + optimization
+
+    BACK END
+        =
+    Target-specific code generation
+
+    SSA
+        =
+    One definition per SSA name
+
+    LLVM
+        =
+    Compiler infrastructure + LLVM IR + optimization + backends
+
+    GCC
+        =
+    GIMPLE → RTL → target-specific code generation
+
+    JVM
+        =
+    Bytecode execution environment
+
+    AOT
+        =
+    Compile before execution
+
+    JIT
+        =
+    Compile during execution
+
+    LOWERING
+        =
+    Higher-level IR → Lower-level IR
+
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 36 COMPLETE
+══════════════════════════════════════════════════════════════════════════════
+
+NEXT CHAPTER IN MASTER SYLLABUS:
+
+    CHAPTER 37 — ADVANCED LANGUAGE FEATURES
+
+Topics include:
+    • Modern programming-language features
+    • Generics
+    • Closures
+    • Lambda expressions
+    • Object-oriented features
+    • Functional features
+    • Exception handling
+    • Dynamic features
+    • Compiler support for advanced language constructs

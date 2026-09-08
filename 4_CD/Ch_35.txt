@@ -1,0 +1,2685 @@
+============================================================
+COMPILER DESIGN — CHAPTER 35
+GARBAGE COLLECTION
+============================================================
+
+LEVEL:
+Absolute Beginner → Intermediate → Advanced → GATE → Interview
+
+PREREQUISITES:
+• Runtime Storage Organization
+• Stack and Heap
+• Activation Records
+• Pointers / References
+• Compiler Optimization
+• Basic Programming Concepts
+
+============================================================
+1. WHAT IS GARBAGE COLLECTION?
+============================================================
+
+Garbage Collection (GC) is an automatic memory-management
+technique used by many programming languages and runtimes.
+
+Its main job is:
+
+    Find memory that is no longer reachable or usable
+    and reclaim it for future allocation.
+
+Simple idea:
+
+    Program requests memory
+           ↓
+        Heap
+           ↓
+    Object is no longer needed
+           ↓
+       Garbage
+           ↓
+    Garbage Collector
+           ↓
+     Memory reclaimed
+
+Without automatic garbage collection, programmers may have to
+manually release dynamically allocated memory.
+
+============================================================
+2. WHAT IS "GARBAGE"?
+============================================================
+
+Garbage is allocated memory that can no longer be reached through
+any valid reference from the program's roots.
+
+Example:
+
+    p = new Object();
+
+Initially:
+
+    Root
+     |
+     v
+     p
+     |
+     v
+   Object
+
+Now:
+
+    p = null;
+
+There is no reference from the program to the object.
+
+Conceptually:
+
+    Root
+
+    Object
+
+The object is unreachable.
+
+Therefore it may be considered garbage.
+
+IMPORTANT:
+
+    Garbage ≠ simply "old object"
+
+An object can be old but still reachable.
+
+An object can become garbage immediately after it becomes
+unreachable.
+
+============================================================
+3. WHY DO WE NEED GARBAGE COLLECTION?
+============================================================
+
+Dynamic memory is usually allocated from the heap.
+
+Example:
+
+    Object a = new Object();
+    Object b = new Object();
+
+During program execution, objects may become unused.
+
+If their memory is never reclaimed:
+
+    Heap usage ↑
+         ↓
+    Memory exhausted
+         ↓
+    Program may fail
+
+Garbage collection automatically reclaims suitable memory.
+
+Benefits:
+
+• Reduces manual memory-management burden.
+• Prevents many memory leaks caused by forgotten deallocation.
+• Simplifies programming.
+• Can improve memory reuse.
+
+============================================================
+4. HEAP AND GARBAGE COLLECTION
+============================================================
+
+Recall runtime memory organization:
+
+    +-----------------------+
+    | Code / Text           |
+    +-----------------------+
+    | Static / Global       |
+    +-----------------------+
+    | Heap                  |
+    |                       |
+    | Dynamic objects       |
+    |                       |
+    +-----------------------+
+    | Stack                 |
+    | Activation records    |
+    +-----------------------+
+
+Garbage collection mainly operates on:
+
+    HEAP
+
+The stack and static/global areas can contain references to
+heap objects.
+
+============================================================
+5. STACK vs HEAP
+============================================================
+
+STACK:
+
+    • Function calls
+    • Local variables
+    • Activation records
+    • Usually automatically managed
+
+HEAP:
+
+    • Dynamically allocated objects
+    • Objects whose lifetime may extend beyond one function call
+    • Managed manually or automatically depending on language
+
+Example:
+
+    void f() {
+        int x = 10;
+        Object o = new Object();
+    }
+
+Conceptually:
+
+    Stack:
+        x
+        reference o
+           |
+           v
+    Heap:
+        Object
+
+The reference is on the stack while the object is on the heap.
+
+============================================================
+6. ROOTS
+============================================================
+
+Garbage collectors need starting points from which reachability
+is determined.
+
+These starting points are called:
+
+    ROOTS
+
+Typical roots can include:
+
+• Active stack references
+• Global/static references
+• Registers
+• Runtime data structures
+• Other specially recognized references
+
+Conceptually:
+
+                    ROOTS
+                  /   |   \
+                 /    |    \
+                v     v     v
+             Object Object Object
+                |
+                v
+             Object
+
+Anything reachable from roots is potentially live.
+
+Anything unreachable from roots is garbage under the collector's
+reachability model.
+
+============================================================
+7. REACHABILITY
+============================================================
+
+Reachability is the central idea behind tracing garbage
+collection.
+
+Example:
+
+    Root
+      |
+      v
+      A
+     / \
+    v   v
+    B   C
+         |
+         v
+         D
+
+Reachable objects:
+
+    A, B, C, D
+
+Now suppose:
+
+    Root → A
+           |
+           v
+           B
+
+and C → D is disconnected from A.
+
+Then:
+
+    C and D
+
+are unreachable from the root and can be garbage.
+
+============================================================
+8. LIVE vs GARBAGE OBJECT
+============================================================
+
+LIVE OBJECT:
+
+    Can be reached from a GC root.
+
+GARBAGE OBJECT:
+
+    Cannot be reached from any GC root.
+
+Remember:
+
+    ROOT
+      ↓
+    REACHABLE
+      ↓
+    LIVE
+
+    NOT REACHABLE
+      ↓
+    GARBAGE
+
+============================================================
+9. MEMORY LEAK vs GARBAGE COLLECTION
+============================================================
+
+A memory leak occurs when memory that is no longer useful to
+the application remains allocated.
+
+In a tracing garbage-collected system, unreachable objects can
+normally be reclaimed automatically.
+
+But a program can still effectively retain memory by keeping
+unnecessary references.
+
+Example:
+
+    list.add(largeObject);
+
+If the list remains reachable, largeObject may remain reachable
+too.
+
+Therefore:
+
+    "GC exists" does NOT mean "memory can never be wasted."
+
+============================================================
+10. MANUAL MEMORY MANAGEMENT vs GC
+============================================================
+
+MANUAL:
+
+    allocate
+       ↓
+    use
+       ↓
+    explicitly free
+
+Example concept:
+
+    malloc(...)
+    ...
+    free(...)
+
+AUTOMATIC GC:
+
+    allocate
+       ↓
+    use
+       ↓
+    object becomes unreachable
+       ↓
+    collector eventually reclaims memory
+
+Advantages of GC:
+
+    • Easier memory management
+    • Fewer explicit deallocation operations
+
+Costs:
+
+    • Runtime overhead
+    • Additional memory metadata
+    • Possible pauses or CPU work
+    • More complex runtime
+
+============================================================
+11. GARBAGE COLLECTION STRATEGIES
+============================================================
+
+Major GC techniques include:
+
+1. Reference counting
+2. Mark-and-sweep
+3. Copying collection
+4. Mark-and-compact
+5. Generational collection
+6. Incremental collection
+7. Concurrent collection
+8. Hybrid approaches
+
+Modern runtimes often combine several techniques.
+
+============================================================
+12. REFERENCE COUNTING
+============================================================
+
+Reference counting maintains a count for each object.
+
+The count represents how many tracked references point to it.
+
+Example:
+
+    p ─────┐
+           v
+         Object
+           ^
+           |
+    q ─────┘
+
+Reference count:
+
+    RC(Object) = 2
+
+If q is removed:
+
+    p ─────→ Object
+
+Then:
+
+    RC(Object) = 1
+
+If p is also removed:
+
+    RC(Object) = 0
+
+The object can be reclaimed.
+
+============================================================
+13. REFERENCE COUNTING ALGORITHM
+============================================================
+
+Conceptually:
+
+    Allocate object
+          ↓
+    Reference count = 1
+          ↓
+    New reference
+          ↓
+    Count++
+          ↓
+    Reference removed
+          ↓
+    Count--
+          ↓
+    Count = 0 ?
+       /       \
+     YES       NO
+      |         |
+      v         v
+    Free      Keep
+
+Simple and intuitive.
+
+============================================================
+14. ADVANTAGES OF REFERENCE COUNTING
+============================================================
+
+Advantages:
+
+• Conceptually simple.
+• Reclamation can happen immediately when count becomes zero.
+• Does not require scanning the entire heap for every object in
+  the basic model.
+• Useful for deterministic resource-management patterns in some
+  systems.
+
+============================================================
+15. DISADVANTAGES OF REFERENCE COUNTING
+============================================================
+
+Major problem:
+
+    CYCLIC REFERENCES
+
+Example:
+
+    A → B
+    B → A
+
+Reference counts:
+
+    A = 1
+    B = 1
+
+Even if no root points to A or B:
+
+    A ↔ B
+
+Both counts remain nonzero.
+
+Therefore simple reference counting cannot reclaim the cycle.
+
+IMPORTANT GATE POINT:
+
+    Reference counting alone does not naturally handle
+    unreachable cycles.
+
+============================================================
+16. CYCLIC GARBAGE EXAMPLE
+============================================================
+
+Suppose:
+
+    Root → X
+
+    X → A
+    A → B
+    B → A
+
+Now remove:
+
+    Root → X
+
+If X becomes unreachable, then A and B are also unreachable
+from roots.
+
+But:
+
+    A → B
+    B → A
+
+creates a cycle.
+
+Reference counts may remain:
+
+    A = 1
+    B = 1
+
+Therefore basic reference counting fails to reclaim them.
+
+============================================================
+17. MARK-AND-SWEEP
+============================================================
+
+Mark-and-sweep is a tracing garbage collection technique.
+
+It has two major phases:
+
+    1. MARK
+    2. SWEEP
+
+------------------------------------------------------------
+MARK
+------------------------------------------------------------
+
+Start from GC roots.
+
+Mark every reachable object.
+
+------------------------------------------------------------
+SWEEP
+------------------------------------------------------------
+
+Scan the heap.
+
+Any object that is not marked is garbage.
+
+Reclaim it.
+
+============================================================
+18. MARK-AND-SWEEP EXAMPLE
+============================================================
+
+Heap:
+
+    Root
+      |
+      v
+      A
+     / \
+    v   v
+    B   C
+
+Unreachable:
+
+    D → E
+
+MARK phase:
+
+    A = marked
+    B = marked
+    C = marked
+
+D and E remain unmarked.
+
+SWEEP:
+
+    D = garbage → reclaim
+    E = garbage → reclaim
+
+Result:
+
+    A, B, C remain.
+
+============================================================
+19. MARK-AND-SWEEP ALGORITHM
+============================================================
+
+Conceptually:
+
+    MARK:
+        For every root:
+            mark(root)
+            recursively / iteratively mark
+            all reachable objects
+
+    SWEEP:
+        for every heap object:
+            if object is not marked:
+                reclaim(object)
+            else:
+                clear mark for next collection
+
+============================================================
+20. MARK PHASE — DFS/BFS IDEA
+============================================================
+
+The collector can traverse the object graph using a graph
+traversal strategy such as:
+
+    DFS
+or
+    BFS
+
+Example:
+
+    Root → A → B
+           |
+           v
+           C
+
+Starting from Root:
+
+    Visit Root
+      ↓
+    Visit A
+      ↓
+    Visit B and C
+
+All reachable objects are marked.
+
+============================================================
+21. ADVANTAGE OF MARK-AND-SWEEP
+============================================================
+
+It can collect cycles.
+
+Example:
+
+    A → B
+    B → A
+
+If neither A nor B is reachable from a root:
+
+    A and B are unmarked.
+
+Therefore:
+
+    Both can be reclaimed.
+
+This is a major advantage over simple reference counting.
+
+============================================================
+22. DISADVANTAGES OF MARK-AND-SWEEP
+============================================================
+
+Potential disadvantages:
+
+• Requires traversal of reachable objects.
+• Sweep phase may scan large portions of the heap.
+• Basic implementations can cause pauses.
+• Fragmentation can occur.
+
+The fragmentation problem leads to:
+
+    MARK-AND-COMPACT
+
+============================================================
+23. MARK-AND-COMPACT
+============================================================
+
+Mark-and-compact has three conceptual steps:
+
+    1. Mark live objects.
+    2. Identify garbage.
+    3. Move live objects together.
+
+Example:
+
+Before:
+
+    [A][garbage][B][garbage][C][garbage]
+
+After compaction:
+
+    [A][B][C][free space................]
+
+Benefits:
+
+    • Reclaims garbage.
+    • Reduces fragmentation.
+    • Creates contiguous free space.
+
+But moving objects requires updating references.
+
+============================================================
+24. FRAGMENTATION
+============================================================
+
+Fragmentation means free memory exists but is divided into
+multiple separated regions.
+
+Example:
+
+    [USED][FREE][USED][FREE][USED][FREE]
+
+There may be enough total free memory, but not enough contiguous
+space for a large allocation.
+
+Compaction can transform:
+
+    [USED][FREE][USED][FREE]
+
+into:
+
+    [USED][USED][FREE][FREE]
+
+============================================================
+25. COPYING GARBAGE COLLECTION
+============================================================
+
+Copying collection divides memory into regions/spaces.
+
+Conceptually:
+
+    FROM SPACE
+        |
+        | live objects copied
+        v
+    TO SPACE
+
+Example:
+
+    FROM:
+    [A][garbage][B][garbage][C]
+
+Copy live objects:
+
+    TO:
+    [A][B][C]
+
+Then the roles of the spaces can be exchanged.
+
+============================================================
+26. COPYING COLLECTOR — BASIC IDEA
+============================================================
+
+Suppose:
+
+    From-space:
+        A
+        B
+        garbage
+        C
+
+During collection:
+
+    Copy A → To-space
+    Copy B → To-space
+    Ignore garbage
+    Copy C → To-space
+
+After collection:
+
+    To-space:
+        A
+        B
+        C
+
+Then:
+
+    old from-space → available
+
+============================================================
+27. ADVANTAGES OF COPYING COLLECTION
+============================================================
+
+Advantages:
+
+• Naturally eliminates fragmentation within the copied area.
+• Allocation can be very fast in some designs.
+• Live objects are compacted together.
+• Traversal can process only live objects during copying.
+
+============================================================
+28. DISADVANTAGES OF COPYING COLLECTION
+============================================================
+
+Disadvantages:
+
+• Requires additional space in the basic two-space design.
+• Live objects must be moved.
+• References/pointers must be updated.
+• Copying large numbers of live objects can be expensive.
+
+============================================================
+29. MARK-SWEEP vs MARK-COMPACT vs COPYING
+============================================================
+
+MARK-SWEEP:
+
+    Mark live
+       ↓
+    Sweep garbage
+
+Problem:
+    Fragmentation may remain.
+
+------------------------------------------------------------
+
+MARK-COMPACT:
+
+    Mark
+       ↓
+    Remove garbage
+       ↓
+    Move live objects together
+
+Benefit:
+    Less fragmentation.
+
+------------------------------------------------------------
+
+COPYING:
+
+    Copy live objects
+       ↓
+    New space becomes compact
+
+Benefit:
+    Simple allocation after collection.
+
+============================================================
+30. STOP-THE-WORLD GC
+============================================================
+
+A stop-the-world collection temporarily pauses application
+execution while GC work occurs.
+
+Conceptually:
+
+    Application running
+          ↓
+      GC starts
+          ↓
+    Application paused
+          ↓
+      GC works
+          ↓
+    Application resumes
+
+Advantages:
+
+    • Simpler implementation possible.
+    • Easier to obtain a consistent view of the heap.
+
+Disadvantage:
+
+    • Application latency increases during pauses.
+
+============================================================
+31. PAUSE TIME
+============================================================
+
+GC pause time = period during which application execution is
+paused for GC work in a stop-the-world design.
+
+For interactive systems:
+
+    Long pause → bad user experience
+
+For real-time systems:
+
+    Long/unpredictable pauses can be unacceptable.
+
+Therefore modern collectors attempt to reduce pause times.
+
+============================================================
+32. INCREMENTAL GARBAGE COLLECTION
+============================================================
+
+Incremental GC divides collection work into smaller pieces.
+
+Instead of:
+
+    Huge GC operation
+          ↓
+    Long pause
+
+we try:
+
+    Small GC step
+      ↓
+    Application
+      ↓
+    Small GC step
+      ↓
+    Application
+      ↓
+    ...
+
+Goal:
+
+    Reduce individual pause duration.
+
+Trade-off:
+
+    More complexity
+    + synchronization/barriers
+    + potentially more total overhead
+
+============================================================
+33. CONCURRENT GARBAGE COLLECTION
+============================================================
+
+Concurrent GC performs significant GC work while the application
+continues running.
+
+Conceptually:
+
+    Application ────────────────>
+             ↘
+              GC ───────────────>
+
+Both can progress concurrently.
+
+Goal:
+
+    Reduce application pauses.
+
+Challenge:
+
+    The application can modify object references while the
+    collector is tracing the heap.
+
+Therefore synchronization and write/read barriers may be needed.
+
+============================================================
+34. INCREMENTAL vs CONCURRENT
+============================================================
+
+INCREMENTAL:
+
+    Break GC work into smaller portions.
+
+CONCURRENT:
+
+    GC work overlaps with application execution.
+
+They are related but not identical.
+
+A collector can use:
+
+    incremental techniques
+    concurrent techniques
+    or both
+
+============================================================
+35. GENERATIONAL GARBAGE COLLECTION
+============================================================
+
+Generational GC is based on an important empirical observation:
+
+    Most objects die young.
+
+Therefore the heap is divided into generations.
+
+Common conceptual organization:
+
+    Young Generation
+           |
+           v
+    Survivor areas
+           |
+           v
+    Old / Tenured Generation
+
+New objects generally start in the young generation.
+
+Objects that survive collections may be promoted to older
+generations.
+
+============================================================
+36. WHY GENERATIONS?
+============================================================
+
+Suppose:
+
+    1,000,000 objects are allocated.
+
+If:
+
+    900,000 die quickly
+    100,000 survive
+
+It is inefficient to repeatedly process all objects equally.
+
+Instead:
+
+    Frequently collect young objects.
+
+The young generation often contains a large amount of garbage.
+
+This can make collection more efficient.
+
+============================================================
+37. GENERATIONAL COLLECTION FLOW
+============================================================
+
+New object:
+
+    Allocation
+       ↓
+    Young generation
+       ↓
+    Young GC
+       |
+       +---- dead → reclaim
+       |
+       +---- live → survive
+                       ↓
+                  promoted
+                       ↓
+                 Old generation
+
+Old objects are collected less frequently in many generational
+designs.
+
+============================================================
+38. SURVIVOR SPACES
+============================================================
+
+Some generational collectors use survivor areas.
+
+Conceptually:
+
+    Eden
+      |
+      v
+    Survivor 1
+      |
+      v
+    Survivor 2
+      |
+      v
+    Old generation
+
+Objects that survive multiple young collections may be promoted.
+
+The exact organization depends on the runtime.
+
+============================================================
+39. GENERATIONAL HYPOTHESIS
+============================================================
+
+The generational hypothesis says:
+
+    Most newly allocated objects have short lifetimes.
+
+Therefore:
+
+    Young objects → collect frequently
+
+    Old objects → collect less frequently
+
+This is one of the most important ideas behind generational GC.
+
+============================================================
+40. WRITE BARRIER
+============================================================
+
+In a generational collector, an old object may reference a young
+object.
+
+Example:
+
+    Old object
+        |
+        v
+    Young object
+
+If the collector only scans the young generation, it must know
+about such cross-generation references.
+
+A write barrier records or handles relevant reference updates.
+
+Conceptually:
+
+    Old object
+        |
+      write
+        ↓
+    Barrier
+        ↓
+    Remembered information
+
+============================================================
+41. REMEMBERED SET
+============================================================
+
+A remembered set records relevant references, commonly including
+references from one region/generation to another.
+
+Purpose:
+
+    Help GC find roots/references into the region being collected
+    without scanning the entire heap.
+
+Example:
+
+    Old → Young
+
+The collector needs to remember that this reference exists.
+
+============================================================
+42. TRACING GARBAGE COLLECTION
+============================================================
+
+Tracing collectors determine liveness by following references
+starting from roots.
+
+Main idea:
+
+    Roots
+      ↓
+    Follow references
+      ↓
+    Mark reachable objects
+      ↓
+    Unreachable objects = garbage
+
+Examples:
+
+    • Mark-and-sweep
+    • Mark-and-compact
+    • Copying collectors
+
+============================================================
+43. REFERENCE COUNTING vs TRACING
+============================================================
+
+REFERENCE COUNTING:
+
+    Track number of references to each object.
+
+Main weakness:
+
+    Cycles.
+
+TRACING:
+
+    Start from roots and follow references.
+
+Main advantage:
+
+    Can collect unreachable cycles.
+
+Memory trick:
+
+    REFERENCE COUNTING
+        ↓
+    "How many references point here?"
+
+    TRACING
+        ↓
+    "Can I reach this from a root?"
+
+============================================================
+44. FINALIZATION
+============================================================
+
+Some systems/languages may provide mechanisms related to
+finalization or cleanup before an object is reclaimed.
+
+However:
+
+    Memory reclamation
+        ≠
+    General resource management
+
+Resources such as:
+
+    • Files
+    • Sockets
+    • Locks
+    • Database connections
+
+often should be released using explicit/deterministic
+resource-management mechanisms rather than relying on GC timing.
+
+============================================================
+45. GC DOES NOT MANAGE EVERY RESOURCE
+============================================================
+
+Garbage collector primarily manages:
+
+    MEMORY
+
+It does not automatically mean:
+
+    file closed
+    socket closed
+    lock released
+    database connection closed
+
+Therefore:
+
+    Memory management
+        ≠
+    Resource management
+
+IMPORTANT INTERVIEW POINT.
+
+============================================================
+46. ALLOCATION STRATEGIES
+============================================================
+
+GC systems often use allocation techniques designed for speed.
+
+One common approach:
+
+    Bump-pointer allocation
+
+Conceptually:
+
+    +-----------------------------+
+    | Object | Object | Object |  |
+    +-----------------------------+
+                         ^
+                         |
+                    next free
+
+Allocate by moving a pointer forward.
+
+Example:
+
+    next_free += object_size
+
+This can make allocation very fast when the heap region is
+appropriately organized.
+
+============================================================
+47. BUMP-POINTER ALLOCATION
+============================================================
+
+Before:
+
+    [A][B][C][FREE................]
+                  ^
+                pointer
+
+Allocate object D:
+
+    [A][B][C][D][FREE.............]
+                      ^
+                    pointer
+
+This is especially convenient in compact/copying or
+region-oriented allocation schemes.
+
+============================================================
+48. TLAB
+============================================================
+
+TLAB = Thread-Local Allocation Buffer.
+
+A thread receives a private allocation region.
+
+Conceptually:
+
+    Heap
+     |
+     +---- Thread 1 TLAB
+     |
+     +---- Thread 2 TLAB
+     |
+     +---- Thread 3 TLAB
+
+Benefits:
+
+    • Fast thread-local allocation
+    • Less contention for a shared allocation pointer
+
+This is common in modern managed runtimes, although exact
+implementation details vary.
+
+============================================================
+49. OBJECT GRAPH
+============================================================
+
+Heap objects can be represented as a directed graph.
+
+Example:
+
+            Root
+              |
+              v
+              A
+            /   \
+           v     v
+           B     C
+           |     |
+           v     v
+           D     E
+
+Nodes:
+
+    Objects
+
+Edges:
+
+    References
+
+Roots:
+
+    Starting nodes
+
+Garbage collection is fundamentally a graph-reachability
+problem for tracing collectors.
+
+============================================================
+50. CYCLE IN OBJECT GRAPH
+============================================================
+
+Example:
+
+    Root
+
+    A → B
+    ↑   |
+    |   v
+    +---+
+
+If there is no root path to A:
+
+    A and B are unreachable.
+
+Tracing collector:
+
+    Does not start from A/B
+        ↓
+    Neither is marked
+        ↓
+    Both reclaimed
+
+Reference counting:
+
+    A and B may keep each other's counts nonzero.
+
+============================================================
+51. TRI-COLOR ABSTRACTION
+============================================================
+
+The tri-color abstraction is a conceptual model used to reason
+about tracing collectors.
+
+Three sets:
+
+    WHITE
+    GRAY
+    BLACK
+
+------------------------------------------------------------
+WHITE
+------------------------------------------------------------
+
+Object has not yet been discovered.
+
+------------------------------------------------------------
+GRAY
+------------------------------------------------------------
+
+Object has been discovered, but its outgoing references have
+not all been processed.
+
+------------------------------------------------------------
+BLACK
+------------------------------------------------------------
+
+Object has been processed and its relevant outgoing references
+have been scanned.
+
+============================================================
+52. TRI-COLOR EXAMPLE
+============================================================
+
+Initially:
+
+    All objects = WHITE
+
+Start from root:
+
+    Root → A
+
+A becomes:
+
+    GRAY
+
+Process A.
+
+Its children:
+
+    B, C
+
+become:
+
+    GRAY
+
+After scanning A:
+
+    A = BLACK
+
+Then process B/C.
+
+Eventually:
+
+    Reachable objects = BLACK
+    Unreachable objects = WHITE
+
+WHITE objects can be reclaimed in the corresponding collection
+phase.
+
+============================================================
+53. TRI-COLOR INCREMENTAL/CONCURRENT GC
+============================================================
+
+Tri-color reasoning becomes particularly important when the
+mutator (application) changes references while GC is running.
+
+The collector must maintain correctness despite:
+
+    Application changes
+          +
+    Collector traversal
+
+Barriers can help preserve required invariants.
+
+============================================================
+54. MUTATOR
+============================================================
+
+In garbage collection terminology:
+
+    MUTATOR
+
+means the application/program that modifies the object graph.
+
+Example:
+
+    Program creates object
+    Program changes reference
+    Program removes reference
+
+These actions are performed by the mutator.
+
+Therefore:
+
+    Mutator = application code
+    Collector = garbage collector
+
+============================================================
+55. READ BARRIER
+============================================================
+
+A read barrier performs special handling when a reference is
+read.
+
+It may be used by some advanced collectors to maintain
+correctness while objects are being moved or while collection
+occurs concurrently.
+
+Not every garbage collector requires the same barrier strategy.
+
+============================================================
+56. WRITE BARRIER
+============================================================
+
+A write barrier performs special handling when a reference is
+written.
+
+Example:
+
+    oldObject.field = youngObject;
+
+A barrier can record this update or enforce an invariant required
+by the collector.
+
+Write barriers are important in:
+
+    • Generational GC
+    • Concurrent GC
+    • Incremental GC
+
+depending on the algorithm.
+
+============================================================
+57. COMPACTION
+============================================================
+
+Compaction moves live objects together.
+
+Before:
+
+    [A][FREE][B][FREE][C][FREE]
+
+After:
+
+    [A][B][C][FREE][FREE][FREE]
+
+Benefits:
+
+    • Reduces fragmentation.
+    • Makes contiguous allocation easier.
+    • Can improve locality.
+
+Cost:
+
+    • Objects may need to move.
+    • References must be updated.
+    • Moving objects can require significant work.
+
+============================================================
+58. OBJECT MOVEMENT
+============================================================
+
+If object A moves:
+
+Before:
+
+    p → A
+
+After:
+
+    p → new_location_of_A
+
+Every reference to A must remain correct.
+
+Therefore a moving collector needs a mechanism to update
+references or otherwise maintain their validity.
+
+============================================================
+59. COPYING vs COMPACTION
+============================================================
+
+COPYING:
+
+    Copy live objects from one region to another.
+
+COMPACTION:
+
+    Move live objects within/into an organized region to reduce
+    fragmentation.
+
+Both can produce compact layouts.
+
+But their memory organization and implementation strategies
+differ.
+
+============================================================
+60. FRAGMENTATION COMPARISON
+============================================================
+
+Mark-and-sweep:
+
+    [LIVE][FREE][LIVE][FREE][LIVE]
+
+Potential fragmentation:
+    YES
+
+Mark-and-compact:
+
+    [LIVE][LIVE][LIVE][FREE][FREE]
+
+Fragmentation:
+    Reduced
+
+Copying:
+
+    [LIVE][LIVE][LIVE][FREE...]
+
+Fragmentation:
+    Reduced in the target region.
+
+============================================================
+61. GC LATENCY vs THROUGHPUT
+============================================================
+
+Two important performance goals:
+
+THROUGHPUT:
+
+    Amount of useful application work completed relative to
+    total execution time.
+
+LATENCY:
+
+    How quickly individual operations/responses complete.
+
+A collector optimized for throughput may tolerate longer pauses.
+
+A collector optimized for low latency attempts to minimize
+application pauses.
+
+There is often a trade-off.
+
+============================================================
+62. GC OVERHEAD
+============================================================
+
+Garbage collection consumes:
+
+    • CPU time
+    • Memory
+    • Metadata
+    • Possibly synchronization/barrier overhead
+
+Therefore:
+
+    GC is not free.
+
+A good collector attempts to balance:
+
+    Memory usage
+    +
+    CPU overhead
+    +
+    Pause time
+    +
+    Application throughput
+
+============================================================
+63. ALLOCATION RATE
+============================================================
+
+Allocation rate means how quickly a program creates new objects.
+
+High allocation rate:
+
+    More heap usage
+        ↓
+    More frequent GC pressure
+
+Example:
+
+    Program creates millions of temporary objects per second.
+
+The runtime must efficiently allocate and reclaim memory.
+
+============================================================
+64. OBJECT LIFETIME
+============================================================
+
+Object lifetime:
+
+    Time from allocation
+        ↓
+    until it becomes unreachable/reclaimed
+
+Short-lived objects:
+
+    Usually die quickly.
+
+Long-lived objects:
+
+    Remain reachable for a long time.
+
+Generational GC takes advantage of the observation that many
+objects are short-lived.
+
+============================================================
+65. PROMOTION
+============================================================
+
+Promotion means moving an object from a younger generation to an
+older generation because it survived enough collections or met
+other criteria.
+
+Conceptually:
+
+    Young
+      |
+      | survives
+      v
+    Survivor
+      |
+      | survives
+      v
+    Old
+
+Exact rules depend on the runtime.
+
+============================================================
+66. TENURING
+============================================================
+
+Tenuring is the process of treating an object as belonging to an
+older/long-lived generation after sufficient survival.
+
+Simple idea:
+
+    survives repeatedly
+         ↓
+    considered long-lived
+         ↓
+    move/promote to old generation
+
+============================================================
+67. GENERATIONAL GC — GATE CONCEPT
+============================================================
+
+Question:
+
+Why does generational GC work well?
+
+Answer:
+
+Because many programs exhibit:
+
+    HIGH RATE OF YOUNG OBJECT DEATH
+
+Therefore collecting young objects frequently can reclaim lots
+of garbage without scanning all old objects every time.
+
+============================================================
+68. GC ALGORITHM COMPARISON
+============================================================
+
+REFERENCE COUNTING:
+
+    Tracks reference counts.
+
+Main issue:
+    Cycles.
+
+MARK-SWEEP:
+
+    Mark reachable objects.
+    Sweep unreachable objects.
+
+Main issue:
+    Fragmentation.
+
+MARK-COMPACT:
+
+    Mark + move live objects together.
+
+Main benefit:
+    Reduced fragmentation.
+
+COPYING:
+
+    Copy live objects to another region.
+
+Main benefit:
+    Compact live layout.
+
+GENERATIONAL:
+
+    Divide objects by age/generation.
+
+Main benefit:
+    Exploits short object lifetimes.
+
+INCREMENTAL:
+
+    Break GC work into smaller units.
+
+Main goal:
+    Reduce pause duration.
+
+CONCURRENT:
+
+    GC overlaps with application execution.
+
+Main goal:
+    Reduce stop-the-world time.
+
+============================================================
+69. IMPORTANT TERMINOLOGY
+============================================================
+
+GC ROOT:
+    Starting reference used for reachability analysis.
+
+LIVE OBJECT:
+    Reachable from roots.
+
+GARBAGE:
+    Unreachable object.
+
+MUTATOR:
+    Application program modifying objects.
+
+MARK:
+    Identify reachable objects.
+
+SWEEP:
+    Reclaim unmarked objects.
+
+COMPACTION:
+    Move live objects together.
+
+PROMOTION:
+    Move surviving objects to older generation.
+
+BARRIER:
+    Special operation used to maintain GC correctness/information
+    during reference updates or accesses.
+
+REMEMBERED SET:
+    Records relevant cross-region/generation references.
+
+============================================================
+70. GARBAGE COLLECTION AND COMPILER
+============================================================
+
+Garbage collection is mainly a runtime activity, but the
+compiler and runtime cooperate.
+
+Compiler may provide information about:
+
+    • Object layouts
+    • Pointer/reference locations
+    • Stack maps
+    • Safepoints
+    • Type information
+    • Write barriers
+
+Runtime performs:
+
+    • Allocation
+    • Collection
+    • Object movement
+    • Reference updating
+    • Heap management
+
+Therefore:
+
+    Compiler + Runtime
+          ↓
+    Managed memory system
+
+============================================================
+71. PRECISE GC
+============================================================
+
+A precise garbage collector can distinguish references/pointers
+from non-reference data accurately.
+
+Example:
+
+    Stack frame contains:
+
+    x = 10
+    p = reference to Object
+
+GC needs to know:
+
+    p → object reference
+
+but:
+
+    x → ordinary integer
+
+Compiler-generated metadata can help the runtime identify
+reference locations.
+
+============================================================
+72. STACK MAPS
+============================================================
+
+A stack map describes information about which locations in a
+stack frame/register set contain references at particular
+execution points.
+
+Example:
+
+    Stack:
+        x = integer
+        p = reference
+        y = integer
+
+Stack map:
+
+    p → reference
+
+This helps a precise collector find roots accurately.
+
+============================================================
+73. SAFEPOINT
+============================================================
+
+A safepoint is a program execution point at which the runtime
+can safely perform certain GC/runtime operations.
+
+At a safepoint, the runtime can know enough about:
+
+    • Registers
+    • Stack
+    • References
+    • Program state
+
+to perform GC safely.
+
+This is particularly important in managed runtimes.
+
+============================================================
+74. GC AND JIT
+============================================================
+
+JIT = Just-In-Time compilation.
+
+A JIT compiler generates machine code while the program runs.
+
+GC and JIT cooperate because JIT-generated code must provide
+correct information about references.
+
+Example:
+
+    JIT code
+       ↓
+    Stack maps / safepoints
+       ↓
+    GC identifies live references
+       ↓
+    Heap objects safely managed
+
+============================================================
+75. GC AND OPTIMIZATION
+============================================================
+
+Compiler optimization can affect object/reference behavior.
+
+Examples:
+
+    • Escape analysis
+    • Scalar replacement
+    • Allocation elimination
+    • Object lifetime analysis
+
+If the compiler proves that an object does not escape and can
+replace it with scalar values, heap allocation may potentially
+be eliminated.
+
+Conceptually:
+
+    Object allocation
+          ↓
+    Escape analysis
+          ↓
+    Object does not escape
+          ↓
+    Scalar replacement
+          ↓
+    No heap object needed
+
+This reduces GC pressure.
+
+============================================================
+76. ESCAPE ANALYSIS EXAMPLE
+============================================================
+
+Conceptual code:
+
+    Point p = new Point(10, 20);
+
+    return p.x + p.y;
+
+If the compiler can prove that p never escapes the function,
+it may represent:
+
+    x = 10
+    y = 20
+
+without actually allocating a heap object.
+
+Then:
+
+    Heap allocation ↓
+    GC pressure ↓
+
+This is an advanced compiler-runtime optimization.
+
+============================================================
+77. ALLOCATION ELIMINATION
+============================================================
+
+If an allocated object has no observable need to exist as an
+actual heap object, the compiler may eliminate the allocation.
+
+Example concept:
+
+    create object
+       ↓
+    use only locally
+       ↓
+    object never escapes
+       ↓
+    replace with scalar values
+       ↓
+    eliminate allocation
+
+This is often connected to:
+
+    Escape analysis
+    Scalar replacement
+
+============================================================
+78. GARBAGE COLLECTION — PRACTICAL EXAMPLE
+============================================================
+
+Suppose:
+
+    A = new Object()
+    B = new Object()
+    C = new Object()
+
+References:
+
+    Root → A
+    A → B
+
+C has no path from any root.
+
+Object graph:
+
+    Root
+      |
+      v
+      A → B
+
+    C
+
+Reachable:
+
+    A, B
+
+Garbage:
+
+    C
+
+GC can reclaim C.
+
+============================================================
+79. PRACTICAL MARK-SWEEP EXAMPLE
+============================================================
+
+Heap:
+
+    Object A
+    Object B
+    Object C
+    Object D
+
+References:
+
+    Root → A
+    A → B
+    C → D
+
+But there is no root → C.
+
+MARK:
+
+    A = marked
+    B = marked
+
+C and D remain unmarked.
+
+SWEEP:
+
+    C → reclaimed
+    D → reclaimed
+
+Final:
+
+    A and B remain.
+
+============================================================
+80. PRACTICAL REFERENCE COUNTING EXAMPLE
+============================================================
+
+Initially:
+
+    p → A
+
+    RC(A) = 1
+
+Then:
+
+    q → A
+
+    RC(A) = 2
+
+Remove p:
+
+    RC(A) = 1
+
+Remove q:
+
+    RC(A) = 0
+
+Therefore:
+
+    A can be reclaimed.
+
+============================================================
+81. PRACTICAL CYCLE EXAMPLE
+============================================================
+
+    A → B
+    B → A
+
+Reference counts:
+
+    RC(A) = 1
+    RC(B) = 1
+
+Remove all external references.
+
+Still:
+
+    RC(A) = 1
+    RC(B) = 1
+
+Basic reference counting does not reclaim them.
+
+Tracing collector:
+
+    No root reaches A or B
+        ↓
+    A/B unmarked
+        ↓
+    Reclaim A/B
+
+============================================================
+82. GATE TRAP #1
+============================================================
+
+Question:
+
+Which garbage collection technique suffers from the classic
+cyclic-reference problem?
+
+Answer:
+
+    Basic reference counting.
+
+Remember:
+
+    Reference counting → cycles are the major problem.
+
+============================================================
+83. GATE TRAP #2
+============================================================
+
+Question:
+
+Which GC technique can naturally reclaim unreachable cycles?
+
+Answer:
+
+    Tracing collectors such as mark-and-sweep.
+
+Reason:
+
+    They determine reachability from roots rather than relying
+    only on local reference counts.
+
+============================================================
+84. GATE TRAP #3
+============================================================
+
+Question:
+
+What does the MARK phase do?
+
+Answer:
+
+    Identifies reachable/live objects.
+
+What does SWEEP do?
+
+Answer:
+
+    Reclaims unmarked objects.
+
+Memory trick:
+
+    MARK = FIND LIVE
+    SWEEP = REMOVE DEAD
+
+============================================================
+85. GATE TRAP #4
+============================================================
+
+Question:
+
+Which technique reduces fragmentation by moving live objects
+together?
+
+Answer:
+
+    Mark-and-compact.
+
+============================================================
+86. GATE TRAP #5
+============================================================
+
+Question:
+
+Why is generational GC effective?
+
+Answer:
+
+    Because many objects tend to die young.
+
+============================================================
+87. GATE TRAP #6
+============================================================
+
+Question:
+
+What is the purpose of a write barrier?
+
+Answer:
+
+    To record or enforce information needed when references are
+    modified, especially for generational/concurrent/incremental
+    collectors.
+
+============================================================
+88. GATE TRAP #7
+============================================================
+
+Question:
+
+What is a GC root?
+
+Answer:
+
+    A starting reference/location from which the collector
+    determines object reachability.
+
+============================================================
+89. GATE TRAP #8
+============================================================
+
+Question:
+
+What is the major disadvantage of a copying collector?
+
+Answer:
+
+    It requires extra space in the basic copying design and
+    moves live objects.
+
+============================================================
+90. GATE TRAP #9
+============================================================
+
+Question:
+
+What is the difference between incremental and concurrent GC?
+
+Answer:
+
+    Incremental:
+        GC work is divided into smaller portions.
+
+    Concurrent:
+        GC work overlaps with application execution.
+
+============================================================
+91. GATE TRAP #10
+============================================================
+
+Question:
+
+Which technique can eliminate some heap allocations by proving
+that an object does not escape?
+
+Answer:
+
+    Escape analysis, often combined with scalar replacement.
+
+============================================================
+92. INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is garbage collection?
+
+Answer:
+Automatic reclamation of heap memory that is no longer reachable
+or otherwise considered reclaimable by the memory-management
+algorithm.
+
+------------------------------------------------------------
+
+Q2. What is garbage?
+
+Answer:
+An allocated object that cannot be reached from the relevant GC
+roots.
+
+------------------------------------------------------------
+
+Q3. What is a GC root?
+
+Answer:
+A runtime reference/location from which the collector starts
+reachability analysis.
+
+------------------------------------------------------------
+
+Q4. Explain mark-and-sweep.
+
+Answer:
+The collector first marks reachable objects from roots and then
+sweeps through the heap to reclaim unmarked objects.
+
+------------------------------------------------------------
+
+Q5. What is the main problem with reference counting?
+
+Answer:
+Basic reference counting cannot reclaim cycles whose objects
+keep references to one another.
+
+------------------------------------------------------------
+
+Q6. What is compaction?
+
+Answer:
+Moving live objects together to reduce heap fragmentation.
+
+------------------------------------------------------------
+
+Q7. What is generational garbage collection?
+
+Answer:
+A technique that divides objects by age/generation and usually
+collects younger generations more frequently.
+
+------------------------------------------------------------
+
+Q8. Why do generational collectors work well?
+
+Answer:
+Many objects are short-lived, so collecting young objects
+frequently can reclaim a large amount of garbage efficiently.
+
+------------------------------------------------------------
+
+Q9. What is a stop-the-world pause?
+
+Answer:
+A period during which application execution is paused while GC
+performs required work.
+
+------------------------------------------------------------
+
+Q10. What is a write barrier?
+
+Answer:
+A mechanism executed/used when references are written so that
+the collector can maintain required information or invariants.
+
+------------------------------------------------------------
+
+Q11. What is escape analysis?
+
+Answer:
+An analysis that determines whether an object/reference can
+escape a particular scope or context.
+
+------------------------------------------------------------
+
+Q12. How can escape analysis help GC?
+
+Answer:
+If an object is proven not to escape, the compiler may eliminate
+or replace its heap allocation, reducing GC pressure.
+
+------------------------------------------------------------
+
+Q13. What is the difference between stack and heap?
+
+Answer:
+The stack commonly stores call-related data and local execution
+state, while the heap commonly stores dynamically allocated
+objects.
+
+------------------------------------------------------------
+
+Q14. Does garbage collection eliminate all memory leaks?
+
+Answer:
+No. Reachable but unnecessary objects can still consume memory
+because the collector cannot generally reclaim objects that
+remain reachable.
+
+============================================================
+93. MOST IMPORTANT COMPARISON TABLE
+============================================================
+
++-------------------+-------------------------------+
+| Technique         | Main Idea                     |
++-------------------+-------------------------------+
+| Reference count   | Count references              |
+| Mark-sweep        | Mark live, sweep dead         |
+| Mark-compact      | Mark and compact live objects |
+| Copying           | Copy live objects             |
+| Generational      | Divide by object age          |
+| Incremental       | Break GC work into pieces     |
+| Concurrent        | GC overlaps with application  |
++-------------------+-------------------------------+
+
+============================================================
+94. GC MEMORY TRICKS
+============================================================
+
+REFERENCE COUNTING:
+
+    "COUNT references"
+
+MARK-SWEEP:
+
+    "MARK live → SWEEP dead"
+
+MARK-COMPACT:
+
+    "MARK → MOVE live together"
+
+COPYING:
+
+    "COPY live → new space"
+
+GENERATIONAL:
+
+    "Young dies young"
+
+INCREMENTAL:
+
+    "Small GC steps"
+
+CONCURRENT:
+
+    "GC + application together"
+
+ROOT:
+
+    "Where tracing starts"
+
+WHITE:
+
+    "Not discovered"
+
+GRAY:
+
+    "Discovered, not fully processed"
+
+BLACK:
+
+    "Processed"
+
+MUTATOR:
+
+    "Program changes objects"
+
+BARRIER:
+
+    "Watch/control reference changes"
+
+============================================================
+95. COMPLETE GC CONCEPT MAP
+============================================================
+
+                    GARBAGE COLLECTION
+                           |
+          +----------------+----------------+
+          |                |                |
+          v                v                v
+      REACHABILITY       STRATEGIES       PERFORMANCE
+          |                |                |
+          |          +-----+------+         |
+          |          |     |      |         |
+          |          v     v      v         v
+        ROOTS       RC   TRACE   COPY     Pause
+          |               |               Throughput
+          v               |               Latency
+       Objects            |
+          |         +-----+------+
+          |         |            |
+          v         v            v
+       LIVE      Mark-Sweep  Mark-Compact
+          |
+          v
+      GARBAGE
+
+       GENERATIONAL
+             |
+       +-----+------+
+       |            |
+     Young         Old
+       |
+       v
+   Frequent GC
+
+       ADVANCED
+          |
+     +----+----+
+     |         |
+ Incremental Concurrent
+     |         |
+     +----+----+
+          |
+       Barriers
+          |
+       Safepoints
+          |
+      Stack Maps
+
+============================================================
+96. CHAPTER 35 — ONE-PAGE REVISION
+============================================================
+
+Garbage Collection
+        ↓
+Automatic heap-memory reclamation
+        ↓
+Find unreachable objects
+        ↓
+Reclaim memory
+
+CORE CONCEPT:
+
+    GC Roots
+       ↓
+    Reachability
+       ↓
+    Live Objects
+
+    Not reachable
+       ↓
+    Garbage
+
+MAIN ALGORITHMS:
+
+    Reference Counting
+        ↓
+    Easy but cycles are a problem
+
+    Mark-Sweep
+        ↓
+    Mark reachable + sweep unreachable
+
+    Mark-Compact
+        ↓
+    Mark + move live objects together
+
+    Copying
+        ↓
+    Copy live objects to another region
+
+    Generational
+        ↓
+    Exploit short-lived objects
+
+ADVANCED:
+
+    Incremental
+    Concurrent
+    Tri-color abstraction
+    Write barriers
+    Remembered sets
+    Safepoints
+    Stack maps
+
+COMPILER CONNECTION:
+
+    Escape Analysis
+         ↓
+    Scalar Replacement
+         ↓
+    Allocation Elimination
+         ↓
+    Lower GC Pressure
+
+============================================================
+97. CHAPTER 35 — EXAM CHECKLIST
+============================================================
+
+[✓] Garbage collection
+[✓] Garbage definition
+[✓] Heap management
+[✓] GC roots
+[✓] Reachability
+[✓] Live objects
+[✓] Reference counting
+[✓] Cyclic references
+[✓] Mark-and-sweep
+[✓] Mark phase
+[✓] Sweep phase
+[✓] Mark-and-compact
+[✓] Fragmentation
+[✓] Copying collection
+[✓] Stop-the-world GC
+[✓] Incremental GC
+[✓] Concurrent GC
+[✓] Generational GC
+[✓] Young/old generations
+[✓] Survivor spaces
+[✓] Promotion
+[✓] Write barriers
+[✓] Remembered sets
+[✓] Tri-color abstraction
+[✓] Mutator
+[✓] Read/write barriers
+[✓] Bump-pointer allocation
+[✓] TLAB
+[✓] Precise GC
+[✓] Stack maps
+[✓] Safepoints
+[✓] GC + JIT
+[✓] Escape analysis
+[✓] Allocation elimination
+[✓] GATE traps
+[✓] Interview questions
+
+============================================================
+98. MASTER CONNECTION
+============================================================
+
+Chapter 22:
+    Runtime Storage
+         ↓
+    Heap
+         ↓
+Chapter 23:
+    Activation Records
+         ↓
+Chapter 24:
+    Procedure Calls
+         ↓
+Chapter 25:
+    Recursion & Scope
+         ↓
+Chapter 30–34:
+    Optimization
+         ↓
+Chapter 35:
+    Garbage Collection
+         ↓
+    Runtime memory management
+         ↓
+Chapter 36:
+    Modern Compiler Architecture
+
+============================================================
+99. FINAL 10 FACTS TO MEMORIZE
+============================================================
+
+1. GC mainly manages dynamically allocated heap memory.
+
+2. Garbage is memory that is unreachable under the collector's
+   reachability rules.
+
+3. GC roots are starting points for tracing.
+
+4. Reference counting tracks references but has a cycle problem.
+
+5. Mark-and-sweep marks reachable objects and reclaims the rest.
+
+6. Mark-and-compact reduces fragmentation by moving live objects.
+
+7. Copying collectors copy live objects into another region.
+
+8. Generational GC exploits the fact that many objects die young.
+
+9. Incremental/concurrent techniques aim to reduce application
+   pause impact.
+
+10. Escape analysis can help eliminate unnecessary allocations
+    and reduce GC pressure.
+
+============================================================
+END OF CHAPTER 35
+============================================================
+
+NEXT CHAPTER:
+Chapter 36 — Modern Compiler Architecture
+
+Topics include:
+• Front end / middle end / back end
+• SSA in modern compilers
+• LLVM architecture
+• GCC architecture
+• JVM bytecode
+• JIT compilation
+• Modern compiler pipelines
+• Compiler IR in real-world systems
+============================================================3

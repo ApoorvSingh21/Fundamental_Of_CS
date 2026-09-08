@@ -1,0 +1,2504 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║ CHAPTER 14 — PARSER GENERATORS                                     ║
+║ Compiler Design — Beginner → GATE → Interview → Practical          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A parser is a compiler component that checks whether a sequence of
+tokens follows the grammar of a programming language.
+
+In previous chapters we studied:
+
+Chapter 9  → Context-Free Grammar
+Chapter 10 → Grammar Transformations
+Chapter 11 → Top-Down Parsing
+Chapter 12 → Bottom-Up Parsing
+Chapter 13 → LR Parsing
+
+Now we study:
+
+CHAPTER 14 → PARSER GENERATORS
+
+
+A parser generator is a software tool that automatically generates
+a parser from a formal grammar specification.
+
+Instead of manually writing thousands of lines of parser code,
+we provide:
+
+    Grammar
+       ↓
+    Parser Generator
+       ↓
+    Parser
+
+
+Important parser generators/tools:
+
+• Yacc
+• GNU Bison
+
+Lexer generators commonly used with them:
+
+• Lex
+• Flex
+
+
+Typical combination:
+
+Lex/Flex
+   ↓
+Tokens
+   ↓
+Yacc/Bison
+   ↓
+Parser
+   ↓
+Semantic Actions
+   ↓
+AST / Intermediate Representation
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHY DO WE NEED PARSER GENERATORS?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose we want to create a parser for a programming language.
+
+A manual parser may require:
+
+• Hundreds/thousands of lines of code
+• Token handling
+• Grammar implementation
+• Error handling
+• State management
+• Shift/reduce logic
+• Semantic actions
+
+
+This is difficult and error-prone.
+
+A parser generator automates much of this work.
+
+We provide:
+
+    Grammar rules
+    +
+    Tokens
+    +
+    Semantic actions
+
+and the tool generates:
+
+    Parser source code
+
+
+Therefore:
+
+MANUAL PARSER:
+
+Grammar
+   ↓
+Programmer manually implements parser
+   ↓
+Parser
+
+
+PARSER GENERATOR:
+
+Grammar specification
+   ↓
+Parser generator
+   ↓
+Automatically generated parser
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. WHAT IS YACC?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+YACC stands for:
+
+YET ANOTHER COMPILER-COMPILER
+
+
+Yacc is a parser generator traditionally used to generate
+bottom-up parsers from context-free grammars.
+
+It was developed at Bell Labs.
+
+
+Conceptually:
+
+Grammar Specification
+        ↓
+       Yacc
+        ↓
+Generated Parser
+        ↓
+Parser recognizes token sequence
+
+
+Yacc is historically associated with:
+
+LALR(1) parsing.
+
+
+Important exam point:
+
+Yacc traditionally generates an LALR(1)-based parser.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. WHAT IS BISON?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GNU Bison is a parser generator from the GNU project.
+
+It is compatible with the traditional Yacc style and provides
+additional features.
+
+Conceptually:
+
+Yacc
+  ↓
+traditional parser generator
+
+Bison
+  ↓
+GNU parser generator
+  ↓
+Yacc-compatible grammar style
+  ↓
+additional capabilities
+
+
+Bison is widely used for generating parsers in C/C++ and related
+environments.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. YACC VS BISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+YACC:
+
+• Traditional Unix parser generator
+• Generates bottom-up parsers
+• Historically LALR-based
+• Grammar specification based
+
+
+BISON:
+
+• GNU parser generator
+• Yacc-compatible
+• Provides additional parser-generation features
+• Commonly used with Flex
+
+
+Simple memory:
+
+YACC
+→ traditional parser generator
+
+
+BISON
+→ GNU/Yacc-compatible parser generator
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. WHAT DOES A PARSER GENERATOR TAKE AS INPUT?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A parser generator generally receives a grammar specification.
+
+The specification can contain:
+
+1. Token declarations
+2. Grammar productions
+3. Semantic actions
+4. Supporting code
+5. Parser configuration/directives
+
+
+Conceptually:
+
+    Tokens
+      +
+    Grammar
+      +
+    Semantic Actions
+      +
+    Supporting Code
+      ↓
+Parser Generator
+      ↓
+Generated Parser
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. PARSER GENERATOR WORKFLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A simplified workflow:
+
+        SOURCE PROGRAM
+              │
+              ▼
+        LEXICAL ANALYZER
+          Lex / Flex
+              │
+              ▼
+            TOKENS
+              │
+              ▼
+       PARSER GENERATOR
+         Yacc / Bison
+              │
+              ▼
+        GENERATED PARSER
+              │
+              ▼
+       SEMANTIC ACTIONS
+              │
+              ▼
+          AST / IR
+
+
+More precisely:
+
+Source
+  ↓
+Flex/Lex
+  ↓
+yylex()
+  ↓
+Tokens
+  ↓
+yyparse()
+  ↓
+Yacc/Bison parser
+  ↓
+Semantic actions
+  ↓
+AST / semantic structures
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. LEX + YACC ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+One of the most important practical combinations is:
+
+LEX + YACC
+
+
+Lex performs:
+
+LEXICAL ANALYSIS
+
+
+Yacc performs:
+
+SYNTAX ANALYSIS
+
+
+Architecture:
+
+        SOURCE CODE
+             │
+             ▼
+          LEX/FLEX
+             │
+             ▼
+           TOKENS
+             │
+             ▼
+         YACC/BISON
+             │
+             ▼
+           PARSER
+             │
+             ▼
+      SEMANTIC ACTIONS
+             │
+             ▼
+          AST / IR
+
+
+Memory:
+
+LEX
+→ Tokens
+
+
+YACC
+→ Grammar / Parsing
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. ROLE OF THE LEXER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The lexer converts characters into tokens.
+
+Example source:
+
+    x = 10 + 20;
+
+
+Possible tokens:
+
+IDENTIFIER(x)
+ASSIGN(=)
+NUMBER(10)
+PLUS(+)
+NUMBER(20)
+SEMICOLON(;)
+
+
+The parser does not normally need to process every individual
+character.
+
+It works with tokens.
+
+
+Therefore:
+
+Characters
+   ↓
+Lexer
+   ↓
+Tokens
+   ↓
+Parser
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. ROLE OF THE PARSER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The parser receives tokens and checks their grammatical structure.
+
+Suppose:
+
+    x = 10 + 20;
+
+
+Tokens:
+
+id = num + num ;
+
+
+Grammar:
+
+stmt → id = expr ;
+expr → expr + num
+     | num
+
+
+The parser determines whether the token sequence follows
+the grammar.
+
+
+If valid:
+
+    Parse successful
+
+
+If invalid:
+
+    Syntax error
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. BASIC YACC/BISON FILE STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A traditional Yacc/Bison grammar file is divided into three
+major sections.
+
+General structure:
+
+    declarations
+    %%
+    grammar rules
+    %%
+    supporting C/C++ code
+
+
+So:
+
+SECTION 1:
+Declarations
+
+
+SECTION 2:
+Grammar rules + semantic actions
+
+
+SECTION 3:
+Additional supporting code
+
+
+The delimiter is:
+
+%%
+
+
+Therefore:
+
+Declarations
+%%
+Grammar rules
+%%
+Supporting code
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. DECLARATION SECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The declaration section can contain things such as:
+
+• Token declarations
+• Type declarations
+• Semantic value definitions
+• Supporting declarations
+• Parser directives
+
+
+Example:
+
+%token NUMBER
+%token PLUS
+
+
+This tells the parser generator that:
+
+NUMBER
+
+and:
+
+PLUS
+
+are tokens.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. TOKEN DECLARATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A parser needs to know which terminal symbols it can receive.
+
+Example:
+
+%token ID
+%token NUMBER
+%token PLUS
+%token MINUS
+
+
+The lexer returns these token types.
+
+Conceptually:
+
+Lexer sees:
+
+123
+
+and returns:
+
+NUMBER
+
+
+Lexer sees:
+
++
+
+and returns:
+
+PLUS
+
+
+Therefore:
+
+LEXER
+→ returns token
+
+PARSER
+→ consumes token
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. GRAMMAR RULE SECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar productions are written in the grammar section.
+
+Example:
+
+expr:
+      expr '+' expr
+    | expr '*' expr
+    | NUMBER
+    ;
+
+
+This represents:
+
+expr → expr + expr
+     | expr * expr
+     | NUMBER
+
+
+The:
+
+|
+
+means:
+
+OR
+
+
+The:
+
+;
+
+marks the end of the production rule.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. SIMPLE YACC/BISON EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+%token NUMBER
+
+%%
+
+expr:
+      expr '+' expr
+    | NUMBER
+    ;
+
+%%
+
+
+Meaning:
+
+There is one non-terminal:
+
+expr
+
+
+Productions:
+
+expr → expr + expr
+
+expr → NUMBER
+
+
+The parser generator uses this grammar to construct the parser.
+
+
+IMPORTANT:
+
+This simple grammar can have ambiguity depending on the complete
+grammar and parser configuration.
+
+For real expression grammars, precedence/associativity or a
+properly structured grammar is commonly used.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. SEMANTIC ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A semantic action is code associated with a grammar production.
+
+Example:
+
+expr:
+      expr '+' expr
+      {
+          /* semantic action */
+      }
+    ;
+
+
+When the parser reduces:
+
+expr → expr + expr
+
+
+the associated action can execute.
+
+
+Semantic actions can be used to:
+
+• Build an AST
+• Calculate values
+• Perform semantic processing
+• Build symbol-table information
+• Generate intermediate code
+• Perform other compiler-related operations
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. SYNTAX VS SEMANTIC ACTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+expr → expr + expr
+
+
+defines:
+
+SYNTAX
+
+
+An action associated with the production:
+
+{
+    $$ = $1 + $3;
+}
+
+
+defines:
+
+SEMANTIC PROCESSING
+
+
+Therefore:
+
+Grammar rule
+→ describes structure
+
+
+Semantic action
+→ describes what to do when that structure is recognized.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. SEMANTIC VALUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Parser symbols can carry values.
+
+Common Yacc/Bison notation includes:
+
+$$
+
+and:
+
+$1, $2, $3, ...
+
+
+Meaning:
+
+$1
+→ semantic value of first RHS symbol
+
+
+$2
+→ semantic value of second RHS symbol
+
+
+$3
+→ semantic value of third RHS symbol
+
+
+$$
+→ semantic value of the LHS
+
+
+Example:
+
+expr:
+      expr '+' NUMBER
+      {
+          $$ = $1 + $3;
+      }
+    ;
+
+
+Here:
+
+$1 = value of first expr
+
+$2 = value of '+'
+
+$3 = value of NUMBER
+
+$$ = resulting expr value
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. IMPORTANT EXAMPLE OF $$ AND $1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Production:
+
+E → E + T
+
+
+Corresponding semantic action:
+
+{
+    $$ = $1 + $3;
+}
+
+
+Mapping:
+
+             E
+             │
+       ┌─────┼─────┐
+       E     +     T
+       │     │     │
+      $1    $2    $3
+
+LHS E = $$
+
+
+So:
+
+$$ = $1 + $3
+
+
+This is a very important parser-generator concept.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. PARSER GENERATOR AND AST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A parser generator can use semantic actions to construct
+an Abstract Syntax Tree (AST).
+
+Example:
+
+Input:
+
+3 + 4 * 5
+
+
+AST:
+
+        +
+       / \
+      3   *
+         / \
+        4   5
+
+
+Semantic actions can create nodes such as:
+
+NUMBER(3)
+
+NUMBER(4)
+
+NUMBER(5)
+
+PLUS(left,right)
+
+MULT(left,right)
+
+
+The parser therefore does more than simply say:
+
+"Input is syntactically valid."
+
+
+It can construct a structured representation for later compiler
+phases.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. AST CONSTRUCTION — CONCEPTUAL EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+expr:
+      expr '+' term
+    | term
+    ;
+
+term:
+      term '*' factor
+    | factor
+    ;
+
+factor:
+      NUMBER
+    ;
+
+
+Conceptual semantic actions:
+
+expr:
+      expr '+' term
+      {
+          $$ = makeAddNode($1, $3);
+      }
+    | term
+      {
+          $$ = $1;
+      }
+    ;
+
+
+term:
+      term '*' factor
+      {
+          $$ = makeMulNode($1, $3);
+      }
+    | factor
+      {
+          $$ = $1;
+      }
+    ;
+
+
+factor:
+      NUMBER
+      {
+          $$ = makeNumberNode($1);
+      }
+    ;
+
+
+The parser now constructs an AST while parsing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. PRECEDENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expression grammars often create ambiguity.
+
+Example:
+
+E → E + E
+  | E * E
+  | NUMBER
+
+
+Input:
+
+3 + 4 * 5
+
+
+Which should happen first?
+
+Option 1:
+
+(3 + 4) * 5
+
+
+Option 2:
+
+3 + (4 * 5)
+
+
+Normally:
+
+* has higher precedence than +.
+
+
+Parser generators can provide precedence declarations.
+
+Conceptually:
+
+%left '+'
+%left '*'
+
+
+The exact ordering depends on declaration order and tool rules.
+
+
+For Bison, precedence declarations are ordered from lower to
+higher precedence as declarations progress.
+
+
+Therefore later declarations can give higher precedence.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. ASSOCIATIVITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Associativity determines how operators of the same precedence
+are grouped.
+
+Common types:
+
+LEFT ASSOCIATIVE
+
+RIGHT ASSOCIATIVE
+
+
+Example:
+
+a - b - c
+
+
+Left associative:
+
+(a - b) - c
+
+
+Right associative:
+
+a - (b - c)
+
+
+For exponentiation, languages often use right associativity:
+
+a ^ b ^ c
+
+may mean:
+
+a ^ (b ^ c)
+
+
+Parser generators can specify associativity declarations.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. COMMON PRECEDENCE DECLARATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Conceptually:
+
+%left '+'
+%left '-'
+%left '*'
+%left '/'
+
+
+This can establish different precedence levels.
+
+
+For example:
+
+%left '+' '-'
+%left '*' '/'
+
+
+means:
+
++ and -
+same precedence
+
+
+* and /
+same precedence
+
+
+and:
+
+* /
+
+have higher precedence than:
+
++ -
+
+
+Associativity:
+
+%left
+
+means left associative.
+
+
+%right
+
+means right associative.
+
+
+%nonassoc
+
+means non-associative.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. SHIFT/REDUCE CONFLICT IN YACC/BISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Because Yacc/Bison generates bottom-up parsing tables,
+the grammar can contain situations where the parser has a choice.
+
+Example:
+
+SHIFT
+
+or:
+
+REDUCE
+
+
+This creates:
+
+SHIFT-REDUCE CONFLICT
+
+
+Another possibility:
+
+REDUCE
+
+or:
+
+REDUCE
+
+
+This creates:
+
+REDUCE-REDUCE CONFLICT
+
+
+Parser generators usually report such conflicts.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. HOW PRECEDENCE CAN RESOLVE CONFLICTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose there is:
+
+SHIFT-REDUCE CONFLICT
+
+
+The parser generator can use:
+
+• Operator precedence
+• Operator associativity
+
+
+to decide.
+
+
+Conceptually:
+
+Higher precedence operator
+→ SHIFT
+
+
+or:
+
+Production with higher precedence
+→ REDUCE
+
+
+The exact decision depends on the precedence and associativity
+rules involved.
+
+
+Important:
+
+Do NOT assume every conflict is automatically harmless.
+
+A conflict report should be investigated.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. DEFAULT CONFLICT BEHAVIOR — IMPORTANT NUANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In traditional Yacc/Bison-style behavior, when an unresolved
+shift/reduce conflict remains, the default resolution is generally:
+
+SHIFT
+
+
+For a reduce/reduce conflict, traditional behavior generally chooses:
+
+the earlier rule in the grammar.
+
+
+However:
+
+Relying on defaults without understanding the grammar is bad
+compiler engineering practice.
+
+
+The correct goal is:
+
+Understand and intentionally resolve conflicts.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. ERROR HANDLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A parser generator can support syntax-error handling.
+
+Example invalid input:
+
+x = + 10;
+
+
+If the grammar does not permit this sequence:
+
+Parser
+   ↓
+Syntax error
+
+
+Parser generators commonly provide an error token/mechanism
+for recovery.
+
+
+Conceptually:
+
+stmt:
+      expression ';'
+    | error ';'
+    ;
+
+
+This can allow the parser to recover at a synchronization point.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. ERROR TOKEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In Yacc/Bison-style grammars:
+
+error
+
+is a special error-recovery symbol.
+
+
+Conceptual example:
+
+statement:
+      expression ';'
+    | error ';'
+    ;
+
+
+If a syntax error occurs, the parser can discard input/states
+until it can continue according to an error-recovery rule.
+
+
+This prevents one syntax error from necessarily terminating
+the entire parsing process.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. PARSER RECOVERY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose source contains:
+
+x = 10 + ;
+y = 20;
+
+
+Without recovery:
+
+First error
+   ↓
+Parser stops
+
+
+With recovery:
+
+First error
+   ↓
+Recover at ';'
+   ↓
+Continue parsing
+   ↓
+Process y = 20;
+
+
+This is useful in compilers and especially useful in development
+tools such as IDEs, where reporting multiple errors is valuable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. LEX/FLEX FUNCTION: yylex()
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In traditional Lex/Yacc interfaces:
+
+yylex()
+
+is commonly the lexical analyzer function.
+
+
+The parser requests the next token.
+
+Conceptually:
+
+yyparse()
+    ↓
+calls
+    ↓
+yylex()
+    ↓
+returns token
+    ↓
+yyparse() continues
+
+
+Therefore:
+
+yylex()
+→ lexer interface
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. PARSER FUNCTION: yyparse()
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In traditional Yacc/Bison generated parsers:
+
+yyparse()
+
+is commonly the parser entry function.
+
+
+Conceptually:
+
+main()
+   ↓
+yyparse()
+   ↓
+parser
+   ↓
+yylex()
+   ↓
+tokens
+
+
+So remember:
+
+yylex()
+→ lexical analyzer
+
+
+yyparse()
+→ parser
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. COMPLETE LEX + YACC INTERACTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Source:
+
+    10 + 20
+
+
+Step 1:
+
+Parser starts.
+
+    yyparse()
+
+
+Step 2:
+
+Parser needs a token.
+
+
+Step 3:
+
+Parser calls:
+
+    yylex()
+
+
+Step 4:
+
+Lexer reads:
+
+    10
+
+
+and returns:
+
+    NUMBER
+
+
+Step 5:
+
+Parser processes NUMBER.
+
+
+Step 6:
+
+Parser requests another token.
+
+
+Step 7:
+
+Lexer returns:
+
+    '+'
+
+
+Step 8:
+
+Parser processes PLUS.
+
+
+Step 9:
+
+Lexer returns:
+
+    NUMBER
+
+
+Step 10:
+
+Parser performs reductions according to its parsing table.
+
+
+Step 11:
+
+Semantic actions may calculate/build AST.
+
+
+This is the fundamental Lex/Yacc interaction.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. COMPLETE TOOLCHAIN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose we have:
+
+lexer.l
+
+and:
+
+parser.y
+
+
+Typical conceptual flow:
+
+             lexer.l
+                │
+                ▼
+              FLEX
+                │
+                ▼
+          lex.yy.c
+                │
+                │
+                ├──────────────┐
+                │              │
+                ▼              │
+             yylex()           │
+                               │
+             parser.y           │
+                │              │
+                ▼              │
+             BISON             │
+                │              │
+                ▼              │
+             parser.c          │
+                │              │
+                └──────┬───────┘
+                       ▼
+                   Compiler
+                       │
+                       ▼
+                 Executable
+
+
+The exact generated filenames/options can vary.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. PRACTICAL EXAMPLE — CALCULATOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Goal:
+
+Build a simple arithmetic parser.
+
+
+Input:
+
+10 + 20 * 3
+
+
+Lexer identifies:
+
+NUMBER
+PLUS
+NUMBER
+MULTIPLY
+NUMBER
+
+
+Parser grammar:
+
+expr:
+      expr '+' term
+    | term
+    ;
+
+term:
+      term '*' factor
+    | factor
+    ;
+
+factor:
+      NUMBER
+    ;
+
+
+This grammar naturally represents:
+
+10 + (20 * 3)
+
+
+because multiplication occurs inside term.
+
+
+The parser can construct:
+
+          +
+         / \
+       10   *
+           / \
+         20   3
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. WHY GRAMMAR DESIGN MATTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Parser generators do not magically make every grammar
+unambiguous.
+
+If the grammar is ambiguous:
+
+    E → E + E
+      | E * E
+      | id
+
+
+the parser generator may report conflicts.
+
+
+A better grammar can encode precedence:
+
+E → E + T | T
+
+T → T * F | F
+
+F → id | (E)
+
+
+This grammar structurally establishes:
+
+* higher precedence than +
+
+
+Therefore:
+
+Parser design begins with:
+
+GOOD GRAMMAR DESIGN.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. PARSER GENERATOR DOES NOT REPLACE COMPILER DESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A common beginner misunderstanding:
+
+"Yacc/Bison creates the whole compiler."
+
+FALSE.
+
+
+A parser generator mainly automates:
+
+SYNTAX ANALYSIS
+
+
+A compiler still needs:
+
+• Lexer
+• Parser
+• Semantic analysis
+• Symbol table
+• AST
+• Intermediate representation
+• Optimization
+• Code generation
+• Runtime support
+
+
+Therefore:
+
+Parser Generator
+≠
+Complete Compiler
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. PARSER GENERATOR AND SEMANTIC ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Semantic actions can help connect parsing with semantic analysis.
+
+Example:
+
+declaration:
+      TYPE ID ';'
+      {
+          addSymbol($2, $1);
+      }
+    ;
+
+
+Conceptually:
+
+Parser recognizes:
+
+int x;
+
+
+Then semantic action:
+
+addSymbol(...)
+
+
+adds:
+
+x
+
+to the symbol table.
+
+
+This demonstrates how syntax and semantic processing
+can interact.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. PARSER GENERATOR AND INTERMEDIATE CODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Semantic actions can also generate intermediate code.
+
+Example:
+
+x = a + b;
+
+
+Parser recognizes assignment structure.
+
+Semantic action could conceptually generate:
+
+t1 = a + b
+x = t1
+
+
+This is:
+
+Three-Address Code.
+
+
+However, in modern compiler architecture, it is often cleaner
+to construct an AST first and perform later semantic/IR passes,
+rather than placing too much compiler logic directly into parser
+actions.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. YACC/BISON PARSER GENERATION PROCESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1:
+
+Write grammar file:
+
+parser.y
+
+
+Step 2:
+
+Run parser generator.
+
+
+Conceptually:
+
+Bison
+   ↓
+parser source
+   +
+parser tables
+
+
+Step 3:
+
+Compile generated parser with lexer and supporting code.
+
+
+Step 4:
+
+Run executable.
+
+
+Pipeline:
+
+parser.y
+   ↓
+Bison
+   ↓
+Generated parser
+   ↓
+C/C++ compiler
+   ↓
+Executable
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. FLEX + BISON COMPLETE PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FILES:
+
+lexer.l
+parser.y
+
+
+Pipeline:
+
+lexer.l
+   ↓
+Flex
+   ↓
+Lexer source
+   ↓
+C/C++ compiler
+   ↓
+Object code
+
+
+parser.y
+   ↓
+Bison
+   ↓
+Parser source
+   ↓
+C/C++ compiler
+   ↓
+Object code
+
+
+Lexer + Parser + Runtime
+          ↓
+        Linker
+          ↓
+     Executable
+
+
+At runtime:
+
+Source program
+      ↓
+     Lexer
+      ↓
+    Tokens
+      ↓
+    Parser
+      ↓
+Semantic actions
+      ↓
+AST / semantic structures
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. IMPORTANT TERMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TOKEN:
+
+A lexical category returned by lexer.
+
+
+LEXEME:
+
+Actual character sequence from source.
+
+
+LEXER:
+
+Converts characters into tokens.
+
+
+PARSER:
+
+Checks grammatical structure.
+
+
+GRAMMAR:
+
+Defines valid syntactic structures.
+
+
+PARSER GENERATOR:
+
+Generates parser implementation from grammar specification.
+
+
+SEMANTIC ACTION:
+
+Code executed in association with grammar recognition.
+
+
+AST:
+
+Abstract Syntax Tree representing program structure.
+
+
+SHIFT:
+
+Move token from input toward parser stack/state processing.
+
+
+REDUCE:
+
+Replace recognized RHS by its LHS according to a grammar rule.
+
+
+PRECEDENCE:
+
+Priority of operators.
+
+
+ASSOCIATIVITY:
+
+Grouping direction of operators.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. GATE-LEVEL IMPORTANT FACTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FACT 1:
+
+Yacc is a parser generator.
+
+
+FACT 2:
+
+Yacc traditionally generates LALR-based parsers.
+
+
+FACT 3:
+
+Bison is a GNU parser generator compatible with Yacc-style
+grammar specifications.
+
+
+FACT 4:
+
+Lex/Flex performs lexical analysis.
+
+
+FACT 5:
+
+Yacc/Bison performs syntax analysis.
+
+
+FACT 6:
+
+Lexer commonly supplies tokens to the parser.
+
+
+FACT 7:
+
+Traditional interface:
+
+yylex()
+→ lexical analyzer
+
+
+yyparse()
+→ parser
+
+
+FACT 8:
+
+Semantic actions execute when associated grammar rules
+are recognized/reduced.
+
+
+FACT 9:
+
+$1, $2, $3 represent RHS semantic values.
+
+
+FACT 10:
+
+$$ represents the LHS semantic value.
+
+
+FACT 11:
+
+Parser generators can report shift/reduce conflicts.
+
+
+FACT 12:
+
+Parser generators can report reduce/reduce conflicts.
+
+
+FACT 13:
+
+Precedence and associativity can be used to resolve
+certain operator-related conflicts.
+
+
+FACT 14:
+
+A parser generator does not automatically create a complete
+compiler.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. GATE TRAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRAP 1:
+
+"Lex and Yacc perform the same job."
+
+FALSE.
+
+Lex → lexical analysis
+
+Yacc → syntax analysis
+
+
+TRAP 2:
+
+"Yacc is a lexical analyzer generator."
+
+FALSE.
+
+Yacc is a parser generator.
+
+
+TRAP 3:
+
+"Yacc creates the entire compiler."
+
+FALSE.
+
+It primarily generates the parser.
+
+
+TRAP 4:
+
+"Bison is a lexer."
+
+FALSE.
+
+Bison is a parser generator.
+
+
+TRAP 5:
+
+"yylex() is normally the parser function."
+
+FALSE.
+
+yylex() → lexer
+
+
+yyparse() → parser
+
+
+TRAP 6:
+
+"$$ means first RHS symbol."
+
+FALSE.
+
+$$ is the LHS semantic value.
+
+
+TRAP 7:
+
+"$1 means LHS."
+
+FALSE.
+
+$1 means semantic value of first RHS symbol.
+
+
+TRAP 8:
+
+"All shift/reduce conflicts mean the grammar is useless."
+
+FALSE.
+
+Some conflicts can be intentionally resolved through
+precedence/associativity, but every reported conflict
+should be understood.
+
+
+TRAP 9:
+
+"Parser generators eliminate the need to understand grammar."
+
+FALSE.
+
+You must understand grammar, ambiguity, precedence,
+associativity and conflicts.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. INTERVIEW QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1. What is a parser generator?
+
+Answer:
+
+A tool that automatically generates a parser implementation
+from a grammar specification.
+
+
+Q2. What is Yacc?
+
+Answer:
+
+Yacc is a parser generator traditionally used for generating
+bottom-up, LALR-based parsers.
+
+
+Q3. What is Bison?
+
+Answer:
+
+GNU Bison is a parser generator compatible with Yacc-style
+grammar specifications.
+
+
+Q4. What is the difference between Lex and Yacc?
+
+Answer:
+
+Lex generates lexical analyzers.
+
+Yacc generates parsers.
+
+
+Q5. What is yylex()?
+
+Answer:
+
+The traditional interface/function used by the parser to obtain
+tokens from the lexical analyzer.
+
+
+Q6. What is yyparse()?
+
+Answer:
+
+The traditional parser entry function generated by Yacc/Bison.
+
+
+Q7. What is a semantic action?
+
+Answer:
+
+Code associated with a grammar production that performs
+semantic processing when that production is recognized.
+
+
+Q8. What are $$ and $1?
+
+Answer:
+
+$$ represents the LHS semantic value.
+
+$1 represents the first RHS semantic value.
+
+
+Q9. What is a shift/reduce conflict?
+
+Answer:
+
+A parser state/table entry permits both shifting and reducing.
+
+
+Q10. How can operator conflicts be handled?
+
+Answer:
+
+Through grammar design or precedence/associativity declarations.
+
+
+Q11. Does Bison generate a complete compiler?
+
+Answer:
+
+No. It primarily generates the parsing component; other
+compiler phases must also be implemented or integrated.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. PRACTICAL MINI-PROJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build:
+
+"Mini Calculator Compiler Front-End"
+
+
+INPUT:
+
+10 + 20 * 3
+
+
+COMPONENT 1:
+
+Flex/Lex
+
+Responsibilities:
+
+• Recognize NUMBER
+• Recognize +
+• Recognize *
+• Ignore whitespace
+
+
+OUTPUT:
+
+NUMBER
++
+NUMBER
+*
+NUMBER
+
+
+COMPONENT 2:
+
+Bison/Yacc
+
+Grammar:
+
+expr → expr + term | term
+
+term → term * factor | factor
+
+factor → NUMBER
+
+
+COMPONENT 3:
+
+Semantic Actions
+
+Construct AST.
+
+
+AST:
+
+        +
+       / \
+     10   *
+         / \
+        20  3
+
+
+COMPONENT 4:
+
+Evaluation or IR generation.
+
+
+Possible result:
+
+70
+
+
+or IR:
+
+t1 = 20 * 3
+t2 = 10 + t1
+
+
+This project connects:
+
+Lexical Analysis
++
+Parsing
++
+Semantic Actions
++
+AST
++
+Intermediate Representation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. COMPLETE COMPILER CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                 SOURCE CODE
+                      │
+                      ▼
+              ┌───────────────┐
+              │   FLEX/LEX    │
+              │    LEXER      │
+              └───────────────┘
+                      │
+                    TOKENS
+                      │
+                      ▼
+              ┌───────────────┐
+              │ BISON/YACC    │
+              │    PARSER     │
+              └───────────────┘
+                      │
+              Grammar matching
+                      │
+              Semantic actions
+                      │
+                      ▼
+                    AST
+                      │
+                      ▼
+             Semantic Analysis
+                      │
+                      ▼
+                     IR
+                      │
+                      ▼
+                 Optimization
+                      │
+                      ▼
+                Code Generation
+                      │
+                      ▼
+                Target Program
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. CHAPTER 14 MASTER COMPARISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LEX/FLEX:
+
+Input:
+Characters
+
+Output:
+Tokens
+
+Purpose:
+Lexical analysis
+
+
+YACC/BISON:
+
+Input:
+Tokens + Grammar
+
+Output:
+Generated parser
+
+Purpose:
+Syntax analysis
+
+
+Semantic Actions:
+
+Input:
+Recognized grammar structures
+
+Output:
+Values / AST / semantic processing / IR-related work
+
+
+AST:
+
+Input:
+Parsed program structure
+
+Output:
+Structured representation for later compiler phases
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. CHAPTER 14 MEMORY MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                  PARSER GENERATORS
+                         │
+            ┌────────────┴────────────┐
+            │                         │
+          YACC                      BISON
+            │                         │
+       LALR-based                GNU parser
+       traditionally             generator
+            │                         │
+            └────────────┬────────────┘
+                         │
+                       PARSER
+                         │
+                ┌────────┴────────┐
+                │                 │
+             Tokens             Grammar
+                │                 │
+                └───────┬─────────┘
+                        │
+                 Semantic Actions
+                        │
+              ┌─────────┼─────────┐
+              │         │         │
+             AST       Value      IR
+                        │
+                  Conflict Handling
+                        │
+               ┌────────┴─────────┐
+               │                  │
+           Shift/Reduce      Reduce/Reduce
+               │
+        Precedence/Associativity
+                        │
+                  Error Recovery
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. ULTRA-SHORT REVISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Parser Generator:
+
+Grammar → Automatically generated parser
+
+
+Yacc:
+
+Yet Another Compiler-Compiler
+
+
+Bison:
+
+GNU parser generator / Yacc-compatible tool
+
+
+Lex/Flex:
+
+Characters → Tokens
+
+
+Yacc/Bison:
+
+Tokens + Grammar → Parser
+
+
+yylex():
+
+Lexer/token provider
+
+
+yyparse():
+
+Parser
+
+
+$$:
+
+LHS semantic value
+
+
+$1:
+
+First RHS semantic value
+
+
+Semantic action:
+
+Code associated with grammar production.
+
+
+Conflict types:
+
+SR → Shift/Reduce
+
+RR → Reduce/Reduce
+
+
+Precedence:
+
+Operator priority.
+
+
+Associativity:
+
+Grouping direction.
+
+
+Typical practical architecture:
+
+Flex
+ ↓
+Lexer
+ ↓
+Tokens
+ ↓
+Bison
+ ↓
+Parser
+ ↓
+AST
+ ↓
+Semantic Analysis
+ ↓
+IR
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. CHAPTER 14 FINAL SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Parser generators automate the construction of parsers from
+formal grammar specifications.
+
+The most important tools are:
+
+Yacc
+Bison
+
+
+They are primarily used for:
+
+SYNTAX ANALYSIS.
+
+
+The lexer:
+
+Lex/Flex
+
+converts source characters into tokens.
+
+
+The parser:
+
+Yacc/Bison-generated parser
+
+uses grammar rules to determine whether the token sequence
+is syntactically valid.
+
+
+Parser-generator grammar files commonly contain:
+
+1. Declarations
+2. Grammar rules
+3. Supporting code
+
+
+Semantic actions can be attached to grammar productions.
+
+They can:
+
+• Calculate values
+• Build ASTs
+• Update symbol information
+• Perform semantic processing
+• Generate intermediate representations
+
+
+Traditional parser-generator interfaces include:
+
+yylex()
+→ obtain next token
+
+
+yyparse()
+→ invoke parser
+
+
+Important LR connection:
+
+Yacc traditionally uses LALR-style parsing.
+
+
+Important conflict concepts:
+
+SHIFT-REDUCE
+REDUCE-REDUCE
+
+
+Important conflict-resolution concepts:
+
+PRECEDENCE
+ASSOCIATIVITY
+GRAMMAR DESIGN
+
+
+The complete practical relationship is:
+
+Source
+ ↓
+Flex/Lex
+ ↓
+Tokens
+ ↓
+Bison/Yacc
+ ↓
+Parser
+ ↓
+Semantic Actions
+ ↓
+AST
+ ↓
+Semantic Analysis
+ ↓
+IR
+ ↓
+Optimization
+ ↓
+Code Generation
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHAPTER 14 COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NEXT MASTER-SYLLABUS CHAPTER:
+
+CHAPTER 15 — SEMANTIC ANALYSIS FUNDAMENTALS
+
+Topics:
+
+• Syntax vs Semantics
+• What is Semantic Analysis?
+• Semantic errors
+• Static semantics
+• Dynamic semantics
+• Type checking
+• Scope
+• Binding
+• Declaration
+• Type compatibility
+• Compiler role in semantic analysis
+• Semantic analysis workflow
+• GATE concepts
+• Interview questions
+• Practical examples

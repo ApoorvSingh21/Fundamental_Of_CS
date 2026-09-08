@@ -1,0 +1,2236 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                 COMPILER DESIGN — CHAPTER 28                       ║
+║                     INSTRUCTION SELECTION                          ║
+║                                                                      ║
+║ PHASE 7 — CODE GENERATION                                           ║
+║ LEVEL: BEGINNER → INTERMEDIATE → ADVANCED → GATE → INTERVIEW        ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 28 explains how a compiler converts an Intermediate
+Representation (IR) into suitable target-machine instructions.
+
+MAIN TOPICS:
+
+1. What is instruction selection?
+2. Why instruction selection is required
+3. Target-machine instructions
+4. Instruction selection strategies
+5. Expression trees
+6. DAG-based instruction selection
+7. Tree pattern matching
+8. Machine instructions
+9. Address computation
+10. Register usage
+11. Cost-based instruction selection
+12. Complex instructions
+13. Instruction selection for arithmetic expressions
+14. Array and pointer addressing
+15. Control-flow instructions
+16. Procedure-related instructions
+17. GATE concepts and traps
+18. Interview questions
+19. Practical mini code generator
+
+
+BIG PICTURE:
+
+Source Program
+      ↓
+Front End
+      ↓
+Intermediate Representation
+      ↓
+Basic Blocks / CFG
+      ↓
+★ INSTRUCTION SELECTION ★
+      ↓
+Target Machine Instructions
+      ↓
+Register Allocation
+      ↓
+Machine Code
+
+
+IMPORTANT:
+
+Instruction Selection answers:
+
+    "WHICH machine instructions should the compiler use?"
+
+Register Allocation answers:
+
+    "WHICH registers should hold the values?"
+
+Do not confuse these two.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHAT IS INSTRUCTION SELECTION?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instruction selection is the compiler phase that chooses target-machine
+instructions corresponding to operations in the intermediate
+representation.
+
+Simple definition:
+
+    IR operation
+         ↓
+    Select machine instruction(s)
+         ↓
+    Target code
+
+
+Example IR:
+
+    t1 = a + b
+
+Possible target instructions:
+
+    LOAD R1, a
+    ADD  R1, b
+    STORE t1, R1
+
+
+Or on another machine:
+
+    MOV R1, a
+    MOV R2, b
+    ADD R1, R2
+    MOV t1, R1
+
+
+The exact instructions depend on the target architecture.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. WHY IS INSTRUCTION SELECTION NECESSARY?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IR is generally machine-independent.
+
+For example:
+
+    t1 = a + b
+
+does not specify:
+
+• Which CPU?
+• Which registers?
+• Which instruction encoding?
+• Which addressing mode?
+• Whether memory operands are allowed?
+
+
+The target machine may have:
+
+    ADD
+    SUB
+    MUL
+    LOAD
+    STORE
+    MOV
+    LEA
+    SHIFT
+    BRANCH
+    CALL
+    RETURN
+
+
+Instruction selection maps the abstract operation to these
+machine-specific instructions.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. SIMPLE REAL-WORLD ANALOGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Imagine you tell a worker:
+
+    "Move this box."
+
+This is the high-level requirement.
+
+The worker must decide:
+
+    • Carry it by hand?
+    • Use a trolley?
+    • Use a forklift?
+
+
+Similarly, IR says:
+
+    "Add a and b."
+
+Instruction selection decides:
+
+    • Which ADD instruction?
+    • Which operands?
+    • Which addressing mode?
+    • How many instructions?
+
+Therefore:
+
+    IR operation = WHAT
+
+    Instruction selection = HOW using target instructions
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. INPUT AND OUTPUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+INPUT:
+
+• Intermediate Representation
+• Target-machine information
+• Machine instruction descriptions
+• Addressing modes
+• Instruction costs
+• Register information
+
+
+OUTPUT:
+
+• Target-machine instruction sequence
+
+
+Conceptually:
+
+    IR + Machine Model
+           ↓
+    Instruction Selection
+           ↓
+    Target Instructions
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. TARGET MACHINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instruction selection depends heavily on the target architecture.
+
+A target machine may have:
+
+• Registers
+• Memory
+• Arithmetic instructions
+• Branch instructions
+• Load/store instructions
+• Addressing modes
+• Special instructions
+
+
+Example:
+
+    R1, R2, R3
+
+could be CPU registers.
+
+Possible instructions:
+
+    MOV
+    ADD
+    SUB
+    MUL
+    LOAD
+    STORE
+    CMP
+    JMP
+    CALL
+    RET
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. DIFFERENT MACHINE MODELS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Different architectures provide different instruction sets.
+
+
+A. STACK MACHINE
+────────────────
+
+Operands are implicitly taken from a stack.
+
+Example:
+
+    a + b
+
+Instructions might be:
+
+    PUSH a
+    PUSH b
+    ADD
+
+The ADD operation uses the top stack values.
+
+
+B. ACCUMULATOR MACHINE
+──────────────────────
+
+Uses a special accumulator register.
+
+Example:
+
+    LOAD a
+    ADD b
+    STORE t
+
+
+C. REGISTER MACHINE
+───────────────────
+
+Uses registers explicitly.
+
+Example:
+
+    LOAD R1, a
+    LOAD R2, b
+    ADD R1, R2
+    STORE t, R1
+
+
+D. REGISTER-MEMORY MACHINE
+──────────────────────────
+
+Some operations can use both registers and memory operands.
+
+Example:
+
+    ADD R1, x
+
+
+E. LOAD-STORE MACHINE
+─────────────────────
+
+Arithmetic operations generally operate only on registers.
+
+Example:
+
+    LOAD R1, x
+    LOAD R2, y
+    ADD R1, R2
+    STORE z, R1
+
+
+This distinction strongly affects instruction selection.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. INSTRUCTION SET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An instruction set is the collection of machine instructions supported
+by a processor.
+
+Examples of instruction categories:
+
+    Data movement:
+        MOV
+        LOAD
+        STORE
+
+    Arithmetic:
+        ADD
+        SUB
+        MUL
+        DIV
+
+    Logical:
+        AND
+        OR
+        XOR
+        NOT
+
+    Shift:
+        SHL
+        SHR
+
+    Comparison:
+        CMP
+        TEST
+
+    Control flow:
+        JMP
+        JE
+        JNE
+        JL
+        JG
+
+    Procedure:
+        CALL
+        RET
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. ADDRESSING MODES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instruction selection must understand addressing modes.
+
+An addressing mode specifies how an instruction obtains its operand.
+
+IMPORTANT TYPES:
+
+
+1. IMMEDIATE ADDRESSING
+───────────────────────
+
+Value is directly inside instruction.
+
+Example:
+
+    MOV R1, #10
+
+Meaning:
+
+    R1 = 10
+
+
+2. REGISTER ADDRESSING
+──────────────────────
+
+Operand is in a register.
+
+    ADD R1, R2
+
+
+3. DIRECT MEMORY ADDRESSING
+───────────────────────────
+
+Instruction refers directly to a memory location.
+
+    LOAD R1, x
+
+
+4. REGISTER INDIRECT
+────────────────────
+
+Register contains an address.
+
+    LOAD R1, [R2]
+
+
+5. BASE + OFFSET
+────────────────
+
+Address:
+
+    base + offset
+
+Example:
+
+    LOAD R1, [RBP + 8]
+
+
+6. INDEXED ADDRESSING
+─────────────────────
+
+Address may involve:
+
+    base + index
+
+or:
+
+    base + index × scale + offset
+
+
+7. PC-RELATIVE
+──────────────
+
+Address is computed relative to the program counter.
+
+Commonly useful for:
+
+    branches
+    position-independent code
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. EXPRESSION TREES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expression trees are commonly used for instruction selection.
+
+Consider:
+
+    a + b * c
+
+
+Because multiplication has higher precedence:
+
+    a + (b * c)
+
+
+Expression tree:
+
+             +
+            / \
+           a   *
+              / \
+             b   c
+
+
+Leaves:
+
+    a, b, c
+
+Internal nodes:
+
+    +, *
+
+
+The compiler can map tree patterns to machine instructions.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. WHY EXPRESSION TREES HELP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    x = a + b * c
+
+Tree:
+
+             =
+            / \
+           x   +
+              / \
+             a   *
+                / \
+               b   c
+
+
+The compiler can recursively generate instructions:
+
+    Generate(b * c)
+          ↓
+    Generate(a + result)
+          ↓
+    Store result in x
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. TREE-BASED INSTRUCTION SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A simple strategy:
+
+1. Build expression tree.
+2. Start from leaves.
+3. Match tree patterns.
+4. Select corresponding machine instructions.
+5. Generate code.
+
+Example:
+
+    a + b
+
+
+Tree:
+
+       +
+      / \
+     a   b
+
+
+Possible pattern:
+
+    ADD(register, register)
+
+
+Generated code:
+
+    LOAD R1, a
+    LOAD R2, b
+    ADD R1, R2
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. TREE PATTERN MATCHING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A machine instruction can be viewed as a pattern.
+
+Suppose target machine supports:
+
+    LOAD R, x
+
+and:
+
+    ADD R, R
+
+
+The compiler matches IR tree structures against available patterns.
+
+Example:
+
+    a + b
+
+matches:
+
+    ADD pattern
+
+Then machine instructions are selected.
+
+The goal is to cover the expression tree using suitable instruction
+patterns.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. TREE COVERING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tree covering means:
+
+    Cover the nodes of an IR expression tree using machine-instruction
+    patterns.
+
+Example:
+
+             +
+            / \
+           a   b
+
+Could be covered by:
+
+    LOAD(a)
+    LOAD(b)
+    ADD
+
+
+A more powerful architecture may have a single instruction that can
+perform a larger operation.
+
+Therefore the compiler tries to find an efficient covering.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. COST OF INSTRUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Different instruction sequences may perform the same operation.
+
+Example:
+
+Option A:
+
+    LOAD R1, a
+    LOAD R2, b
+    ADD R1, R2
+
+Cost:
+
+    3 instructions
+
+
+Option B:
+
+    ADD R1, a, b
+
+If supported by the architecture:
+
+    1 instruction
+
+
+Therefore instruction selection often considers cost.
+
+Cost may represent:
+
+• Number of instructions
+• Execution latency
+• Code size
+• Throughput
+• Energy
+• Register pressure
+• Memory accesses
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. MINIMUM-COST INSTRUCTION SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose a tree has multiple possible instruction patterns.
+
+The compiler can choose:
+
+    Minimum-cost covering
+
+
+Conceptually:
+
+    Expression Tree
+          ↓
+    Possible patterns
+          ↓
+    Calculate costs
+          ↓
+    Choose lowest-cost combination
+          ↓
+    Generate machine code
+
+
+This is an important idea behind tree-based instruction selection.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. DYNAMIC PROGRAMMING FOR TREE SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For expression trees, dynamic programming can efficiently find
+a low-cost instruction covering.
+
+Basic idea:
+
+    Solve small subtrees
+          ↓
+    Store their best costs
+          ↓
+    Combine results
+          ↓
+    Find best complete covering
+
+
+Example tree:
+
+             +
+            / \
+           a   *
+              / \
+             b   c
+
+First solve:
+
+    b
+    c
+    b*c
+
+Then solve:
+
+    a + (b*c)
+
+
+This avoids repeatedly solving the same subproblems.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. DAG-BASED INSTRUCTION SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DAG = Directed Acyclic Graph.
+
+A DAG can represent common subexpressions.
+
+Example:
+
+    x = a + b
+    y = a + b
+
+
+Expression:
+
+    a + b
+
+appears twice.
+
+A DAG can share the common subexpression:
+
+             +
+            / \
+           a   b
+            \ /
+          shared
+
+
+Instead of treating the same computation independently,
+the compiler can recognize that it is common.
+
+This can reduce repeated computation.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. EXPRESSION TREE vs DAG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
++-------------------+--------------------------------------+
+| Expression Tree   | DAG                                  |
++-------------------+--------------------------------------+
+| Tree structure    | Graph structure                      |
+| No shared nodes   | Can represent shared subexpressions  |
+| Simpler            | More powerful                        |
+| Local expressions | Common-subexpression representation  |
++-------------------+--------------------------------------+
+
+
+Memory:
+
+    TREE = hierarchy
+
+    DAG = hierarchy + sharing
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. EXAMPLE: ARITHMETIC INSTRUCTION SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IR:
+
+    t1 = a + b
+    t2 = t1 * c
+    t3 = t2 - d
+
+
+Possible target code:
+
+    LOAD R1, a
+    ADD  R1, b
+    MUL  R1, c
+    SUB  R1, d
+    STORE t3, R1
+
+
+The compiler selected:
+
+    a + b  → ADD
+    t1*c   → MUL
+    t2-d   → SUB
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. CONSTANT OPERANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    x = y + 5
+
+
+A target architecture may support:
+
+    ADD R1, #5
+
+instead of:
+
+    LOAD R2, 5
+    ADD R1, R2
+
+
+So instruction selection can exploit immediate operands.
+
+This may reduce:
+
+• Number of instructions
+• Register usage
+• Memory operations
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. MULTIPLICATION BY CONSTANT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    x = y * 8
+
+
+Possible instruction:
+
+    MUL R1, #8
+
+
+But if multiplication is expensive, compiler may use:
+
+    x = y << 3
+
+
+because:
+
+    8 = 2³
+
+
+Shift-based implementation:
+
+    SHL R1, 3
+
+
+This is closely related to optimization.
+
+Instruction selection may choose a machine instruction sequence
+that efficiently implements the IR operation.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. ADDRESS COMPUTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instruction selection is also important for calculating addresses.
+
+Suppose:
+
+    A[i]
+
+
+If each element has size 4 bytes:
+
+    address = base(A) + i × 4
+
+
+Machine code may use:
+
+    LOAD R1, [A + i*4]
+
+
+if the architecture supports scaled indexed addressing.
+
+Otherwise:
+
+    MUL R2, i, 4
+    ADD R2, A, R2
+    LOAD R1, [R2]
+
+
+Therefore, machine addressing modes can significantly affect
+instruction selection.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. ARRAY ACCESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For:
+
+    A[i]
+
+general address:
+
+    base + i × element_size
+
+
+For a 4-byte integer:
+
+    address = base + i × 4
+
+
+For a 8-byte element:
+
+    address = base + i × 8
+
+
+Example:
+
+    int A[100];
+    x = A[i];
+
+
+Conceptually:
+
+    offset = i × 4
+    address = base(A) + offset
+    x = memory[address]
+
+
+A target instruction may combine these operations.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. TWO-DIMENSIONAL ARRAY ADDRESSING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For row-major storage:
+
+    A[i][j]
+
+
+For dimensions:
+
+    A[rows][columns]
+
+address conceptually depends on:
+
+    base
+    + (i × number_of_columns + j) × element_size
+
+
+Example:
+
+    A[10][20]
+
+and:
+
+    element size = 4 bytes
+
+
+Then:
+
+    offset =
+        (i × 20 + j) × 4
+
+
+Instruction selection must turn this address calculation into
+efficient target instructions.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. POINTER ACCESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    x = *p
+
+
+Meaning:
+
+    p contains a memory address.
+
+Possible target code:
+
+    LOAD R1, [p]
+    LOAD R2, [R1]
+
+or depending on the representation:
+
+    LOAD R2, [R1]
+
+where:
+
+    R1 = p
+
+
+For:
+
+    *p = x
+
+compiler needs a store:
+
+    STORE [R1], R2
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. STRUCTURE / FIELD ACCESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    struct Student {
+        int id;
+        int age;
+    };
+
+If:
+
+    Student s;
+
+Then:
+
+    s.age
+
+may be represented as:
+
+    base(s) + offset(age)
+
+
+If:
+
+    offset(age) = 4
+
+
+then:
+
+    address = base(s) + 4
+
+
+Machine addressing modes can directly implement this:
+
+    LOAD R1, [base + 4]
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. CONTROL-FLOW INSTRUCTION SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    if (a < b)
+        goto L1;
+
+
+Compiler may generate:
+
+    CMP R1, R2
+    JL  L1
+
+
+or:
+
+    SUB R1, R2
+    BLT L1
+
+
+depending on architecture.
+
+
+The important point:
+
+High-level condition:
+
+    a < b
+
+must become target-specific comparison/branch instructions.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. CONDITIONAL BRANCHES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Typical machine branch instructions:
+
+    JE    → Jump if equal
+    JNE   → Jump if not equal
+    JL    → Jump if less
+    JLE   → Jump if less/equal
+    JG    → Jump if greater
+    JGE   → Jump if greater/equal
+
+
+IR:
+
+    if a < b goto L1
+
+Possible machine code:
+
+    CMP R1, R2
+    JL  L1
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. UNCONDITIONAL BRANCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IR:
+
+    goto L1
+
+
+Machine code:
+
+    JMP L1
+
+
+This is direct instruction selection.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. FUNCTION CALL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IR:
+
+    CALL foo
+
+
+Target architecture may use:
+
+    CALL foo
+
+
+But the complete procedure-call sequence may involve:
+
+• Parameter passing
+• Saving registers
+• Creating activation record
+• Call instruction
+• Return address
+• Return value
+• Restoring state
+
+
+Instruction selection generates target-specific instructions,
+while the calling convention determines how the call is organized.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. RETURN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IR:
+
+    RETURN x
+
+
+Possible target code:
+
+    MOV R0, x
+    RET
+
+
+where R0 is an assumed return-value register.
+
+The exact register and instructions depend on the target ABI.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. COMPLEX MACHINE INSTRUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Some processors provide complex instructions that perform several
+operations at once.
+
+Example conceptual operation:
+
+    memory[base + index × scale + offset]
+
+
+A complex instruction may directly support this address.
+
+This can reduce instruction count.
+
+However, complex instructions are not automatically better.
+
+Compiler may consider:
+
+• Latency
+• Throughput
+• Code size
+• Register pressure
+• Pipeline behavior
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. RISC vs CISC AND INSTRUCTION SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RISC:
+
+    Reduced Instruction Set Computer
+
+Typical characteristics:
+
+• Simpler instructions
+• Often load/store architecture
+• More operations may require multiple instructions
+
+
+CISC:
+
+    Complex Instruction Set Computer
+
+Typical characteristics:
+
+• More complex instructions
+• More addressing modes
+• Some instructions can perform multiple operations
+
+
+Therefore:
+
+    Target architecture
+            ↓
+    affects instruction selection
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. INSTRUCTION SELECTION AND REGISTER USAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instruction selection and register allocation are different,
+but they interact.
+
+Example:
+
+    x = a + b
+
+
+Instruction selection may produce:
+
+    ADD R1, R2
+
+
+Register allocation later decides:
+
+    Which values are assigned to R1/R2?
+
+
+Therefore:
+
+    Instruction Selection
+          ↓
+    What instruction pattern?
+          ↓
+    Register Allocation
+          ↓
+    What physical registers?
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. REGISTER CONSTRAINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Some machine instructions require particular registers.
+
+Example conceptual instruction:
+
+    MUL RAX, RBX
+
+
+If an instruction has fixed-register requirements,
+the compiler must consider them during code generation.
+
+This may affect:
+
+• Instruction selection
+• Register allocation
+• Move insertion
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. INSTRUCTION SELECTION vs REGISTER ALLOCATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
++-------------------------+------------------------------------+
+| Instruction Selection   | Register Allocation               |
++-------------------------+------------------------------------+
+| Chooses instructions    | Chooses registers                 |
+| Target instruction set  | Register availability             |
+| Uses machine patterns   | Uses live ranges/interference     |
+| Before final allocation| Allocates physical registers      |
++-------------------------+------------------------------------+
+
+
+Memory trick:
+
+    SELECT = Instruction
+
+    ALLOCATE = Register
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. ADDRESSING-MODE SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instruction selection also chooses how operands are addressed.
+
+Example:
+
+    x = A[i]
+
+
+Possible implementation:
+
+Option 1:
+
+    MUL R2, i, 4
+    ADD R2, A, R2
+    LOAD R1, [R2]
+
+
+Option 2:
+
+    LOAD R1, [A + i*4]
+
+
+If the target supports scaled indexed addressing,
+Option 2 may be preferable.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. INSTRUCTION SCHEDULING — DISTINGUISH IT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not confuse:
+
+    Instruction Selection
+
+with:
+
+    Instruction Scheduling
+
+
+Instruction Selection:
+
+    Which instructions?
+
+Instruction Scheduling:
+
+    In what order should instructions execute?
+
+
+Example:
+
+    Selection:
+        ADD
+        MUL
+        LOAD
+
+
+    Scheduling:
+        LOAD
+        LOAD
+        ADD
+        MUL
+
+
+Scheduling tries to improve machine utilization while respecting
+dependencies.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. SEMANTIC PRESERVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instruction selection must preserve program meaning.
+
+If IR says:
+
+    x = a + b
+
+generated machine code must produce the same result according to
+the language and machine semantics.
+
+Compiler cannot simply choose a shorter instruction sequence if it
+changes required program behavior.
+
+Important concerns include:
+
+• Overflow semantics
+• Floating-point behavior
+• Memory access
+• Volatile operations
+• Exceptions
+• Side effects
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. SIMPLE COMPLETE EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IR:
+
+    t1 = a + b
+    t2 = t1 * c
+    x = t2 - d
+
+
+Expression:
+
+    x = (a + b) * c - d
+
+
+Expression tree:
+
+                -
+               / \
+              *   d
+             / \
+            +   c
+           / \
+          a   b
+
+
+Possible target code:
+
+    LOAD R1, a
+    ADD  R1, b
+    MUL  R1, c
+    SUB  R1, d
+    STORE x, R1
+
+
+Here:
+
+    a + b → ADD
+    × c   → MUL
+    - d   → SUB
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. EXAMPLE WITH MEMORY OPERANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    x = a + 5
+
+
+If architecture supports:
+
+    ADD R1, #5
+
+
+Generated:
+
+    LOAD R1, a
+    ADD R1, #5
+    STORE x, R1
+
+
+This is better than unnecessarily loading 5 into another register.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. EXAMPLE: ARRAY ELEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Source:
+
+    x = A[i];
+
+
+Assume:
+
+    sizeof(int) = 4
+
+
+Conceptually:
+
+    address = A + i × 4
+
+
+Possible instructions:
+
+    LOAD R1, i
+    MUL  R2, R1, 4
+    ADD  R3, A, R2
+    LOAD R4, [R3]
+    STORE x, R4
+
+
+If the architecture supports scaled addressing:
+
+    LOAD R4, [A + i*4]
+    STORE x, R4
+
+
+The second version may require fewer instructions.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. TREE PATTERN EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expression:
+
+    x = a + b
+
+
+Tree:
+
+       +
+      / \
+     a   b
+
+
+Available machine patterns:
+
+    P1:
+       LOAD R, a
+
+    P2:
+       LOAD R, b
+
+    P3:
+       ADD R1, R2
+
+Selection:
+
+    a → P1
+    b → P2
+    + → P3
+
+
+Result:
+
+    LOAD R1, a
+    LOAD R2, b
+    ADD R1, R2
+    STORE x, R1
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. DAG-BASED EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    x = (a + b) * c
+    y = (a + b) * d
+
+
+Common subexpression:
+
+    a + b
+
+
+Instead of:
+
+    ADD a,b
+    ADD a,b
+
+compiler can compute once:
+
+    t = a + b
+    x = t * c
+    y = t * d
+
+
+DAG helps represent the shared computation.
+
+This can reduce:
+
+    computation
+    instruction count
+    execution time
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. INSTRUCTION SELECTION ALGORITHMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Common approaches include:
+
+1. Macro expansion
+2. Tree rewriting
+3. Tree pattern matching
+4. Dynamic programming
+5. DAG-based techniques
+6. Table-driven instruction selection
+7. Target-specific instruction selection
+
+
+The sophistication depends on:
+
+• Target architecture
+• Compiler design
+• Optimization requirements
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. MACRO EXPANSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A simple approach is to map an IR operation to a fixed instruction
+sequence.
+
+Example:
+
+    IR:
+        x = a + b
+
+Macro-like expansion:
+
+    LOAD R1, a
+    LOAD R2, b
+    ADD R1, R2
+    STORE x, R1
+
+
+Advantages:
+
+• Simple
+• Easy to implement
+
+Disadvantages:
+
+• May not produce optimal code
+• Does not exploit many machine-specific patterns
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. TREE REWRITING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tree rewriting treats instruction patterns as rewrite rules.
+
+Conceptually:
+
+    IR tree
+       ↓
+    Match pattern
+       ↓
+    Rewrite/replace
+       ↓
+    Machine instruction tree
+
+
+This is more flexible than simple macro expansion.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. TABLE-DRIVEN SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A compiler can maintain a table containing:
+
+    IR pattern
+       ↓
+    Machine instruction
+       ↓
+    Cost
+
+
+Example conceptually:
+
+    Pattern       Instruction      Cost
+
+    a + b         ADD              1
+    a * 2         SHIFT            1
+    LOAD(a)       LOAD             1
+
+
+The selector chooses suitable patterns based on target information.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. CODE QUALITY CRITERIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instruction selection may optimize for:
+
+1. Execution speed
+2. Code size
+3. Memory traffic
+4. Register pressure
+5. Energy consumption
+6. Instruction latency
+7. Instruction throughput
+
+
+There may be trade-offs.
+
+Example:
+
+    Fewer instructions
+
+does not always mean:
+
+    Faster execution.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. IMPORTANT TARGET-MACHINE FACTORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instruction selection considers:
+
+• Number of registers
+• Register classes
+• Instruction set
+• Instruction latency
+• Instruction throughput
+• Addressing modes
+• Immediate operand limits
+• Memory access rules
+• Calling convention
+• Special-purpose registers
+• Condition-code behavior
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. COMMON INSTRUCTION SELECTION PROBLEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem 1:
+
+    Too many instructions
+
+Problem 2:
+
+    Excessive memory access
+
+Problem 3:
+
+    Poor register usage
+
+Problem 4:
+
+    Missed addressing-mode opportunity
+
+Problem 5:
+
+    Missed machine-specific instruction
+
+Problem 6:
+
+    Code-size increase
+
+Problem 7:
+
+    Performance degradation
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+53. GATE IMPORTANT CONCEPTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+★ Instruction selection maps IR to target-machine instructions.
+
+★ Expression trees are useful for arithmetic-expression selection.
+
+★ DAGs can represent shared/common subexpressions.
+
+★ Tree covering selects machine instruction patterns.
+
+★ Dynamic programming can be used for minimum-cost tree covering.
+
+★ Addressing modes affect instruction selection.
+
+★ Register allocation is NOT the same as instruction selection.
+
+★ Instruction scheduling is NOT the same as instruction selection.
+
+★ Target architecture strongly influences instruction selection.
+
+★ Load/store machines generally require explicit LOAD/STORE around
+  arithmetic operations.
+
+★ Immediate operands can reduce instruction/register requirements.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+54. GATE TRAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRAP 1
+──────
+
+"Instruction selection allocates registers."
+
+FALSE.
+
+Register allocation assigns values to registers.
+
+
+TRAP 2
+──────
+
+"DAG and expression tree are always identical."
+
+FALSE.
+
+DAG can represent shared subexpressions.
+
+
+TRAP 3
+──────
+
+"Fewer instructions always means better performance."
+
+FALSE.
+
+Latency, throughput, memory access, pipeline behavior and other
+factors matter.
+
+
+TRAP 4
+──────
+
+"All machines support the same addressing modes."
+
+FALSE.
+
+Addressing modes are architecture-specific.
+
+
+TRAP 5
+──────
+
+"Instruction selection is completely machine-independent."
+
+FALSE.
+
+It is strongly target-machine dependent.
+
+
+TRAP 6
+──────
+
+"Instruction scheduling chooses machine instructions."
+
+FALSE.
+
+Instruction scheduling primarily determines instruction ordering.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+55. INTERVIEW QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1. What is instruction selection?
+
+ANSWER:
+
+Instruction selection is the process of choosing target-machine
+instructions to implement operations in the intermediate
+representation.
+
+
+Q2. Why is instruction selection target-dependent?
+
+ANSWER:
+
+Because different processors have different instruction sets,
+registers, addressing modes and machine constraints.
+
+
+Q3. What is tree covering?
+
+ANSWER:
+
+Tree covering is the process of covering an IR expression tree with
+patterns corresponding to machine instructions.
+
+
+Q4. Why is dynamic programming useful?
+
+ANSWER:
+
+It can efficiently find a low-cost covering of an expression tree
+by solving and reusing optimal results for subtrees.
+
+
+Q5. Why is DAG useful?
+
+ANSWER:
+
+A DAG can represent shared subexpressions, allowing the compiler to
+avoid unnecessarily repeating computations.
+
+
+Q6. What is the difference between instruction selection and
+register allocation?
+
+ANSWER:
+
+Instruction selection chooses instructions; register allocation
+assigns values to available registers.
+
+
+Q7. What is an addressing mode?
+
+ANSWER:
+
+An addressing mode specifies how an instruction identifies or
+computes the location of its operand.
+
+
+Q8. Why are addressing modes important?
+
+ANSWER:
+
+They can allow complex address calculations to be performed directly
+by machine instructions, reducing instruction count and computation.
+
+
+Q9. What is instruction scheduling?
+
+ANSWER:
+
+Instruction scheduling determines the order of selected instructions
+while respecting dependencies and attempting to improve performance.
+
+
+Q10. What factors affect instruction-selection cost?
+
+ANSWER:
+
+Instruction count, latency, throughput, code size, memory operations,
+register pressure and other target-specific characteristics.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+56. PRACTICAL MINI CODE GENERATOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose input IR is:
+
+    t1 = a + b
+    t2 = t1 * c
+    x = t2 - d
+
+
+Very simple selector:
+
+    generate(t1 = a + b):
+
+        LOAD R1, a
+        ADD R1, b
+        return R1
+
+
+    generate(t2 = t1 * c):
+
+        MUL R1, c
+        return R1
+
+
+    generate(x = t2 - d):
+
+        SUB R1, d
+        STORE x, R1
+
+
+Generated code:
+
+    LOAD R1, a
+    ADD  R1, b
+    MUL  R1, c
+    SUB  R1, d
+    STORE x, R1
+
+
+This is a simplified educational code generator.
+
+Real compilers are considerably more sophisticated.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+57. CHAPTER 28 CONNECTION WITH PREVIOUS CHAPTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 27:
+
+    BASIC BLOCKS & CONTROL FLOW
+              ↓
+    Understand where code executes
+
+
+Chapter 28:
+
+    INSTRUCTION SELECTION
+              ↓
+    Decide which machine instructions implement it
+
+
+Together:
+
+    IR
+     ↓
+    Basic Blocks
+     ↓
+    CFG
+     ↓
+    Select Instructions
+     ↓
+    Allocate Registers
+     ↓
+    Generate Machine Code
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+58. CONNECTION WITH NEXT CHAPTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 28:
+
+    Instruction Selection
+          ↓
+    Instructions need registers
+          ↓
+    But registers are limited
+          ↓
+    Register Allocation
+          ↓
+    Register Assignment
+          ↓
+    Spilling
+
+
+Therefore the next major topic is:
+
+    CHAPTER 29 — REGISTER ALLOCATION
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+59. ONE-PAGE REVISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+INSTRUCTION SELECTION
+        ↓
+IR → Machine Instructions
+
+
+MAIN INPUT:
+
+    IR
+    +
+    Target Machine
+
+
+MAIN OUTPUT:
+
+    Target Instructions
+
+
+IMPORTANT STRUCTURES:
+
+    Expression Tree
+    DAG
+
+
+IMPORTANT TECHNIQUES:
+
+    Pattern Matching
+    Tree Covering
+    Dynamic Programming
+    DAG-based selection
+
+
+IMPORTANT MACHINE FEATURES:
+
+    Registers
+    Instruction Set
+    Addressing Modes
+    Instruction Costs
+
+
+IMPORTANT DISTINCTIONS:
+
+    Selection  → Which instructions?
+
+    Allocation → Which registers?
+
+    Scheduling → What order?
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+60. MASTER MEMORY MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    INTERMEDIATE REPRESENTATION
+                               │
+                               ↓
+                        Expression Tree
+                               │
+                               ↓
+                         Pattern Matching
+                               │
+                               ↓
+                         Tree Covering
+                               │
+                         ┌─────┴─────┐
+                         ↓           ↓
+                  Machine Pattern   Cost
+                         │           │
+                         └─────┬─────┘
+                               ↓
+                    INSTRUCTION SELECTION
+                               │
+                               ↓
+                     Target Instructions
+                               │
+                               ↓
+                     REGISTER ALLOCATION
+                               │
+                               ↓
+                      MACHINE CODE
+
+
+Remember:
+
+    TREE → PATTERNS → INSTRUCTIONS
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+61. FINAL MASTERY CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You should now be able to:
+
+[✓] Define instruction selection
+[✓] Explain why it is required
+[✓] Explain target-machine dependence
+[✓] Explain machine instruction sets
+[✓] Explain addressing modes
+[✓] Build simple expression trees
+[✓] Explain tree pattern matching
+[✓] Explain tree covering
+[✓] Understand minimum-cost selection
+[✓] Understand dynamic programming
+[✓] Explain DAG-based selection
+[✓] Explain array-address selection
+[✓] Explain pointer-address selection
+[✓] Explain structure-field addressing
+[✓] Select arithmetic instructions
+[✓] Select branch instructions
+[✓] Understand CALL/RETURN selection
+[✓] Distinguish selection from allocation
+[✓] Distinguish selection from scheduling
+[✓] Understand RISC vs CISC impact
+[✓] Solve basic GATE questions
+[✓] Explain instruction selection in an interview
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                     CHAPTER 28 COMPLETE                             ║
+║                                                                      ║
+║ NEXT: CHAPTER 29 — REGISTER ALLOCATION                              ║
+║                                                                      ║
+║ Type "NEXT" to continue.                                             ║
+╚══════════════════════════════════════════════════════════════════════╝

@@ -1,0 +1,2257 @@
+============================================================
+CHAPTER 22 — RUNTIME STORAGE ORGANIZATION
+============================================================
+
+PHASE 6 — RUNTIME ENVIRONMENT
+
+LEVEL:
+BEGINNER → CORE → ADVANCED → GATE → INTERVIEW → PRACTICAL
+
+
+MASTER SYLLABUS TOPICS
+----------------------
+1. Runtime environment
+2. Runtime storage organization
+3. Memory layout
+4. Code/Text segment
+5. Static/Global area
+6. Stack
+7. Heap
+8. Static allocation
+9. Stack allocation
+10. Heap allocation
+11. Memory management
+12. Compiler vs runtime responsibility
+13. Activation-record connection
+14. GATE concepts and numerical problems
+15. Interview questions
+
+
+============================================================
+1. CHAPTER POSITION
+============================================================
+
+Previous chapters:
+
+Chapter 19 → Intermediate Representation
+Chapter 20 → Three-Address Code
+Chapter 21 → Boolean Expressions & Control Flow
+
+Current:
+
+Chapter 22 → Runtime Storage Organization
+
+Next:
+
+Chapter 23 → Activation Records
+
+
+The important connection is:
+
+    Source Program
+         ↓
+    Compiler
+         ↓
+    Intermediate Representation
+         ↓
+    Runtime Storage
+         ↓
+    Activation Records
+         ↓
+    Procedure Calls / Recursion
+         ↓
+    Machine Execution
+
+
+============================================================
+2. WHAT IS A RUNTIME ENVIRONMENT?
+============================================================
+
+Runtime means:
+
+    The period when a program is actually executing.
+
+A runtime environment is the combination of:
+
+    memory
+    registers
+    calling mechanisms
+    runtime libraries
+    data structures
+    execution support
+
+that allows a compiled program to execute correctly.
+
+
+Simple example:
+
+    int x = 10;
+    int y = 20;
+    int z = x + y;
+
+
+When the program runs, the values:
+
+    x
+    y
+    z
+
+must exist somewhere in memory or registers.
+
+The runtime environment determines how storage is
+organized and accessed.
+
+
+============================================================
+3. WHY DOES A COMPILER CARE ABOUT MEMORY?
+============================================================
+
+Consider:
+
+    int x = 10;
+
+The compiler must eventually generate code that allows the
+program to:
+
+    store x
+    access x
+    modify x
+    destroy x when appropriate
+
+
+Consider a function:
+
+    void fun() {
+        int x;
+    }
+
+
+When fun() starts:
+
+    x needs storage.
+
+When fun() finishes:
+
+    x's storage is no longer needed.
+
+Now consider:
+
+    recursion
+
+Multiple invocations of the same function can exist
+simultaneously.
+
+Therefore, the compiler needs a runtime storage strategy.
+
+
+============================================================
+4. BASIC MEMORY LAYOUT
+============================================================
+
+A typical process memory layout can be viewed conceptually
+as:
+
+        HIGH ADDRESS
+    +----------------------+
+    |        STACK         |
+    |          ↓           |
+    +----------------------+
+    |                      |
+    |       Free Space     |
+    |                      |
+    |          ↑           |
+    +----------------------+
+    |        HEAP          |
+    +----------------------+
+    | Static / Global Data |
+    +----------------------+
+    |   Code / Text        |
+    +----------------------+
+        LOW ADDRESS
+
+
+IMPORTANT:
+
+This is a conceptual layout.
+
+Exact layout, direction, protection, and organization depend
+on the operating system, architecture, executable format,
+and runtime implementation.
+
+
+============================================================
+5. MAJOR STORAGE AREAS
+============================================================
+
+The major conceptual regions are:
+
+    1. Code/Text
+    2. Static/Global Data
+    3. Heap
+    4. Stack
+
+
++----------------------+----------------------------------+
+| Region               | Main purpose                     |
++----------------------+----------------------------------+
+| Code/Text            | Program instructions             |
+| Static/Global        | Static/global lifetime data      |
+| Heap                 | Dynamically allocated objects    |
+| Stack                | Function calls and local data    |
++----------------------+----------------------------------+
+
+
+============================================================
+6. CODE / TEXT SEGMENT
+============================================================
+
+The code or text segment contains the program's machine
+instructions.
+
+Example:
+
+    int main() {
+        return 0;
+    }
+
+
+After compilation and linking, executable instructions are
+placed in the executable's code/text region.
+
+
+Conceptually:
+
+    main()
+       ↓
+    machine instructions
+       ↓
+    Code/Text region
+
+
+The code segment is generally treated as non-writable in
+modern systems for protection.
+
+
+IMPORTANT:
+
+    Code/Text → instructions
+
+not:
+
+    variables
+
+
+============================================================
+7. STATIC / GLOBAL AREA
+============================================================
+
+This area is associated with objects having static storage
+duration.
+
+Examples include:
+
+    global variables
+    static variables
+
+
+Example:
+
+    int count = 10;
+
+    int main() {
+        static int x = 20;
+    }
+
+
+The objects:
+
+    count
+    x
+
+have lifetimes that extend across the relevant execution
+rather than being created and destroyed on each ordinary
+function call.
+
+
+============================================================
+8. GLOBAL VARIABLE
+============================================================
+
+Example:
+
+    int total = 100;
+
+    int main() {
+        total++;
+    }
+
+
+`total` exists for the duration of the program's execution.
+
+
+Conceptually:
+
+    Static/Global Area
+    ------------------
+    total = 100
+
+
+A global variable can be accessed by functions according to
+the language's visibility and linkage rules.
+
+
+============================================================
+9. STATIC LOCAL VARIABLE
+============================================================
+
+Example:
+
+    void counter() {
+        static int x = 0;
+        x++;
+    }
+
+
+Call:
+
+    counter();
+    counter();
+    counter();
+
+
+The value of x is conceptually:
+
+    First call:
+        x = 1
+
+    Second call:
+        x = 2
+
+    Third call:
+        x = 3
+
+
+Unlike an ordinary automatic local variable, the static local
+object retains its storage across calls.
+
+
+============================================================
+10. STACK
+============================================================
+
+The stack is commonly used for function-call-related
+storage.
+
+Typical stack information can include:
+
+    local automatic variables
+    parameters
+    return information
+    saved registers
+    temporaries
+    control information
+
+
+Example:
+
+    int add(int a, int b) {
+        int c;
+        c = a + b;
+        return c;
+    }
+
+
+When add() is called, runtime storage is created for the
+invocation.
+
+
+Conceptually:
+
+    Stack
+    +------------------+
+    | add() invocation |
+    | a                |
+    | b                |
+    | c                |
+    | return info      |
+    +------------------+
+
+
+The detailed structure is called an:
+
+    ACTIVATION RECORD
+
+Chapter 23 will study this in detail.
+
+
+============================================================
+11. WHY IS THE STACK USEFUL?
+============================================================
+
+Function calls usually have a nested lifetime.
+
+Example:
+
+    main()
+       ↓
+      f()
+       ↓
+      g()
+
+
+When g() returns:
+
+    g() storage can be removed.
+
+Then:
+
+    f() continues.
+
+Then:
+
+    f() returns.
+
+Then:
+
+    main() continues.
+
+
+This naturally matches stack behavior:
+
+    Last In → First Out
+
+or:
+
+    LIFO
+
+
+============================================================
+12. STACK EXAMPLE
+============================================================
+
+Suppose:
+
+    main() calls f()
+    f() calls g()
+
+
+Stack conceptually becomes:
+
+    +----------------+
+    | g()            |
+    +----------------+
+    | f()            |
+    +----------------+
+    | main()         |
+    +----------------+
+
+
+When g() returns:
+
+    +----------------+
+    | f()            |
+    +----------------+
+    | main()         |
+    +----------------+
+
+
+When f() returns:
+
+    +----------------+
+    | main()         |
+    +----------------+
+
+
+This is why stack allocation is highly suitable for
+nested function calls.
+
+
+============================================================
+13. HEAP
+============================================================
+
+The heap is commonly used for dynamically allocated storage.
+
+Dynamic allocation means:
+
+    Storage is requested during program execution.
+
+Examples:
+
+    malloc()
+    calloc()
+    realloc()
+    new
+
+and corresponding deallocation mechanisms such as:
+
+    free()
+    delete
+
+depending on the programming language.
+
+
+Example in C:
+
+    int *p;
+
+    p = malloc(sizeof(int));
+
+
+The integer object's storage is dynamically obtained from
+the heap.
+
+
+Conceptually:
+
+    Stack:
+        p → address
+
+    Heap:
+        dynamically allocated integer
+
+
+============================================================
+14. STACK vs HEAP
+============================================================
+
++----------------+------------------------------+
+| Stack          | Heap                         |
++----------------+------------------------------+
+| Call-oriented  | Dynamic allocation           |
+| Usually LIFO   | Flexible lifetime            |
+| Automatic      | Explicit/managed allocation  |
+| Fast management| More complex management      |
+| Local data     | Dynamic objects              |
+| Call frames    | Variable-size objects        |
++----------------+------------------------------+
+
+
+IMPORTANT:
+
+The exact implementation varies by language and runtime.
+Do not assume every language uses these areas identically.
+
+
+============================================================
+15. SIMPLE REAL-WORLD ANALOGY
+============================================================
+
+Think of memory as a building.
+
+
+CODE/TEXT:
+
+    Instruction manual
+
+STATIC/GLOBAL:
+
+    Permanent/common storage
+
+STACK:
+
+    Temporary desk space for active tasks
+
+HEAP:
+
+    Storage room where objects can be requested and kept
+    for flexible lifetimes
+
+
+When a function finishes:
+
+    its stack-related storage can usually be released.
+
+
+When a dynamically allocated object is no longer needed:
+
+    its heap storage must be reclaimed according to the
+    language/runtime memory-management model.
+
+
+============================================================
+16. STATIC ALLOCATION
+============================================================
+
+Static allocation means storage is determined before or
+independently of individual procedure-call lifetimes and
+remains allocated for the relevant execution lifetime.
+
+
+Typical examples:
+
+    global variables
+    static variables
+
+
+Example:
+
+    int x;
+    static int y;
+
+
+Conceptually:
+
+    Program starts
+         ↓
+    storage exists
+         ↓
+    program executes
+         ↓
+    storage remains
+         ↓
+    program ends
+
+
+============================================================
+17. WHEN IS STATIC ALLOCATION SUITABLE?
+============================================================
+
+Static allocation works well when:
+
+    storage size is known
+    lifetime is predictable
+    data does not need separate storage for each recursive
+    or simultaneous invocation
+
+
+It is not suitable by itself for general recursive procedure
+calls where each invocation needs independent local storage.
+
+
+============================================================
+18. STACK ALLOCATION
+============================================================
+
+Stack allocation manages storage associated with nested
+procedure/function calls.
+
+Example:
+
+    main()
+      ↓
+      f()
+      ↓
+      g()
+
+
+Storage:
+
+    main frame
+    f frame
+    g frame
+
+
+When g returns:
+
+    remove g frame
+
+
+When f returns:
+
+    remove f frame
+
+
+This is efficient because storage follows call nesting.
+
+
+============================================================
+19. HEAP ALLOCATION
+============================================================
+
+Heap allocation is used when storage needs a flexible
+lifetime or size that cannot conveniently be handled as a
+simple stack frame.
+
+
+Example:
+
+    Node *p = malloc(sizeof(Node));
+
+
+The object can remain alive independently of the function
+that created the pointer, provided the language's ownership/
+lifetime rules allow it.
+
+
+For example:
+
+    function A creates object
+    function A returns
+    object remains reachable
+    function B later uses object
+
+
+A simple stack-only allocation strategy cannot represent
+this lifetime correctly.
+
+
+============================================================
+20. DYNAMIC MEMORY
+============================================================
+
+Dynamic memory means memory whose allocation/reclamation
+is handled during program execution.
+
+
+Examples:
+
+C:
+
+    malloc()
+    free()
+
+
+C++:
+
+    new
+    delete
+
+
+Managed languages:
+
+    objects are generally allocated dynamically and reclaimed
+    by the runtime's memory-management system, often using
+    garbage collection.
+
+
+Compiler and runtime cooperate to implement these models.
+
+
+============================================================
+21. MEMORY LIFETIME
+============================================================
+
+Different objects have different lifetimes.
+
+Consider:
+
+    global variable
+        ↓
+    lifetime ≈ entire program execution
+
+    automatic local variable
+        ↓
+    lifetime ≈ function invocation
+
+    dynamic object
+        ↓
+    lifetime depends on allocation/language rules
+
+
+Therefore:
+
+    Storage location depends heavily on object lifetime.
+
+
+This is one of the most important ideas in runtime storage.
+
+
+============================================================
+22. STORAGE DURATION CONCEPT
+============================================================
+
+A useful conceptual classification is:
+
+    1. Static lifetime
+    2. Automatic/call lifetime
+    3. Dynamic lifetime
+
+
+Example:
+
+    global x
+        → static
+
+    local int y inside function
+        → automatic
+
+    malloc-created object
+        → dynamic
+
+
+The exact terminology differs between programming
+languages, but the lifetime idea is fundamental.
+
+
+============================================================
+23. WHY STACK CANNOT HANDLE EVERYTHING
+============================================================
+
+Suppose:
+
+    Node *createNode() {
+        Node *p = malloc(...);
+        return p;
+    }
+
+
+The function returns.
+
+The pointer p itself may be part of the function's stack
+storage.
+
+But the dynamically allocated Node can remain alive after
+the function returns.
+
+
+Therefore:
+
+    pointer variable
+        → stack/call storage
+
+    dynamically allocated object
+        → heap
+
+
+This distinction is extremely important.
+
+
+============================================================
+24. STACK OVERFLOW
+============================================================
+
+A stack has finite available space.
+
+Consider infinite recursion:
+
+    void f() {
+        f();
+    }
+
+
+Execution:
+
+    f()
+    ↓
+    f()
+    ↓
+    f()
+    ↓
+    f()
+    ↓
+    ...
+
+
+Each call requires additional call-related storage.
+
+
+Eventually available stack space is exhausted.
+
+This can produce:
+
+    STACK OVERFLOW
+
+
+Conceptually:
+
+    Call 1 → frame
+    Call 2 → frame
+    Call 3 → frame
+    ...
+    Call N → insufficient stack space
+
+
+============================================================
+25. HEAP EXHAUSTION
+============================================================
+
+The heap also has finite resources.
+
+Suppose a program repeatedly allocates memory:
+
+    while (true) {
+        malloc(...);
+    }
+
+
+If allocated memory is not reclaimed and available memory is
+exhausted, allocation can fail or the process can encounter
+resource exhaustion.
+
+
+This is different from stack overflow.
+
+
+============================================================
+26. MEMORY LEAK
+============================================================
+
+A memory leak occurs when dynamically allocated storage is
+no longer usefully reachable/needed but is not reclaimed in
+a memory-management model where reclamation is required.
+
+
+Example in C:
+
+    int *p = malloc(sizeof(int));
+
+    p = NULL;
+
+
+The allocated object can no longer be accessed through p.
+
+If there is no other pointer to it, the storage has become
+unreachable, but C does not automatically reclaim it.
+
+
+This is a memory leak.
+
+
+Concept:
+
+    allocate
+       ↓
+    lose reference
+       ↓
+    cannot reclaim/use object
+       ↓
+    leaked memory
+
+
+============================================================
+27. DANGLING POINTER
+============================================================
+
+A dangling pointer refers to storage that is no longer valid.
+
+
+Example concept:
+
+    pointer → object
+
+    object destroyed
+
+    pointer → invalid storage
+
+
+This is different from a memory leak.
+
+
+MEMORY LEAK:
+
+    Object exists
+    but program lost the ability to reclaim/access it.
+
+
+DANGLING POINTER:
+
+    Pointer exists
+    but the object/storage is no longer valid.
+
+
+============================================================
+28. STACK vs HEAP — COMMON CONFUSION
+============================================================
+
+Suppose:
+
+    int *p = malloc(sizeof(int));
+
+
+Question:
+
+Where is p?
+
+Conceptually:
+
+    p → automatic local variable
+         often in stack/call storage
+
+Where is the integer object?
+
+    dynamically allocated object
+         → heap
+
+
+Therefore:
+
+    Pointer variable and pointed-to object
+    are NOT necessarily in the same memory region.
+
+
+This is a common interview and GATE concept.
+
+
+============================================================
+29. MEMORY ALLOCATION STRATEGIES
+============================================================
+
+Heap allocators may use different strategies.
+
+Common conceptual strategies include:
+
+    First Fit
+    Best Fit
+    Worst Fit
+
+
+------------------------------------------------------------
+29.1 First Fit
+------------------------------------------------------------
+
+Choose the first sufficiently large free block.
+
+
+------------------------------------------------------------
+29.2 Best Fit
+------------------------------------------------------------
+
+Choose the smallest free block that can satisfy the request.
+
+
+------------------------------------------------------------
+29.3 Worst Fit
+------------------------------------------------------------
+
+Choose the largest available free block.
+
+
+These strategies relate to heap memory management and
+fragmentation.
+
+
+============================================================
+30. FRAGMENTATION
+============================================================
+
+Fragmentation means memory becomes divided into pieces in a
+way that reduces effective usability.
+
+
+Two broad concepts:
+
+    Internal fragmentation
+    External fragmentation
+
+
+------------------------------------------------------------
+30.1 Internal Fragmentation
+------------------------------------------------------------
+
+Allocated region is larger than the requested useful data.
+
+Example:
+
+    requested = 10 bytes
+    allocated block = 16 bytes
+
+Unused portion:
+
+    6 bytes
+
+
+------------------------------------------------------------
+30.2 External Fragmentation
+------------------------------------------------------------
+
+Free memory exists, but it is divided into separated holes.
+
+
+Example:
+
+    [Used][Free][Used][Free][Used][Free]
+
+
+Total free memory may be large, but a large contiguous
+allocation may not fit.
+
+
+============================================================
+31. HEAP AND FRAGMENTATION
+============================================================
+
+Dynamic allocation can produce fragmentation over time.
+
+Example:
+
+    Allocate A
+    Allocate B
+    Allocate C
+
+    [A][B][C]
+
+Free B:
+
+    [A][Free][C]
+
+Allocate something larger:
+
+    It may not fit into the small free region.
+
+
+Modern allocators use sophisticated strategies to reduce
+such problems.
+
+
+============================================================
+32. MEMORY MANAGEMENT
+============================================================
+
+Memory management means controlling:
+
+    allocation
+    access
+    lifetime
+    reclamation
+
+
+Different systems use different approaches.
+
+
+C:
+
+    programmer-managed allocation/deallocation
+
+
+C++:
+
+    manual mechanisms plus RAII/smart pointers and other
+    language/library mechanisms
+
+
+Garbage-collected languages:
+
+    runtime automatically identifies and reclaims eligible
+    objects according to the garbage collector.
+
+
+============================================================
+33. GARBAGE COLLECTION CONNECTION
+============================================================
+
+Garbage collection is automatic memory reclamation.
+
+Basic idea:
+
+    Object allocated
+         ↓
+    Object becomes unreachable
+         ↓
+    Garbage collector identifies it
+         ↓
+    Memory can be reclaimed
+
+
+Examples of garbage-collection techniques include:
+
+    reference counting
+    mark-and-sweep
+    mark-and-compact
+    copying
+    generational collection
+
+
+These are studied in greater detail later in the master
+syllabus.
+
+
+============================================================
+34. COMPILER vs RUNTIME
+============================================================
+
+A compiler may determine:
+
+    variable locations
+    stack-frame structure
+    calling conventions
+    object layout
+    generated allocation code
+
+
+The runtime system may handle:
+
+    dynamic allocation
+    deallocation
+    garbage collection
+    function-call support
+    exception support
+    runtime libraries
+
+
+Therefore:
+
+    Compiler + Runtime System
+
+work together.
+
+
+============================================================
+35. STATIC ALLOCATION — ADVANTAGES
+============================================================
+
+Advantages:
+
+    • Simple
+    • Predictable
+    • Low runtime allocation overhead
+    • Suitable for static/global data
+
+
+Limitations:
+
+    • Poor fit for arbitrary dynamic lifetimes
+    • Cannot naturally give separate storage to unlimited
+      recursive invocations
+    • Less flexible
+
+
+============================================================
+36. STACK ALLOCATION — ADVANTAGES
+============================================================
+
+Advantages:
+
+    • Fast allocation/deallocation
+    • Natural for function calls
+    • Supports recursion
+    • Follows LIFO behavior
+    • Efficient for automatic local variables
+
+
+Limitations:
+
+    • Limited stack size
+    • Object lifetime generally tied to call nesting
+    • Not suitable for arbitrary long-lived dynamic objects
+
+
+============================================================
+37. HEAP ALLOCATION — ADVANTAGES
+============================================================
+
+Advantages:
+
+    • Flexible lifetime
+    • Flexible size
+    • Supports dynamically created objects
+    • Objects can outlive the function that created them
+
+
+Limitations:
+
+    • More expensive management
+    • Fragmentation may occur
+    • Requires allocation/reclamation strategy
+    • Errors can cause leaks/dangling references
+    • Garbage collection may introduce runtime overhead
+
+
+============================================================
+38. IMPORTANT COMPARISON
+============================================================
+
++------------------+----------+-----------+----------------+
+| Feature          | Static   | Stack     | Heap           |
++------------------+----------+-----------+----------------+
+| Lifetime         | Long     | Call-based| Flexible       |
+| Allocation       | Fixed/   | Call      | Dynamic        |
+|                  | planned  | based     |                |
+| Recursion        | Poor fit | Excellent | Possible       |
+| Dynamic objects  | Poor fit | Limited   | Excellent      |
+| Management       | Simple   | Simple    | More complex   |
+| Fragmentation    | Low      | Low       | Possible       |
++------------------+----------+-----------+----------------+
+
+
+============================================================
+39. EXAMPLE — ALL THREE
+============================================================
+
+Consider:
+
+    int global = 100;
+
+    void fun() {
+        int local = 20;
+        int *p = malloc(sizeof(int));
+        *p = 30;
+    }
+
+
+Conceptually:
+
+STATIC/GLOBAL:
+
+    global = 100
+
+
+STACK / CALL STORAGE:
+
+    local = 20
+    p = address of heap object
+
+
+HEAP:
+
+    dynamically allocated integer = 30
+
+
+This is one of the most useful examples for remembering
+runtime storage organization.
+
+
+============================================================
+40. MEMORY MAP OF THE EXAMPLE
+============================================================
+
+             PROCESS MEMORY
+
+    +-----------------------------+
+    |            STACK            |
+    |-----------------------------|
+    | fun() frame                 |
+    | local = 20                  |
+    | p = heap address            |
+    +-----------------------------+
+
+    +-----------------------------+
+    |             HEAP            |
+    |-----------------------------|
+    | dynamically allocated int   |
+    | value = 30                  |
+    +-----------------------------+
+
+    +-----------------------------+
+    |       STATIC / GLOBAL       |
+    |-----------------------------|
+    | global = 100                |
+    +-----------------------------+
+
+    +-----------------------------+
+    |         CODE / TEXT         |
+    |-----------------------------|
+    | machine instructions        |
+    +-----------------------------+
+
+
+============================================================
+41. RUNTIME STORAGE AND RECURSION
+============================================================
+
+Consider:
+
+    int fact(int n) {
+        if (n <= 1)
+            return 1;
+
+        return n * fact(n-1);
+    }
+
+
+Call:
+
+    fact(3)
+
+
+Execution:
+
+    fact(3)
+       ↓
+    fact(2)
+       ↓
+    fact(1)
+
+
+Conceptually stack:
+
+    +----------------+
+    | fact(1)        |
+    +----------------+
+    | fact(2)        |
+    +----------------+
+    | fact(3)        |
+    +----------------+
+
+
+Each invocation needs separate storage.
+
+
+This is why stack allocation is closely connected with
+recursion.
+
+
+============================================================
+42. IMPORTANT RECURSION FACT
+============================================================
+
+For:
+
+    fact(3)
+
+there are simultaneously active invocations:
+
+    fact(3)
+    fact(2)
+    fact(1)
+
+
+Therefore, each invocation needs its own:
+
+    parameters
+    local variables
+    return information
+    control information
+
+
+These are represented using activation records.
+
+Chapter 23 will study this formally.
+
+
+============================================================
+43. ADDRESS BINDING
+============================================================
+
+A variable name eventually needs to correspond to some
+storage location/address.
+
+This process is related to:
+
+    binding
+
+
+Example:
+
+    int x;
+
+
+The compiler may determine how x will be accessed.
+
+Depending on the storage class and runtime model, the
+actual location may be:
+
+    statically known
+    stack-relative
+    dynamically obtained
+
+
+The exact address may also be affected by the loader,
+runtime, operating system, relocation, and virtual memory.
+
+
+============================================================
+44. OFFSET-BASED STACK ACCESS
+============================================================
+
+A local variable can often be accessed relative to a
+stack/frame pointer.
+
+
+Conceptually:
+
+    frame pointer + offset
+
+
+Example:
+
+    FP + 8   → parameter
+    FP - 4   → local variable
+
+
+Exact direction and offsets depend on architecture and
+calling convention.
+
+
+The key idea is:
+
+    Local variables can be addressed relative to the
+    current activation record.
+
+
+============================================================
+45. HEAP ADDRESSING
+============================================================
+
+Suppose:
+
+    p = address of dynamically allocated object
+
+
+Then:
+
+    p
+
+contains an address.
+
+Dereferencing:
+
+    *p
+
+accesses the object stored at that address.
+
+
+Conceptually:
+
+    p
+    ↓
+    address 5000
+    ↓
+    heap object
+
+
+This connects runtime storage with pointers and generated
+machine code.
+
+
+============================================================
+46. CODE + STATIC + STACK + HEAP
+============================================================
+
+A useful memory model:
+
+    CODE/TEXT
+        ↓
+    instructions
+
+    STATIC/GLOBAL
+        ↓
+    long-lived program data
+
+    STACK
+        ↓
+    active function-call data
+
+    HEAP
+        ↓
+    dynamically allocated data
+
+
+MEMORY TRICK:
+
+    Code = Instructions
+    Static = Long-lived
+    Stack = Calls
+    Heap = Dynamic
+
+
+============================================================
+47. GATE HIGH-YIELD CONCEPTS
+============================================================
+
+1. Static allocation is associated with long-lived storage.
+
+2. Stack allocation is naturally suited to nested procedure
+   calls.
+
+3. Recursion requires separate storage for each active
+   invocation.
+
+4. Heap allocation supports flexible object lifetimes.
+
+5. A pointer variable and the object it points to can be in
+   different storage areas.
+
+6. Stack follows LIFO behavior.
+
+7. Heap does not generally follow simple LIFO allocation.
+
+8. Global/static data is conceptually separate from
+   automatic stack data.
+
+9. Code/text contains executable instructions.
+
+10. Dynamic allocation commonly uses heap storage.
+
+
+============================================================
+48. GATE TRAPS
+============================================================
+
+TRAP 1:
+
+"All local variables are always stored on the stack."
+
+Not universally true.
+
+Compilers may place values in:
+
+    registers
+    stack
+    optimized memory locations
+
+depending on optimization and language/runtime rules.
+
+For introductory compiler questions, automatic locals are
+commonly associated with stack storage.
+
+
+TRAP 2:
+
+"Heap is always slower than stack."
+
+Too absolute.
+
+Heap management is generally more complex, but actual
+performance depends on allocator, runtime, cache behavior,
+optimization, and workload.
+
+
+TRAP 3:
+
+"Global variables are stored on the stack."
+
+Usually wrong.
+
+They are associated with static/global storage.
+
+
+TRAP 4:
+
+"Pointer and pointed object must be in the same region."
+
+Wrong.
+
+Example:
+
+    stack pointer → heap object
+
+
+TRAP 5:
+
+"Recursion requires heap allocation."
+
+Wrong.
+
+Traditional runtime systems naturally support recursive
+calls using stack-based activation records.
+
+
+TRAP 6:
+
+"Heap memory automatically means garbage collection."
+
+Wrong.
+
+C uses explicit allocation/deallocation.
+
+Garbage collection is a separate memory-management model.
+
+
+============================================================
+49. GATE-STYLE QUESTIONS
+============================================================
+
+Q1.
+Which region is primarily associated with executable
+instructions?
+
+ANSWER:
+
+    Code/Text
+
+
+Q2.
+Which region is naturally associated with function-call
+storage?
+
+ANSWER:
+
+    Stack
+
+
+Q3.
+Which region commonly supports dynamically allocated
+objects?
+
+ANSWER:
+
+    Heap
+
+
+Q4.
+Where are global/static objects conceptually stored?
+
+ANSWER:
+
+    Static/Global area
+
+
+Q5.
+Why is stack allocation suitable for recursion?
+
+ANSWER:
+
+    Each recursive invocation gets its own call-related
+    storage, and calls return in LIFO order.
+
+
+Q6.
+Can a pointer be on the stack while the object it points
+to is on the heap?
+
+ANSWER:
+
+    YES.
+
+
+Q7.
+What happens when recursion grows without bound?
+
+ANSWER:
+
+    Stack space can be exhausted, causing stack overflow.
+
+
+============================================================
+50. INTERVIEW QUESTION — STATIC vs STACK
+============================================================
+
+Q:
+What is the difference between static and stack allocation?
+
+
+Answer:
+
+Static allocation provides storage associated with long-lived
+objects whose storage is not created and destroyed for every
+function call.
+
+Stack allocation associates storage with active function
+invocations and is naturally managed in LIFO order.
+
+
+============================================================
+51. INTERVIEW QUESTION — STACK vs HEAP
+============================================================
+
+Q:
+What is the difference between stack and heap?
+
+
+Answer:
+
+Stack storage is primarily associated with active calls and
+has a structured lifetime based on call nesting.
+
+Heap storage is used for dynamically allocated objects whose
+lifetimes can be more flexible and independent of the call
+that created them.
+
+
+============================================================
+52. INTERVIEW QUESTION — WHY RECURSION USES STACK
+============================================================
+
+Q:
+Why does recursion require stack storage?
+
+
+Answer:
+
+Each active recursive call needs separate parameters, local
+state, return information, and other call-related data.
+Because recursive calls return in reverse order, the LIFO
+behavior of a stack naturally supports them.
+
+
+============================================================
+53. INTERVIEW QUESTION — MEMORY LEAK
+============================================================
+
+Q:
+What is a memory leak?
+
+
+Answer:
+
+A memory leak occurs when allocated storage is no longer
+usefully reachable or needed but is not reclaimed in a memory
+model where reclamation is required.
+
+
+============================================================
+54. INTERVIEW QUESTION — DANGLING POINTER
+============================================================
+
+Q:
+What is a dangling pointer?
+
+
+Answer:
+
+A dangling pointer is a pointer that refers to storage that
+is no longer valid.
+
+
+============================================================
+55. INTERVIEW QUESTION — STACK OVERFLOW
+============================================================
+
+Q:
+What causes stack overflow?
+
+
+Answer:
+
+Stack overflow occurs when the program requires more stack
+storage than is available, commonly due to excessively deep
+or infinite recursion or very large stack allocations.
+
+
+============================================================
+56. PRACTICAL COMPILER VIEW
+============================================================
+
+Suppose source code is:
+
+    int global = 10;
+
+    int add(int a, int b) {
+        int result;
+        result = a + b;
+        return result;
+    }
+
+    int main() {
+        int x;
+        x = add(5, 7);
+    }
+
+
+Runtime organization conceptually:
+
+    STATIC:
+        global = 10
+
+
+    STACK:
+        main() activation
+        x
+
+        add() activation
+        a
+        b
+        result
+
+
+    CODE:
+        main()
+        add()
+        other instructions
+
+
+If add() returns:
+
+    add()'s call-related storage is released/reused.
+
+
+============================================================
+57. RUNTIME STORAGE + CHAPTER 23
+============================================================
+
+Chapter 22:
+
+    Where is runtime storage organized?
+
+
+Chapter 23:
+
+    What exactly is inside one function's stack frame?
+
+
+Chapter 23 introduces:
+
+    ACTIVATION RECORD
+
+
+Typical activation-record components:
+
+    parameters
+    return address
+    return value
+    local variables
+    temporaries
+    saved registers
+    control link
+    access link
+
+
+Therefore:
+
+    Chapter 22 → Memory regions
+
+    Chapter 23 → Detailed function-call frame
+
+
+============================================================
+58. RUNTIME STORAGE + CODE GENERATION
+============================================================
+
+The code generator must produce instructions that access
+runtime storage correctly.
+
+For example:
+
+    x = y + z
+
+
+The generated machine code may need to:
+
+    load y
+    load z
+    add
+    store x
+
+
+But where are y, z, x?
+
+They may be:
+
+    registers
+    stack locations
+    static locations
+    memory referenced through pointers
+
+
+Therefore, runtime storage organization directly affects
+code generation.
+
+
+============================================================
+59. RUNTIME STORAGE + OPTIMIZATION
+============================================================
+
+Optimization may change where values reside.
+
+Example:
+
+    int x = 10;
+    int y = x + 20;
+
+
+An optimizing compiler may keep x in a register instead of
+memory.
+
+
+Therefore:
+
+    Source-level variable
+        ≠ necessarily fixed physical memory location
+
+
+This is important for advanced compiler understanding.
+
+
+============================================================
+60. MASTER MEMORY DIAGRAM
+============================================================
+
+                     PROCESS
+
+       +-----------------------------+
+       |            STACK            |
+       |-----------------------------|
+       | Function calls              |
+       | Parameters                  |
+       | Local automatic variables   |
+       | Temporaries                 |
+       +-----------------------------+
+                     ↑
+                     |
+               active calls
+
+
+       +-----------------------------+
+       |            HEAP             |
+       |-----------------------------|
+       | Dynamic objects              |
+       | malloc / new etc.            |
+       +-----------------------------+
+
+
+       +-----------------------------+
+       |       STATIC / GLOBAL       |
+       |-----------------------------|
+       | Global variables             |
+       | Static variables             |
+       +-----------------------------+
+
+
+       +-----------------------------+
+       |          CODE/TEXT           |
+       |-----------------------------|
+       | Program instructions         |
+       +-----------------------------+
+
+
+MEMORY TRICK:
+
+    CODE   → What to execute
+    STATIC → Long-lived data
+    STACK  → Who is currently calling whom
+    HEAP   → Dynamically created objects
+
+
+============================================================
+61. EXAM-READY COMPARISON
+============================================================
+
++------------------+---------------------------------------+
+| Concept          | Key Point                             |
++------------------+---------------------------------------+
+| Code/Text        | Instructions                          |
+| Static/Global    | Long-lived global/static data         |
+| Stack            | Function invocation storage           |
+| Heap             | Dynamic objects                       |
+| Static allocation | Predictable long-lived storage       |
+| Stack allocation | Nested calls / recursion              |
+| Heap allocation  | Flexible lifetime                     |
+| Stack overflow   | Stack capacity exhausted             |
+| Memory leak      | Allocated storage not reclaimed      |
+| Dangling pointer | Pointer to invalid storage            |
++------------------+---------------------------------------+
+
+
+============================================================
+62. 10 MOST IMPORTANT FACTS
+============================================================
+
+1. Runtime environment supports program execution.
+
+2. Process memory is conceptually divided into code, static,
+   stack, and heap regions.
+
+3. Code/Text stores executable instructions.
+
+4. Static/Global storage contains long-lived global/static
+   objects.
+
+5. Stack storage is associated with active function calls.
+
+6. Heap storage supports dynamic allocation.
+
+7. Recursion requires separate storage for active calls.
+
+8. Stack is naturally LIFO.
+
+9. Heap objects can have lifetimes independent of the
+   function that allocated them.
+
+10. Chapter 23 explains the activation record inside the
+    stack/call storage.
+
+
+============================================================
+63. QUICK SELF-TEST
+============================================================
+
+Try answering these without looking above.
+
+1. What is a runtime environment?
+
+2. What are the four major conceptual memory regions?
+
+3. What is stored in the code/text region?
+
+4. Why are global variables associated with static storage?
+
+5. Why is stack allocation suitable for function calls?
+
+6. Why does recursion require multiple stack frames?
+
+7. What is the purpose of heap storage?
+
+8. What is the difference between a memory leak and a
+   dangling pointer?
+
+9. Can a stack variable point to a heap object?
+
+10. What is stack overflow?
+
+11. What is static allocation?
+
+12. What is dynamic allocation?
+
+13. What is the difference between stack and heap?
+
+14. What happens to a function's call-related storage when
+    the function returns?
+
+15. What is an activation record?
+
+
+============================================================
+64. ULTRA-SHORT REVISION
+============================================================
+
+RUNTIME:
+
+    Program execution environment
+
+
+MEMORY:
+
+    Code
+    Static/Global
+    Stack
+    Heap
+
+
+CODE:
+
+    Instructions
+
+
+STATIC:
+
+    Global/static long-lived data
+
+
+STACK:
+
+    Function calls
+    Local automatic data
+    Parameters
+    Recursion
+
+
+HEAP:
+
+    Dynamic objects
+    Flexible lifetime
+
+
+STATIC ALLOCATION:
+
+    Long-lived / predetermined storage
+
+
+STACK ALLOCATION:
+
+    Call-based LIFO storage
+
+
+HEAP ALLOCATION:
+
+    Dynamic storage
+
+
+STACK OVERFLOW:
+
+    Too much stack usage
+
+
+MEMORY LEAK:
+
+    Allocated memory not reclaimed
+
+
+DANGLING POINTER:
+
+    Pointer to invalid storage
+
+
+MOST IMPORTANT:
+
+    Stack → Calls
+    Heap  → Dynamic objects
+
+
+============================================================
+65. FINAL CHAPTER SUMMARY
+============================================================
+
+Runtime storage organization answers a fundamental compiler
+question:
+
+    "Where will program data and execution information live
+     while the program is running?"
+
+
+The conceptual answer is:
+
+    CODE
+      ↓
+    Program instructions
+
+
+    STATIC/GLOBAL
+      ↓
+    Long-lived global/static data
+
+
+    STACK
+      ↓
+    Active function calls and automatic storage
+
+
+    HEAP
+      ↓
+    Dynamically allocated objects
+
+
+The most important relationship is:
+
+    Function call
+         ↓
+    Stack storage
+         ↓
+    Activation record
+         ↓
+    Parameters + locals + return information
+         ↓
+    Function returns
+         ↓
+    Storage can be released/reused
+
+
+For dynamic objects:
+
+    Allocation
+         ↓
+    Heap
+         ↓
+    Object lifetime
+         ↓
+    Reclamation
+
+
+And for recursion:
+
+    f()
+     ↓
+    f()
+     ↓
+    f()
+     ↓
+    multiple active invocations
+     ↓
+    multiple activation records
+
+
+============================================================
+CHAPTER 22 COMPLETE
+============================================================
+
+NEXT MASTER-SYLLABUS CHAPTER:
+
+CHAPTER 23 — ACTIVATION RECORDS
+
+Topics:
+
+    • Activation record
+    • Function/procedure call frame
+    • Parameters
+    • Return address
+    • Return value
+    • Local variables
+    • Temporaries
+    • Saved registers
+    • Control link
+    • Access link
+    • Stack-frame organization
+    • Caller and callee
+    • Activation tree
+    • Nested calls
+    • Recursion
+    • GATE problems
+    • Interview questions
+    • Practical examples
+
+Type:
+
+    NEXT
+
+to move to Chapter 23.
+============================================================

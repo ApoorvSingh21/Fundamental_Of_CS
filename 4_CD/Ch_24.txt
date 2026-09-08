@@ -1,0 +1,3469 @@
+======================================================================
+                 COMPILER DESIGN — CHAPTER 24
+                    PROCEDURE CALLS
+======================================================================
+
+LEVEL: Beginner → Intermediate → Advanced → GATE → Interview → Practical
+
+MASTER SYLLABUS:
+Chapter 24 — Procedure Calls
+------------------------------------------------------------
+1. Calling sequence
+2. Caller and callee
+3. Parameter passing
+   - Call by value
+   - Call by reference
+   - Call by name
+4. Return values
+5. Stack-frame setup and teardown
+6. Register conventions
+7. Calling conventions
+8. Nested procedure calls
+9. GATE concepts and numerical problems
+10. Interview questions
+11. Practical compiler connection
+------------------------------------------------------------
+
+
+======================================================================
+1. WHAT IS A PROCEDURE CALL?
+======================================================================
+
+A procedure call means:
+
+    One function/procedure asks another function/procedure to execute.
+
+Example:
+
+    main()
+    {
+        add();
+    }
+
+Here:
+
+    main()  → caller
+    add()   → callee
+
+The function that makes the call is called the CALLER.
+
+The function being called is called the CALLEE.
+
+
+Simple real-world analogy:
+
+    You = caller
+    Friend = callee
+
+You ask your friend:
+
+    "Please calculate 10 + 20."
+
+Your friend performs the task and gives the result back.
+
+Similarly:
+
+    Caller → calls → Callee
+    Callee → executes → returns → Caller
+
+
+Example:
+
+    int main()
+    {
+        int x;
+
+        x = add(10, 20);
+
+        return 0;
+    }
+
+Flow:
+
+    main()
+      |
+      | call add(10,20)
+      ↓
+    add()
+      |
+      | calculate 10 + 20
+      ↓
+    return 30
+      |
+      ↓
+    main()
+
+
+IMPORTANT:
+
+A procedure/function call is not just a jump.
+
+The system must remember information such as:
+
+    • where to return
+    • arguments
+    • local variables
+    • return value
+    • registers
+    • stack/frame information
+
+This is why procedure calls are closely connected to
+ACTIVATION RECORDS.
+
+
+======================================================================
+2. CONNECTION WITH CHAPTER 23
+======================================================================
+
+Chapter 23:
+    ACTIVATION RECORDS
+
+Chapter 24:
+    PROCEDURE CALLS
+
+An activation record is the runtime storage associated with
+one function invocation.
+
+A procedure call creates/uses an activation record.
+
+Example:
+
+    main()
+       |
+       ↓
+    add()
+       |
+       ↓
+    return
+
+When add() executes, its activation record may contain:
+
+    +----------------------+
+    | Parameters           |
+    | Return value         |
+    | Return address       |
+    | Local variables      |
+    | Temporaries          |
+    | Saved registers      |
+    | Control link         |
+    | Access link          |
+    +----------------------+
+
+So:
+
+    Procedure call
+          ↓
+    Activation record setup
+          ↓
+    Procedure execution
+          ↓
+    Return
+          ↓
+    Activation record cleanup
+
+
+======================================================================
+3. CALLING SEQUENCE
+======================================================================
+
+A CALLING SEQUENCE is the set of steps performed when a procedure
+is called and when it returns.
+
+It generally has two parts:
+
+    1. CALL SEQUENCE
+    2. RETURN SEQUENCE
+
+
+Conceptually:
+
+    Caller
+       |
+       | 1. Prepare arguments
+       | 2. Save required information
+       | 3. Transfer control
+       ↓
+    Callee
+       |
+       | 4. Create/initialize frame
+       | 5. Execute procedure
+       | 6. Prepare return value
+       ↓
+    Caller
+       |
+       | 7. Restore state
+       | 8. Continue execution
+
+
+IMPORTANT:
+
+The exact calling sequence is machine-, compiler-, ABI-, and
+language-dependent.
+
+There is NOT one universal physical implementation.
+
+
+======================================================================
+4. CALL SEQUENCE — STEP BY STEP
+======================================================================
+
+Suppose:
+
+    result = add(10, 20);
+
+Conceptually the caller performs:
+
+STEP 1:
+    Evaluate arguments.
+
+    10
+    20
+
+STEP 2:
+    Place arguments according to the calling convention.
+
+Arguments may be placed:
+
+    • registers
+    • stack
+    • combination of both
+
+STEP 3:
+    Save required caller state if necessary.
+
+STEP 4:
+    Transfer control to add().
+
+STEP 5:
+    Callee establishes its activation record.
+
+STEP 6:
+    Callee executes.
+
+STEP 7:
+    Callee places return value in the agreed location.
+
+STEP 8:
+    Callee returns control to caller.
+
+STEP 9:
+    Caller restores/updates its state.
+
+STEP 10:
+    Caller continues execution.
+
+Conceptually:
+
+    result = add(10,20)
+
+       CALLER
+         |
+         | arguments
+         ↓
+    +----------------+
+    | argument setup |
+    +----------------+
+         |
+         | CALL
+         ↓
+    +----------------+
+    |     add()      |
+    | activation     |
+    | record         |
+    +----------------+
+         |
+         | return value
+         ↓
+    +----------------+
+    | restore state  |
+    +----------------+
+         |
+         ↓
+    continue
+
+
+======================================================================
+5. CALLER
+======================================================================
+
+CALLER = procedure/function that invokes another procedure.
+
+
+Example:
+
+    void display()
+    {
+        printf("Hello");
+    }
+
+    int main()
+    {
+        display();
+    }
+
+Here:
+
+    main() = caller
+    display() = callee
+
+
+Another example:
+
+    f()
+    {
+        g();
+    }
+
+    g()
+    {
+        h();
+    }
+
+For:
+
+    f → g
+
+    f = caller
+    g = callee
+
+For:
+
+    g → h
+
+    g = caller
+    h = callee
+
+
+IMPORTANT:
+
+Caller/callee is RELATIVE to a particular call.
+
+A function can be:
+
+    • caller in one situation
+    • callee in another situation
+
+
+Example:
+
+    main()
+      |
+      ↓
+      f()
+      |
+      ↓
+      g()
+
+During main → f:
+
+    main = caller
+    f    = callee
+
+During f → g:
+
+    f = caller
+    g = callee
+
+
+======================================================================
+6. CALLEE
+======================================================================
+
+CALLEE = procedure/function that is called by another procedure.
+
+
+Example:
+
+    int add(int a, int b)
+    {
+        return a + b;
+    }
+
+    int main()
+    {
+        add(5,10);
+    }
+
+For the call:
+
+    add(5,10)
+
+    main = caller
+    add  = callee
+
+
+The callee normally needs to:
+
+    • establish its execution environment
+    • access parameters
+    • execute its body
+    • produce return value if any
+    • restore required state
+    • return control
+
+
+======================================================================
+7. CALLER-SAVED AND CALLEE-SAVED REGISTERS
+======================================================================
+
+Registers are small, fast storage locations inside the CPU.
+
+A procedure call may require registers to be preserved.
+
+Two common categories are:
+
+    CALLER-SAVED
+    CALLEE-SAVED
+
+
+--------------------------------------------------
+CALLER-SAVED REGISTERS
+--------------------------------------------------
+
+Caller-saved means:
+
+    The caller should assume these registers may be changed
+    by the callee.
+
+Therefore, if the caller needs their values after the call,
+the caller must save them.
+
+Example:
+
+    main:
+        value is in register R1
+
+        call f()
+
+        use R1
+
+If R1 is caller-saved:
+
+    main must preserve R1 before calling f()
+    if it needs the old value afterward.
+
+
+Memory trick:
+
+    CALLER-SAVED
+    =
+    Caller protects what it needs.
+
+
+--------------------------------------------------
+CALLEE-SAVED REGISTERS
+--------------------------------------------------
+
+Callee-saved means:
+
+    If the callee wants to modify these registers,
+    it must preserve their old values and restore them before return.
+
+
+Memory trick:
+
+    CALLEE-SAVED
+    =
+    Callee protects them.
+
+
+Conceptual:
+
+    Caller-saved:
+
+        Caller
+          |
+          | save if needed
+          ↓
+        CALL
+          ↓
+        Callee may modify
+
+
+    Callee-saved:
+
+        Caller
+          |
+          ↓
+        CALL
+          ↓
+        Callee saves old value
+          |
+          | uses register
+          |
+          | restores old value
+          ↓
+        RETURN
+
+
+IMPORTANT:
+
+Exact register classifications depend on the target architecture
+and ABI.
+
+Do NOT memorize a universal register list.
+
+
+======================================================================
+8. CALLING CONVENTION
+======================================================================
+
+A CALLING CONVENTION is a standardized agreement about how functions
+communicate at the machine-code level.
+
+It specifies things such as:
+
+    • where arguments are placed
+    • where return values are placed
+    • which registers are caller-saved
+    • which registers are callee-saved
+    • stack usage/alignment rules
+    • who performs certain cleanup
+    • how control is transferred
+    • how function names/symbols may be represented in some systems
+
+
+Think:
+
+    Calling convention = communication protocol between functions.
+
+
+Analogy:
+
+Two people want to communicate.
+
+They need to agree:
+
+    • language
+    • order
+    • format
+    • who speaks first
+    • where information goes
+
+Similarly, machine-level functions need an agreement.
+
+
+======================================================================
+9. ABI
+======================================================================
+
+ABI = APPLICATION BINARY INTERFACE
+
+An ABI defines binary-level conventions that allow separately compiled
+components to interact.
+
+Calling conventions are an important part of an ABI.
+
+Relationship:
+
+    Programming language
+           ↓
+    Compiler
+           ↓
+    ABI / calling convention
+           ↓
+    Machine code
+           ↓
+    Functions communicate
+
+
+IMPORTANT:
+
+ABI is broader than merely parameter passing.
+
+It can include:
+
+    • calling conventions
+    • binary data representation
+    • object/executable conventions
+    • register usage conventions
+    • stack alignment
+    • exception/unwinding conventions
+    • binary compatibility rules
+
+For compiler design, calling conventions are especially important
+for code generation.
+
+
+======================================================================
+10. PARAMETER PASSING
+======================================================================
+
+Parameter passing means:
+
+    How information is transferred from caller to callee.
+
+
+Example:
+
+    int add(int a, int b)
+
+Calling:
+
+    add(10,20)
+
+Here:
+
+    10 and 20 are arguments
+    a and b are parameters
+
+
+Terminology:
+
+    Argument:
+        Actual value supplied during call.
+
+    Parameter:
+        Formal variable defined by the called function.
+
+
+Example:
+
+    add(10,20)
+
+    10,20 = arguments
+
+    int add(int a,int b)
+
+    a,b = parameters
+
+
+Major mechanisms:
+
+    1. Call by value
+    2. Call by reference
+    3. Call by name
+
+Other languages/implementations may have additional mechanisms,
+but these are the mechanisms in our syllabus.
+
+
+======================================================================
+11. CALL BY VALUE
+======================================================================
+
+CALL BY VALUE means:
+
+    The callee receives a value corresponding to the argument.
+
+Conceptually, the parameter gets its own value.
+
+
+Example:
+
+    void change(int x)
+    {
+        x = 100;
+    }
+
+    int main()
+    {
+        int a = 10;
+
+        change(a);
+
+        printf("%d", a);
+    }
+
+Conceptually:
+
+    Before:
+
+        a = 10
+
+    Call:
+
+        change(a)
+
+    Inside change:
+
+        x = 10
+
+        x = 100
+
+    After return:
+
+        a = 10
+
+
+Why?
+
+Because x and a are conceptually distinct parameter/local storage.
+
+
+Diagram:
+
+    Caller:
+
+        a = 10
+         |
+         | value copied/passed
+         ↓
+    Callee:
+
+        x = 10
+
+        x = 100
+
+    Return:
+
+        a = 10
+
+
+IMPORTANT:
+
+"Copy" is a conceptual model. The compiler may use registers,
+stack slots, or optimized mechanisms as long as observable language
+semantics are preserved.
+
+
+Advantages:
+
+    • simple
+    • protects caller variable from direct modification
+    • easy to reason about
+
+
+Potential cost:
+
+    Large values may require significant copying unless optimized.
+
+
+======================================================================
+12. CALL BY REFERENCE
+======================================================================
+
+CALL BY REFERENCE means:
+
+    The parameter refers to the caller's object/storage.
+
+Therefore, modifying the parameter can modify the original object.
+
+
+Example:
+
+    void change(int &x)
+    {
+        x = 100;
+    }
+
+    int main()
+    {
+        int a = 10;
+
+        change(a);
+
+        printf("%d", a);
+    }
+
+
+Conceptually:
+
+    Caller:
+
+        a = 10
+        ↑
+        |
+        reference
+        |
+    Callee:
+
+        x
+
+    x = 100
+
+    Therefore:
+
+        a = 100
+
+
+Diagram:
+
+        Caller                    Callee
+
+        a = 10  <--------------->  x
+                   reference
+
+        x = 100
+
+        a = 100
+
+
+IMPORTANT:
+
+The exact implementation depends on the language and ABI.
+
+Often reference-like semantics can be implemented using an address,
+pointer, hidden pointer, or equivalent mechanism.
+
+
+======================================================================
+13. CALL BY VALUE VS CALL BY REFERENCE
+======================================================================
+
++----------------------+-----------------------+----------------------+
+| Feature              | Call by Value         | Call by Reference    |
++----------------------+-----------------------+----------------------+
+| Passed                | Value                 | Reference/location   |
+| Separate value       | Usually yes           | Not necessarily      |
+| Modify caller object | Normally no           | Can be yes           |
+| Copying               | May occur             | Often avoided        |
+| Aliasing              | Usually less direct   | Possible             |
++----------------------+-----------------------+----------------------+
+
+
+Memory trick:
+
+    VALUE → value is passed
+
+    REFERENCE → access to original object
+
+
+Example:
+
+    int a = 10;
+
+    f(a);
+
+Call by value:
+
+    f receives value 10.
+
+Call by reference:
+
+    f receives a way to refer to a.
+
+
+======================================================================
+14. CALL BY NAME
+======================================================================
+
+CALL BY NAME is a parameter-passing mechanism historically associated
+with languages such as Algol 60.
+
+It is different from both call by value and ordinary call by reference.
+
+
+Basic idea:
+
+    The argument is conceptually substituted/evaluated when the
+    parameter is used, rather than simply evaluated once at the
+    beginning as in ordinary call by value.
+
+
+It can be thought of as delayed evaluation of the argument.
+
+However, the full semantics are more subtle than simple textual
+substitution, especially when variables change and when the argument
+has side effects.
+
+
+Example concept:
+
+    procedure P(x)
+    {
+        use x;
+    }
+
+If called with an expression:
+
+    P(a + b)
+
+Under call-by-name, the expression is conceptually evaluated when x
+is used.
+
+
+IMPORTANT:
+
+Do NOT confuse:
+
+    Call by name
+        ≠
+    Call by reference
+
+
+Call by reference gives access to an existing object/location.
+
+Call by name has delayed/repeated evaluation semantics.
+
+
+======================================================================
+15. CALL BY NAME — SIMPLE EXAMPLE
+======================================================================
+
+Suppose conceptually:
+
+    procedure square(x)
+    {
+        return x * x;
+    }
+
+Call:
+
+    square(a + b)
+
+With call-by-name, x can conceptually behave like:
+
+    (a + b)
+
+each time x is used.
+
+So:
+
+    x * x
+
+behaves conceptually like:
+
+    (a+b) * (a+b)
+
+
+This is a conceptual explanation, not a complete implementation
+description.
+
+
+IMPORTANT GATE POINT:
+
+Call by name can cause an argument expression to be evaluated
+multiple times.
+
+
+Therefore, if the argument has side effects, behavior can differ
+significantly from call by value.
+
+
+======================================================================
+16. PARAMETER PASSING SUMMARY
+======================================================================
+
+CALL BY VALUE:
+
+    caller
+       |
+       | value
+       ↓
+    callee parameter
+
+    Modification of parameter does not normally modify caller's
+    original variable.
+
+
+CALL BY REFERENCE:
+
+    caller
+       |
+       | reference/location
+       ↓
+    callee parameter
+
+    Modification can affect caller's original object.
+
+
+CALL BY NAME:
+
+    caller
+       |
+       | delayed evaluation semantics
+       ↓
+    callee
+
+    Argument may be evaluated when parameter is used.
+
+
+Memory trick:
+
+    VALUE     → VALUE
+    REFERENCE → LOCATION/REFERENCE
+    NAME      → DELAYED EVALUATION
+
+
+======================================================================
+17. RETURN VALUE
+======================================================================
+
+A function can return a value to its caller.
+
+Example:
+
+    int add(int a, int b)
+    {
+        return a + b;
+    }
+
+    int x;
+
+    x = add(10,20);
+
+
+Execution:
+
+    add(10,20)
+        ↓
+    calculate 30
+        ↓
+    return 30
+        ↓
+    x = 30
+
+
+The return value may be communicated through:
+
+    • a designated register
+    • memory/stack location
+    • hidden return storage
+    • another ABI-defined mechanism
+
+The exact method depends on the target ABI and return type.
+
+
+Simple:
+
+    Caller
+      |
+      | add(10,20)
+      ↓
+    Callee
+      |
+      | 30
+      ↓
+    Caller
+
+
+======================================================================
+18. RETURN ADDRESS
+======================================================================
+
+Return address tells the program:
+
+    "Where should execution continue after the called function returns?"
+
+
+Example:
+
+    statement 1
+    statement 2
+    x = add(10,20);
+    statement 4
+
+
+After add() finishes:
+
+    execution must continue at:
+
+    statement 4
+
+
+Conceptually:
+
+    Caller:
+
+        CALL add
+             |
+             | saves return address
+             ↓
+        add()
+             |
+             | RETURN
+             ↓
+        statement 4
+
+
+IMPORTANT:
+
+Return address ≠ return value.
+
+Return address:
+
+    Where to continue execution.
+
+Return value:
+
+    Result produced by function.
+
+
+GATE TRAP:
+
+    "30 is the return address."
+
+    WRONG.
+
+    30 may be the return VALUE.
+
+    Return address identifies an instruction/control-flow location.
+
+
+======================================================================
+19. STACK FRAME SETUP
+======================================================================
+
+A stack frame is the activation record for a particular function call
+when stack-based activation is used.
+
+When a function is called, its stack frame may need to be established.
+
+
+Conceptual steps:
+
+    1. Pass arguments
+    2. Save required state
+    3. Save return address / establish return linkage
+    4. Save old frame information if required
+    5. Allocate space for locals
+    6. Save required registers
+    7. Establish frame pointer if used
+    8. Execute function body
+
+
+Conceptual memory:
+
+    +----------------------+
+    | Arguments            |
+    +----------------------+
+    | Return information   |
+    +----------------------+
+    | Saved registers      |
+    +----------------------+
+    | Control information  |
+    +----------------------+
+    | Local variables      |
+    +----------------------+
+    | Temporaries          |
+    +----------------------+
+
+The actual layout varies by architecture and ABI.
+
+
+======================================================================
+20. FUNCTION PROLOGUE
+======================================================================
+
+The instructions that establish a function's execution environment
+are commonly called the FUNCTION PROLOGUE.
+
+
+Conceptually:
+
+    function entry
+         ↓
+    save required registers
+         ↓
+    establish stack/frame state
+         ↓
+    allocate local storage
+         ↓
+    execute body
+
+
+Example conceptual assembly-like sequence:
+
+    function:
+        save old frame information
+        establish new frame
+        allocate local storage
+        ...
+        function body
+
+
+IMPORTANT:
+
+A compiler may optimize or omit some traditional prologue steps.
+
+Modern optimized code does not necessarily look exactly like
+textbook stack-frame diagrams.
+
+
+======================================================================
+21. STACK FRAME TEARDOWN
+======================================================================
+
+When the function finishes, its runtime state must be restored.
+
+
+This is called:
+
+    STACK FRAME TEARDOWN
+
+Conceptually:
+
+    1. Prepare return value
+    2. Restore saved registers
+    3. Release local storage
+    4. Restore previous frame state
+    5. Return to caller
+
+
+Flow:
+
+    Function body
+         ↓
+    return value
+         ↓
+    restore registers
+         ↓
+    deallocate frame
+         ↓
+    RETURN
+         ↓
+    caller continues
+
+
+======================================================================
+22. FUNCTION EPILOGUE
+======================================================================
+
+The instructions that undo the function's setup and prepare for
+return are commonly called the FUNCTION EPILOGUE.
+
+
+Prologue:
+
+    ENTER function
+       ↓
+    create execution environment
+
+
+Epilogue:
+
+    EXIT function
+       ↓
+    restore execution environment
+
+
+Memory trick:
+
+    PROLOGUE = preparation
+
+    EPILOGUE = cleanup
+
+
+======================================================================
+23. COMPLETE CALL + RETURN SEQUENCE
+======================================================================
+
+Suppose:
+
+    main()
+    {
+        x = add(10,20);
+        print(x);
+    }
+
+
+Conceptual sequence:
+
+    MAIN / CALLER
+    ----------------
+    evaluate 10
+    evaluate 20
+    pass arguments
+    save caller state if required
+    CALL add
+          |
+          ↓
+    ADD / CALLEE
+    ----------------
+    establish frame
+    save callee-saved registers if needed
+    access parameters
+    calculate:
+        10 + 20 = 30
+    place return value
+    restore callee state
+    RETURN
+          |
+          ↓
+    MAIN / CALLER
+    ----------------
+    receive return value
+    restore caller state if needed
+    x = 30
+    print(x)
+
+
+======================================================================
+24. WHO DOES WHAT?
+======================================================================
+
++----------------------+---------------------------------------------+
+| Caller               | Callee                                      |
++----------------------+---------------------------------------------+
+| Evaluate arguments   | Establish execution environment             |
+| Pass arguments       | Access parameters                           |
+| Preserve needed      | Preserve callee-saved registers if required |
+| caller-saved values  | Execute function body                       |
+| Make CALL            | Produce return value                        |
+| Continue after       | Restore required state                      |
+| return               | Return to caller                            |
++----------------------+---------------------------------------------+
+
+
+IMPORTANT:
+
+The exact division of responsibilities is defined by the calling
+convention/ABI and compiler implementation.
+
+
+======================================================================
+25. NESTED PROCEDURE CALLS
+======================================================================
+
+Consider:
+
+    main()
+      |
+      ↓
+      A()
+      |
+      ↓
+      B()
+      |
+      ↓
+      C()
+
+
+During execution:
+
+    main calls A
+    A calls B
+    B calls C
+
+
+The stack may look conceptually like:
+
+    +----------------+
+    | C frame        |
+    +----------------+
+    | B frame        |
+    +----------------+
+    | A frame        |
+    +----------------+
+    | main frame     |
+    +----------------+
+
+
+When C returns:
+
+    C frame removed
+
+    +----------------+
+    | B frame        |
+    +----------------+
+    | A frame        |
+    +----------------+
+    | main frame     |
+    +----------------+
+
+
+When B returns:
+
+    B frame removed
+
+
+This follows the normal LIFO behavior of stack-based calls.
+
+
+======================================================================
+26. NESTED CALL VS NESTED PROCEDURE
+======================================================================
+
+Do NOT confuse these concepts.
+
+NESTED CALL:
+
+    One function calls another while executing.
+
+Example:
+
+    A()
+    {
+        B();
+    }
+
+
+NESTED PROCEDURE:
+
+    A procedure/function is lexically defined inside another procedure,
+    in languages that support such constructs.
+
+Example concept:
+
+    procedure outer()
+    {
+        procedure inner()
+        {
+            ...
+        }
+    }
+
+
+They are different concepts.
+
+
+GATE TRAP:
+
+    "Nested procedure always means recursive call."
+
+    WRONG.
+
+
+======================================================================
+27. RECURSIVE PROCEDURE CALL
+======================================================================
+
+Recursion means:
+
+    A function calls itself, directly or indirectly.
+
+
+Example:
+
+    int fact(int n)
+    {
+        if(n == 0)
+            return 1;
+
+        return n * fact(n-1);
+    }
+
+
+For:
+
+    fact(3)
+
+
+Calls:
+
+    fact(3)
+       ↓
+    fact(2)
+       ↓
+    fact(1)
+       ↓
+    fact(0)
+
+
+Stack:
+
+    +-------------+
+    | fact(0)     |
+    +-------------+
+    | fact(1)     |
+    +-------------+
+    | fact(2)     |
+    +-------------+
+    | fact(3)     |
+    +-------------+
+    | main        |
+    +-------------+
+
+
+Every active invocation needs its own activation state.
+
+
+======================================================================
+28. RECURSION AND ACTIVATION RECORDS
+======================================================================
+
+Suppose:
+
+    fact(3)
+
+Each invocation has different parameter values.
+
+    fact(3): n = 3
+    fact(2): n = 2
+    fact(1): n = 1
+    fact(0): n = 0
+
+
+Therefore, each invocation requires distinct runtime state.
+
+
+Conceptually:
+
+    fact(3) frame
+        n = 3
+
+    fact(2) frame
+        n = 2
+
+    fact(1) frame
+        n = 1
+
+    fact(0) frame
+        n = 0
+
+
+IMPORTANT GATE CONCEPT:
+
+    Recursive calls do NOT share one ordinary activation record.
+
+Each active invocation has its own activation state.
+
+
+======================================================================
+29. RETURN FROM RECURSION
+======================================================================
+
+For:
+
+    fact(3)
+
+First:
+
+    fact(3)
+      ↓
+    fact(2)
+      ↓
+    fact(1)
+      ↓
+    fact(0)
+
+
+Then return in reverse order:
+
+    fact(0)
+      ↑
+    fact(1)
+      ↑
+    fact(2)
+      ↑
+    fact(3)
+
+
+This is LIFO.
+
+Therefore:
+
+    call order:
+        3 → 2 → 1 → 0
+
+    return order:
+        0 → 1 → 2 → 3
+
+
+======================================================================
+30. PARAMETER PASSING AND STACK
+======================================================================
+
+Parameters can be passed in different ways depending on the ABI.
+
+Conceptually:
+
+    Method 1:
+        arguments in registers
+
+    Method 2:
+        arguments on stack
+
+    Method 3:
+        some arguments in registers
+        remaining arguments on stack
+
+
+Modern systems commonly use a combination.
+
+Therefore:
+
+    "All parameters are always stored on stack."
+
+is NOT universally correct.
+
+
+======================================================================
+31. REGISTER PARAMETER PASSING
+======================================================================
+
+Suppose a calling convention specifies:
+
+    first arguments → registers
+
+
+Then:
+
+    f(10,20)
+
+
+could conceptually become:
+
+    R1 = 10
+    R2 = 20
+
+    CALL f
+
+
+Inside f:
+
+    parameter a ← R1
+    parameter b ← R2
+
+
+Advantages:
+
+    • faster access
+    • fewer memory operations
+
+
+But registers are limited.
+
+Therefore, larger argument lists may require stack-based passing
+or other mechanisms.
+
+
+======================================================================
+32. STACK PARAMETER PASSING
+======================================================================
+
+Conceptually:
+
+    Caller pushes/prepares:
+
+        20
+        10
+
+    CALL f
+
+
+Callee accesses arguments according to the ABI's layout rules.
+
+
+Conceptual:
+
+    +----------------+
+    | argument 2     |
+    +----------------+
+    | argument 1     |
+    +----------------+
+    | return info    |
+    +----------------+
+    | callee frame   |
+    +----------------+
+
+
+Again:
+
+    Actual physical layout is architecture/ABI dependent.
+
+
+======================================================================
+33. RETURNING LARGE VALUES
+======================================================================
+
+Small scalar return values can often be returned through a designated
+register.
+
+But large objects may require more complex mechanisms.
+
+Conceptually:
+
+    Small result:
+        register
+
+    Large result:
+        memory / hidden result location
+        or ABI-specific mechanism
+
+
+Example:
+
+    struct LargeObject f();
+
+
+The compiler/ABI may arrange hidden storage for the returned object.
+
+
+IMPORTANT:
+
+The compiler may introduce hidden parameters that are not explicitly
+written in source code.
+
+
+======================================================================
+34. HIDDEN PARAMETERS
+======================================================================
+
+A compiler may introduce hidden information for implementation.
+
+Examples can include:
+
+    • hidden return-storage pointer
+    • static/access link
+    • exception-related information
+    • object/reference metadata
+
+
+Example:
+
+    nested_function(x)
+
+
+The source may show:
+
+    x
+
+But the generated calling convention may effectively pass:
+
+    x
+    + hidden access/environment information
+
+
+This is an advanced compiler concept.
+
+
+======================================================================
+35. STATIC LINK / ACCESS LINK IN PROCEDURE CALL
+======================================================================
+
+Suppose:
+
+    procedure Outer()
+    {
+        int x;
+
+        procedure Inner()
+        {
+            print(x);
+        }
+    }
+
+
+Inner accesses x from Outer.
+
+The compiler needs a way for Inner to find the correct enclosing
+environment.
+
+One possible technique:
+
+    ACCESS LINK / STATIC LINK
+
+
+Conceptually:
+
+    Inner frame
+        |
+        | access/static link
+        ↓
+    Outer frame
+        |
+        | x
+        ↓
+       value
+
+
+Memory trick:
+
+    Control link:
+        Who called me?
+
+    Access link:
+        Which lexical environment encloses me?
+
+
+======================================================================
+36. CONTROL LINK VS ACCESS LINK
+======================================================================
+
+CONTROL / DYNAMIC LINK:
+
+    Points to the caller's activation record.
+
+Purpose:
+
+    Restore/control dynamic call chain.
+
+
+ACCESS / STATIC LINK:
+
+    Points toward the lexically enclosing activation record.
+
+Purpose:
+
+    Access non-local variables under lexical/static scope.
+
+
+Example:
+
+    main → A → B
+
+Dynamic chain:
+
+    B → A → main
+
+
+Lexical nesting could instead be:
+
+    Outer
+      |
+      ↓
+    Inner
+
+
+Static/access chain:
+
+    Inner → Outer
+
+
+IMPORTANT:
+
+    Dynamic chain ≠ lexical nesting chain
+
+
+======================================================================
+37. STATIC SCOPE AND PROCEDURE CALLS
+======================================================================
+
+Under lexical/static scope:
+
+    Meaning of a variable is determined by the program's
+    lexical structure.
+
+Nested procedure example:
+
+    Outer
+       |
+       +--- x
+       |
+       +--- Inner
+              |
+              +--- use x
+
+
+Inner can access x through its lexical environment.
+
+An implementation may use:
+
+    • static/access links
+    • displays
+    • environment objects
+    • other compiler/runtime mechanisms
+
+
+======================================================================
+38. DYNAMIC SCOPE
+======================================================================
+
+Under dynamic scope:
+
+    Variable lookup depends on the active calling chain.
+
+
+Example concept:
+
+    A calls B
+    B calls C
+
+If C references x, dynamic lookup may search:
+
+    C
+    ↓
+    B
+    ↓
+    A
+    ↓
+    main
+
+
+This is related to the dynamic/control chain.
+
+
+IMPORTANT:
+
+    Static scope:
+        lexical structure
+
+    Dynamic scope:
+        runtime calling chain
+
+
+======================================================================
+39. PROCEDURE CALLS AND COMPILER PHASES
+======================================================================
+
+Procedure calls involve multiple compiler phases.
+
+
+SOURCE:
+
+    result = add(10,20);
+
+
+LEXICAL ANALYSIS:
+
+    result
+    =
+    add
+    (
+    10
+    ,
+    20
+    )
+
+
+SYNTAX ANALYSIS:
+
+    Builds AST / parse structure.
+
+
+SEMANTIC ANALYSIS:
+
+    Checks:
+
+    • add exists
+    • arguments are compatible
+    • return type is compatible with result
+    • scope rules
+
+
+INTERMEDIATE CODE:
+
+    t1 = param 10
+    t2 = param 20
+    call add, 2
+    result = return_value
+
+
+Actual TAC notation varies.
+
+
+CODE GENERATION:
+
+    Produces target instructions following the ABI/calling convention.
+
+
+So:
+
+    Source function call
+           ↓
+    Semantic checking
+           ↓
+    IR
+           ↓
+    Calling sequence generation
+           ↓
+    Machine code
+
+
+======================================================================
+40. PROCEDURE CALL IN THREE-ADDRESS CODE
+======================================================================
+
+A compiler may represent:
+
+    result = add(a,b);
+
+
+Conceptually as:
+
+    param a
+    param b
+    call add, 2
+    result = RET
+
+
+or:
+
+    t = call add, a, b
+    result = t
+
+
+Exact TAC syntax differs among compiler IRs.
+
+
+For a procedure without return value:
+
+    call display, 0
+
+
+Again, notation depends on the IR.
+
+
+======================================================================
+41. PROCEDURE CALL AND CODE GENERATION
+======================================================================
+
+Suppose source:
+
+    x = add(5,10);
+
+
+Compiler needs to generate operations for:
+
+    1. prepare 5
+    2. prepare 10
+    3. transfer arguments
+    4. call add
+    5. receive result
+    6. store result in x
+
+
+Conceptually:
+
+    R1 = 5
+    R2 = 10
+    CALL add
+    R3 = return value
+    x = R3
+
+
+The real assembly depends on the target architecture.
+
+
+======================================================================
+42. CALL INSTRUCTION
+======================================================================
+
+A machine's CALL-like instruction generally performs a control
+transfer while arranging for a return.
+
+Conceptually:
+
+    CALL function
+
+
+means:
+
+    save/establish return information
+    jump to function
+
+
+Then:
+
+    RETURN
+
+
+transfers control back to the saved return location according to
+the architecture/ABI.
+
+
+IMPORTANT:
+
+The exact hardware behavior of CALL/RETURN is architecture-specific.
+
+
+======================================================================
+43. CALLING CONVENTION — IMPORTANT COMPONENTS
+======================================================================
+
+A calling convention may define:
+
+    +----------------------------------+
+    | Argument passing                 |
+    +----------------------------------+
+    | Return value location            |
+    +----------------------------------+
+    | Caller-saved registers           |
+    +----------------------------------+
+    | Callee-saved registers           |
+    +----------------------------------+
+    | Stack layout/alignment           |
+    +----------------------------------+
+    | Return address handling           |
+    +----------------------------------+
+    | Frame conventions                |
+    +----------------------------------+
+    | Cleanup responsibilities          |
+    +----------------------------------+
+
+
+This allows separately compiled functions to cooperate.
+
+
+======================================================================
+44. WHY CALLING CONVENTIONS ARE IMPORTANT
+======================================================================
+
+Without an agreed convention:
+
+    Function A would not know:
+
+    • where Function B expects parameters
+    • where B returns the result
+    • which registers B can destroy
+    • how B restores the stack
+    • how control returns
+
+
+Calling convention provides the agreement.
+
+
+This is essential for:
+
+    • compiler-generated code
+    • libraries
+    • separately compiled modules
+    • operating-system interfaces
+    • foreign-function interfaces
+    • interoperability
+
+
+======================================================================
+45. CALLER-SAVED VS CALLEE-SAVED — GATE EXAMPLE
+======================================================================
+
+Suppose:
+
+    R1 = 50
+
+Caller executes:
+
+    call F
+
+
+Assume R1 is caller-saved.
+
+If caller needs 50 after F():
+
+    Caller must preserve 50 before the call.
+
+
+If R1 is callee-saved:
+
+    F must restore R1's original value if F modifies it.
+
+
+GATE TRAP:
+
+    Caller-saved does NOT mean caller saves it every time.
+
+It means:
+
+    Caller is responsible for preserving it if the value is needed
+    across the call.
+
+
+Similarly:
+
+    Callee-saved means callee must preserve the value if it uses/
+    modifies that register.
+
+
+======================================================================
+46. CALLING CONVENTION VS PARAMETER PASSING
+======================================================================
+
+PARAMETER PASSING:
+
+    How arguments conceptually reach the function.
+
+CALLING CONVENTION:
+
+    Complete agreement governing function calls at binary level.
+
+
+Therefore:
+
+    Parameter passing
+        ⊂
+    Calling convention / ABI-related rules
+
+
+Calling convention can specify more than parameters.
+
+
+======================================================================
+47. CALLING CONVENTION VS ACTIVATION RECORD
+======================================================================
+
+ACTIVATION RECORD:
+
+    Runtime data structure for one invocation.
+
+
+CALLING CONVENTION:
+
+    Rules for how functions communicate.
+
+
+Relationship:
+
+    Calling convention
+          ↓
+    influences
+          ↓
+    activation record organization
+          ↓
+    function call execution
+
+
+But they are NOT the same thing.
+
+
+======================================================================
+48. CALLING CONVENTION VS STACK FRAME
+======================================================================
+
+Stack frame:
+
+    Runtime memory region for one active invocation.
+
+
+Calling convention:
+
+    Rules determining how caller and callee interact.
+
+
+Example:
+
+    Calling convention may determine:
+
+    • argument locations
+    • return-value location
+    • register preservation
+    • stack alignment
+
+These rules influence how the stack frame is organized.
+
+
+======================================================================
+49. COMPLETE EXAMPLE
+======================================================================
+
+SOURCE:
+
+    int add(int a, int b)
+    {
+        int c;
+        c = a + b;
+        return c;
+    }
+
+    int main()
+    {
+        int x;
+        x = add(10,20);
+    }
+
+
+STEP 1 — MAIN:
+
+    Evaluate:
+
+        10
+        20
+
+
+STEP 2 — PASS ARGUMENTS:
+
+    According to calling convention.
+
+
+STEP 3 — CALL:
+
+    main → add
+
+
+STEP 4 — ADD FRAME:
+
+    Conceptually:
+
+        +------------------+
+        | parameter a = 10 |
+        +------------------+
+        | parameter b = 20 |
+        +------------------+
+        | return info      |
+        +------------------+
+        | local c          |
+        +------------------+
+
+
+STEP 5:
+
+    c = a + b
+
+    c = 30
+
+
+STEP 6:
+
+    return c
+
+
+STEP 7:
+
+    return value = 30
+
+
+STEP 8:
+
+    add frame is removed/restored.
+
+
+STEP 9:
+
+    main receives 30.
+
+
+STEP 10:
+
+    x = 30.
+
+
+Complete:
+
+    main
+      |
+      | add(10,20)
+      ↓
+    add
+      |
+      | c = 30
+      ↓
+    return 30
+      |
+      ↓
+    main
+      |
+      ↓
+    x = 30
+
+
+======================================================================
+50. PRACTICAL COMPILER VIEW
+======================================================================
+
+A compiler must translate a source-level procedure call into
+machine-level operations.
+
+
+Source:
+
+    y = foo(a,b);
+
+
+Compiler needs information from:
+
+    • symbol table
+    • type system
+    • AST
+    • IR
+    • target architecture
+    • ABI/calling convention
+
+
+Compiler determines:
+
+    • is foo declared?
+    • is foo callable?
+    • number of parameters
+    • parameter types
+    • return type
+    • argument conversions
+    • where arguments go
+    • where result comes back
+    • registers to preserve
+    • stack/frame requirements
+
+
+Therefore, procedure-call compilation is a major connection between
+FRONT END and BACK END.
+
+
+======================================================================
+51. FUNCTION TYPE CHECKING
+======================================================================
+
+Suppose:
+
+    int add(int,int)
+
+
+Correct:
+
+    add(10,20)
+
+
+Incorrect examples:
+
+    add("hello",20)
+
+    add(10)
+
+    add(10,20,30)
+
+
+Semantic analysis can detect incompatible calls.
+
+
+Therefore:
+
+    Function call
+        ↓
+    Symbol table lookup
+        ↓
+    Function type information
+        ↓
+    Argument checking
+        ↓
+    Return-type checking
+
+
+======================================================================
+52. FUNCTION SYMBOL TABLE ENTRY
+======================================================================
+
+A symbol table entry for a function may conceptually store:
+
+    Function name:
+        add
+
+    Return type:
+        int
+
+    Parameter list:
+        int, int
+
+    Scope:
+        global
+
+    Address/code location:
+        implementation-dependent
+
+    Other attributes:
+        linkage/storage information, etc.
+
+
+When compiler encounters:
+
+    add(10,20)
+
+It can look up:
+
+    add
+
+
+Then check:
+
+    number of arguments
+    argument types
+    return type
+
+
+======================================================================
+53. PROCEDURE WITHOUT RETURN VALUE
+======================================================================
+
+Example:
+
+    void display()
+    {
+        printf("Hello");
+    }
+
+
+Call:
+
+    display();
+
+
+There is no ordinary source-level return value.
+
+But there is still:
+
+    • call
+    • activation
+    • execution
+    • return control
+
+
+So:
+
+    return value
+        may be absent
+
+    return address/control
+        is still required
+
+
+IMPORTANT:
+
+A procedure can return control without returning a data value.
+
+
+======================================================================
+54. PROCEDURE CALL WITH MULTIPLE LEVELS
+======================================================================
+
+Example:
+
+    main()
+    {
+        A();
+    }
+
+    A()
+    {
+        B();
+    }
+
+    B()
+    {
+        C();
+    }
+
+
+Execution:
+
+    main
+      ↓
+      A
+      ↓
+      B
+      ↓
+      C
+
+
+Stack:
+
+    | C |
+    | B |
+    | A |
+    |main|
+
+
+Return:
+
+    C → B → A → main
+
+
+This is a standard example for understanding dynamic/control links.
+
+
+======================================================================
+55. GATE NUMERICAL — MAXIMUM ACTIVE FRAMES
+======================================================================
+
+Suppose:
+
+    A calls B
+    B calls C
+    C calls D
+
+
+While D is executing:
+
+    A, B, C, D
+
+are active.
+
+Therefore:
+
+    Maximum number of simultaneously active procedure invocations
+    = 4
+
+
+If main also called A:
+
+    main → A → B → C → D
+
+Maximum active frames:
+
+    5
+
+
+GATE FORMULA:
+
+    Maximum active frames
+    =
+    maximum call-stack depth
+
+
+======================================================================
+56. GATE NUMERICAL — RECURSION
+======================================================================
+
+Suppose:
+
+    fact(n)
+
+recursively calls:
+
+    fact(n-1)
+
+until:
+
+    fact(0)
+
+
+For:
+
+    fact(5)
+
+
+Active invocations at deepest point:
+
+    fact(5)
+    fact(4)
+    fact(3)
+    fact(2)
+    fact(1)
+    fact(0)
+
+
+Total:
+
+    6 activation records
+
+assuming all six invocations are simultaneously active.
+
+
+If main is also counted:
+
+    7 frames
+
+
+IMPORTANT:
+
+Always check whether the question asks:
+
+    • function activation records only
+    OR
+    • entire call stack including main
+
+
+======================================================================
+57. GATE TRAP — CALLER/CALLEE
+======================================================================
+
+Question:
+
+    A calls B.
+
+Who is caller?
+
+Answer:
+
+    A
+
+
+Who is callee?
+
+Answer:
+
+    B
+
+
+Never reverse them.
+
+
+Memory:
+
+    Caller → CALL → Callee
+
+
+======================================================================
+58. GATE TRAP — CONTROL LINK
+======================================================================
+
+If:
+
+    A calls B
+
+
+B's control/dynamic link generally identifies:
+
+    A's activation record
+
+
+Therefore:
+
+    B → A
+
+
+It does NOT necessarily identify B's lexical parent.
+
+
+That is the purpose associated with:
+
+    access/static link
+
+
+======================================================================
+59. GATE TRAP — STATIC LINK
+======================================================================
+
+Static/access link is associated with:
+
+    lexical/static nesting
+
+
+Dynamic/control link is associated with:
+
+    dynamic calling relationship
+
+
+Memory trick:
+
+    CONTROL = CALLER
+
+    ACCESS = ENCLOSING SCOPE
+
+
+======================================================================
+60. GATE TRAP — RETURN ADDRESS
+======================================================================
+
+Return address tells:
+
+    where execution resumes after return.
+
+
+Return value tells:
+
+    what result the function produces.
+
+
+Therefore:
+
+    return address ≠ return value
+
+
+======================================================================
+61. GATE TRAP — PARAMETERS ON STACK
+======================================================================
+
+Statement:
+
+    "All parameters are always passed on the stack."
+
+Answer:
+
+    FALSE as a universal statement.
+
+
+Modern ABIs may pass arguments using:
+
+    • registers
+    • stack
+    • both
+
+
+======================================================================
+62. GATE TRAP — FRAME POINTER
+======================================================================
+
+Statement:
+
+    "Every function must always have a frame pointer."
+
+Answer:
+
+    FALSE.
+
+
+A compiler may omit or optimize away a traditional frame pointer
+when possible.
+
+
+Frame pointer usage depends on:
+
+    • architecture
+    • ABI
+    • compiler
+    • optimization
+    • debugging/unwinding requirements
+
+
+======================================================================
+63. GATE TRAP — FUNCTION VS ACTIVATION
+======================================================================
+
+A function definition:
+
+    describes code/behavior.
+
+
+An activation:
+
+    is one runtime invocation.
+
+
+Example:
+
+    fact()
+
+is one function.
+
+
+But:
+
+    fact(5)
+    fact(4)
+    fact(3)
+
+are multiple activations of the same function.
+
+
+======================================================================
+64. GATE TRAP — RECURSION
+======================================================================
+
+Statement:
+
+    "A recursive function has only one activation record."
+
+FALSE.
+
+
+Each simultaneously active recursive invocation needs its own
+activation state.
+
+
+Example:
+
+    fact(3)
+    fact(2)
+    fact(1)
+    fact(0)
+
+
+Four active invocations.
+
+
+======================================================================
+65. GATE TRAP — CALL BY VALUE
+======================================================================
+
+Suppose:
+
+    void f(int x)
+    {
+        x = 20;
+    }
+
+    int a = 10;
+
+    f(a);
+
+
+In conventional call-by-value semantics:
+
+    a remains 10.
+
+
+Why?
+
+    x receives the value corresponding to a.
+
+
+======================================================================
+66. GATE TRAP — CALL BY REFERENCE
+======================================================================
+
+If a parameter refers to the caller's object:
+
+    changing parameter
+        ↓
+    can change caller's object.
+
+
+Example:
+
+    a = 10
+
+    f(a)
+
+    inside:
+        x = 20
+
+After:
+
+    a = 20
+
+
+assuming reference semantics.
+
+
+======================================================================
+67. GATE TRAP — CALL BY NAME
+======================================================================
+
+Call by name is NOT simply:
+
+    call by reference.
+
+
+Its key idea involves:
+
+    delayed evaluation of the argument.
+
+
+It may evaluate an argument expression when the parameter is used.
+
+
+======================================================================
+68. INTERVIEW QUESTION
+======================================================================
+
+Q1. What is a procedure call?
+
+Answer:
+
+A procedure call is the operation by which one function/procedure
+transfers control to another function/procedure while establishing
+the runtime information needed for execution and return.
+
+
+Q2. What is a caller?
+
+The procedure that invokes another procedure.
+
+
+Q3. What is a callee?
+
+The procedure being invoked.
+
+
+Q4. What is a calling sequence?
+
+The set of operations used to pass arguments, establish the callee's
+runtime environment, transfer control, return results, restore state,
+and continue execution.
+
+
+Q5. What is a calling convention?
+
+A standardized agreement defining how functions communicate at the
+binary level, including argument passing, return values, register
+preservation, and stack-related rules.
+
+
+======================================================================
+69. INTERVIEW QUESTIONS — PARAMETER PASSING
+======================================================================
+
+Q6. What is call by value?
+
+The callee receives the argument's value according to the language
+semantics, typically allowing the parameter to have independent
+storage/identity from the caller's variable.
+
+
+Q7. What is call by reference?
+
+The parameter provides reference-like access to the caller's object,
+so modifications can affect the original object.
+
+
+Q8. What is call by name?
+
+A parameter-passing mechanism in which the argument is conceptually
+evaluated when the parameter is used, rather than simply being
+evaluated once before entry as in ordinary call-by-value semantics.
+
+
+Q9. What is a return address?
+
+The location/control information needed to resume execution in the
+caller after the callee returns.
+
+
+Q10. What is a return value?
+
+The result produced by a function and communicated back to its caller.
+
+
+======================================================================
+70. INTERVIEW — REGISTERS
+======================================================================
+
+Q11. What are caller-saved registers?
+
+Registers whose values the caller must preserve across a call if it
+needs those values afterward.
+
+
+Q12. What are callee-saved registers?
+
+Registers that the callee must preserve according to the calling
+convention if it modifies them.
+
+
+Q13. Why are calling conventions required?
+
+They allow independently generated functions and separately compiled
+components to communicate consistently.
+
+
+======================================================================
+71. INTERVIEW — STACK
+======================================================================
+
+Q14. Why is stack useful for procedure calls?
+
+Because procedure calls and returns naturally follow LIFO behavior,
+making the stack suitable for storing activation records.
+
+
+Q15. Why does recursion require multiple stack frames?
+
+Because each active invocation needs its own parameters, locals,
+return information, and other runtime state.
+
+
+Q16. What is a function prologue?
+
+The setup operations performed when entering a function, such as
+establishing frame/stack state and saving required state.
+
+
+Q17. What is a function epilogue?
+
+The cleanup/restore operations performed before returning from a
+function.
+
+
+======================================================================
+72. PRACTICAL MINI COMPILER VIEW
+======================================================================
+
+Suppose your mini compiler supports:
+
+    int add(int a,int b)
+    {
+        return a+b;
+    }
+
+and:
+
+    x = add(2,3);
+
+
+The compiler pipeline can be:
+
+    SOURCE
+       ↓
+    Lexer
+       ↓
+    Tokens
+       ↓
+    Parser
+       ↓
+    AST
+       ↓
+    Semantic Analyzer
+       ↓
+    Type checking
+       ↓
+    TAC
+       ↓
+    Calling convention selection
+       ↓
+    Code generation
+       ↓
+    Machine code
+
+
+Conceptual TAC:
+
+    param 2
+    param 3
+    t1 = call add, 2
+    x = t1
+
+
+Conceptual machine-level behavior:
+
+    prepare argument 2
+    prepare argument 3
+    CALL add
+    receive return value
+    store in x
+
+
+======================================================================
+73. PROCEDURE CALL — COMPLETE COMPILER MAP
+======================================================================
+
+                SOURCE
+                   |
+                   ↓
+        result = add(a,b)
+                   |
+                   ↓
+              LEXICAL
+                   |
+                   ↓
+              PARSING
+                   |
+                   ↓
+                 AST
+                   |
+                   ↓
+         SEMANTIC ANALYSIS
+                   |
+          +--------+--------+
+          |                 |
+     symbol table       type checking
+          |                 |
+          +--------+--------+
+                   |
+                   ↓
+                  IR
+                   |
+                   ↓
+         CALL REPRESENTATION
+                   |
+                   ↓
+        CODE GENERATION
+                   |
+                   ↓
+       CALLING CONVENTION
+                   |
+                   ↓
+        MACHINE INSTRUCTIONS
+                   |
+                   ↓
+              EXECUTION
+                   |
+                   ↓
+          ACTIVATION RECORD
+                   |
+                   ↓
+             PROCEDURE
+                   |
+                   ↓
+                RETURN
+
+
+======================================================================
+74. CHAPTER 23 + 24 CONNECTION
+======================================================================
+
+CHAPTER 23:
+
+    Activation Records
+
+    Focus:
+        What runtime information belongs to one function invocation?
+
+
+CHAPTER 24:
+
+    Procedure Calls
+
+    Focus:
+        How does control/data move between caller and callee?
+
+
+Relationship:
+
+    Procedure Call
+         ↓
+    Activation Record Setup
+         ↓
+    Callee Execution
+         ↓
+    Return
+         ↓
+    Activation Record Teardown
+
+
+Memory trick:
+
+    Chapter 23 = FRAME
+
+    Chapter 24 = CALL
+
+
+======================================================================
+75. IMPORTANT DEFINITIONS
+======================================================================
+
+PROCEDURE CALL:
+    Invocation of a procedure/function.
+
+CALLER:
+    Function that makes the call.
+
+CALLEE:
+    Function that receives the call.
+
+CALLING SEQUENCE:
+    Operations for setting up a call and returning.
+
+CALLING CONVENTION:
+    Rules governing binary-level function communication.
+
+CALLER-SAVED:
+    Caller preserves values needed across the call.
+
+CALLEE-SAVED:
+    Callee preserves specified register values.
+
+PARAMETER:
+    Formal input variable of a function.
+
+ARGUMENT:
+    Actual value/expression supplied to a call.
+
+RETURN VALUE:
+    Result returned by a function.
+
+RETURN ADDRESS:
+    Control-flow location/information used to resume caller.
+
+PROLOGUE:
+    Function-entry setup.
+
+EPILOGUE:
+    Function-exit cleanup.
+
+ACTIVATION RECORD:
+    Runtime state associated with one invocation.
+
+
+======================================================================
+76. HIGH-YIELD GATE FACTS
+======================================================================
+
+★ Caller invokes callee.
+
+★ Return address tells where execution resumes.
+
+★ Return value is the function result.
+
+★ Recursive calls create separate active invocation records.
+
+★ Maximum simultaneous frames correspond to maximum call depth
+  when using stack-based activation.
+
+★ Control/dynamic link relates to the caller's activation record.
+
+★ Access/static link relates to lexical nesting/non-local access.
+
+★ Call-by-value and call-by-reference have different semantics.
+
+★ Call-by-name involves delayed evaluation semantics.
+
+★ Arguments may be passed through registers, stack, or both.
+
+★ Calling conventions are ABI-dependent.
+
+★ Caller-saved does not mean caller always saves the register;
+  it means caller is responsible for preserving needed values.
+
+★ Callee-saved means callee preserves the required values if it
+  modifies them.
+
+★ A frame pointer is not universally mandatory.
+
+★ Function definition and function activation are different.
+
+
+======================================================================
+77. ULTRA-SHORT REVISION
+======================================================================
+
+Procedure call:
+
+    Caller → Callee → Return
+
+
+Calling sequence:
+
+    arguments
+       ↓
+    state setup
+       ↓
+    CALL
+       ↓
+    execute
+       ↓
+    return value
+       ↓
+    restore
+       ↓
+    RETURN
+
+
+Parameter passing:
+
+    Value
+        → value semantics
+
+    Reference
+        → reference/location semantics
+
+    Name
+        → delayed evaluation semantics
+
+
+Registers:
+
+    Caller-saved
+        → caller protects needed values
+
+    Callee-saved
+        → callee preserves required values
+
+
+Scope links:
+
+    Control/Dynamic link
+        → caller
+
+    Access/Static link
+        → lexical parent
+
+
+Function entry:
+
+    Prologue
+
+
+Function exit:
+
+    Epilogue
+
+
+Recursion:
+
+    one activation per active invocation
+
+
+======================================================================
+78. ONE-PAGE MEMORY MAP
+======================================================================
+
+                PROCEDURE CALL
+                      |
+        +-------------+-------------+
+        |                           |
+     CALLER                       CALLEE
+        |                           |
+   prepare args                setup frame
+        |                           |
+   save needed                 save needed
+   state                       registers
+        |                           |
+        +-------- CALL ------------>|
+                                    |
+                                 execute
+                                    |
+                              produce result
+                                    |
+                              restore state
+                                    |
+        <--------- RETURN ----------+
+        |
+   receive result
+        |
+   continue execution
+
+
+PARAMETER PASSING:
+
+    VALUE
+    REFERENCE
+    NAME
+
+
+REGISTER RULES:
+
+    CALLER-SAVED
+    CALLEE-SAVED
+
+
+CONTROL:
+
+    RETURN ADDRESS
+
+
+RUNTIME:
+
+    ACTIVATION RECORD
+
+
+SCOPE:
+
+    CONTROL LINK
+    ACCESS LINK
+
+
+======================================================================
+79. FINAL EXAM CHECKLIST
+======================================================================
+
+Before leaving Chapter 24, you should be able to explain:
+
+[✓] What is a procedure call?
+[✓] Caller vs callee
+[✓] Calling sequence
+[✓] Function prologue
+[✓] Function epilogue
+[✓] Stack-frame setup
+[✓] Stack-frame teardown
+[✓] Parameter vs argument
+[✓] Call by value
+[✓] Call by reference
+[✓] Call by name
+[✓] Return value
+[✓] Return address
+[✓] Caller-saved registers
+[✓] Callee-saved registers
+[✓] Calling convention
+[✓] ABI connection
+[✓] Nested procedure calls
+[✓] Recursive calls
+[✓] Control/dynamic link
+[✓] Access/static link
+[✓] Static vs dynamic scope connection
+[✓] Procedure calls and TAC
+[✓] Procedure calls and code generation
+[✓] GATE numerical problems on call depth
+[✓] Common GATE traps
+
+
+======================================================================
+CHAPTER 24 COMPLETE
+======================================================================
+
+MASTER FLOW:
+
+    Source Function Call
+            ↓
+    Semantic Checking
+            ↓
+    AST / IR
+            ↓
+    Procedure Call Representation
+            ↓
+    Calling Convention
+            ↓
+    Caller Preparation
+            ↓
+    CALL
+            ↓
+    Callee Prologue
+            ↓
+    Activation Record
+            ↓
+    Execute Function
+            ↓
+    Return Value
+            ↓
+    Callee Epilogue
+            ↓
+    RETURN
+            ↓
+    Caller Continues
+
+
+NEXT CHAPTER:
+    CHAPTER 25 — RECURSION & SCOPE
+
+Topics:
+    • Recursion in detail
+    • Stack behavior during recursion
+    • Static/lexical scope
+    • Dynamic scope
+    • Access links
+    • Displays
+    • Non-local variable access
+    • Nested procedures
+    • GATE problems
+    • Interview questions
+    • Practical compiler implementation
+
+Type NEXT to continue.
+======================================================================

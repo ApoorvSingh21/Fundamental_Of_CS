@@ -1,0 +1,2023 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║              COMPILER DESIGN — CHAPTER 30                          ║
+║              OPTIMIZATION FUNDAMENTALS                             ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 8 — OPTIMIZATION
+CHAPTER 30 — OPTIMIZATION FUNDAMENTALS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Compiler optimization is the process of transforming a program into
+a better version while preserving its meaning/behavior.
+
+"Better" may mean:
+
+• Faster execution
+• Less memory usage
+• Smaller executable code
+• Lower power consumption
+• Better use of CPU registers
+• Fewer instructions
+
+IMPORTANT:
+
+Optimization must NOT change the observable meaning of the program.
+
+Example:
+
+Original:
+    x = 10 * 2;
+
+Optimized:
+    x = 20;
+
+Both produce the same result.
+
+Compiler optimization is therefore:
+
+        SOURCE PROGRAM
+              ↓
+        Intermediate Representation
+              ↓
+        OPTIMIZATION
+              ↓
+        Better IR / Code
+              ↓
+        Target Code
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHY DO WE NEED OPTIMIZATION?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    x = 10 * 20;
+    y = x + 5;
+
+The compiler can calculate:
+
+    x = 200;
+    y = x + 5;
+
+The multiplication does not need to happen at runtime.
+
+Optimization can therefore reduce unnecessary work.
+
+Benefits:
+
+1. Execution becomes faster.
+2. Number of instructions can decrease.
+3. Memory operations can decrease.
+4. Register usage can improve.
+5. Code size can decrease.
+6. CPU resources can be used more efficiently.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. SIMPLE REAL-WORLD ANALOGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose you need to travel:
+
+    Home → A → B → C → College
+
+But A, B and C are unnecessary stops.
+
+An optimized route might be:
+
+    Home → College
+
+The destination is the same.
+
+Compiler optimization works similarly:
+
+    Original computation
+           ↓
+    Remove unnecessary work
+           ↓
+    Same result
+           ↓
+    Better performance
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. FORMAL DEFINITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Compiler optimization is a collection of program transformations that
+improve one or more properties of generated code while preserving
+program semantics.
+
+In simple mathematical form:
+
+    Original Program P
+            ↓
+       Optimization
+            ↓
+    Optimized Program P'
+
+such that:
+
+    Meaning(P) = Meaning(P')
+
+while ideally:
+
+    Cost(P') < Cost(P)
+
+where cost may represent:
+
+• execution time
+• memory
+• code size
+• energy
+• number of instructions
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. IMPORTANT WORD — SEMANTIC PRESERVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Semantic preservation means:
+
+The optimized program should behave equivalently to the original
+program under the conditions considered by the compiler.
+
+Example:
+
+Original:
+
+    x = 5 + 10;
+
+Optimized:
+
+    x = 15;
+
+Result remains the same.
+
+BUT:
+
+Original:
+
+    x = f();
+
+We cannot simply remove it if f() has side effects.
+
+For example:
+
+    printf("Hello");
+
+Removing this statement changes observable behavior.
+
+Therefore:
+
+    OPTIMIZATION ≠ RANDOM CODE SIMPLIFICATION
+
+Optimization must be safe.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. GOALS OF OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Major optimization goals:
+
+┌───────────────────────┬────────────────────────────────────────────┐
+│ Goal                  │ Meaning                                    │
+├───────────────────────┼────────────────────────────────────────────┤
+│ Execution speed       │ Make program run faster                     │
+│ Code size             │ Reduce executable size                     │
+│ Memory usage          │ Reduce memory requirements                  │
+│ Register utilization  │ Use CPU registers efficiently              │
+│ Energy consumption    │ Reduce power usage                         │
+│ Instruction count     │ Reduce unnecessary instructions            │
+└───────────────────────┴────────────────────────────────────────────┘
+
+Different compilers may prioritize different goals.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. OPTIMIZATION IS NOT ALWAYS "MAKE CODE SHORTER"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A common beginner mistake:
+
+    Optimization = fewer lines of code
+
+FALSE.
+
+Compiler optimization is about improving generated behavior/cost.
+
+Example:
+
+Code A:
+    10 instructions
+
+Code B:
+    12 instructions
+
+Code B could still be faster if those instructions execute more
+efficiently or allow better pipelining/register usage.
+
+Therefore:
+
+    Source-code length ≠ Runtime performance
+
+Optimization is usually concerned with machine-level or IR-level
+properties.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. LEVELS OF OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Optimization can happen at different levels.
+
+A. Source-level optimization
+B. Intermediate-code optimization
+C. Machine-independent optimization
+D. Machine-dependent optimization
+E. Local optimization
+F. Global optimization
+G. Loop optimization
+H. Interprocedural optimization
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. MACHINE-INDEPENDENT OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Machine-independent optimization does not depend heavily on a
+specific target CPU architecture.
+
+It usually operates on an intermediate representation (IR).
+
+Examples:
+
+• Constant folding
+• Constant propagation
+• Common subexpression elimination
+• Dead code elimination
+• Algebraic simplification
+• Copy propagation
+• Control-flow simplification
+
+Example:
+
+    x = 10 + 20;
+
+becomes:
+
+    x = 30;
+
+No specific CPU instruction set is required to understand this
+optimization.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. MACHINE-DEPENDENT OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Machine-dependent optimization considers the target architecture.
+
+It may depend on:
+
+• CPU registers
+• Instruction set
+• Addressing modes
+• Pipeline
+• Cache
+• Instruction latency
+• Calling convention
+• Target-specific instructions
+
+Example:
+
+Suppose the target CPU supports a special instruction:
+
+    MULADD
+
+that performs multiplication and addition efficiently.
+
+The compiler may generate that instruction when appropriate.
+
+This requires knowledge of the target machine.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. LOCAL OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Local optimization works within a basic block.
+
+Recall:
+
+A basic block is a sequence of instructions with:
+
+• one entry point
+• one exit point
+
+Example:
+
+    B1:
+        a = 10
+        b = 20
+        c = a + b
+        d = c * 2
+
+The compiler can optimize inside B1.
+
+Example:
+
+    a = 10
+    b = 20
+    c = 30
+    d = 60
+
+Local optimization does not necessarily require analysis of the
+entire program.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. GLOBAL OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Global optimization considers multiple basic blocks within a
+procedure/function.
+
+Example:
+
+        B1
+       /  \
+      B2  B3
+       \  /
+        B4
+
+An optimization may need information flowing between B1, B2, B3 and B4.
+
+Global optimization is more powerful than purely local optimization,
+but generally requires more analysis.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. LOOP OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Loops are extremely important because code inside a loop may execute
+many times.
+
+Example:
+
+    for (i = 0; i < 1000000; i++) {
+        x = 10 * 20;
+        ...
+    }
+
+The expression:
+
+    10 * 20
+
+does not depend on i.
+
+Instead of calculating it one million times:
+
+    x = 10 * 20;
+
+we can calculate:
+
+    temp = 200;
+
+before the loop.
+
+Then:
+
+    for (...) {
+        x = temp;
+    }
+
+This idea is related to:
+
+    LOOP-INVARIANT CODE MOTION
+
+Loop optimization can produce major performance improvements.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. INTERPROCEDURAL OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"Interprocedural" means across procedure/function boundaries.
+
+Example:
+
+    main()
+       ↓
+      foo()
+       ↓
+      bar()
+
+An interprocedural optimization may analyze relationships among
+multiple functions.
+
+Examples:
+
+• Function inlining
+• Interprocedural constant propagation
+• Dead function elimination
+• Whole-program analysis
+
+It generally requires more global information.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. OPTIMIZATION PASSES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A compiler usually performs optimization through one or more passes.
+
+A pass means:
+
+    A compiler phase that analyzes/transforms some representation.
+
+Example:
+
+        IR
+         ↓
+    Constant Folding
+         ↓
+        IR
+         ↓
+    Dead Code Elimination
+         ↓
+        IR
+         ↓
+    Common Subexpression Elimination
+         ↓
+        IR
+         ↓
+    Code Generation
+
+Optimization is therefore often a sequence of transformations.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. PEEPHOLE OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Peephole optimization examines a small window of consecutive
+instructions.
+
+"Window" = peephole.
+
+Example:
+
+    LOAD R1, x
+    STORE x, R1
+
+If the sequence is unnecessary under the machine model, it may be
+removed.
+
+Another simple example:
+
+    ADD R1, 0
+
+may be unnecessary.
+
+It can become:
+
+    [removed]
+
+Peephole optimization is commonly associated with target code/
+machine-level optimization.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. IMPORTANT OPTIMIZATION TECHNIQUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Major techniques include:
+
+1. Constant folding
+2. Constant propagation
+3. Copy propagation
+4. Common subexpression elimination
+5. Dead code elimination
+6. Algebraic simplification
+7. Strength reduction
+8. Code motion
+9. Loop invariant code motion
+10. Function inlining
+11. Unreachable code elimination
+12. Control-flow simplification
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. CONSTANT FOLDING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Constant folding evaluates constant expressions at compile time.
+
+Example:
+
+    x = 10 + 20;
+
+becomes:
+
+    x = 30;
+
+Another example:
+
+    x = 5 * 4 - 2;
+
+becomes:
+
+    x = 18;
+
+Instead of doing the calculation at runtime.
+
+KEY IDEA:
+
+    Compile time calculation
+          instead of
+    Runtime calculation
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. CONSTANT PROPAGATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If a variable is known to contain a constant value, that value can
+be propagated to its uses.
+
+Example:
+
+    x = 10;
+    y = x + 5;
+
+After constant propagation:
+
+    x = 10;
+    y = 10 + 5;
+
+Then constant folding can produce:
+
+    x = 10;
+    y = 15;
+
+IMPORTANT DIFFERENCE:
+
+Constant folding:
+    evaluates constant expressions.
+
+Constant propagation:
+    replaces variables known to have constant values.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. COPY PROPAGATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    x = y;
+    z = x + 10;
+
+Because x is simply a copy of y:
+
+    z = y + 10;
+
+The unnecessary copy may then become removable.
+
+Pattern:
+
+    x = y
+    use(x)
+
+can sometimes become:
+
+    use(y)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. COMMON SUBEXPRESSION ELIMINATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If the same expression is calculated multiple times and its operands
+have not changed, the compiler can reuse the previous result.
+
+Example:
+
+    a = b + c;
+    d = b + c;
+
+Instead of computing b+c twice:
+
+    t = b + c;
+    a = t;
+    d = t;
+
+This is:
+
+    COMMON SUBEXPRESSION ELIMINATION
+    (CSE)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. DEAD CODE ELIMINATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Dead code = code whose result is never used and which has no relevant
+side effects.
+
+Example:
+
+    x = 10;
+    y = 20;
+    x = 30;
+
+If x=10 is never used before x is overwritten:
+
+    x = 10;
+
+may be dead.
+
+So:
+
+    x = 10;
+    y = 20;
+    x = 30;
+
+may become:
+
+    y = 20;
+    x = 30;
+
+Further optimization may remove y=20 too if y is never used and the
+assignment has no side effects.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. UNREACHABLE CODE ELIMINATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Unreachable code is code that can never be executed.
+
+Example:
+
+    return;
+    x = 10;
+
+The statement after return is unreachable in that control-flow path.
+
+It can potentially be removed.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. ALGEBRAIC SIMPLIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use mathematical identities to simplify expressions.
+
+Examples:
+
+    x + 0  → x
+
+    x * 1  → x
+
+    x - 0  → x
+
+    x * 0  → 0
+
+But compiler correctness matters.
+
+For floating-point arithmetic and language-specific semantics,
+apparently obvious algebraic transformations may not always be safe.
+
+For basic compiler theory questions, remember the standard identities,
+but understand that real compilers must consider language semantics.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. STRENGTH REDUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Replace an expensive operation with a cheaper equivalent operation
+when the transformation is valid.
+
+Classic example:
+
+    x * 2
+
+may be implemented using:
+
+    x + x
+
+or an appropriate shift on suitable integer representations.
+
+Another classic loop example:
+
+    i * 4
+
+may be replaced with an incrementing value or suitable addressing
+calculation.
+
+IMPORTANT:
+
+The actual benefit depends on the target architecture and data type.
+
+Strength reduction is especially important in loops.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. CODE MOTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Code motion moves computation to a location where it executes less
+frequently, while preserving correctness.
+
+Example:
+
+    while (...) {
+        x = a * b;
+        ...
+    }
+
+If a and b do not change inside the loop:
+
+    x = a * b;
+
+can potentially be moved outside:
+
+    x = a * b;
+
+    while (...) {
+        ...
+    }
+
+This is a form of loop-invariant code motion.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. LOOP-INVARIANT CODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An expression is loop invariant if its value does not change from one
+iteration of the loop to another, assuming relevant conditions hold.
+
+Example:
+
+    for (i = 0; i < n; i++) {
+        x = a * b;
+        y = x + i;
+    }
+
+If a and b are not modified inside the loop:
+
+    a * b
+
+is loop invariant.
+
+Optimized:
+
+    x = a * b;
+
+    for (i = 0; i < n; i++) {
+        y = x + i;
+    }
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. FUNCTION INLINING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    int square(int x) {
+        return x * x;
+    }
+
+Call:
+
+    y = square(5);
+
+Inlining conceptually replaces the function call with its body:
+
+    y = 5 * 5;
+
+Then constant folding can produce:
+
+    y = 25;
+
+Benefits:
+
+• Removes function-call overhead
+• May expose more optimization opportunities
+
+Possible drawback:
+
+• Code size may increase
+
+Therefore optimization often involves trade-offs.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. OPTIMIZATION TRADE-OFFS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Optimization does not have a single universal goal.
+
+Example:
+
+Inlining:
+
+    Faster?
+       YES, potentially
+
+    Code size?
+       MAY increase
+
+Another example:
+
+More aggressive optimization may:
+
+• Increase compile time
+• Increase executable size
+• Consume more memory during compilation
+• Make debugging harder
+
+Therefore:
+
+    OPTIMIZATION = TRADE-OFF MANAGEMENT
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. OPTIMIZATION AND CODE SIZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sometimes the compiler wants:
+
+    Smaller code
+
+Sometimes:
+
+    Faster code
+
+These goals can conflict.
+
+Example:
+
+Inlining may reduce function-call overhead:
+
+    performance ↑
+
+but duplicate function body:
+
+    code size ↑
+
+A compiler therefore uses optimization policies/levels depending on
+the chosen compilation configuration.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. SAFE VS UNSAFE OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SAFE:
+
+    Transformation preserves required program semantics.
+
+UNSAFE:
+
+    Transformation can change behavior.
+
+Example:
+
+    x = f();
+
+If f() has side effects, removing this statement may change behavior.
+
+Therefore dead-code analysis must distinguish:
+
+    unused result
+
+from
+
+    no observable side effect.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. OPTIMIZATION USING INTERMEDIATE REPRESENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IR is extremely important for optimization.
+
+Typical flow:
+
+    Source Code
+         ↓
+    Lexical Analysis
+         ↓
+    Syntax Analysis
+         ↓
+    Semantic Analysis
+         ↓
+    Intermediate Representation
+         ↓
+    ┌──────────────────────┐
+    │   OPTIMIZATION       │
+    │                      │
+    │ Constant Folding     │
+    │ Constant Propagation │
+    │ CSE                  │
+    │ DCE                  │
+    │ Loop Optimization   │
+    └──────────────────────┘
+         ↓
+    Optimized IR
+         ↓
+    Code Generation
+         ↓
+    Target Code
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. WHY IR IS USEFUL FOR OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose a compiler supports:
+
+    C
+    C++
+    Java-like language
+    Rust-like language
+
+and several target CPUs.
+
+If optimization is performed directly for every source/target pair:
+
+    Many source languages × many target machines
+
+becomes complicated.
+
+Using a common IR:
+
+    Source languages
+       ↓
+      IR
+       ↓
+    Optimizer
+       ↓
+    Target-specific code generation
+
+The optimizer can be largely shared.
+
+This is one reason modern compiler architecture separates:
+
+    Front End
+    Middle End
+    Back End
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. FRONT END / MIDDLE END / BACK END
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+             SOURCE PROGRAM
+                    ↓
+          ┌─────────────────┐
+          │    FRONT END     │
+          │                  │
+          │ Lexical          │
+          │ Syntax           │
+          │ Semantic         │
+          └────────┬────────┘
+                   ↓
+                  IR
+                   ↓
+          ┌─────────────────┐
+          │    MIDDLE END    │
+          │                  │
+          │ Optimization     │
+          │ Data-flow        │
+          │ Loop analysis    │
+          └────────┬────────┘
+                   ↓
+          Optimized IR
+                   ↓
+          ┌─────────────────┐
+          │    BACK END      │
+          │                  │
+          │ Instruction      │
+          │ selection        │
+          │ Register         │
+          │ allocation       │
+          │ Code generation  │
+          └────────┬────────┘
+                   ↓
+              TARGET CODE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. OPTIMIZATION PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A simplified optimizer may work like:
+
+    Initial IR
+       ↓
+    Constant Folding
+       ↓
+    Constant Propagation
+       ↓
+    Copy Propagation
+       ↓
+    CSE
+       ↓
+    Dead Code Elimination
+       ↓
+    Loop Optimizations
+       ↓
+    Control Flow Simplification
+       ↓
+    Further Analysis
+       ↓
+    Optimized IR
+
+
+Important:
+
+The exact ordering varies between compiler implementations.
+
+One optimization can expose opportunities for another.
+
+Example:
+
+    Constant Propagation
+            ↓
+    Constant Folding
+            ↓
+    Dead Code Elimination
+
+So optimization passes often interact.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. EXAMPLE — MULTIPLE OPTIMIZATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    x = 10;
+    y = x + 20;
+    z = y * 2;
+    w = z;
+    unused = 100;
+
+Step 1 — Constant propagation:
+
+    x = 10;
+    y = 10 + 20;
+    z = y * 2;
+    w = z;
+    unused = 100;
+
+Step 2 — Constant folding:
+
+    x = 10;
+    y = 30;
+    z = 60;
+    w = z;
+    unused = 100;
+
+Step 3 — Constant propagation:
+
+    x = 10;
+    y = 30;
+    z = 60;
+    w = 60;
+    unused = 100;
+
+Step 4 — Dead code elimination:
+
+If x, y, z, w, and unused are not needed later:
+
+    [all can potentially disappear]
+
+The exact result depends on whether these assignments have observable
+effects and whether their values are subsequently used.
+
+KEY IDEA:
+
+One optimization can create opportunities for another.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. OPTIMIZATION AND DATA-FLOW ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Many advanced optimizations need information about how values move
+through a program.
+
+This is called:
+
+    DATA-FLOW ANALYSIS
+
+Examples of data-flow information:
+
+• Which variables are live?
+• Which definitions reach a point?
+• Which expressions are available?
+• Which variables are constant?
+
+This becomes especially important in:
+
+    Chapter 32 — Data-Flow Analysis
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. OPTIMIZATION AND BASIC BLOCKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A basic block provides a convenient unit for local optimization.
+
+Example:
+
+    B1:
+        a = 10
+        b = 20
+        c = a + b
+        d = c + 5
+
+Optimization can happen inside B1.
+
+For global optimization:
+
+    B1 → B2 → B3
+
+the compiler must consider control flow between blocks.
+
+Therefore:
+
+    Basic Blocks
+         +
+    Control Flow Graph
+         +
+    Data-Flow Analysis
+         ↓
+    Advanced Optimization
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. OPTIMIZATION AND CONTROL FLOW GRAPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CFG = Control Flow Graph.
+
+Nodes:
+
+    Basic blocks
+
+Edges:
+
+    Possible control-flow transitions.
+
+Example:
+
+         B1
+        /  \
+       B2  B3
+        \  /
+         B4
+
+The optimizer can use the CFG to understand:
+
+• branches
+• loops
+• reachability
+• paths
+• control dependencies
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. OPTIMIZATION AND LOOPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Why loops matter:
+
+Suppose a statement executes:
+
+    1 time
+
+Optimization saves little.
+
+If inside a loop executing:
+
+    1,000,000 times
+
+even a small saving can be significant.
+
+Example:
+
+    for (i = 0; i < 1000000; i++) {
+        x = a * b;
+    }
+
+If a*b is invariant:
+
+    x = a * b;
+
+    for (...) {
+        ...
+    }
+
+Potential runtime work:
+
+Before:
+    1,000,000 multiplications
+
+After:
+    1 multiplication
+
+The actual generated result depends on semantics and later uses.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. OPTIMIZATION LEVELS — CONCEPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Compilers often provide different optimization levels.
+
+Conceptually:
+
+    Low optimization
+        ↓
+    Faster compilation
+    Less transformation
+
+        versus
+
+    High optimization
+        ↓
+    More analysis/transformation
+    Potentially slower compilation
+
+Exact option names and behavior depend on the compiler.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. OPTIMIZATION AND DEBUGGING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Optimization can make debugging more difficult.
+
+Why?
+
+Original source:
+
+    x = a + b;
+
+Optimized machine code may:
+
+• eliminate x
+• keep value only in a register
+• reorder operations
+• combine expressions
+• remove unused computations
+
+Therefore:
+
+    Source statement
+          ≠
+    One-to-one machine instruction
+
+Debug builds often use less aggressive optimization so that debugging
+information remains easier to interpret.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. IMPORTANT DIFFERENCE:
+    OPTIMIZATION VS CODE GENERATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OPTIMIZATION:
+
+    Improves the representation/program while preserving behavior.
+
+CODE GENERATION:
+
+    Converts the intermediate representation into target-machine code.
+
+Example:
+
+    IR
+     ↓
+    Optimization
+     ↓
+    Better IR
+     ↓
+    Code Generation
+     ↓
+    Assembly/Machine Code
+
+However, modern compilers may also perform target-dependent
+optimizations during/around code generation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. IMPORTANT DIFFERENCE:
+    LOCAL VS GLOBAL VS INTERPROCEDURAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LOCAL:
+
+    One basic block
+
+GLOBAL:
+
+    Multiple basic blocks, usually within a procedure/function
+
+INTERPROCEDURAL:
+
+    Across functions/procedures
+
+
+Example:
+
+    Basic Block
+        ↓
+      LOCAL
+
+    Function
+        ↓
+      GLOBAL
+
+    Multiple Functions
+        ↓
+    INTERPROCEDURAL
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. IMPORTANT DIFFERENCE:
+    MACHINE-INDEPENDENT VS MACHINE-DEPENDENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Machine-independent:
+
+    Mostly based on program/IR properties.
+
+Examples:
+
+    Constant folding
+    Constant propagation
+    CSE
+    DCE
+
+Machine-dependent:
+
+    Depends on target architecture.
+
+Examples:
+
+    Register allocation
+    Target instruction selection
+    Machine-specific peephole transformations
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. OPTIMIZATION CORRECTNESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For every transformation, compiler designers ask:
+
+1. Is the transformation legal?
+2. Does it preserve required semantics?
+3. Does it actually improve the chosen objective?
+4. What assumptions are required?
+5. Does the target machine affect the result?
+
+Example:
+
+    x * 2 → x + x
+
+For some integer cases this may be valid.
+
+But compiler designers must consider:
+
+• data type
+• overflow rules
+• floating-point behavior
+• language semantics
+• target architecture
+
+Therefore compiler optimization is a correctness-sensitive process.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. OPTIMIZATION EXAMPLE — CONSTANT FOLDING + DCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    a = 5 * 10;
+    b = a + 20;
+    c = 100;
+    return b;
+
+Constant folding:
+
+    a = 50;
+    b = a + 20;
+    c = 100;
+    return b;
+
+Constant propagation/folding:
+
+    a = 50;
+    b = 70;
+    c = 100;
+    return b;
+
+Dead code elimination:
+
+    a = 50;
+    b = 70;
+    return b;
+
+Further simplification may produce:
+
+    return 70;
+
+This example demonstrates:
+
+    Constant Folding
+          +
+    Constant Propagation
+          +
+    Dead Code Elimination
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. OPTIMIZATION EXAMPLE — COMMON SUBEXPRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    x = a + b;
+    y = a + b;
+    z = y * 2;
+
+Optimized:
+
+    t = a + b;
+    x = t;
+    y = t;
+    z = y * 2;
+
+If appropriate, further copy propagation may produce:
+
+    t = a + b;
+    x = t;
+    y = t;
+    z = t * 2;
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. OPTIMIZATION EXAMPLE — DEAD CODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    x = 10;
+    y = 20;
+    z = x + 5;
+    y = 100;
+    print(z);
+
+If the first:
+
+    y = 20;
+
+has no side effects and its value is never used:
+
+    y = 20;
+
+is dead.
+
+Optimized:
+
+    x = 10;
+    z = x + 5;
+    y = 100;
+    print(z);
+
+Further constant propagation/folding may simplify x and z.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. GATE-IMPORTANT CONCEPTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+★ VERY IMPORTANT:
+
+1. Constant folding
+2. Constant propagation
+3. Common subexpression elimination
+4. Dead code elimination
+5. Loop invariant code motion
+6. Strength reduction
+7. Peephole optimization
+8. Local vs global optimization
+9. Machine-independent vs machine-dependent optimization
+10. Optimization and CFG
+11. Optimization and data-flow analysis
+12. Semantic preservation
+13. Function inlining
+14. Optimization trade-offs
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. GATE TRAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRAP 1:
+
+"Optimization always reduces code size."
+
+FALSE.
+
+Some optimizations, such as aggressive inlining, can increase code
+size.
+
+------------------------------------------------------------
+
+TRAP 2:
+
+"Optimization means changing program semantics for better speed."
+
+FALSE.
+
+Required semantics must be preserved.
+
+------------------------------------------------------------
+
+TRAP 3:
+
+"Constant propagation and constant folding are identical."
+
+FALSE.
+
+Constant propagation:
+    propagates known constant values.
+
+Constant folding:
+    evaluates constant expressions.
+
+They often work together.
+
+------------------------------------------------------------
+
+TRAP 4:
+
+"All optimization is machine-independent."
+
+FALSE.
+
+Some optimizations depend on target architecture.
+
+------------------------------------------------------------
+
+TRAP 5:
+
+"Local optimization analyzes the entire program."
+
+FALSE.
+
+Local optimization generally operates within a basic block.
+
+------------------------------------------------------------
+
+TRAP 6:
+
+"Code inside loops is less important because it is executed repeatedly."
+
+FALSE.
+
+It is MORE important because repeated execution magnifies costs.
+
+------------------------------------------------------------
+
+TRAP 7:
+
+"Function inlining always makes programs smaller."
+
+FALSE.
+
+Inlining can increase code size.
+
+------------------------------------------------------------
+
+TRAP 8:
+
+"Removing an unused assignment is always safe."
+
+FALSE.
+
+The statement may have side effects.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. INTERVIEW QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1. What is compiler optimization?
+
+Answer:
+
+Compiler optimization is the transformation of a program/IR into a
+more efficient form while preserving required program semantics.
+
+------------------------------------------------------------
+
+Q2. Why is optimization performed?
+
+Answer:
+
+To improve execution speed, reduce code size, reduce memory usage,
+improve resource utilization, or achieve another desired cost objective.
+
+------------------------------------------------------------
+
+Q3. What is constant folding?
+
+Answer:
+
+Compile-time evaluation of expressions whose operands are known
+constants.
+
+Example:
+
+    10 + 20 → 30
+
+------------------------------------------------------------
+
+Q4. What is constant propagation?
+
+Answer:
+
+Replacing a variable with a known constant value at its uses.
+
+------------------------------------------------------------
+
+Q5. What is dead code?
+
+Answer:
+
+Code whose result does not affect required program behavior and that
+has no relevant side effects.
+
+------------------------------------------------------------
+
+Q6. What is common subexpression elimination?
+
+Answer:
+
+Reusing the result of an expression when the same expression is
+computed again and its required operands have not changed.
+
+------------------------------------------------------------
+
+Q7. What is loop invariant code motion?
+
+Answer:
+
+Moving a computation that does not change across loop iterations to a
+location where it executes fewer times, while preserving correctness.
+
+------------------------------------------------------------
+
+Q8. What is strength reduction?
+
+Answer:
+
+Replacing an expensive operation with an equivalent cheaper operation
+when valid.
+
+------------------------------------------------------------
+
+Q9. What is peephole optimization?
+
+Answer:
+
+Optimization that examines a small sequence/window of instructions
+and replaces inefficient patterns with better ones.
+
+------------------------------------------------------------
+
+Q10. Why is IR important for optimization?
+
+Answer:
+
+IR provides a common representation on which many optimizations can
+be performed independently of particular source-language syntax and,
+for many transformations, independently of target architecture.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+53. PRACTICAL COMPILER VIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Imagine this source:
+
+    int main() {
+        int x = 10;
+        int y = 20;
+        int z = x + y;
+        return z;
+    }
+
+Conceptually:
+
+SOURCE
+   ↓
+LEXICAL ANALYSIS
+   ↓
+SYNTAX ANALYSIS
+   ↓
+SEMANTIC ANALYSIS
+   ↓
+IR
+
+Possible IR:
+
+    x = 10
+    y = 20
+    z = x + y
+    return z
+
+Optimization:
+
+    x = 10
+    y = 20
+    z = 30
+    return z
+
+Further optimization:
+
+    return 30
+
+Then target-specific code generation produces machine/assembly code.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+54. BIG PICTURE — CHAPTER 30
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    PROGRAM
+                       ↓
+                ┌─────────────┐
+                │     IR      │
+                └──────┬──────┘
+                       ↓
+             ┌──────────────────┐
+             │   OPTIMIZATION   │
+             └────────┬─────────┘
+                      / \
+                     /   \
+                    ↓     ↓
+             MACHINE-      MACHINE-
+             INDEPENDENT    DEPENDENT
+                 │              │
+                 ↓              ↓
+           Constant folding   Register allocation
+           Constant prop.     Instruction selection
+           CSE                Peephole
+           DCE                Target-specific
+           Loop optimization  transformations
+                 \              /
+                  \            /
+                   ↓          ↓
+                 OPTIMIZED CODE
+                       ↓
+                TARGET MACHINE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+55. CHAPTER CONNECTION MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 19
+    ↓
+Intermediate Representation
+
+Chapter 20
+    ↓
+Three-Address Code
+
+Chapter 21
+    ↓
+Boolean Expressions & Control Flow
+
+Chapter 27
+    ↓
+Basic Blocks + CFG
+
+Chapter 28
+    ↓
+Instruction Selection
+
+Chapter 29
+    ↓
+Register Allocation
+
+Chapter 30
+    ↓
+OPTIMIZATION FUNDAMENTALS
+    ↓
+Chapter 31
+    ↓
+Basic Optimizations
+    ↓
+Chapter 32
+    ↓
+Data-Flow Analysis
+    ↓
+Chapter 33
+    ↓
+Loop Optimization
+    ↓
+Chapter 34
+    ↓
+Advanced Optimization
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+56. ONE-PAGE REVISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OPTIMIZATION
+│
+├── Goal
+│   ├── Speed
+│   ├── Code size
+│   ├── Memory
+│   └── Resource usage
+│
+├── Requirement
+│   └── Preserve required semantics
+│
+├── Scope
+│   ├── Local
+│   ├── Global
+│   ├── Loop
+│   └── Interprocedural
+│
+├── Machine dependence
+│   ├── Machine-independent
+│   └── Machine-dependent
+│
+├── Important techniques
+│   ├── Constant folding
+│   ├── Constant propagation
+│   ├── Copy propagation
+│   ├── CSE
+│   ├── DCE
+│   ├── Algebraic simplification
+│   ├── Strength reduction
+│   ├── Code motion
+│   ├── Loop invariant code motion
+│   ├── Function inlining
+│   └── Peephole optimization
+│
+└── Important analysis
+    ├── Basic blocks
+    ├── CFG
+    └── Data-flow analysis
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+57. MUST-REMEMBER FORMULAS / RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rule 1:
+
+    Optimization ≠ changing program meaning
+
+Rule 2:
+
+    Constant Folding
+    = evaluate constants at compile time
+
+Rule 3:
+
+    Constant Propagation
+    = propagate known constant values
+
+Rule 4:
+
+    CSE
+    = calculate repeated valid expressions once
+
+Rule 5:
+
+    DCE
+    = remove unnecessary computation with no relevant side effects
+
+Rule 6:
+
+    Loop optimization is important because loop body executes many
+    times.
+
+Rule 7:
+
+    Local optimization → basic block
+
+Rule 8:
+
+    Global optimization → multiple basic blocks / procedure
+
+Rule 9:
+
+    Interprocedural → across procedures/functions
+
+Rule 10:
+
+    Machine-dependent optimization → target architecture matters
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+58. FINAL MASTER CONCEPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Think of optimization as:
+
+        SAME MEANING
+             +
+        LESS WORK
+             =
+        BETTER PROGRAM
+
+But "better" is objective-dependent:
+
+        Faster
+        Smaller
+        Less memory
+        Better CPU usage
+        Lower energy
+
+The compiler must determine:
+
+    "Can I transform this code safely?"
+
+and then:
+
+    "Will the transformation improve the desired objective?"
+
+This is the central idea behind compiler optimization.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+59. CHAPTER 30 CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before moving to Chapter 31, you should be able to explain:
+
+[✓] What compiler optimization is
+[✓] Why optimization is needed
+[✓] Semantic preservation
+[✓] Optimization goals
+[✓] Machine-independent optimization
+[✓] Machine-dependent optimization
+[✓] Local optimization
+[✓] Global optimization
+[✓] Loop optimization
+[✓] Interprocedural optimization
+[✓] Optimization passes
+[✓] Peephole optimization
+[✓] Constant folding
+[✓] Constant propagation
+[✓] Copy propagation
+[✓] Common subexpression elimination
+[✓] Dead code elimination
+[✓] Unreachable code elimination
+[✓] Algebraic simplification
+[✓] Strength reduction
+[✓] Code motion
+[✓] Loop invariant code motion
+[✓] Function inlining
+[✓] Optimization trade-offs
+[✓] CFG connection
+[✓] Data-flow analysis connection
+[✓] GATE traps
+[✓] Interview concepts
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                    CHAPTER 30 COMPLETE                              ║
+║                                                                      ║
+║ NEXT: CHAPTER 31 — BASIC OPTIMIZATIONS                              ║
+║                                                                      ║
+║ Type "NEXT" to continue.                                             ║
+╚══════════════════════════════════════════════════════════════════════╝

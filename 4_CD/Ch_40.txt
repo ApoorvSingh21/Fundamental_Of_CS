@@ -1,0 +1,1494 @@
+============================================================
+CHAPTER 40 — ERROR RECOVERY
+============================================================
+
+LEVEL:
+Beginner → Intermediate → Advanced → GATE → Interview
+
+GOAL:
+Understand how a compiler recovers from errors and continues
+processing the remaining source program.
+
+============================================================
+1. WHAT IS ERROR RECOVERY?
+============================================================
+
+Error recovery is the process by which a compiler attempts
+to continue compilation after detecting an error.
+
+Basic process:
+
+    Detect Error
+         ↓
+    Report Error
+         ↓
+    Recover
+         ↓
+    Continue Compilation
+
+Example:
+
+    int x = 10
+    int y = 20;
+
+If ';' is missing after 10, a parser should ideally report
+the problem and continue parsing the declaration of y.
+
+------------------------------------------------------------
+2. ERROR HANDLING VS ERROR RECOVERY
+------------------------------------------------------------
+
+ERROR HANDLING is the broader concept.
+
+It includes:
+
+    Detection
+    Reporting
+    Recovery
+    Diagnostics
+
+ERROR RECOVERY specifically means:
+
+    Recovering from an error so that compilation can continue.
+
+Therefore:
+
+    Error Handling
+          |
+          +-- Detection
+          +-- Reporting
+          +-- Recovery
+          +-- Diagnostics
+
+============================================================
+3. WHY ERROR RECOVERY IS REQUIRED
+============================================================
+
+Consider:
+
+    int a = ;
+    int b = ;
+    int c = ;
+
+A compiler that stops immediately may report only:
+
+    Error at line 1
+
+The programmer then fixes line 1 and recompiles.
+
+A better compiler attempts to report:
+
+    Error at line 1
+    Error at line 2
+    Error at line 3
+
+Therefore error recovery helps:
+
+    • Find multiple errors
+    • Continue compilation
+    • Reduce compilation/debugging cycles
+    • Produce useful diagnostics
+
+============================================================
+4. MAIN ERROR RECOVERY TECHNIQUES
+============================================================
+
+The four classical techniques are:
+
+    1. Panic-mode recovery
+    2. Phrase-level recovery
+    3. Error productions
+    4. Global correction
+
+Remember:
+
+    PANIC
+    PHRASE
+    PRODUCTIONS
+    GLOBAL
+
+============================================================
+5. PANIC-MODE RECOVERY
+============================================================
+
+Panic mode is one of the simplest error recovery methods.
+
+Basic idea:
+
+    When an error occurs,
+    discard input symbols/tokens
+    until a synchronizing token is found.
+
+Then:
+
+    Resume parsing.
+
+Concept:
+
+    Error
+      ↓
+    Skip tokens
+      ↓
+    Synchronizing token
+      ↓
+    Resume parsing
+
+------------------------------------------------------------
+6. SIMPLE PANIC-MODE EXAMPLE
+------------------------------------------------------------
+
+Suppose grammar expects:
+
+    statement → id = expression ;
+
+Input:
+
+    x = 10 + * 20 ;
+
+At:
+
+    *
+
+the parser detects an error.
+
+It may skip input until:
+
+    ;
+
+is found.
+
+Then parsing can continue with the next statement.
+
+------------------------------------------------------------
+7. SYNCHRONIZING TOKENS
+------------------------------------------------------------
+
+A synchronizing token is a token at which the parser can
+safely resume parsing.
+
+Common examples:
+
+    ;
+    }
+    )
+    ]
+    end
+
+Language-specific keywords may also be useful:
+
+    if
+    while
+    for
+    return
+
+The actual synchronization set depends on the grammar.
+
+------------------------------------------------------------
+8. SYNCHRONIZING SET
+------------------------------------------------------------
+
+In parser construction, synchronization tokens can be
+associated with grammar nonterminals.
+
+For example:
+
+    FOLLOW(A)
+
+can be used as a basis for selecting synchronization tokens
+for nonterminal A in predictive parsing.
+
+This is especially important in LL(1) panic-mode recovery.
+
+------------------------------------------------------------
+9. PANIC MODE IN LL(1) PARSING
+------------------------------------------------------------
+
+For an LL(1) parser, synchronization information is often
+based on FOLLOW sets.
+
+Suppose:
+
+    FOLLOW(A) = { ;, ), $ }
+
+If the parser cannot find a valid production for A, it may
+discard input until one of:
+
+    ;
+    )
+    $
+
+appears.
+
+Then parsing can resume.
+
+IMPORTANT:
+
+    FOLLOW sets are useful synchronization information.
+
+============================================================
+10. ADVANTAGES OF PANIC MODE
+============================================================
+
+Advantages:
+
+    • Simple
+    • Easy to implement
+    • Fast
+    • Guarantees progress when properly designed
+    • Reduces the chance of parser getting stuck
+
+Disadvantages:
+
+    • May skip valid input
+    • May miss some errors
+    • Error location after recovery may be less precise
+    • Can sometimes cause loss of useful information
+
+============================================================
+11. PHRASE-LEVEL RECOVERY
+============================================================
+
+Phrase-level recovery attempts a local correction.
+
+Possible corrections:
+
+    • Insert a token
+    • Delete a token
+    • Replace a token
+    • Modify parser state
+
+Example:
+
+    if (x > 10 {
+        y = 20;
+    }
+
+The parser expects:
+
+    )
+
+before:
+
+    {
+
+It may conceptually insert:
+
+    )
+
+and continue.
+
+------------------------------------------------------------
+12. PHRASE-LEVEL EXAMPLE — INSERTION
+------------------------------------------------------------
+
+Input:
+
+    x = 10
+
+Suppose grammar requires:
+
+    x = 10 ;
+
+The parser may insert:
+
+    ;
+
+Conceptually:
+
+    x = 10 ;
+          ↑
+       inserted
+
+Then parsing continues.
+
+------------------------------------------------------------
+13. PHRASE-LEVEL EXAMPLE — DELETION
+------------------------------------------------------------
+
+Suppose input contains:
+
+    x = 10 ; ;
+
+and the second ';' is unexpected.
+
+The parser may delete the extra token:
+
+    x = 10 ;
+
+and continue.
+
+------------------------------------------------------------
+14. PHRASE-LEVEL EXAMPLE — REPLACEMENT
+------------------------------------------------------------
+
+Suppose:
+
+    x = 10 ]
+
+but the grammar expects:
+
+    )
+
+The parser may replace:
+
+    ]
+
+with:
+
+    )
+
+Conceptually:
+
+    ] → )
+
+and continue.
+
+============================================================
+15. PANIC MODE VS PHRASE LEVEL
+============================================================
+
++------------------+-------------------------------------+
+| Panic Mode       | Phrase Level                        |
++------------------+-------------------------------------+
+| Skips tokens     | Makes local correction              |
+| Simple           | More precise                        |
+| Fast             | Potentially more complex            |
+| May lose input   | Attempts to preserve more input     |
+| Common technique | Useful for local errors             |
++------------------+-------------------------------------+
+
+MEMORY:
+
+    Panic Mode = SKIP
+
+    Phrase Level = CORRECT LOCALLY
+
+============================================================
+16. ERROR PRODUCTIONS
+============================================================
+
+Error productions add grammar rules specifically for common
+mistakes.
+
+Normal grammar:
+
+    statement → id = expression ;
+
+An error-aware grammar can contain a special production for
+a common malformed form.
+
+Concept:
+
+    Common mistake
+         ↓
+    Error production
+         ↓
+    Specific diagnostic
+         ↓
+    Recovery
+
+------------------------------------------------------------
+17. WHY ERROR PRODUCTIONS ARE USEFUL
+------------------------------------------------------------
+
+Without an error production:
+
+    syntax error
+
+With a suitable error production:
+
+    error: assignment requires an expression
+
+This produces a more meaningful diagnostic.
+
+------------------------------------------------------------
+18. EXAMPLE OF ERROR PRODUCTION
+------------------------------------------------------------
+
+Suppose a language frequently has:
+
+    if (condition
+        statement
+
+where:
+
+    )
+
+is missing.
+
+A grammar can include a special error-oriented rule to
+recognize this situation and issue a useful diagnostic.
+
+The exact grammar depends on the parser implementation.
+
+============================================================
+19. GLOBAL CORRECTION
+============================================================
+
+Global correction attempts to find a sequence of changes
+that converts an erroneous input into a valid sentence.
+
+Possible operations:
+
+    Insert
+    Delete
+    Replace
+
+The objective is generally to minimize the correction cost.
+
+Concept:
+
+    Invalid input
+          ↓
+    Search possible corrections
+          ↓
+    Valid sentence
+          ↓
+    Minimum correction cost
+
+------------------------------------------------------------
+20. GLOBAL CORRECTION EXAMPLE
+------------------------------------------------------------
+
+Suppose:
+
+    a + ;
+
+is invalid.
+
+The parser may conceptually search for a valid form such as:
+
+    a + b ;
+
+by inserting:
+
+    b
+
+The exact correction depends on the grammar and cost model.
+
+============================================================
+21. GLOBAL CORRECTION — IMPORTANT POINT
+============================================================
+
+Global correction is theoretically attractive because it
+attempts to find a minimal correction.
+
+However:
+
+    It can be computationally expensive.
+
+Therefore practical compilers generally favor more efficient
+recovery techniques.
+
+============================================================
+22. ERROR RECOVERY IN LEXICAL ANALYSIS
+============================================================
+
+The lexical analyzer can encounter:
+
+    Invalid character
+    Malformed number
+    Unterminated string
+    Unterminated comment
+    Invalid identifier
+
+Recovery techniques can include:
+
+    Delete character
+    Insert character
+    Replace character
+    Skip characters
+    Continue scanning
+
+------------------------------------------------------------
+23. LEXICAL RECOVERY EXAMPLE
+------------------------------------------------------------
+
+Input:
+
+    int x = 10 @ 20;
+
+Suppose '@' is invalid.
+
+Possible recovery:
+
+    int x = 10 20;
+
+The lexer can report the invalid character and continue
+scanning after removing/skipping it.
+
+The actual behavior depends on the language/compiler.
+
+============================================================
+24. UNTERMINATED STRING
+============================================================
+
+Input:
+
+    printf("Hello);
+
+The closing quotation mark is missing.
+
+The lexer may report:
+
+    error: unterminated string literal
+
+Recovery can involve scanning according to the language's
+rules until a suitable boundary is found.
+
+============================================================
+25. UNTERMINATED COMMENT
+============================================================
+
+Input:
+
+    /*
+       This is a comment
+
+If the language requires:
+
+    */
+
+the lexer reaches the end of input without finding it.
+
+Possible diagnostic:
+
+    error: unterminated comment
+
+Recovery may terminate the current lexical construct and
+continue or stop depending on the compiler's strategy.
+
+============================================================
+26. ERROR RECOVERY IN LL(1) PARSING
+============================================================
+
+LL(1) parsers commonly use:
+
+    FIRST
+    FOLLOW
+    Synchronizing sets
+
+Suppose:
+
+    A → α | β
+
+and the parser sees a token that cannot begin either
+production.
+
+The parser detects an error.
+
+It may:
+
+    • Report the error
+    • Discard tokens
+    • Use synchronization information
+    • Resume parsing
+
+------------------------------------------------------------
+27. LL(1) PANIC-MODE IDEA
+------------------------------------------------------------
+
+For a nonterminal A:
+
+    If current input token is not suitable for A,
+
+the parser can skip tokens until it encounters a token
+belonging to a synchronization set.
+
+A common choice is:
+
+    SYNC(A) ⊆ FOLLOW(A)
+
+This allows the parser to resume when it reaches a token
+that can legally follow A.
+
+============================================================
+28. ERROR RECOVERY IN LR PARSING
+============================================================
+
+LR parsers use:
+
+    ACTION table
+    GOTO table
+
+An error occurs when:
+
+    ACTION[state, input] = error
+
+The parser must then recover.
+
+Possible actions include:
+
+    • Pop parser states
+    • Discard input tokens
+    • Shift a special error symbol where supported
+    • Resume at a suitable state/token combination
+
+============================================================
+29. LR ERROR RECOVERY — CONCEPT
+============================================================
+
+Suppose:
+
+    Parser state = S
+
+    ACTION[S, token] = error
+
+Then:
+
+    Detect error
+         ↓
+    Find a recovery point
+         ↓
+    Remove states/tokens as necessary
+         ↓
+    Resume parsing
+
+The exact algorithm depends on the LR parser implementation.
+
+============================================================
+30. SPECIAL ERROR SYMBOL IN LR PARSERS
+============================================================
+
+Some LR parser frameworks support a special:
+
+    error
+
+symbol/nonterminal mechanism in grammar rules.
+
+Conceptually:
+
+    statement:
+        error ;
+
+This can allow the parser to recover from an error in a
+statement and continue at ';'.
+
+Example idea:
+
+    bad statement
+         ↓
+       error
+         ↓
+         ;
+         ↓
+    resume next statement
+
+This is particularly useful in parser generators.
+
+============================================================
+31. SYNCHRONIZATION IN STATEMENT-BASED LANGUAGES
+============================================================
+
+In many languages:
+
+    ;
+
+is a useful synchronization point.
+
+Example:
+
+    int x = ;
+    int y = 20;
+
+If the parser detects an error in the first statement,
+it may skip until:
+
+    ;
+
+Then it can begin parsing:
+
+    int y = 20;
+
+This reduces cascading errors.
+
+============================================================
+32. BLOCK-BASED SYNCHRONIZATION
+============================================================
+
+Another useful synchronization token is:
+
+    }
+
+Example:
+
+    if (x) {
+        a = 10;
+        b = ;
+        c = 20;
+    }
+
+If recovery becomes difficult inside the block, the parser
+may synchronize at:
+
+    }
+
+Then it can continue with the next construct.
+
+============================================================
+33. ERROR RECOVERY AND CASCADING ERRORS
+============================================================
+
+Consider:
+
+    int x =
+    int y = 10;
+
+The first error is:
+
+    missing expression after '='
+
+If the parser does not recover properly, it may interpret
+the following tokens incorrectly.
+
+This can produce:
+
+    Error 1
+    Error 2
+    Error 3
+    Error 4
+
+even though the programmer made only one original mistake.
+
+These are:
+
+    Cascading errors
+
+------------------------------------------------------------
+34. PREVENTING CASCADING ERRORS
+------------------------------------------------------------
+
+Good recovery should:
+
+    • Stop the current error from spreading
+    • Synchronize at sensible locations
+    • Avoid repeatedly reporting the same underlying problem
+    • Resume at a valid grammatical boundary
+
+============================================================
+35. ERROR RECOVERY QUALITY
+============================================================
+
+A good recovery strategy should have:
+
+    1. Accuracy
+    2. Fast recovery
+    3. Minimal input loss
+    4. Few cascading errors
+    5. Good diagnostics
+    6. Guaranteed progress
+
+Trade-off:
+
+    More sophisticated recovery
+          ↕
+    Better diagnostics
+          ↕
+    Higher implementation complexity
+
+============================================================
+36. MINIMAL DISTANCE / MINIMAL CORRECTION
+============================================================
+
+A correction can be evaluated using a cost.
+
+Possible costs:
+
+    Insert token  → cost 1
+    Delete token  → cost 1
+    Replace token → cost 1
+
+The compiler may search for a correction with low total cost.
+
+Example:
+
+    Input:
+        a + ;
+
+A correction requiring one change may be preferred over
+a correction requiring five changes.
+
+Global correction is associated with this idea.
+
+============================================================
+37. ERROR RECOVERY AND AST
+============================================================
+
+Modern compilers often continue building an AST even when
+the source contains errors.
+
+For example:
+
+    int x = ;
+
+The compiler may create a partial/error AST representation.
+
+Conceptually:
+
+             Assignment
+              /       \
+             x       ERROR
+                     node
+
+This allows later processing or diagnostics to continue.
+
+============================================================
+38. ERROR NODES
+============================================================
+
+An AST may contain special error nodes.
+
+Example:
+
+    x + ERROR
+
+instead of completely abandoning the tree.
+
+Benefits:
+
+    • Continue analysis
+    • Produce more diagnostics
+    • Support IDE features
+    • Provide better source-level feedback
+
+============================================================
+39. ERROR RECOVERY IN IDEs
+============================================================
+
+Modern IDEs require very strong recovery.
+
+Why?
+
+Because programmers constantly write incomplete code.
+
+Example:
+
+    if (x > 10) {
+        printf(
+
+The program is incomplete but the IDE still needs to provide:
+
+    Syntax highlighting
+    Code completion
+    Error highlighting
+    Navigation
+    Suggestions
+
+Therefore IDE parsers often use sophisticated error recovery.
+
+============================================================
+40. ERROR TOLERANCE
+============================================================
+
+Error-tolerant parsing means the parser can produce useful
+structure even when the source is incomplete or incorrect.
+
+This is especially useful for:
+
+    IDEs
+    Editors
+    Code completion
+    Refactoring tools
+    Static analysis
+
+============================================================
+41. RECOVERY EXAMPLE — COMPLETE
+============================================================
+
+Input:
+
+    int a = 10
+    int b = ;
+    int c = 30;
+
+Suppose semicolon is missing after 10.
+
+STEP 1:
+
+    Parser detects:
+
+        expected ';'
+
+STEP 2:
+
+    Parser reports the error.
+
+STEP 3:
+
+    Parser synchronizes.
+
+Possible synchronization point:
+
+    int
+
+STEP 4:
+
+    Parser continues:
+
+        int b = ;
+
+STEP 5:
+
+    Another error is detected:
+
+        expected expression
+
+STEP 6:
+
+    Parser recovers at:
+
+        ;
+
+STEP 7:
+
+    Parser continues:
+
+        int c = 30;
+
+Result:
+
+    Multiple useful errors
+    rather than complete parser failure.
+
+============================================================
+42. ERROR RECOVERY FLOW
+============================================================
+
+                 INPUT
+                   |
+                   v
+                PARSER
+                   |
+              Valid token?
+                /     \
+              YES      NO
+               |        |
+               |      ERROR
+               |        |
+               |     REPORT
+               |        |
+               |     RECOVER
+               |        |
+               |   +----+-----+
+               |   |          |
+               |  Panic     Phrase
+               |  mode      level
+               |   |          |
+               |   +----+-----+
+               |        |
+               +--------+
+                        |
+                    CONTINUE
+                        |
+                        v
+                     PARSER
+
+============================================================
+43. COMPARISON OF FOUR TECHNIQUES
+============================================================
+
++--------------------+-------------------------------+
+| Technique          | Main Idea                     |
++--------------------+-------------------------------+
+| Panic mode         | Skip input                   |
+| Phrase level       | Local correction             |
+| Error productions  | Handle known errors in grammar|
+| Global correction  | Minimum-cost global repair   |
++--------------------+-------------------------------+
+
+MEMORY:
+
+    PANIC     → SKIP
+    PHRASE    → FIX
+    ERROR PROD→ RECOGNIZE
+    GLOBAL    → OPTIMIZE CORRECTION
+
+============================================================
+44. GATE IMPORTANT FACTS
+============================================================
+
+FACT 1:
+
+Panic-mode recovery is simple and widely used.
+
+------------------------------------------------------------
+
+FACT 2:
+
+Panic mode skips input until a synchronizing token.
+
+------------------------------------------------------------
+
+FACT 3:
+
+FOLLOW sets are commonly used to construct synchronization
+sets in predictive/LL parsing.
+
+------------------------------------------------------------
+
+FACT 4:
+
+Phrase-level recovery performs local corrections.
+
+------------------------------------------------------------
+
+FACT 5:
+
+Error productions explicitly represent common erroneous
+constructs.
+
+------------------------------------------------------------
+
+FACT 6:
+
+Global correction attempts minimum-cost correction but can
+be expensive.
+
+------------------------------------------------------------
+
+FACT 7:
+
+Error recovery is different from error detection.
+
+------------------------------------------------------------
+45. GATE TRAPS
+------------------------------------------------------------
+
+TRAP 1:
+
+"PANIC MODE corrects the entire input."
+
+FALSE.
+
+It skips tokens until synchronization.
+
+------------------------------------------------------------
+
+TRAP 2:
+
+"PHRASE-LEVEL recovery always gives the globally optimal
+correction."
+
+FALSE.
+
+It generally performs local correction.
+
+------------------------------------------------------------
+
+TRAP 3:
+
+"Global correction is computationally inexpensive."
+
+FALSE.
+
+Finding optimal corrections can be expensive.
+
+------------------------------------------------------------
+
+TRAP 4:
+
+"FOLLOW sets have no relation to LL(1) error recovery."
+
+FALSE.
+
+FOLLOW sets are commonly used for synchronization.
+
+------------------------------------------------------------
+
+TRAP 5:
+
+"Error recovery means the compiler ignores errors."
+
+FALSE.
+
+Recovery means handling the error and attempting to continue.
+
+------------------------------------------------------------
+
+TRAP 6:
+
+"Recovery always guarantees the source program is correct."
+
+FALSE.
+
+Recovery allows compilation/parsing to continue; it does not
+make the original program correct.
+
+============================================================
+46. GATE-STYLE QUESTIONS
+============================================================
+
+Q1.
+Which recovery technique discards input symbols until a
+synchronizing token is found?
+
+A. Phrase-level
+B. Panic-mode
+C. Global correction
+D. Code generation
+
+ANSWER:
+
+    B
+
+------------------------------------------------------------
+
+Q2.
+Which technique attempts to find a minimum-cost correction?
+
+A. Panic mode
+B. Phrase level
+C. Global correction
+D. Lexical buffering
+
+ANSWER:
+
+    C
+
+------------------------------------------------------------
+
+Q3.
+Which information is commonly useful for synchronization
+in LL(1) error recovery?
+
+A. FOLLOW
+B. Machine code
+C. Register allocation
+D. DAG
+
+ANSWER:
+
+    A
+
+------------------------------------------------------------
+
+Q4.
+Which recovery technique performs local token corrections?
+
+A. Panic mode
+B. Phrase level
+C. Global correction
+D. Mark-and-sweep
+
+ANSWER:
+
+    B
+
+------------------------------------------------------------
+
+Q5.
+Which technique incorporates common erroneous constructs
+into grammar rules?
+
+A. Error productions
+B. Panic mode
+C. Register spilling
+D. Backpatching
+
+ANSWER:
+
+    A
+
+------------------------------------------------------------
+47. INTERVIEW QUESTIONS
+------------------------------------------------------------
+
+Q1. What is error recovery?
+
+Answer:
+
+Error recovery is the mechanism used by a compiler to
+continue processing after detecting an error.
+
+------------------------------------------------------------
+
+Q2. Why is panic-mode recovery popular?
+
+Answer:
+
+Because it is simple, fast, easy to implement, and can
+guarantee progress by discarding input until a synchronization
+point is reached.
+
+------------------------------------------------------------
+
+Q3. What is a synchronizing token?
+
+Answer:
+
+A token at which the parser can safely resume parsing after
+an error.
+
+------------------------------------------------------------
+
+Q4. What is the relationship between FOLLOW and error recovery?
+
+Answer:
+
+In LL(1) parsing, FOLLOW sets are commonly used as the basis
+for synchronization sets.
+
+------------------------------------------------------------
+
+Q5. What is phrase-level recovery?
+
+Answer:
+
+It attempts a local correction such as insertion, deletion,
+or replacement of a token.
+
+------------------------------------------------------------
+
+Q6. What is global correction?
+
+Answer:
+
+It attempts to transform erroneous input into a valid sentence
+using a minimum or low-cost sequence of corrections.
+
+------------------------------------------------------------
+
+Q7. What are cascading errors?
+
+Answer:
+
+Errors produced as a consequence of an earlier error.
+
+------------------------------------------------------------
+
+Q8. Why are error productions useful?
+
+Answer:
+
+They allow the grammar/parser to recognize common mistakes
+and generate more specific diagnostics.
+
+============================================================
+48. PRACTICAL COMPILER EXAMPLE
+============================================================
+
+Suppose we design a tiny language:
+
+    statement → id = number ;
+
+Input:
+
+    x = 10
+    y = 20;
+
+The parser expects:
+
+    ;
+
+after 10.
+
+Error:
+
+    Missing ';'
+
+Possible panic-mode recovery:
+
+    Skip input until synchronization token.
+
+Suppose:
+
+    int
+
+or
+
+    ;
+
+is chosen as a synchronization point.
+
+Parser reports:
+
+    line 1: expected ';'
+
+Then continues with:
+
+    y = 20;
+
+============================================================
+49. CHAPTER CONNECTIONS
+============================================================
+
+CHAPTER 4–8
+    Lexical Analysis
+         ↓
+    Lexical Error Recovery
+
+CHAPTER 9–14
+    Syntax Analysis
+         ↓
+    Parser Error Recovery
+         ↓
+    Panic / Phrase / Error Productions
+
+CHAPTER 15–18
+    Semantic Analysis
+         ↓
+    Semantic Diagnostics
+
+CHAPTER 39
+    Error Handling
+         ↓
+    What errors are + how they are handled
+
+CHAPTER 40
+    Error Recovery
+         ↓
+    How compiler continues after errors
+
+============================================================
+50. MOST IMPORTANT MEMORY TABLE
+============================================================
+
++----------------------+-------------------------------+
+| Concept              | Remember                      |
++----------------------+-------------------------------+
+| Error detection      | Find the problem              |
+| Error reporting      | Explain the problem           |
+| Error recovery       | Continue after the problem    |
+| Panic mode            | Skip until synchronization    |
+| Phrase level         | Local correction              |
+| Error production     | Grammar handles known error   |
+| Global correction    | Minimum-cost correction       |
+| Synchronization      | Safe point to resume          |
+| Cascading error      | Error caused by earlier error |
++----------------------+-------------------------------+
+
+============================================================
+51. ONE-PAGE REVISION
+============================================================
+
+ERROR RECOVERY
+│
+├── Lexical Recovery
+│   ├── Delete
+│   ├── Insert
+│   ├── Replace
+│   └── Skip
+│
+├── Parser Recovery
+│   ├── Panic Mode
+│   ├── Phrase Level
+│   ├── Error Productions
+│   └── Global Correction
+│
+├── Synchronization
+│   ├── FOLLOW-based sets
+│   ├── ;
+│   ├── }
+│   ├── )
+│   └── Other grammar-dependent tokens
+│
+└── Goals
+    ├── Continue parsing
+    ├── Report useful errors
+    ├── Avoid cascading errors
+    ├── Preserve valid input
+    └── Guarantee progress
+
+============================================================
+52. SUPER-IMPORTANT EXAM MEMORY
+============================================================
+
+PANIC MODE:
+
+    Error
+      ↓
+    DISCARD
+      ↓
+    Synchronizing token
+      ↓
+    Continue
+
+PHRASE LEVEL:
+
+    Error
+      ↓
+    LOCAL FIX
+      ↓
+    Continue
+
+ERROR PRODUCTIONS:
+
+    Common error
+      ↓
+    SPECIAL GRAMMAR RULE
+      ↓
+    Specific diagnostic
+
+GLOBAL CORRECTION:
+
+    Error
+      ↓
+    SEARCH CORRECTIONS
+      ↓
+    MINIMUM COST
+      ↓
+    Valid sentence
+
+============================================================
+53. FINAL CHAPTER 40 CHECKLIST
+============================================================
+
+You should now be able to explain:
+
+[✓] Definition of error recovery
+[✓] Need for error recovery
+[✓] Error handling vs recovery
+[✓] Panic-mode recovery
+[✓] Synchronizing tokens
+[✓] Synchronization sets
+[✓] FOLLOW-based recovery
+[✓] Phrase-level recovery
+[✓] Token insertion
+[✓] Token deletion
+[✓] Token replacement
+[✓] Error productions
+[✓] Global correction
+[✓] Lexical recovery
+[✓] LL(1) recovery
+[✓] LR recovery
+[✓] Cascading errors
+[✓] Error-tolerant parsing
+[✓] AST error nodes
+[✓] IDE-oriented recovery
+[✓] GATE traps
+[✓] Interview questions
+
+============================================================
+CHAPTER 40 COMPLETE
+============================================================
+
+NEXT:
+
+    CHAPTER 41 — BUILD A MINI COMPILER
+
+Topics:
+
+    • Mini compiler architecture
+    • Source language design
+    • Lexical analyzer
+    • Token generation
+    • Parser
+    • AST
+    • Symbol table
+    • Semantic analysis
+    • Intermediate representation
+    • Three-address code
+    • Basic optimization
+    • Code generation
+    • Error handling
+    • Error recovery
+    • End-to-end compiler pipeline
+    • Practical implementation
+    • Testing the compiler
+    • Debugging
+    • Project structure
+    • Interview explanation
+    • GATE/practical questions
+
+Type NEXT to continue.
+============================================================

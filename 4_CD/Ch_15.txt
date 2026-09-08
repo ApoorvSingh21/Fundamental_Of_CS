@@ -1,0 +1,2362 @@
+CHAPTER 15 — SEMANTIC ANALYSIS FUNDAMENTALS
+
+============================================================
+CHAPTER 15 — SEMANTIC ANALYSIS FUNDAMENTALS
+============================================================
+Level: Absolute Beginner → University → GATE → Interview
+Phase: PHASE 4 — SEMANTIC ANALYSIS
+Prerequisite: Chapter 9–14 (CFG, grammar, parsing, LR/LL, parser generators)
+============================================================
+
+
+1. BIG PICTURE — WHERE SEMANTIC ANALYSIS FITS
+------------------------------------------------------------
+
+A compiler generally processes a program like this:
+
+Source Program
+      ↓
+Lexical Analysis
+      ↓
+Tokens
+      ↓
+Syntax Analysis / Parsing
+      ↓
+Parse Tree / AST
+      ↓
+★ Semantic Analysis ★
+      ↓
+Annotated AST / Semantically Valid Representation
+      ↓
+Intermediate Representation (IR)
+      ↓
+Optimization
+      ↓
+Code Generation
+      ↓
+Target Code
+
+
+Semantic Analysis comes AFTER syntax analysis.
+
+The parser answers:
+
+    "Is the program structurally correct?"
+
+Semantic analysis answers:
+
+    "Does the program make logical/meaningful sense according
+     to the programming language rules?"
+
+
+Example:
+
+    int x;
+    x = 10 + 20;
+
+Lexical analysis:
+    int → keyword
+    x → identifier
+    = → operator
+    10 → number
+    + → operator
+    20 → number
+
+Syntax analysis:
+    Is this sequence grammatically valid?
+
+Semantic analysis:
+    Is x declared?
+    Is x allowed to receive the result?
+    Are 10 and 20 compatible types?
+    Is the assignment type-compatible?
+
+If everything is valid:
+    Continue toward IR/code generation.
+
+
+============================================================
+2. WHAT IS SEMANTIC ANALYSIS?
+============================================================
+
+Semantic = meaning.
+
+Analysis = checking/analyzing.
+
+Therefore:
+
+Semantic Analysis is the compiler phase that checks whether
+a syntactically correct program satisfies the language's
+meaning-related rules.
+
+It typically performs checks involving:
+
+    • Types
+    • Variables
+    • Declarations
+    • Scope
+    • Names
+    • Bindings
+    • Type compatibility
+    • Function/procedure usage
+    • Valid operations
+
+
+IMPORTANT:
+
+A program can be:
+
+    syntactically correct
+            BUT
+    semantically incorrect.
+
+
+Example:
+
+    int x;
+    x = "hello";
+
+The syntax may be valid.
+
+But assigning a string to an integer variable is normally
+a semantic/type error.
+
+
+============================================================
+3. SYNTAX VS SEMANTICS
+============================================================
+
+This is one of the MOST IMPORTANT concepts.
+
+-------------------------
+SYNTAX
+-------------------------
+
+Syntax defines the STRUCTURE/form of a program.
+
+Example:
+
+    x = 10 + 20;
+
+A grammar may describe something like:
+
+    assignment → identifier = expression
+
+    expression → expression + expression
+               | number
+               | identifier
+
+
+-------------------------
+SEMANTICS
+-------------------------
+
+Semantics defines the MEANING of that structure.
+
+For:
+
+    x = 10 + 20;
+
+semantic questions include:
+
+    • Does x exist?
+    • Has x been declared?
+    • What is the type of x?
+    • What is the type of 10 + 20?
+    • Is assignment allowed?
+
+
+------------------------------------------------------------
+MEMORY TRICK
+------------------------------------------------------------
+
+Syntax  = FORM
+Semantics = MEANING
+
+
+Example:
+
+    "I am eating an apple."
+
+Syntax:
+    Is the sentence grammatically formed correctly?
+
+Semantics:
+    Does the sentence have a meaningful interpretation?
+
+
+============================================================
+4. SIMPLE EXAMPLE — SYNTAX CORRECT BUT SEMANTICALLY WRONG
+============================================================
+
+Consider:
+
+    int age;
+    age = "Apoorv";
+
+
+Syntax:
+
+    int age;
+    age = "Apoorv";
+
+may conform to the grammar of declarations and assignments.
+
+
+Semantic problem:
+
+    age → int
+    "Apoorv" → string
+
+Assignment:
+
+    int ← string
+
+Usually invalid.
+
+
+Therefore:
+
+    Syntax ✔
+    Semantics ✘
+
+
+============================================================
+5. WHAT ARE SEMANTIC ERRORS?
+============================================================
+
+A semantic error occurs when a program violates a
+meaning-related rule of the programming language.
+
+Common examples:
+
+    • Using an undeclared variable
+    • Type mismatch
+    • Invalid operands
+    • Wrong number of function arguments
+    • Incompatible argument types
+    • Returning an incorrect type
+    • Invalid assignment
+    • Duplicate declaration in the same scope
+    • Accessing something outside its valid scope
+
+
+Example 1:
+
+    x = 10;
+
+if x was never declared:
+
+    Semantic Error:
+    "x is not declared."
+
+
+Example 2:
+
+    int x;
+    x = "hello";
+
+Semantic Error:
+    incompatible types.
+
+
+Example 3:
+
+    int add(int a, int b);
+
+    add(10);
+
+Semantic Error:
+    incorrect number of arguments.
+
+
+============================================================
+6. COMMON CATEGORIES OF SEMANTIC ERRORS
+============================================================
+
+------------------------------------------------------------
+A. Undeclared Identifier
+------------------------------------------------------------
+
+Example:
+
+    x = 10;
+
+when x has not been declared.
+
+Problem:
+
+    Compiler does not know what x refers to.
+
+
+------------------------------------------------------------
+B. Type Mismatch
+------------------------------------------------------------
+
+Example:
+
+    int x;
+    x = "hello";
+
+Problem:
+
+    int ← string
+
+
+------------------------------------------------------------
+C. Invalid Operation
+------------------------------------------------------------
+
+Example:
+
+    int x;
+    x = 10 + "hello";
+
+The operands are incompatible for normal addition.
+
+
+------------------------------------------------------------
+D. Wrong Function Arguments
+------------------------------------------------------------
+
+Example:
+
+    int add(int a, int b);
+
+    add(10);
+
+Expected:
+    2 arguments
+
+Provided:
+    1 argument
+
+
+------------------------------------------------------------
+E. Invalid Return Type
+------------------------------------------------------------
+
+Example:
+
+    int fun()
+    {
+        return "hello";
+    }
+
+Function promises:
+
+    int
+
+but returns:
+
+    string
+
+
+------------------------------------------------------------
+F. Duplicate Declaration
+------------------------------------------------------------
+
+Example:
+
+    int x;
+    int x;
+
+If the language/scope rules prohibit duplicate declarations:
+
+    Semantic Error.
+
+
+============================================================
+7. STATIC SEMANTICS
+============================================================
+
+Static semantics refers to language rules that can generally
+be checked from the program's source/compiled representation,
+without actually executing the program.
+
+Typical examples:
+
+    • Type checking
+    • Declaration checking
+    • Scope checking
+    • Name resolution
+    • Function argument checking
+
+
+Example:
+
+    int x;
+    x = "hello";
+
+
+The compiler can detect the type mismatch before execution.
+
+Therefore this is commonly handled by static semantic analysis.
+
+
+IMPORTANT:
+
+"Static" does NOT simply mean "checked at compile time" in
+every possible language-theory context.
+
+In compiler courses, static semantic rules are generally
+those properties checked from the program without executing it.
+
+
+============================================================
+8. DYNAMIC SEMANTICS
+============================================================
+
+Dynamic semantics concerns the meaning/behavior of a program
+during execution.
+
+It describes what happens when the program runs.
+
+Examples include:
+
+    • Runtime behavior
+    • Evaluation of expressions
+    • Runtime state changes
+    • Runtime errors
+    • Execution effects
+
+
+Example:
+
+    int x = 10;
+    int y = 0;
+    int z = x / y;
+
+
+The syntax may be valid.
+
+The types may also be valid.
+
+But execution can produce:
+
+    Division by zero
+
+
+This is a runtime issue.
+
+
+------------------------------------------------------------
+STATIC VS DYNAMIC
+------------------------------------------------------------
+
+Static semantics:
+
+    Checked without executing the program.
+
+Dynamic semantics:
+
+    Concerned with execution/runtime behavior.
+
+
+Memory trick:
+
+    STATIC  → before/during compilation
+    DYNAMIC → execution behavior
+
+
+============================================================
+9. STATIC SEMANTICS VS DYNAMIC SEMANTICS
+============================================================
+
++----------------------+------------------------------+
+| Static Semantics     | Dynamic Semantics            |
++----------------------+------------------------------+
+| Source-level rules   | Execution behavior           |
+| Often compile-time   | Runtime-oriented             |
+| Type checking        | Runtime evaluation           |
+| Scope checking       | Runtime state                |
+| Declaration checks   | Runtime errors               |
++----------------------+------------------------------+
+
+
+Example:
+
+    int x;
+    x = "hello";
+
+Static semantic problem:
+    type mismatch
+
+
+Example:
+
+    int x = 10;
+    int y = 0;
+    x / y;
+
+Potential dynamic/runtime problem:
+    division by zero
+
+
+============================================================
+10. TYPE CHECKING
+============================================================
+
+Type checking is the process of determining whether operations,
+assignments, expressions, function calls, etc. use compatible
+types according to the language rules.
+
+Types describe what kind of value something represents.
+
+Examples:
+
+    int
+    float
+    char
+    boolean
+    string
+
+
+Example:
+
+    int x;
+    x = 10;
+
+
+Types:
+
+    x  → int
+    10 → int
+
+Therefore:
+
+    int ← int
+
+Compatible.
+
+
+------------------------------------------------------------
+TYPE MISMATCH
+------------------------------------------------------------
+
+    int x;
+    x = "hello";
+
+
+Types:
+
+    x          → int
+    "hello"    → string
+
+Therefore:
+
+    int ← string
+
+Usually invalid.
+
+
+============================================================
+11. WHY DOES A COMPILER NEED TYPE CHECKING?
+============================================================
+
+Type checking helps detect errors before execution.
+
+Example:
+
+    int result;
+    result = 10 + "A";
+
+
+Without type checking, the compiler might generate
+meaningless or unsafe machine-level operations.
+
+Type checking helps establish:
+
+    • Valid operations
+    • Correct assignments
+    • Correct function calls
+    • Correct returns
+    • Better error messages
+    • Safer program behavior
+
+
+============================================================
+12. TYPE CHECKING EXAMPLES
+============================================================
+
+Example 1:
+
+    int x;
+    x = 10;
+
+
+Valid:
+
+    int ← int
+
+
+Example 2:
+
+    float x;
+    x = 10;
+
+
+Depending on the language rules, this may be allowed through
+numeric conversion/coercion.
+
+
+Example 3:
+
+    int x;
+    x = "hello";
+
+
+Usually invalid:
+
+    int ← string
+
+
+Example 4:
+
+    int a;
+    int b;
+    int c;
+
+    c = a + b;
+
+
+Types:
+
+    a → int
+    b → int
+    a + b → int
+    c → int
+
+Valid.
+
+
+============================================================
+13. SCOPE
+============================================================
+
+Scope defines the region of a program where a name can be
+legally referenced.
+
+A name may be:
+
+    • variable
+    • function
+    • class
+    • parameter
+    • constant
+
+
+Example:
+
+    int x = 10;
+
+    {
+        int y = 20;
+        // x and y may be accessible here
+    }
+
+Outside the block:
+
+    y
+
+may not be accessible.
+
+
+The exact scope rules depend on the programming language.
+
+
+============================================================
+14. SIMPLE SCOPE EXAMPLE
+============================================================
+
+Consider:
+
+    int x = 10;
+
+    {
+        int y = 20;
+
+        print(x);   // x may be accessible
+        print(y);   // y is accessible
+    }
+
+    print(x);       // x accessible
+    print(y);       // y usually NOT accessible
+
+
+Why?
+
+Because y was declared inside the inner block.
+
+Its scope is limited to that region.
+
+
+============================================================
+15. LOCAL AND GLOBAL SCOPE
+============================================================
+
+GLOBAL SCOPE:
+
+A name declared at a broader/program level.
+
+Example:
+
+    int x = 100;
+
+    void fun()
+    {
+        print(x);
+    }
+
+
+LOCAL SCOPE:
+
+A name declared inside a function/block.
+
+Example:
+
+    void fun()
+    {
+        int x = 10;
+    }
+
+
+Here x is local to fun.
+
+
+============================================================
+16. NESTED SCOPE
+============================================================
+
+Scopes can be nested.
+
+Example:
+
+    int x = 1;
+
+    {
+        int y = 2;
+
+        {
+            int z = 3;
+        }
+    }
+
+
+Conceptually:
+
+    Global Scope
+        |
+        +-- Outer Block Scope
+                |
+                +-- Inner Block Scope
+
+
+An inner scope can often access names from an enclosing
+scope, subject to language rules.
+
+
+============================================================
+17. NAME RESOLUTION
+============================================================
+
+Name resolution determines what declaration a particular name
+refers to.
+
+Example:
+
+    int x = 10;
+
+    {
+        int x = 20;
+        print(x);
+    }
+
+
+There are two declarations of x.
+
+Inside the inner scope, the reference:
+
+    x
+
+usually refers to:
+
+    int x = 20;
+
+This is commonly called shadowing.
+
+
+============================================================
+18. SHADOWING
+============================================================
+
+Shadowing occurs when a declaration in an inner scope uses
+the same name as a declaration in an outer scope.
+
+Example:
+
+    int x = 10;
+
+    {
+        int x = 20;
+        print(x);
+    }
+
+
+Inside the block:
+
+    x → inner x
+
+
+Outside the block:
+
+    x → outer x
+
+
+Concept:
+
+    Outer x
+       ↓
+    hidden/shadowed
+       ↓
+    Inner x
+
+
+============================================================
+19. BINDING
+============================================================
+
+Binding means associating a name/entity with some property,
+entity, location, type, or meaning.
+
+Examples:
+
+    variable name → type
+    variable name → memory location
+    function name → function definition
+    identifier → declaration
+
+
+Example:
+
+    int x;
+
+There can be bindings such as:
+
+    x → declaration
+    x → int type
+    x → storage location
+
+
+Different kinds of binding occur at different times.
+
+
+============================================================
+20. BINDING TIME
+============================================================
+
+Binding can happen at different stages.
+
+Examples:
+
+    • Language design time
+    • Compile time
+    • Link time
+    • Load time
+    • Runtime
+
+
+Example:
+
+    int x;
+
+The compiler can determine:
+
+    x → int
+
+during compilation.
+
+
+Memory location may be determined or finalized through
+later stages/runtime mechanisms depending on the language,
+compiler, and storage model.
+
+
+============================================================
+21. DECLARATION
+============================================================
+
+A declaration introduces a name and tells the compiler
+something about that name.
+
+Example:
+
+    int x;
+
+
+This tells the compiler:
+
+    Name = x
+    Type = int
+
+
+Another example:
+
+    float salary;
+
+
+Information:
+
+    Name = salary
+    Type = float
+
+
+Function declaration:
+
+    int add(int a, int b);
+
+
+This tells the compiler about:
+
+    Function name = add
+    Return type = int
+    Parameter count = 2
+    Parameter types = int, int
+
+
+============================================================
+22. DECLARATION VS DEFINITION
+============================================================
+
+These concepts are related but not always identical.
+
+DECLARATION:
+
+    Introduces or describes an entity.
+
+DEFINITION:
+
+    Provides the actual implementation/storage/body,
+    depending on the language.
+
+
+Example in C:
+
+    int add(int, int);       // declaration/prototype
+
+
+    int add(int a, int b)    // definition
+    {
+        return a + b;
+    }
+
+
+The exact distinction depends on the language.
+
+
+============================================================
+23. SYMBOL TABLE CONNECTION
+============================================================
+
+Semantic analysis heavily uses the symbol table.
+
+A symbol table stores information about identifiers.
+
+For example:
+
+    int x;
+
+may produce an entry conceptually like:
+
+    +----------+----------+-------+---------+
+    | Name     | Type     | Scope | Other   |
+    +----------+----------+-------+---------+
+    | x        | int      | local | ...     |
+    +----------+----------+-------+---------+
+
+
+For a function:
+
+    add
+
+the symbol table may store:
+
+    Name
+    Return type
+    Parameter types
+    Scope
+    Storage information
+    Other attributes
+
+
+Detailed symbol-table design is covered in:
+
+    CHAPTER 16 — SYMBOL TABLES
+
+
+============================================================
+24. TYPE COMPATIBILITY
+============================================================
+
+Type compatibility determines whether two types can be used
+together in a particular operation.
+
+Example:
+
+    int + int
+
+Usually compatible.
+
+
+Example:
+
+    int + string
+
+Usually incompatible in languages where + does not support
+that combination.
+
+
+Important:
+
+Type compatibility rules are language-dependent.
+
+
+============================================================
+25. TYPE COMPATIBILITY EXAMPLE
+============================================================
+
+Suppose:
+
+    int a;
+    float b;
+
+    b = a;
+
+
+A language may allow:
+
+    int → float
+
+through implicit conversion.
+
+Therefore:
+
+    int value
+       ↓
+    conversion
+       ↓
+    float value
+
+
+But:
+
+    string → int
+
+may not automatically be allowed.
+
+
+Therefore semantic analysis must understand the language's
+conversion and compatibility rules.
+
+
+============================================================
+26. IMPLICIT CONVERSION / COERCION
+============================================================
+
+Sometimes the compiler automatically converts one type into
+another.
+
+This is called coercion.
+
+Example:
+
+    int a = 10;
+    float b;
+
+    b = a;
+
+
+Conceptually:
+
+    b = (float)a;
+
+
+The programmer did not explicitly write the conversion,
+but the compiler may insert one according to language rules.
+
+
+IMPORTANT:
+
+    Type compatibility
+          ↓
+    may involve
+          ↓
+    conversion/coercion
+
+
+Detailed type conversion and coercion are covered later in
+Chapter 17.
+
+
+============================================================
+27. SEMANTIC ANALYSIS WORKFLOW
+============================================================
+
+A simplified semantic-analysis workflow is:
+
+    Parsed program / AST
+            ↓
+    Identify names
+            ↓
+    Check declarations
+            ↓
+    Build/use symbol table
+            ↓
+    Resolve scopes
+            ↓
+    Determine types
+            ↓
+    Check expressions
+            ↓
+    Check assignments
+            ↓
+    Check function calls
+            ↓
+    Check return statements
+            ↓
+    Report semantic errors
+            ↓
+    Produce semantically valid/annotated representation
+
+
+============================================================
+28. EXAMPLE — COMPLETE SEMANTIC CHECK
+============================================================
+
+Program:
+
+    int x;
+    int y;
+
+    x = 10;
+    y = x + 20;
+
+
+Step 1 — declarations:
+
+    x → int
+    y → int
+
+
+Step 2 — assignment:
+
+    x = 10
+
+    x → int
+    10 → int
+
+    valid
+
+
+Step 3 — expression:
+
+    x + 20
+
+    x  → int
+    20 → int
+
+    x + 20 → int
+
+
+Step 4 — assignment:
+
+    y = x + 20
+
+    y           → int
+    x + 20      → int
+
+    valid
+
+
+Result:
+
+    Semantically valid.
+
+
+============================================================
+29. EXAMPLE — UNDECLARED VARIABLE
+============================================================
+
+Program:
+
+    int x;
+
+    x = 10;
+    y = 20;
+
+
+Symbol table:
+
+    x → int
+
+No declaration for y.
+
+Therefore:
+
+    y = 20
+
+causes:
+
+    Semantic Error:
+    undeclared identifier y.
+
+
+The parser may accept the structure.
+
+The semantic analyzer detects the invalid name usage.
+
+
+============================================================
+30. EXAMPLE — TYPE ERROR
+============================================================
+
+Program:
+
+    int x;
+
+    x = "hello";
+
+
+Semantic analyzer determines:
+
+    x          → int
+    "hello"    → string
+
+
+Assignment requires compatible types.
+
+Therefore:
+
+    Semantic Error:
+    incompatible assignment.
+
+
+============================================================
+31. EXAMPLE — FUNCTION CALL
+============================================================
+
+Declaration:
+
+    int add(int a, int b);
+
+
+Call:
+
+    add(10, 20);
+
+
+Check:
+
+    Function exists?       YES
+    Argument count?        2
+    Expected types?        int, int
+    Actual types?          int, int
+
+Result:
+
+    Valid
+
+
+Now:
+
+    add(10);
+
+
+Check:
+
+    Expected arguments = 2
+    Actual arguments   = 1
+
+Result:
+
+    Semantic Error
+
+
+============================================================
+32. SEMANTIC ANALYSIS AND AST
+============================================================
+
+After parsing, a compiler commonly represents the program
+using an Abstract Syntax Tree (AST).
+
+Example:
+
+    x = 10 + 20;
+
+
+Conceptual AST:
+
+             =
+            / \
+           x   +
+              / \
+            10   20
+
+
+Semantic analysis can annotate/check this AST.
+
+For example:
+
+             =
+            / \
+        x:int   +
+               / \
+          10:int 20:int
+
+                  ↓
+
+              + : int
+
+                  ↓
+
+        assignment compatible
+
+
+The exact representation depends on the compiler.
+
+
+============================================================
+33. SEMANTIC ANALYSIS AND SYMBOL TABLE
+============================================================
+
+Suppose:
+
+    int x;
+    x = 10;
+
+
+Symbol table:
+
+    x → int
+
+
+AST:
+
+        =
+       / \
+      x   10
+
+
+Semantic analyzer:
+
+    1. Looks up x.
+    2. Finds x in symbol table.
+    3. Gets type int.
+    4. Determines 10 is int.
+    5. Checks assignment compatibility.
+    6. Accepts assignment.
+
+
+Therefore:
+
+    AST + Symbol Table + Semantic Rules
+                    ↓
+             Semantic Analysis
+
+
+============================================================
+34. PARSER VS SEMANTIC ANALYZER
+============================================================
+
+PARSER:
+
+    Input:
+        Tokens
+
+    Main job:
+        Check grammatical structure.
+
+    Output:
+        Parse tree / AST
+
+
+SEMANTIC ANALYZER:
+
+    Input:
+        Parse tree / AST + symbol information
+
+    Main job:
+        Check meaning-related rules.
+
+    Output:
+        Semantically valid/annotated representation
+
+
+Example:
+
+    int x;
+    x = "hello";
+
+
+Parser:
+
+    Structure valid.
+
+
+Semantic analyzer:
+
+    Type mismatch.
+
+
+============================================================
+35. LEXICAL vs SYNTAX vs SEMANTIC
+============================================================
+
++-------------------+-----------------------------+
+| Phase             | Main Question               |
++-------------------+-----------------------------+
+| Lexical Analysis  | What are these characters?  |
+| Syntax Analysis   | Is the structure valid?     |
+| Semantic Analysis | Does it make sense?         |
++-------------------+-----------------------------+
+
+
+Example:
+
+    int x = 10;
+
+
+Lexical:
+
+    int, x, =, 10
+
+
+Syntax:
+
+    Valid declaration/initialization structure
+
+
+Semantic:
+
+    int variable initialized with int value
+
+
+============================================================
+36. EXAMPLE OF THREE DIFFERENT ERRORS
+============================================================
+
+A) Lexical error:
+
+    int x = 10 @ 20;
+
+If @ is not a valid token/operator in the language.
+
+Problem:
+    Lexical
+
+
+B) Syntax error:
+
+    int x = ;
+
+Problem:
+    Grammar/structure is invalid.
+
+
+C) Semantic error:
+
+    int x;
+    x = "hello";
+
+Problem:
+    Meaning/type rules violated.
+
+
+Memory:
+
+    Lexical  → token problem
+    Syntax   → grammar problem
+    Semantic → meaning/type/name problem
+
+
+============================================================
+37. ROLE OF THE COMPILER IN SEMANTIC ANALYSIS
+============================================================
+
+The semantic-analysis stage helps the compiler:
+
+    • Resolve identifiers
+    • Check declarations
+    • Check types
+    • Check scope
+    • Check function calls
+    • Detect semantic errors
+    • Annotate AST
+    • Prepare information needed by later phases
+
+
+The semantic analyzer works closely with:
+
+    Symbol Table
+          +
+    AST
+          +
+    Type System
+          +
+    Semantic Rules
+
+
+============================================================
+38. SEMANTIC ANALYSIS — INTERNAL VIEW
+============================================================
+
+Conceptually:
+
+                    Source
+                      ↓
+                    Lexer
+                      ↓
+                    Parser
+                      ↓
+                     AST
+                      ↓
+          +-----------+-----------+
+          |                       |
+     Symbol Table            Type System
+          |                       |
+          +-----------+-----------+
+                      ↓
+             Semantic Analyzer
+                      ↓
+          Annotated / Valid AST
+                      ↓
+                     IR
+
+
+This shows why semantic analysis is not an isolated phase.
+
+
+============================================================
+39. STATIC TYPE CHECKING
+============================================================
+
+In statically typed languages, many type properties are
+checked before execution.
+
+Example:
+
+    int x;
+    x = "hello";
+
+
+The compiler can detect the problem during compilation.
+
+
+This is useful because errors are discovered earlier.
+
+
+============================================================
+40. DYNAMIC TYPE CHECKING
+============================================================
+
+In dynamically typed languages, type-related decisions/checks
+can occur during execution.
+
+Conceptually:
+
+    x = 10;
+    x = "hello";
+
+
+A language may allow x to refer to values of different types
+at different times.
+
+The exact behavior depends on the language.
+
+
+IMPORTANT:
+
+Do not confuse:
+
+    static typing
+with
+    static semantics
+
+and:
+
+    dynamic typing
+with
+    dynamic semantics
+
+They are related concepts but are NOT identical.
+
+
+============================================================
+41. STATIC TYPING VS DYNAMIC TYPING
+============================================================
+
+STATIC TYPING:
+
+    Type information/checking is generally established
+    or enforced before runtime for relevant operations.
+
+DYNAMIC TYPING:
+
+    Type information/checking can depend more heavily on
+    runtime values.
+
+
+Example conceptual comparison:
+
+    Static:
+        int x = 10;
+
+    Dynamic:
+        x = 10;
+        x = "hello";
+
+
+The exact rules differ among programming languages.
+
+
+============================================================
+42. SEMANTIC RULES
+============================================================
+
+Semantic rules specify what combinations are valid.
+
+Example:
+
+    If:
+
+        E1 : int
+        E2 : int
+
+    then:
+
+        E1 + E2 : int
+
+
+Another example:
+
+    If:
+
+        variable x : int
+        expression E : int
+
+    then:
+
+        x = E
+
+    is type-compatible.
+
+
+These rules can be represented formally using:
+
+    • Type rules
+    • Attribute grammars
+    • Syntax-directed definitions
+    • Semantic actions
+
+
+Attribute grammars and syntax-directed techniques are covered
+in Chapter 18.
+
+
+============================================================
+43. SEMANTIC ERROR DETECTION
+============================================================
+
+A good compiler should not merely reject a program.
+
+It should provide useful diagnostics.
+
+Poor:
+
+    Error
+
+
+Better:
+
+    Error: cannot assign value of type 'string'
+    to variable 'x' of type 'int'.
+
+
+Semantic analysis therefore contributes to:
+
+    • Error detection
+    • Error reporting
+    • Error location
+    • Error explanation
+
+
+============================================================
+44. SEMANTIC ANALYSIS — PRACTICAL EXAMPLE
+============================================================
+
+Consider:
+
+    int age;
+    float salary;
+
+    age = 25;
+    salary = 50000.5;
+
+
+Semantic analyzer:
+
+    age:
+        declared?
+        YES
+        type = int
+
+    25:
+        type = int
+
+    int ← int
+        compatible
+
+
+    salary:
+        declared?
+        YES
+        type = float
+
+    50000.5:
+        type = float
+
+    float ← float
+        compatible
+
+
+Result:
+
+    No semantic error.
+
+
+============================================================
+45. PRACTICAL EXAMPLE WITH ERROR
+============================================================
+
+    int age;
+    float salary;
+
+    age = 25;
+    salary = "50000";
+
+
+Analysis:
+
+    age = 25
+        int ← int
+        valid
+
+
+    salary = "50000"
+        float ← string
+        invalid
+
+
+Result:
+
+    Semantic Error.
+
+
+============================================================
+46. IMPORTANT TERMINOLOGY
+============================================================
+
+IDENTIFIER:
+
+    Name used for a program entity.
+
+Example:
+    x
+
+
+DECLARATION:
+
+    Introduces/describes an entity.
+
+Example:
+    int x;
+
+
+SCOPE:
+
+    Region in which a name is valid.
+
+
+BINDING:
+
+    Association between a name/entity and information.
+
+
+TYPE:
+
+    Classification describing values/operations.
+
+
+TYPE CHECKING:
+
+    Verification that types are used according to language
+    rules.
+
+
+SEMANTICS:
+
+    Meaning/behavior associated with program constructs.
+
+
+SEMANTIC ERROR:
+
+    Violation of semantic/meaning-related rules.
+
+
+SYMBOL TABLE:
+
+    Compiler data structure storing identifier information.
+
+
+============================================================
+47. GATE IMPORTANT CONCEPTS
+============================================================
+
+★ 1. Syntax ≠ Semantics
+
+Syntax:
+    structure
+
+Semantics:
+    meaning
+
+
+★ 2. Syntactically correct ≠ Semantically correct
+
+Example:
+
+    int x;
+    x = "hello";
+
+
+★ 3. Scope concerns name visibility/validity.
+
+★ 4. Binding associates names with entities/properties.
+
+★ 5. Type checking is a major semantic-analysis activity.
+
+★ 6. Symbol tables are heavily used during semantic analysis.
+
+★ 7. Semantic analysis occurs after parsing in the conventional
+    compiler pipeline.
+
+★ 8. Function calls can require semantic checks.
+
+★ 9. Static semantic properties can often be checked without
+    executing the program.
+
+★ 10. Runtime behavior belongs to dynamic semantics/runtime
+    considerations.
+
+
+============================================================
+48. GATE TRAPS
+============================================================
+
+TRAP 1:
+
+Question:
+    "The parser detects all program errors."
+
+WRONG.
+
+Parser primarily detects syntactic/grammar errors.
+
+Semantic analysis detects many meaning-related errors.
+
+
+------------------------------------------------------------
+
+TRAP 2:
+
+    Syntax correctness guarantees semantic correctness.
+
+WRONG.
+
+A program can be syntactically valid but semantically invalid.
+
+
+------------------------------------------------------------
+
+TRAP 3:
+
+    Every semantic error occurs at runtime.
+
+WRONG.
+
+Many semantic errors are detected during compilation.
+
+
+------------------------------------------------------------
+
+TRAP 4:
+
+    Scope and type checking are unrelated to semantic analysis.
+
+WRONG.
+
+Both are important semantic-analysis activities.
+
+
+------------------------------------------------------------
+
+TRAP 5:
+
+    Symbol table is used only by lexical analysis.
+
+WRONG.
+
+Symbol-table information is used throughout multiple compiler
+phases, especially semantic analysis.
+
+
+============================================================
+49. INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is semantic analysis?
+
+Answer:
+
+Semantic analysis is the compiler phase that checks whether
+a syntactically valid program satisfies the language's
+meaning-related rules, such as type compatibility, declaration,
+scope, and function-call rules.
+
+
+Q2. What is the difference between syntax and semantics?
+
+Answer:
+
+Syntax describes the valid structure/form of a program,
+whereas semantics describes its meaning.
+
+
+Q3. Give an example of a semantic error.
+
+Answer:
+
+    int x;
+    x = "hello";
+
+The assignment violates type compatibility.
+
+
+Q4. What is type checking?
+
+Answer:
+
+Type checking verifies that expressions, assignments,
+operations, function calls, and other constructs use types
+according to the language rules.
+
+
+Q5. What is scope?
+
+Answer:
+
+Scope is the region of a program in which a name can be
+referenced according to the language's rules.
+
+
+Q6. What is binding?
+
+Answer:
+
+Binding is the association of a name/entity with some
+property, declaration, location, or meaning.
+
+
+Q7. What is static semantics?
+
+Answer:
+
+Static semantics consists of rules that can generally be
+checked from the program without executing it.
+
+
+Q8. What is dynamic semantics?
+
+Answer:
+
+Dynamic semantics concerns the behavior/meaning of a program
+during execution.
+
+
+Q9. Why is a symbol table important?
+
+Answer:
+
+It stores information about identifiers such as names, types,
+scope and other attributes needed by compiler phases.
+
+
+Q10. Can a syntactically correct program contain errors?
+
+Answer:
+
+Yes. It can contain semantic errors.
+
+
+============================================================
+50. ONE COMPLETE EXAMPLE
+============================================================
+
+Program:
+
+    int x;
+    int y;
+
+    x = 10;
+    y = x + 20;
+
+
+STEP 1 — Lexical Analysis
+
+    int
+    x
+    ;
+    int
+    y
+    ;
+    x
+    =
+    10
+    ;
+    y
+    =
+    x
+    +
+    20
+    ;
+
+
+STEP 2 — Syntax Analysis
+
+    Program structure is valid.
+
+    AST conceptually:
+
+         =
+        / \
+       x   10
+
+         =
+        / \
+       y   +
+          / \
+         x  20
+
+
+STEP 3 — Symbol Table
+
+    +------+-------+
+    | Name | Type  |
+    +------+-------+
+    | x    | int   |
+    | y    | int   |
+    +------+-------+
+
+
+STEP 4 — Semantic Analysis
+
+    x = 10
+
+    x → int
+    10 → int
+
+    Valid.
+
+
+    x + 20
+
+    x → int
+    20 → int
+
+    int + int → int
+
+
+    y = x + 20
+
+    y → int
+    x + 20 → int
+
+    Valid.
+
+
+STEP 5 — Result
+
+    Program is semantically valid.
+
+
+============================================================
+51. COMPLETE COMPILER CONNECTION
+============================================================
+
+SOURCE:
+
+    int x;
+    x = 10 + 20;
+
+
+       ↓
+
+LEXICAL ANALYZER
+
+    Tokens
+
+       ↓
+
+PARSER
+
+    AST
+
+       ↓
+
+SEMANTIC ANALYZER
+
+    Check:
+        x declared?
+        x type?
+        10 type?
+        20 type?
+        10 + 20 type?
+        assignment compatible?
+
+       ↓
+
+ANNOTATED AST
+
+       ↓
+
+INTERMEDIATE CODE
+
+       ↓
+
+OPTIMIZATION
+
+       ↓
+
+CODE GENERATION
+
+       ↓
+
+TARGET CODE
+
+
+Therefore:
+
+    Semantic Analysis acts as a bridge between
+    syntactic structure and semantically meaningful
+    intermediate representation.
+
+
+============================================================
+52. CHAPTER 15 — QUICK REVISION
+============================================================
+
+Semantic Analysis
+    ↓
+Checks meaning-related rules
+
+
+Syntax
+    ↓
+Structure/form
+
+
+Semantics
+    ↓
+Meaning
+
+
+Semantic Errors
+    ↓
+Type mismatch
+Undeclared identifier
+Wrong arguments
+Invalid return
+Invalid operation
+Scope/declaration violations
+
+
+Static Semantics
+    ↓
+Rules generally checked without execution
+
+
+Dynamic Semantics
+    ↓
+Execution/runtime behavior
+
+
+Type Checking
+    ↓
+Checks valid use of types
+
+
+Scope
+    ↓
+Region where a name is valid
+
+
+Binding
+    ↓
+Association between name/entity and information
+
+
+Declaration
+    ↓
+Introduces/describes a program entity
+
+
+Type Compatibility
+    ↓
+Determines whether types can be used together
+
+
+Symbol Table
+    ↓
+Stores identifier information
+
+
+============================================================
+53. MASTER MEMORY MAP
+============================================================
+
+                 SEMANTIC ANALYSIS
+                        |
+        +---------------+----------------+
+        |               |                |
+      Names            Types           Scope
+        |               |                |
+   Declaration      Type checking    Visibility
+   Binding          Compatibility    Shadowing
+   Resolution       Conversion       Nested scopes
+        |               |
+        +---------------+
+                |
+          Symbol Table
+                |
+                ↓
+        Semantic Validation
+                |
+                ↓
+          Annotated AST
+                |
+                ↓
+                IR
+
+
+============================================================
+54. EXAM-READY ONE-LINERS
+============================================================
+
+1. Semantic analysis checks meaning-related constraints.
+
+2. Syntax describes structure; semantics describes meaning.
+
+3. A syntactically valid program can still be semantically
+   invalid.
+
+4. Type checking is a major semantic-analysis activity.
+
+5. Scope determines where a name can be referenced.
+
+6. Binding establishes associations involving names/entities.
+
+7. Symbol tables provide identifier information used during
+   semantic analysis.
+
+8. Static semantic rules can generally be checked without
+   executing the program.
+
+9. Dynamic semantics concerns program behavior during execution.
+
+10. Semantic analysis normally follows syntax analysis.
+
+11. Type compatibility is language-dependent.
+
+12. Coercion may be used to convert one type into another
+    according to language rules.
+
+
+============================================================
+55. FINAL CHAPTER SUMMARY
+============================================================
+
+The compiler has already answered:
+
+    "Are these tokens arranged according to the grammar?"
+
+That was syntax analysis.
+
+Now semantic analysis asks:
+
+    "Does this structurally valid program make sense
+     according to the language rules?"
+
+It checks things such as:
+
+    • declarations
+    • identifiers
+    • scope
+    • binding
+    • types
+    • type compatibility
+    • function calls
+    • returns
+    • semantic constraints
+
+The most important mental model is:
+
+    SOURCE
+      ↓
+    TOKENS
+      ↓
+    PARSE TREE / AST
+      ↓
+    ★ SEMANTIC ANALYSIS ★
+      ↓
+    Semantically valid / annotated AST
+      ↓
+    IR
+      ↓
+    Optimization
+      ↓
+    Target Code
+
+
+============================================================
+CHAPTER 15 COMPLETE
+============================================================
+
+NEXT MASTER-SYLLABUS TOPIC:
+
+    CHAPTER 16 — SYMBOL TABLES
+
+Topics:
+    • What is a Symbol Table?
+    • Purpose
+    • Information stored
+    • Insert / Lookup / Delete
+    • Scope management
+    • Nested scopes
+    • Hash-table implementation
+    • Tree-based implementation
+    • Symbol-table organization
+    • Compiler interaction
+    • GATE problems
+    • Interview questions
+    • Practical examples
+============================================================

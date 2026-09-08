@@ -1,0 +1,2750 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║ CHAPTER 8 — LEXICAL ANALYZER CONSTRUCTION                          ║
+║ Compiler Design                                                     ║
+║ Level: Beginner → University → GATE → Interview → Practical       ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In previous chapters:
+
+Chapter 4 → Lexical Analyzer Fundamentals
+Chapter 5 → Regular Expressions
+Chapter 6 → Finite Automata
+Chapter 7 → Regular Expression ↔ Automata
+
+Now we learn how a lexical analyzer/scanner is actually constructed
+and implemented.
+
+Main topics:
+
+1. Input buffering
+2. Lookahead
+3. LexemeBegin and Forward pointers
+4. Two-buffer scheme
+5. Sentinel technique
+6. Token recognition
+7. Longest-match / maximal-munch rule
+8. Rule priority
+9. Lexical errors
+10. Error recovery
+11. Symbol-table interaction
+12. Lex/Flex
+13. Practical lexer construction
+14. GATE-level concepts
+15. Interview questions
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHAT IS A LEXICAL ANALYZER?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A lexical analyzer is the compiler phase that reads the source program
+character by character and converts the character stream into TOKENS.
+
+Example:
+
+Source:
+
+    int x = 10 + 20;
+
+Lexical analyzer produces:
+
+    KEYWORD(int)
+    ID(x)
+    ASSIGN(=)
+    NUM(10)
+    PLUS(+)
+    NUM(20)
+    SEMICOLON(;)
+
+
+The lexical analyzer is also called:
+
+    • Lexer
+    • Scanner
+    • Lexical scanner
+
+
+Basic flow:
+
+Source Program
+      ↓
+Lexical Analyzer
+      ↓
+Token Stream
+      ↓
+Syntax Analyzer / Parser
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. WHY DO WE NEED LEXICAL ANALYZER CONSTRUCTION?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A theoretical lexical analyzer can be described using:
+
+    Regular Expression
+          ↓
+       ε-NFA
+          ↓
+        DFA
+          ↓
+      Minimized DFA
+
+But a real compiler needs an implementation.
+
+The implementation must answer questions such as:
+
+• How do we efficiently read characters?
+• How do we look ahead?
+• How do we identify the end of a lexeme?
+• How do we handle very long input?
+• How do we handle lexical errors?
+• How do we communicate with the symbol table?
+• How do we choose between multiple matching tokens?
+
+Chapter 8 deals with these practical problems.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. BASIC LEXER ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Conceptual architecture:
+
+                SOURCE PROGRAM
+                      │
+                      ▼
+              ┌───────────────┐
+              │ Input Buffer  │
+              └───────┬───────┘
+                      │
+                      ▼
+              ┌───────────────┐
+              │    Scanner    │
+              │  / Lexical    │
+              │   Analyzer    │
+              └───────┬───────┘
+                      │
+                      ▼
+                  TOKENS
+                      │
+          ┌───────────┴───────────┐
+          ▼                       ▼
+    Symbol Table             Parser
+
+
+The lexer generally performs:
+
+    Input
+      ↓
+    Read characters
+      ↓
+    Group characters into lexemes
+      ↓
+    Match lexemes with patterns
+      ↓
+    Produce tokens
+      ↓
+    Update symbol table when required
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. LEXEME AND TOKEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A LEXEME is the actual sequence of characters in the source program.
+
+A TOKEN is the category assigned to that lexeme.
+
+Example:
+
+    int count = 25;
+
+Lexemes:
+
+    int
+    count
+    =
+    25
+    ;
+
+Tokens:
+
+    KEYWORD
+    IDENTIFIER
+    ASSIGNMENT_OPERATOR
+    NUMBER
+    SEMICOLON
+
+
+Example table:
+
+    Lexeme       Token
+    ----------------------------
+    int          KEYWORD
+    count        ID
+    =            ASSIGN
+    25            NUM
+    ;            SEMICOLON
+
+
+Important:
+
+    Lexeme = actual character sequence
+
+    Token = classification/category
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. TOKEN ATTRIBUTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A token can contain additional information called an ATTRIBUTE.
+
+Example:
+
+    count
+
+Token:
+
+    <ID, pointer-to-symbol-table-entry>
+
+
+For:
+
+    25
+
+Token may be:
+
+    <NUM, 25>
+
+
+For:
+
+    +
+
+Token may simply be:
+
+    <PLUS>
+
+
+General representation:
+
+    <token-name, attribute-value>
+
+
+Examples:
+
+    <ID, 1001>
+    <NUM, 25>
+    <PLUS, ->
+    <IF, ->
+
+
+Attributes are useful to later compiler phases.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. INPUT BUFFERING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+One of the most important practical problems in lexical analysis is
+INPUT.
+
+A simple implementation might read:
+
+    one character
+        ↓
+    system call
+        ↓
+    one character
+        ↓
+    system call
+        ↓
+    ...
+
+This is inefficient.
+
+Why?
+
+Because operating-system I/O operations are relatively expensive.
+
+Instead, the lexer reads a BLOCK of characters into memory.
+
+This is called:
+
+    INPUT BUFFERING
+
+
+Without buffering:
+
+    Source → read character → system call
+           → read character → system call
+           → read character → system call
+
+With buffering:
+
+    Source
+       ↓
+    [large block of characters]
+       ↓
+    Memory buffer
+       ↓
+    Lexer processes characters
+
+
+Advantages:
+
+    • Fewer I/O operations
+    • Faster lexical analysis
+    • Better performance
+    • Efficient scanning
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. SIMPLE BUFFERING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose source contains:
+
+    int x = 100;
+
+The system can read several characters at once:
+
+    +--------------------------------+
+    | i | n | t |   | x |   | = |...|
+    +--------------------------------+
+
+The lexer then processes the characters from memory.
+
+Instead of asking the operating system for every character, it reads
+a block.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. LOOKAHEAD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sometimes the lexer needs to examine one or more characters BEFORE
+deciding which token is being formed.
+
+This is called:
+
+    LOOKAHEAD
+
+
+Example:
+
+    =
+    ==
+
+When lexer sees:
+
+    =
+
+it cannot always immediately decide whether the token is:
+
+    ASSIGN
+
+or:
+
+    EQUAL-TO
+
+
+It must inspect the next character.
+
+Example:
+
+    if current = '='
+       and next != '='
+           → ASSIGN
+
+    if current = '='
+       and next = '='
+           → EQUAL
+
+
+So:
+
+    Lookahead = examining future input characters
+                before finalizing the current token.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. EXAMPLE OF LOOKAHEAD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input:
+
+    a == b
+
+Lexer sees:
+
+    a
+
+→ identifier
+
+Then:
+
+    =
+
+Look at next character:
+
+    =
+
+Therefore:
+
+    ==
+
+is recognized as equality operator.
+
+Another example:
+
+    !
+
+Possible tokens:
+
+    !
+    !=
+
+Lexer must look ahead.
+
+Input:
+
+    !=
+
+Current character:
+
+    !
+
+Next character:
+
+    =
+
+Therefore:
+
+    NOT_EQUAL
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. LEXEME BEGIN AND FORWARD POINTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A practical lexer often uses two pointers:
+
+    1. lexemeBegin
+    2. forward
+
+
+They help identify the current lexeme.
+
+Conceptually:
+
+    lexemeBegin
+         ↓
+    i n t   c o u n t = 10
+         ↑
+       forward
+
+
+lexemeBegin:
+
+    Points to the beginning of the current lexeme.
+
+forward:
+
+    Moves through input while searching for the end of the lexeme.
+
+
+Example:
+
+    int count = 10;
+
+For:
+
+    count
+
+we can conceptually have:
+
+    lexemeBegin
+         ↓
+    c o u n t
+              ↑
+            forward
+
+
+After recognizing the lexeme:
+
+    lexemeBegin
+
+moves to the next unread character.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. WHY TWO POINTERS ARE REQUIRED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    abc123
+
+Suppose identifier rule is:
+
+    letter(letter | digit)*
+
+The lexer must continue reading:
+
+    a
+    b
+    c
+    1
+    2
+    3
+
+Then it needs to determine where the identifier ends.
+
+The forward pointer advances.
+
+Conceptually:
+
+    lexemeBegin → a b c 1 2 3 ← forward
+
+
+After the next character does not belong to the identifier,
+the lexer stops.
+
+The lexeme is:
+
+    abc123
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. TWO-BUFFER SCHEME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A classic technique for efficient lexical analysis is the:
+
+    TWO-BUFFER SCHEME
+
+
+Instead of one buffer, use two halves/buffers.
+
+Conceptually:
+
+    +----------------------+----------------------+
+    |      BUFFER 1        |       BUFFER 2       |
+    +----------------------+----------------------+
+
+When the lexer reaches the end of one buffer, the other buffer can
+be used while the next block is loaded.
+
+
+Basic idea:
+
+    Buffer 1 → Buffer 2 → Buffer 1 → Buffer 2 → ...
+
+
+This reduces repeated I/O operations.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. TWO-BUFFER SCHEME DIAGRAM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+    +-----------------------------------------------+
+    | Buffer 1              | Buffer 2              |
+    +-----------------------------------------------+
+      ↑                        ↑
+      │                        │
+      └── lexeme/forward       └── next input
+
+
+When Buffer 1 is exhausted:
+
+    Load next block into Buffer 1
+    while processing Buffer 2
+
+Then:
+
+    Buffer 2 is exhausted
+        ↓
+    Load next block into Buffer 2
+    while processing Buffer 1
+
+
+The exact implementation may vary, but the core idea is alternating
+buffers.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. SENTINEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A SENTINEL is a special marker placed at the end of a buffer.
+
+Purpose:
+
+    To detect the end of the buffer efficiently.
+
+Instead of repeatedly checking:
+
+    "Have I reached the end of the buffer?"
+
+the lexer encounters a sentinel character.
+
+Conceptually:
+
+    +--------------------------------+
+    | input characters | SENTINEL    |
+    +--------------------------------+
+
+
+When forward reaches:
+
+    SENTINEL
+
+the lexer knows that the current buffer is exhausted.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. WHY SENTINEL IS USEFUL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Without sentinel:
+
+    while every character:
+        check current position
+        check buffer boundary
+        process character
+
+
+With sentinel:
+
+    process character
+
+    if character == SENTINEL:
+        handle buffer boundary
+
+
+Therefore, sentinel can reduce repeated boundary checking.
+
+This improves scanner efficiency.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. TWO-BUFFER + SENTINEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Classic conceptual arrangement:
+
+    +-------------------------+
+    |       Buffer 1          |
+    |                         |
+    |       input data        |
+    |                         |
+    |       SENTINEL          |
+    +-------------------------+
+
+    +-------------------------+
+    |       Buffer 2          |
+    |                         |
+    |       input data        |
+    |                         |
+    |       SENTINEL          |
+    +-------------------------+
+
+
+The forward pointer moves through the buffers.
+
+When it reaches a sentinel:
+
+    determine which buffer ended
+             ↓
+    reload/switch buffer
+             ↓
+    continue scanning
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. IMPORTANT GATE CONCEPT — BUFFERING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Remember:
+
+    Input buffering
+          ↓
+    Performance improvement
+
+    Two-buffer scheme
+          ↓
+    Efficient continuous scanning
+
+    Sentinel
+          ↓
+    Efficient end-of-buffer detection
+
+
+Very important distinction:
+
+    Buffer end ≠ source-program end
+
+
+A sentinel can indicate:
+
+    "this buffer needs attention"
+
+It does NOT necessarily mean:
+
+    "the source program has ended."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. TOKEN RECOGNITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Token recognition means determining which token a sequence of
+characters represents.
+
+Typical process:
+
+    Character stream
+          ↓
+    Skip whitespace/comments
+          ↓
+    Find beginning of lexeme
+          ↓
+    Read characters
+          ↓
+    Match token pattern
+          ↓
+    Apply longest-match rule
+          ↓
+    Apply rule priority if necessary
+          ↓
+    Return token
+
+
+Example:
+
+    total = price + tax;
+
+
+Token sequence:
+
+    ID(total)
+    ASSIGN
+    ID(price)
+    PLUS
+    ID(tax)
+    SEMICOLON
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. TOKEN RECOGNITION USING DFA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A common implementation strategy is:
+
+    Regular Expressions
+           ↓
+          NFA
+           ↓
+          DFA
+           ↓
+    DFA implementation
+           ↓
+       Lexer
+
+
+The DFA reads one character at a time.
+
+Depending on the state reached, the lexer determines whether a valid
+token has been recognized.
+
+
+Example identifier:
+
+    [A-Za-z][A-Za-z0-9]*
+
+
+The corresponding DFA accepts:
+
+    x
+    abc
+    abc123
+    A1
+    variable9
+
+
+and rejects:
+
+    123abc
+
+if the language requires identifiers to begin with a letter.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. LONGEST-MATCH RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+One of the most important lexical-analysis rules is:
+
+    LONGEST MATCH
+
+also called:
+
+    MAXIMAL MUNCH
+
+
+Meaning:
+
+    If multiple token patterns match the current input,
+    choose the token that consumes the longest possible lexeme.
+
+
+Example:
+
+    Input:
+
+        >=
+
+Possible matching tokens:
+
+    >
+    >=
+
+Longest match:
+
+    >=
+
+
+Therefore:
+
+    >=
+
+is returned as one token rather than:
+
+    >
+    =
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. ANOTHER LONGEST-MATCH EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose language contains:
+
+    =
+    ==
+
+Input:
+
+    ==
+
+
+Possible matches:
+
+    =
+    ==
+
+Longest match:
+
+    ==
+
+Therefore:
+
+    ==
+
+must be selected.
+
+
+Similarly:
+
+    <=
+
+should be recognized as one token if the language defines <=.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. KEYWORD VS IDENTIFIER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    if
+
+
+The lexical pattern for identifier might allow:
+
+    if
+
+to be recognized as an identifier.
+
+But:
+
+    if
+
+is actually a KEYWORD.
+
+Therefore the lexer needs a mechanism to distinguish keywords from
+ordinary identifiers.
+
+Two common approaches:
+
+Approach 1:
+
+    Separate keyword rules with higher priority.
+
+Approach 2:
+
+    Recognize the word as an identifier first,
+    then search the keyword table.
+
+
+Example:
+
+    input = "if"
+
+Initial classification:
+
+    ID("if")
+
+Keyword table lookup:
+
+    "if" → IF keyword
+
+Final token:
+
+    IF
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. RULE PRIORITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sometimes two rules can match the same length.
+
+Then we need:
+
+    RULE PRIORITY
+
+
+Typical lexer generators use:
+
+    1. Longest match
+    2. If equal length, earlier/higher-priority rule
+
+
+Example:
+
+    keyword rule:
+        if
+
+    identifier rule:
+        [a-zA-Z][a-zA-Z0-9]*
+
+
+Input:
+
+    if
+
+
+Both can match:
+
+    if
+
+
+Both consume 2 characters.
+
+Therefore, priority determines which rule wins.
+
+Usually the keyword rule is placed before the general identifier rule.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. MAXIMAL MUNCH VS RULE PRIORITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is a very important GATE/interview distinction.
+
+MAXIMAL MUNCH:
+
+    Select the rule that matches the longest lexeme.
+
+RULE PRIORITY:
+
+    Used when multiple rules match the same maximum length.
+
+
+Example:
+
+    Rule 1: keyword "if"
+    Rule 2: identifier pattern
+
+
+Input:
+
+    if
+
+
+Both consume 2 characters.
+
+Therefore:
+
+    Priority decides.
+
+
+Memory:
+
+    LONGER MATCH → wins first
+
+    SAME LENGTH → priority decides
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. LEXICAL ERRORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A lexical error occurs when the character sequence cannot be
+recognized as a valid token according to the language's lexical rules.
+
+Examples:
+
+    @@@
+
+if @ is not a valid character/token in the language.
+
+Another example:
+
+    12abc
+
+if the language does not allow such a numeric/identifier sequence.
+
+
+Other possible lexical errors:
+
+    • Invalid character
+    • Malformed number
+    • Invalid identifier
+    • Unterminated string
+    • Unterminated comment
+    • Invalid escape sequence
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. EXAMPLE — UNTERMINATED STRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose strings are written:
+
+    "hello"
+
+Input:
+
+    "hello
+
+There is no closing quote.
+
+The lexer reaches:
+
+    end of line / input
+
+without finding:
+
+    "
+
+Therefore:
+
+    Lexical error:
+    Unterminated string literal
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. EXAMPLE — UNTERMINATED COMMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose comments are:
+
+    /* comment */
+
+
+Input:
+
+    /* hello
+
+There is no:
+
+    */
+
+
+The lexer reaches the end of input.
+
+Therefore:
+
+    Unterminated comment
+
+
+This is a lexical error in languages where comments are recognized
+lexically this way.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. ERROR RECOVERY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After detecting a lexical error, the lexer should ideally recover
+and continue scanning so that additional errors can be reported.
+
+This is called:
+
+    ERROR RECOVERY
+
+
+Goals:
+
+    • Detect error
+    • Report useful information
+    • Recover if possible
+    • Continue scanning
+
+
+Example:
+
+    int x = 10 @ 20;
+
+
+If @ is invalid:
+
+    report:
+        Invalid character '@'
+
+Then skip/recover appropriately and continue scanning:
+
+    20
+    ;
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. COMMON LEXICAL ERROR RECOVERY STRATEGIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Possible strategies include:
+
+1. Delete an invalid character
+
+2. Insert a missing character when reasonably detectable
+
+3. Replace an incorrect character
+
+4. Transpose characters
+
+5. Skip input until a reasonable token boundary is found
+
+
+Example:
+
+    123@456
+
+If @ is invalid:
+
+    remove/skip @
+
+and continue with:
+
+    123
+    456
+
+
+The exact strategy depends on the language and lexer design.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. ERROR REPORTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A good lexer should report:
+
+    • Error type
+    • Unexpected character/lexeme
+    • Line number
+    • Column number
+    • Useful message
+
+
+Poor:
+
+    Error!
+
+
+Better:
+
+    Lexical error at line 5, column 12:
+    invalid character '@'
+
+
+This is important for practical compiler construction.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. SYMBOL TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A SYMBOL TABLE is a data structure used by the compiler to store
+information about program identifiers and related entities.
+
+Examples:
+
+    variable names
+    function names
+    class names
+    constants
+    types
+
+
+Example source:
+
+    int count;
+
+Symbol-table information might include:
+
+    Name       count
+    Kind       variable
+    Type       int
+    Scope      current scope
+    Location   compiler-dependent
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. LEXER AND SYMBOL TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The lexical analyzer commonly interacts with the symbol table when
+it recognizes identifiers.
+
+Example:
+
+    int count;
+
+
+Lexer recognizes:
+
+    int → keyword
+    count → identifier
+
+
+For identifier:
+
+    count
+
+the lexer may:
+
+    1. Search symbol table
+    2. Find existing entry OR create one
+    3. Return token containing a reference/attribute
+
+
+Conceptually:
+
+    count
+      ↓
+    Lexer
+      ↓
+    Symbol Table
+      ↓
+    entry for count
+      ↓
+    <ID, pointer>
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. IMPORTANT SYMBOL-TABLE NUANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The exact responsibility of the lexer versus semantic analysis can
+vary between compiler implementations.
+
+A lexer commonly recognizes identifiers and can install/look up
+identifier entries.
+
+Later phases, especially semantic analysis, attach richer information
+such as:
+
+    • Type
+    • Scope
+    • Storage information
+    • Parameter information
+    • Function signature
+
+
+Therefore:
+
+    Lexer → identifies names
+
+    Semantic analysis → determines/validates their meaning
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. COMPLETE LEXICAL ANALYSIS EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Source:
+
+    int total = price + 100;
+
+
+Step 1 — Input characters:
+
+    i n t   t o t a l   =   p r i c e   +   1 0 0   ;
+
+
+Step 2 — Recognize:
+
+    int
+
+Token:
+
+    <INT>
+
+
+Step 3:
+
+    total
+
+Token:
+
+    <ID, total>
+
+
+Step 4:
+
+    =
+
+Token:
+
+    <ASSIGN>
+
+
+Step 5:
+
+    price
+
+Token:
+
+    <ID, price>
+
+
+Step 6:
+
+    +
+
+Token:
+
+    <PLUS>
+
+
+Step 7:
+
+    100
+
+Token:
+
+    <NUM, 100>
+
+
+Step 8:
+
+    ;
+
+Token:
+
+    <SEMICOLON>
+
+
+Final token stream:
+
+    <INT>
+    <ID,total>
+    <ASSIGN>
+    <ID,price>
+    <PLUS>
+    <NUM,100>
+    <SEMICOLON>
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. WHITESPACE HANDLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Whitespace generally includes:
+
+    • Space
+    • Tab
+    • Newline
+    • Carriage return
+
+Many languages treat whitespace as a separator that usually does not
+produce a token.
+
+Example:
+
+    int    x
+
+and:
+
+    int x
+
+may produce the same token sequence:
+
+    INT
+    ID
+
+
+But whitespace can be significant in some languages.
+
+Therefore:
+
+    The lexer follows the rules of the specific programming language.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. COMMENT HANDLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Comments are generally removed/ignored by the lexical phase.
+
+Example:
+
+    int x;   // variable x
+
+Tokens:
+
+    INT
+    ID
+    SEMICOLON
+
+
+The comment:
+
+    // variable x
+
+does not normally become a parser token.
+
+
+For block comments:
+
+    /*
+       comment
+    */
+
+
+The lexer consumes the entire comment and continues scanning.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. LEX/FLEX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instead of manually writing a lexer, we can use lexer generators.
+
+One famous tool is:
+
+    Lex
+
+A commonly used modern implementation is:
+
+    Flex
+
+Flex means:
+
+    Fast Lexical Analyzer Generator
+
+
+Basic idea:
+
+    Programmer writes:
+        Regular expressions + actions
+
+              ↓
+
+            Flex
+
+              ↓
+
+        Generated lexer
+
+              ↓
+
+          Compiler program
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. LEX/FLEX INPUT STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A typical Lex/Flex specification has three sections:
+
+    Definitions
+    %%
+    Rules
+    %%
+    User code
+
+
+Conceptually:
+
+    definitions
+    %%
+    patterns + actions
+    %%
+    supporting C/C++ code
+
+
+The exact syntax and generated interfaces can vary by tool/version,
+but this three-section structure is fundamental to traditional
+Lex/Flex specifications.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. SIMPLE FLEX EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example conceptual Flex specification:
+
+    %{
+    /* declarations */
+    %}
+
+    %%
+    [0-9]+          { printf("NUMBER\n"); }
+    [a-zA-Z]+      { printf("IDENTIFIER\n"); }
+    [ \t\n]+       { /* ignore whitespace */ }
+    "+"             { printf("PLUS\n"); }
+    "="             { printf("ASSIGN\n"); }
+    .               { printf("UNKNOWN\n"); }
+    %%
+
+Meaning:
+
+    [0-9]+
+        → one or more digits
+
+    [a-zA-Z]+
+        → one or more letters
+
+    [ \t\n]+
+        → whitespace
+
+    "+"
+        → plus symbol
+
+    "="
+        → assignment symbol
+
+    .
+        → other single character
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. HOW FLEX WORKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Basic workflow:
+
+    lexer.l
+       ↓
+    flex lexer.l
+       ↓
+    generated scanner source
+       ↓
+    compile generated source
+       ↓
+    executable scanner
+
+
+Conceptually:
+
+    Regular expressions
+           ↓
+        Flex rules
+           ↓
+    generated DFA-based scanner
+           ↓
+       Token stream
+
+
+Flex automates much of the implementation process.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. FLEX MATCHING RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An important Flex concept:
+
+    It chooses the rule that matches the longest input.
+
+If multiple rules match the same amount of text, the rule appearing
+earlier in the specification has priority.
+
+Therefore:
+
+    Longest match first
+
+    Earlier rule wins on equal length
+
+
+This is directly related to:
+
+    Maximal munch + rule priority
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. PRACTICAL LEXER CONSTRUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose we want to construct a lexer for:
+
+    int x = 10 + y;
+
+
+Step 1:
+
+Define token categories:
+
+    INT
+    ID
+    NUM
+    ASSIGN
+    PLUS
+    SEMICOLON
+
+
+Step 2:
+
+Define patterns:
+
+    INT:
+        int
+
+    ID:
+        [A-Za-z_][A-Za-z0-9_]*
+
+    NUM:
+        [0-9]+
+
+    ASSIGN:
+        =
+
+    PLUS:
+        \+
+
+    SEMICOLON:
+        ;
+
+
+Step 3:
+
+Handle whitespace.
+
+Step 4:
+
+Handle comments.
+
+Step 5:
+
+Handle errors.
+
+Step 6:
+
+Generate/implement scanner.
+
+Step 7:
+
+Test with valid and invalid input.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. PRACTICAL TOKEN SPECIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+    Token              Pattern
+    ------------------------------------------
+    INT                int
+    IF                 if
+    ELSE               else
+    ID                 [A-Za-z_][A-Za-z0-9_]*
+    NUM                [0-9]+
+    PLUS               \+
+    MINUS              -
+    MUL                \*
+    DIV                /
+    ASSIGN             =
+    EQ                 ==
+    LT                 <
+    GT                 >
+    LE                 <=
+    GE                 >=
+    SEMICOLON          ;
+    LPAREN             \(
+    RPAREN             \)
+
+
+Important:
+
+    Operators such as ==, <=, >= must be handled correctly with
+    longest-match behavior.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. PRACTICAL LEXER ALGORITHM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Conceptual algorithm:
+
+    START
+
+      ↓
+
+    Read next character
+
+      ↓
+
+    Is it whitespace?
+      │
+      ├── YES → skip it
+      │
+      └── NO
+
+      ↓
+
+    Is it beginning of identifier?
+      │
+      ├── YES → read identifier
+      │
+      └── NO
+
+      ↓
+
+    Is it beginning of number?
+      │
+      ├── YES → read number
+      │
+      └── NO
+
+      ↓
+
+    Is it operator/separator?
+      │
+      ├── YES → recognize token
+      │
+      └── NO → lexical error
+
+
+      ↓
+
+    Return token
+
+      ↓
+
+    Repeat
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. PSEUDOCODE FOR A SIMPLE LEXER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    while not end_of_input:
+
+        c = next_character()
+
+        if whitespace(c):
+            continue
+
+        else if letter(c) or c == '_':
+            lexeme = read_identifier()
+            token = keyword_or_identifier(lexeme)
+            return token
+
+        else if digit(c):
+            lexeme = read_number()
+            return NUM(lexeme)
+
+        else if c == '+':
+            return PLUS
+
+        else if c == '=':
+            if next_character() == '=':
+                return EQ
+            else:
+                retract()
+                return ASSIGN
+
+        else:
+            report_lexical_error(c)
+
+
+This is a conceptual implementation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. RETRACTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sometimes the lexer reads one character too far.
+
+Example:
+
+    abc+
+
+While recognizing:
+
+    abc
+
+the lexer reads:
+
+    +
+
+The + does not belong to the identifier.
+
+Therefore the lexer may need to:
+
+    RETRACT
+
+the forward pointer by one character.
+
+Conceptually:
+
+    abc+
+
+    identifier = abc
+                    ↑
+                 + was read
+
+    Move pointer back
+         ↓
+
+    Next token begins with +
+
+
+Buffering/lookahead techniques can reduce the cost of such operations.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. LOOKAHEAD + RETRACTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Lookahead:
+
+    Read future character(s) to make a decision.
+
+Retraction:
+
+    Move back if characters were read beyond the current token.
+
+
+Example:
+
+    <
+
+Possible tokens:
+
+    <
+    <=
+
+
+Lexer reads:
+
+    <
+
+Then looks ahead:
+
+    =
+
+
+If = exists:
+
+    <=
+
+If not:
+
+    <
+
+The implementation must preserve the correct next unread position.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. LEXICAL ANALYZER AND PARSER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The lexer and parser have different responsibilities.
+
+Lexer:
+
+    Characters → Tokens
+
+
+Parser:
+
+    Tokens → Syntactic structure
+
+
+Example:
+
+    int x = 10;
+
+
+Lexer:
+
+    INT
+    ID
+    ASSIGN
+    NUM
+    SEMICOLON
+
+
+Parser checks whether this token sequence follows the grammar.
+
+
+Therefore:
+
+    Lexer handles lexical structure.
+
+    Parser handles syntactic structure.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. LEXICAL VS SYNTAX ERROR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LEXICAL ERROR:
+
+    Invalid character sequence at token level.
+
+Example:
+
+    invalid character @
+
+SYNTAX ERROR:
+
+    Tokens exist, but their arrangement violates grammar.
+
+Example:
+
+    int = x;
+
+
+The tokens may be valid:
+
+    INT
+    ASSIGN
+    ID
+
+but their grammatical arrangement may be invalid.
+
+
+Memory:
+
+    Character problem → lexical
+
+    Token arrangement problem → syntax
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. COMPLETE COMPILER CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Source:
+
+    int x = a + 10;
+
+
+             │
+             ▼
+    ┌───────────────────┐
+    │ Lexical Analyzer  │
+    └─────────┬─────────┘
+              │
+              ▼
+    INT ID ASSIGN ID PLUS NUM SEMICOLON
+              │
+              ▼
+    ┌───────────────────┐
+    │ Syntax Analyzer   │
+    └─────────┬─────────┘
+              │
+              ▼
+            AST
+              │
+              ▼
+    ┌───────────────────┐
+    │ Semantic Analyzer │
+    └─────────┬─────────┘
+              │
+              ▼
+       Type/scope checks
+              │
+              ▼
+             IR
+              │
+              ▼
+        Optimization
+              │
+              ▼
+        Code Generation
+
+
+Chapter 8 focuses mainly on the first box:
+
+    LEXICAL ANALYZER
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. COMPLETE LEXER PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Source characters
+        ↓
+Input buffering
+        ↓
+Character reading
+        ↓
+Lookahead
+        ↓
+Lexeme formation
+        ↓
+Pattern matching
+        ↓
+Longest match
+        ↓
+Rule priority
+        ↓
+Token creation
+        ↓
+Symbol-table interaction
+        ↓
+Token stream
+        ↓
+Parser
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+53. REGEX → DFA → LEXER CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is extremely important.
+
+We previously studied:
+
+    Regular Expression
+           ↓
+         NFA
+           ↓
+         DFA
+           ↓
+    DFA minimization
+
+
+Now:
+
+    DFA
+     ↓
+    Scanner implementation
+     ↓
+    Token recognition
+
+
+Therefore:
+
+    Regular expressions describe lexical patterns.
+
+    Finite automata recognize those patterns.
+
+    The lexical analyzer implements the recognition process.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+54. IMPORTANT GATE CONCEPTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You should remember:
+
+1. Lexical analyzer converts character stream into token stream.
+
+2. Lexeme is actual character sequence.
+
+3. Token is lexical category.
+
+4. Attribute stores additional token information.
+
+5. Input buffering improves I/O efficiency.
+
+6. Two-buffer scheme improves scanning efficiency.
+
+7. Sentinel helps detect buffer boundaries efficiently.
+
+8. Lookahead examines future input.
+
+9. lexemeBegin points to beginning of current lexeme.
+
+10. forward scans toward the end of lexeme.
+
+11. Maximal munch means longest matching lexeme is selected.
+
+12. Rule priority resolves equal-length matches.
+
+13. Keywords may compete with identifier patterns.
+
+14. Lexical errors occur during token recognition.
+
+15. Symbol tables store information about identifiers.
+
+16. Lex/Flex can generate lexical analyzers.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+55. GATE TRAP — LONGEST MATCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose rules are:
+
+    Rule 1: =
+    Rule 2: ==
+
+Input:
+
+    ==
+
+Correct:
+
+    ==
+
+NOT:
+
+    =
+    =
+
+
+Reason:
+
+    Longest match.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+56. GATE TRAP — SAME LENGTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    Rule 1:
+        if
+
+    Rule 2:
+        [a-z]+
+
+
+Input:
+
+    if
+
+
+Both match:
+
+    "if"
+
+Length:
+
+    2
+
+
+Therefore:
+
+    Rule priority decides.
+
+
+If Rule 1 has higher priority:
+
+    IF
+
+
+not:
+
+    ID
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+57. GATE TRAP — BUFFER END
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not confuse:
+
+    Buffer boundary
+
+with:
+
+    End of source program.
+
+
+A sentinel may indicate that:
+
+    Current buffer is exhausted.
+
+The scanner may then load/switch to another buffer.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+58. GATE TRAP — LEXER VS PARSER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+    Who recognizes identifiers?
+
+Answer:
+
+    Lexical analyzer.
+
+
+Question:
+
+    Who checks whether identifiers are used according to grammar?
+
+Answer:
+
+    Syntax/semantic phases depending on the specific issue.
+
+
+Question:
+
+    Who recognizes whether "==" is a token?
+
+Answer:
+
+    Lexical analyzer.
+
+
+Question:
+
+    Who checks whether:
+
+        x + * y
+
+    is grammatically valid?
+
+Answer:
+
+    Parser.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+59. INTERVIEW QUESTION — WHY BUFFERING?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+    Why does a lexical analyzer use input buffering?
+
+Answer:
+
+    Reading every character directly from the input source can cause
+    many expensive I/O operations. Input buffering reads a block of
+    characters into memory, reducing I/O overhead and improving scanner
+    performance.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+60. INTERVIEW QUESTION — WHAT IS MAXIMAL MUNCH?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Answer:
+
+    Maximal munch, or longest match, is the lexical-analysis rule that
+    selects the longest lexeme matching the available token patterns.
+
+
+Example:
+
+    >=
+
+is selected instead of:
+
+    >
+    =
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+61. INTERVIEW QUESTION — WHAT IS SENTINEL?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Answer:
+
+    A sentinel is a special marker placed at the end of an input-buffer
+    region to help the scanner detect a buffer boundary efficiently
+    without repeatedly performing separate boundary checks.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+62. INTERVIEW QUESTION — WHAT IS LOOKAHEAD?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Answer:
+
+    Lookahead is examining one or more upcoming characters before
+    deciding which token the current input belongs to.
+
+Example:
+
+    =
+    ==
+
+The lexer looks at the next character to distinguish them.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+63. INTERVIEW QUESTION — WHAT IS THE ROLE OF SYMBOL TABLE?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Answer:
+
+    The symbol table stores information associated with identifiers
+    and other named entities. During lexical analysis, identifiers can
+    be looked up or installed in the symbol table, while later compiler
+    phases enrich and use those entries for semantic analysis and
+    code generation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+64. IMPORTANT DIFFERENCES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    Lexeme vs Token
+    --------------------------------
+    Lexeme → actual character sequence
+    Token  → category/class
+
+
+    Lookahead vs Retraction
+    --------------------------------
+    Lookahead → inspect future input
+    Retraction → move back after over-reading
+
+
+    Buffer vs Sentinel
+    --------------------------------
+    Buffer → stores input block
+    Sentinel → marks buffer boundary
+
+
+    Maximal munch vs Priority
+    --------------------------------
+    Maximal munch → longest match
+    Priority → resolves equal-length matches
+
+
+    Lexer vs Parser
+    --------------------------------
+    Lexer → characters → tokens
+    Parser → tokens → syntax structure
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+65. MINI EXAMPLE FOR COMPLETE UNDERSTANDING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Input:
+
+    if (count >= 10) count = count + 1;
+
+
+Step 1 — Read:
+
+    i
+
+Step 2:
+
+    if
+
+Recognize keyword:
+
+    IF
+
+
+Step 3:
+
+    (
+
+Recognize:
+
+    LPAREN
+
+
+Step 4:
+
+    count
+
+Recognize:
+
+    ID
+
+
+Step 5:
+
+    >=
+
+Possible alternatives:
+
+    >
+    >=
+
+Longest match:
+
+    >=
+
+
+Step 6:
+
+    10
+
+Recognize:
+
+    NUM
+
+
+Step 7:
+
+    )
+
+Recognize:
+
+    RPAREN
+
+
+Step 8:
+
+    count
+
+Recognize:
+
+    ID
+
+
+Step 9:
+
+    =
+
+Recognize:
+
+    ASSIGN
+
+
+Step 10:
+
+    count
+
+Recognize:
+
+    ID
+
+
+Step 11:
+
+    +
+
+Recognize:
+
+    PLUS
+
+
+Step 12:
+
+    1
+
+Recognize:
+
+    NUM
+
+
+Step 13:
+
+    ;
+
+Recognize:
+
+    SEMICOLON
+
+
+Final:
+
+    IF
+    LPAREN
+    ID
+    GE
+    NUM
+    RPAREN
+    ID
+    ASSIGN
+    ID
+    PLUS
+    NUM
+    SEMICOLON
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+66. PRACTICAL IMPLEMENTATION ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A practical scanner can be organized as:
+
+    ┌─────────────────────────────┐
+    │        Input Manager       │
+    │  buffering + lookahead     │
+    └──────────────┬──────────────┘
+                   │
+                   ▼
+    ┌─────────────────────────────┐
+    │     Lexeme Recognition      │
+    │       DFA / rules           │
+    └──────────────┬──────────────┘
+                   │
+                   ▼
+    ┌─────────────────────────────┐
+    │       Token Generator       │
+    └──────────────┬──────────────┘
+                   │
+          ┌────────┴────────┐
+          ▼                 ▼
+    Symbol Table          Parser
+
+
+Error handler interacts with the scanning process.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+67. CHAPTER 8 MASTER MEMORY MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    LEXICAL ANALYZER
+                           │
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+         ▼                 ▼                 ▼
+   Input Handling     Recognition       Output
+         │                 │                 │
+         ├─ Buffer         ├─ Regex         ├─ Tokens
+         ├─ 2 Buffers      ├─ DFA           └─ Attributes
+         ├─ Sentinel       ├─ Lookahead
+         └─ Pointers       ├─ Maximal Munch
+                           └─ Priority
+         │
+         ▼
+       Errors
+         │
+         ├─ Detection
+         ├─ Reporting
+         └─ Recovery
+         │
+         ▼
+    Symbol Table
+         │
+         ▼
+       Lex/Flex
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+68. CHAPTER 8 — ONE-PAGE REVISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LEXICAL ANALYZER:
+
+    Characters → Tokens
+
+
+INPUT BUFFERING:
+
+    Read blocks instead of individual characters.
+
+
+TWO-BUFFER SCHEME:
+
+    Alternate between two input-buffer regions.
+
+
+SENTINEL:
+
+    Special marker for efficient buffer-boundary detection.
+
+
+LOOKAHEAD:
+
+    Examine upcoming characters.
+
+
+lexemeBegin:
+
+    Beginning of current lexeme.
+
+
+forward:
+
+    Moves through input to recognize lexeme.
+
+
+MAXIMAL MUNCH:
+
+    Choose longest matching lexeme.
+
+
+RULE PRIORITY:
+
+    Equal-length matches → higher-priority/earlier rule wins.
+
+
+LEXICAL ERROR:
+
+    Input cannot be recognized according to lexical rules.
+
+
+ERROR RECOVERY:
+
+    Report error and attempt to continue scanning.
+
+
+SYMBOL TABLE:
+
+    Stores information about identifiers/named entities.
+
+
+LEX/FLEX:
+
+    Tool for generating lexical analyzers from patterns and actions.
+
+
+CORE PIPELINE:
+
+    Regex
+      ↓
+    Automata
+      ↓
+    Scanner
+      ↓
+    Tokens
+      ↓
+    Parser
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+69. MOST IMPORTANT EXAM POINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+★ Input buffering reduces I/O overhead.
+
+★ Two-buffer schemes support efficient scanning.
+
+★ Sentinel is used for efficient buffer-boundary detection.
+
+★ Lookahead is required for tokens such as:
+
+      =
+      ==
+
+      <
+      <=
+
+      >
+      >=
+
+      !
+      !=
+
+
+★ Maximal munch chooses the longest matching token.
+
+★ Equal-length matches are resolved by rule priority.
+
+★ Keywords and identifiers may have overlapping lexical patterns.
+
+★ Lexer produces tokens for the parser.
+
+★ Symbol-table interaction commonly occurs for identifiers.
+
+★ Lex/Flex can automatically generate scanners from lexical rules.
+
+★ Lexical errors are different from syntax errors.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+70. CHAPTER 8 FINAL SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 8 takes lexical analysis from THEORY to IMPLEMENTATION.
+
+You learned:
+
+    1. How input is efficiently read.
+    2. Why input buffering is needed.
+    3. Two-buffer scheme.
+    4. Sentinel technique.
+    5. Lookahead.
+    6. lexemeBegin and forward pointers.
+    7. Token recognition.
+    8. Longest-match/maximal-munch rule.
+    9. Rule priority.
+   10. Keyword vs identifier recognition.
+   11. Lexical errors.
+   12. Error recovery.
+   13. Symbol-table interaction.
+   14. Lex/Flex.
+   15. Practical lexer construction.
+   16. Regex → DFA → Scanner relationship.
+
+The complete lexical-analysis concept is:
+
+    SOURCE CHARACTERS
+           ↓
+    INPUT BUFFERING
+           ↓
+    LOOKAHEAD / POINTERS
+           ↓
+    LEXEME RECOGNITION
+           ↓
+    REGEX / DFA MATCHING
+           ↓
+    LONGEST MATCH
+           ↓
+    RULE PRIORITY
+           ↓
+    TOKEN + ATTRIBUTE
+           ↓
+    SYMBOL TABLE (when required)
+           ↓
+    TOKEN STREAM
+           ↓
+    PARSER
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+END OF CHAPTER 8
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NEXT CHAPTER:
+
+    CHAPTER 9 — CONTEXT-FREE GRAMMARS (CFG)
+
+Topics:
+    • CFG fundamentals
+    • Productions
+    • Derivations
+    • Sentential forms
+    • Leftmost derivation
+    • Rightmost derivation
+    • Parse trees
+    • Ambiguous grammar
+    • Ambiguity removal
+    • GATE-level CFG problems

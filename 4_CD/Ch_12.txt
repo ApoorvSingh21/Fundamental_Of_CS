@@ -1,0 +1,2059 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║ CHAPTER 12 — BOTTOM-UP PARSING                                     ║
+║ Compiler Design — Beginner → GATE → Interview → Practical          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bottom-up parsing is a syntax-analysis technique in which the parser
+starts with the INPUT STRING and gradually reduces it until it reaches
+the START SYMBOL of the grammar.
+
+Basic idea:
+
+        Input Tokens
+             ↓
+       Find a useful
+        substring
+             ↓
+          Reduce
+             ↓
+       Non-terminal
+             ↓
+          Reduce
+             ↓
+       Start Symbol
+
+
+Therefore:
+
+BOTTOM-UP = INPUT → START SYMBOL
+
+
+Top-down parsing:
+
+        START SYMBOL
+             ↓
+          INPUT
+
+
+Bottom-up parsing:
+
+          INPUT
+             ↓
+       START SYMBOL
+
+
+Bottom-up parsing is one of the most important foundations for
+LR parsing, which is covered in Chapter 13.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHERE BOTTOM-UP PARSING FITS IN A COMPILER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Compiler:
+
+Source Program
+      ↓
+Lexical Analyzer
+      ↓
+Tokens
+      ↓
+Syntax Analyzer
+      ↓
+┌─────────────────────────────┐
+│          PARSER             │
+│                             │
+│  Top-Down    Bottom-Up      │
+│      │           │          │
+│      ↓           ↓          │
+│     LL         LR-family    │
+└─────────────────────────────┘
+      ↓
+Parse Tree / AST
+      ↓
+Semantic Analysis
+      ↓
+Intermediate Representation
+      ↓
+Optimization
+      ↓
+Code Generation
+
+
+Bottom-up parsing belongs to:
+
+SYNTAX ANALYSIS.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. WHY DO WE NEED BOTTOM-UP PARSING?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Top-down parsing works very well for suitable grammars.
+
+However, many grammars are difficult to parse using LL-style
+top-down techniques.
+
+Problems can include:
+
+• Left recursion
+• Complex grammar structures
+• Common prefixes
+• Limited LL(1) grammar class
+
+Bottom-up parsing can handle a much larger class of grammars.
+
+Important bottom-up parser families include:
+
+• Shift-reduce parser
+• LR(0)
+• SLR(1)
+• LR(1)
+• CLR(1)
+• LALR(1)
+
+The detailed LR family will be studied in Chapter 13.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. BASIC IDEA OF BOTTOM-UP PARSING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+Grammar:
+
+S → aA
+A → b
+
+Input:
+
+ab
+
+
+Bottom-up parser starts with:
+
+ab
+
+
+It identifies:
+
+b
+
+which can be reduced to:
+
+A
+
+
+So:
+
+ab
+↓
+aA
+
+
+Then:
+
+aA
+
+matches:
+
+S → aA
+
+
+Reduce:
+
+aA
+↓
+S
+
+
+Finally:
+
+S
+
+is the start symbol.
+
+Therefore:
+
+ACCEPT
+
+
+The complete process is:
+
+ab
+↓
+aA
+↓
+S
+
+
+This is the reverse of the derivation:
+
+S
+⇒ aA
+⇒ ab
+
+
+Hence bottom-up parsing constructs a:
+
+RIGHTMOST DERIVATION IN REVERSE.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. VERY IMPORTANT: RIGHTMOST DERIVATION IN REVERSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+S → aA
+A → b
+
+
+Rightmost derivation:
+
+S
+⇒ aA
+⇒ ab
+
+
+Reverse the derivation:
+
+ab
+⇒ aA
+⇒ S
+
+
+This is exactly what bottom-up parsing does.
+
+
+GATE MEMORY:
+
+TOP-DOWN
+→ Leftmost derivation
+
+
+BOTTOM-UP
+→ Rightmost derivation in reverse
+
+
+This is one of the most frequently tested facts.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. WHAT IS SHIFT-REDUCE PARSING?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Shift-reduce parsing is a bottom-up parsing technique.
+
+It uses a:
+
+STACK
+
+and:
+
+INPUT BUFFER
+
+
+Main operations:
+
+1. SHIFT
+2. REDUCE
+3. ACCEPT
+4. ERROR
+
+
+Basic structure:
+
+             INPUT
+               │
+               ▼
+        ┌─────────────┐
+        │    Parser   │
+        └─────────────┘
+               │
+               ▼
+             STACK
+
+
+The parser repeatedly performs shift and reduce operations
+until the input is accepted or an error occurs.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. SHIFT OPERATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SHIFT means:
+
+Move the next input symbol onto the stack.
+
+
+Example:
+
+Input:
+
+abc$
+
+
+Stack:
+
+$
+
+
+Perform SHIFT:
+
+Stack:
+
+$a
+
+
+Input:
+
+bc$
+
+
+Perform SHIFT again:
+
+Stack:
+
+$ab
+
+
+Input:
+
+c$
+
+
+The parser continues according to the parsing strategy.
+
+
+Memory:
+
+SHIFT = INPUT → STACK
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. REDUCE OPERATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REDUCE means:
+
+Replace a recognized RHS of a production with its LHS
+(non-terminal).
+
+
+Suppose:
+
+A → bc
+
+
+If the stack contains:
+
+$abc
+
+and the top portion:
+
+bc
+
+is the RHS of:
+
+A → bc
+
+then reduce:
+
+bc
+
+to:
+
+A
+
+
+Stack becomes:
+
+$aA
+
+
+Memory:
+
+REDUCE = RHS → LHS
+
+
+Example:
+
+Stack:
+
+$ab
+
+
+Grammar:
+
+A → ab
+
+
+Reduce:
+
+ab → A
+
+
+Stack:
+
+$A
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. ACCEPT OPERATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ACCEPT occurs when:
+
+• Entire input has been processed.
+• The start symbol has been obtained.
+• Parser has recognized a valid sentence.
+
+
+Conceptually:
+
+Stack:
+
+$S
+
+
+Input:
+
+$
+
+
+Then:
+
+ACCEPT
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. ERROR OPERATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ERROR occurs when no valid parsing action can be performed.
+
+For example:
+
+• Invalid input
+• No appropriate shift
+• No appropriate reduction
+• Invalid parser state
+• Parsing conflict that cannot be resolved
+
+
+The parser then reports a syntax error.
+
+
+Detailed error recovery is covered later in the syllabus.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. HANDLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HANDLE is one of the most important concepts in bottom-up parsing.
+
+
+Informal definition:
+
+A handle is a substring of a right-sentential form that matches
+the RHS of a production and whose reduction represents one step
+in the reverse of a rightmost derivation.
+
+
+This definition is important for GATE.
+
+
+Example:
+
+Grammar:
+
+S → aA
+A → b
+
+
+Input:
+
+ab
+
+
+Rightmost derivation:
+
+S
+⇒ aA
+⇒ ab
+
+
+At the last step:
+
+A ⇒ b
+
+
+Therefore:
+
+b
+
+is the handle in:
+
+ab
+
+
+Reduce:
+
+b → A
+
+
+So:
+
+ab
+↓
+aA
+
+
+Then:
+
+aA
+
+contains the next handle:
+
+aA
+
+
+Reduce:
+
+aA → S
+
+
+Finally:
+
+S
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. HANDLE — SIMPLE UNDERSTANDING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Think of a handle as:
+
+"the part of the current string that should be reduced next."
+
+
+Example:
+
+Current string:
+
+a b
+
+If:
+
+A → b
+
+then:
+
+b
+
+is a candidate handle.
+
+Reduce:
+
+b → A
+
+
+Current:
+
+aA
+
+
+Now:
+
+aA
+
+may be the next handle if:
+
+S → aA.
+
+
+Important:
+
+Not every substring matching an RHS is necessarily the handle
+that should be reduced at that point.
+
+The parser must choose the handle corresponding to the reverse
+rightmost derivation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. HANDLE PRUNING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Repeatedly finding and reducing handles is called:
+
+HANDLE PRUNING.
+
+
+Example:
+
+Grammar:
+
+E → E + T
+E → T
+T → id
+
+
+Input:
+
+id + id
+
+
+Conceptually:
+
+id + id
+ ↓
+T + id
+ ↓
+E + id
+ ↓
+E + T
+ ↓
+E
+
+
+The parser repeatedly removes/reduces handles until only the
+start symbol remains.
+
+
+Therefore:
+
+HANDLE PRUNING
+
+is the process of constructing a parse tree bottom-up by repeatedly
+reducing handles.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. SHIFT-REDUCE PARSING EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+S → aA
+A → b
+
+Input:
+
+ab$
+
+
+Initial:
+
+STACK       INPUT       ACTION
+--------------------------------
+$           ab$         Start
+
+
+SHIFT a:
+
+STACK       INPUT       ACTION
+--------------------------------
+$a          b$          SHIFT
+
+
+SHIFT b:
+
+STACK       INPUT       ACTION
+--------------------------------
+$ab         $           SHIFT
+
+
+Now top:
+
+b
+
+matches RHS of:
+
+A → b
+
+
+REDUCE:
+
+STACK       INPUT       ACTION
+--------------------------------
+$aA         $           REDUCE A→b
+
+
+Now:
+
+aA
+
+matches RHS of:
+
+S → aA
+
+
+REDUCE:
+
+STACK       INPUT       ACTION
+--------------------------------
+$S          $           REDUCE S→aA
+
+
+Now:
+
+$S
+
+and input:
+
+$
+
+
+ACCEPT.
+
+
+Complete:
+
+$          ab$      SHIFT a
+$a         b$       SHIFT b
+$ab        $        REDUCE A→b
+$aA        $        REDUCE S→aA
+$S         $        ACCEPT
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. SHIFT-REDUCE PARSER ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                  INPUT BUFFER
+                       │
+                       │ next symbol
+                       ▼
+                ┌───────────────┐
+                │               │
+                │ Shift-Reduce  │
+                │    Parser     │
+                │               │
+                └───────────────┘
+                       │
+                       ▼
+                     STACK
+
+
+The parser decides:
+
+       ┌───────────────┐
+       │    ACTION?    │
+       └───────────────┘
+          │    │    │
+          │    │    └── ACCEPT
+          │    │
+          │    └─────── REDUCE
+          │
+          └──────────── SHIFT
+
+
+If no valid action exists:
+
+ERROR.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. WHY SHIFT AND REDUCE ARE NOT ALWAYS OBVIOUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose the parser has:
+
+Stack:
+
+... α
+
+Input begins with:
+
+a
+
+
+There may be two possible actions:
+
+1. SHIFT a
+
+or
+
+2. REDUCE α using some production
+
+
+The parser must decide:
+
+SHIFT or REDUCE?
+
+
+This is the source of:
+
+SHIFT-REDUCE CONFLICT.
+
+
+Similarly, if two different reductions are possible:
+
+REDUCE A → α
+
+or
+
+REDUCE B → β
+
+
+we get:
+
+REDUCE-REDUCE CONFLICT.
+
+
+These conflicts become especially important in LR parsing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. SHIFT-REDUCE CONFLICT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A shift-reduce conflict occurs when the parser cannot decide between:
+
+SHIFT
+
+and:
+
+REDUCE
+
+
+Conceptually:
+
+             Current situation
+                    │
+             ┌──────┴──────┐
+             │             │
+           SHIFT         REDUCE
+             │             │
+             └──────┬──────┘
+                    │
+                 CONFLICT
+
+
+The parser needs additional grammar information or parsing rules
+to make the decision.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. REDUCE-REDUCE CONFLICT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A reduce-reduce conflict occurs when the parser can potentially
+reduce using two different productions.
+
+For example:
+
+A → α
+B → β
+
+
+If the current stack/input situation permits both reductions:
+
+α → A
+
+and:
+
+β → B
+
+
+the parser cannot uniquely determine which reduction to perform.
+
+
+This is:
+
+REDUCE-REDUCE CONFLICT.
+
+
+Usually, reduce-reduce conflicts are considered more serious than
+shift-reduce conflicts because two different grammar reductions
+are competing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. SHIFT-REDUCE VS REDUCE-REDUCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SHIFT-REDUCE:
+
+Choice between:
+
+SHIFT
+
+and:
+
+REDUCE
+
+
+REDUCE-REDUCE:
+
+Choice between:
+
+REDUCE 1
+
+and:
+
+REDUCE 2
+
+
+Memory:
+
+SR = SHIFT vs REDUCE
+
+RR = REDUCE vs REDUCE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. CLASSIC AMBIGUITY EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+E → E + E
+  | E * E
+  | id
+
+
+Input:
+
+id + id * id
+
+
+There are multiple possible interpretations.
+
+Interpretation 1:
+
+id + (id * id)
+
+
+Interpretation 2:
+
+(id + id) * id
+
+
+The grammar does not specify precedence.
+
+This can create parsing conflicts.
+
+
+A parser generator may report a:
+
+SHIFT-REDUCE CONFLICT.
+
+
+To resolve such grammar issues, precedence and associativity
+rules or grammar restructuring may be used.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. OPERATOR PRECEDENCE CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+* has higher precedence than +.
+
+
+Then:
+
+a + b * c
+
+
+should mean:
+
+a + (b * c)
+
+
+not:
+
+(a + b) * c
+
+
+Bottom-up parser decisions can use precedence and associativity
+information in practical parser implementations.
+
+
+For example:
+
+* → higher precedence
++ → lower precedence
+
+
+This helps resolve certain shift-reduce conflicts.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. ASSOCIATIVITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Associativity tells us how operators of the same precedence
+are grouped.
+
+
+LEFT ASSOCIATIVE:
+
+a - b - c
+
+means:
+
+(a - b) - c
+
+
+RIGHT ASSOCIATIVE:
+
+a ^ b ^ c
+
+may mean:
+
+a ^ (b ^ c)
+
+
+Associativity can help resolve certain shift-reduce conflicts.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. HANDLE AND RIGHTMOST DERIVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This relationship is extremely important.
+
+Suppose:
+
+S ⇒ αAβ
+
+and:
+
+A ⇒ γ
+
+
+Then:
+
+S ⇒ αγβ
+
+
+If this is part of a rightmost derivation, bottom-up parsing reverses
+these steps.
+
+Bottom-up:
+
+αγβ
+↓
+αAβ
+↓
+S
+
+
+The parser removes the handle:
+
+γ
+
+first.
+
+
+Therefore:
+
+HANDLE = the substring corresponding to one reverse step
+of a rightmost derivation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. TOP-DOWN VS BOTTOM-UP — CORE COMPARISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TOP-DOWN:
+
+Starts with:
+
+START SYMBOL
+
+
+Moves toward:
+
+INPUT
+
+
+Uses:
+
+LEFTMOST DERIVATION
+
+
+Examples:
+
+LL(1)
+Recursive descent
+
+
+BOTTOM-UP:
+
+Starts with:
+
+INPUT
+
+
+Moves toward:
+
+START SYMBOL
+
+
+Uses:
+
+RIGHTMOST DERIVATION IN REVERSE
+
+
+Examples:
+
+LR(0)
+SLR(1)
+CLR(1)
+LALR(1)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. COMPLETE COMPARISON TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Property              Top-Down          Bottom-Up
+------------------------------------------------------------
+Starting point        Start symbol      Input
+
+Direction              Root → leaves     Leaves → root
+
+Derivation             Leftmost          Rightmost in reverse
+
+Major family           LL               LR
+
+Grammar power          More restricted   More powerful
+
+Left recursion         Problematic       Can be handled
+
+Main concept            Prediction        Handle reduction
+
+Common technique        Predictive        Shift-reduce
+
+Typical conflicts      LL conflicts      Shift/reduce,
+                                         reduce/reduce
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. BOTTOM-UP PARSING AND PARSE TREE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+S → aA
+A → b
+
+
+Input:
+
+ab
+
+
+Bottom-up construction:
+
+Start:
+
+a b
+
+
+Reduce:
+
+b → A
+
+
+Now:
+
+a A
+
+
+Reduce:
+
+aA → S
+
+
+Final tree:
+
+       S
+      / \
+     a   A
+         |
+         b
+
+
+The tree is effectively constructed:
+
+LEAVES → ROOT.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. IMPORTANT TERM: SENTENTIAL FORM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A sentential form is any string derived from the start symbol
+during a derivation.
+
+Example:
+
+S → aA
+A → b
+
+
+Derivation:
+
+S
+⇒ aA
+⇒ ab
+
+
+Here:
+
+S
+
+aA
+
+ab
+
+are sentential forms.
+
+
+In bottom-up parsing, the parser works through forms related to
+the reverse of a rightmost derivation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. HANDLE — FORMAL IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose a right-sentential form is:
+
+αβω
+
+
+and the production is:
+
+A → β
+
+
+If β is the handle, then reducing β gives:
+
+αAω
+
+
+This corresponds to reversing one step:
+
+αAω ⇒ αβω
+
+
+So:
+
+αβω
+   ↓ reduce β
+αAω
+
+
+The parser eventually reaches:
+
+S
+
+
+where S is the start symbol.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. HANDLE PRUNING ALGORITHM — CONCEPTUAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+
+Grammar G
+
+and input string w.
+
+
+STEP 1:
+
+Start with the input string.
+
+
+STEP 2:
+
+Identify the handle.
+
+
+STEP 3:
+
+Reduce the handle using its production.
+
+
+STEP 4:
+
+Repeat.
+
+
+STEP 5:
+
+If the start symbol is obtained:
+
+ACCEPT.
+
+
+STEP 6:
+
+If no valid handle exists:
+
+ERROR.
+
+
+Conceptually:
+
+Input
+ ↓
+Find handle
+ ↓
+Reduce
+ ↓
+Find next handle
+ ↓
+Reduce
+ ↓
+...
+ ↓
+Start symbol
+ ↓
+ACCEPT
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. WHY HANDLE DETECTION IS DIFFICULT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For a simple grammar, we may manually identify handles.
+
+But for real programming languages, determining:
+
+• What should be shifted?
+• What should be reduced?
+• Which production should be used?
+• What parser state are we in?
+
+can be complicated.
+
+This motivates:
+
+LR PARSING.
+
+
+LR parsers use states and parsing tables to systematically make
+shift/reduce decisions.
+
+
+Chapter 13 will cover this in detail.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. SHIFT-REDUCE PARSING — STACK VIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Think of the parser as maintaining:
+
+STACK | INPUT
+
+
+Example:
+
+$ab | $
+
+
+Possible operation:
+
+SHIFT
+
+becomes:
+
+$ a b | $
+
+
+Then:
+
+REDUCE b → A
+
+becomes:
+
+$ a A | $
+
+
+Then:
+
+REDUCE aA → S
+
+becomes:
+
+$ S | $
+
+
+Then:
+
+ACCEPT
+
+
+Memory:
+
+SHIFT:
+    Move input → stack
+
+REDUCE:
+    Replace RHS → LHS
+
+ACCEPT:
+    Valid complete sentence
+
+ERROR:
+    Invalid sentence / no valid action
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. GATE IMPORTANT QUESTION TYPE 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+Which derivation does bottom-up parsing produce?
+
+Answer:
+
+RIGHTMOST DERIVATION IN REVERSE.
+
+
+Do NOT answer:
+
+Leftmost derivation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. GATE IMPORTANT QUESTION TYPE 2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+What is a handle?
+
+Best conceptual answer:
+
+A handle is a substring of a right-sentential form that matches
+the RHS of a production and whose reduction corresponds to one
+step in the reverse of a rightmost derivation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. GATE IMPORTANT QUESTION TYPE 3
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+What is the difference between shift and reduce?
+
+Answer:
+
+SHIFT moves the next input symbol onto the stack.
+
+REDUCE replaces a handle/RHS of a production on the stack with
+its corresponding LHS non-terminal.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. GATE IMPORTANT QUESTION TYPE 4
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+What is a shift-reduce conflict?
+
+Answer:
+
+A parser state in which both shifting the next input symbol and
+reducing a production appear possible.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. GATE IMPORTANT QUESTION TYPE 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Question:
+
+What is a reduce-reduce conflict?
+
+Answer:
+
+A parser state in which two different reductions are possible,
+so the parser cannot uniquely choose which production to reduce.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. GATE TRAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRAP 1:
+
+"Bottom-up parsing produces a leftmost derivation."
+
+FALSE.
+
+It corresponds to:
+
+RIGHTMOST DERIVATION IN REVERSE.
+
+
+TRAP 2:
+
+"Shift means reduce."
+
+FALSE.
+
+Shift:
+
+INPUT → STACK
+
+
+Reduce:
+
+RHS → LHS
+
+
+TRAP 3:
+
+"Every RHS matching substring is automatically the handle."
+
+FALSE.
+
+The correct handle is the one corresponding to the next step
+of the reverse rightmost derivation.
+
+
+TRAP 4:
+
+"Shift-reduce conflict means two reductions are possible."
+
+FALSE.
+
+That is:
+
+REDUCE-REDUCE conflict.
+
+
+TRAP 5:
+
+"Reduce-reduce conflict means shift and reduce are both possible."
+
+FALSE.
+
+That is:
+
+SHIFT-REDUCE conflict.
+
+
+TRAP 6:
+
+"Bottom-up parsing always means LR parsing."
+
+Not exactly.
+
+Shift-reduce parsing is the basic bottom-up idea; LR parsing is
+a systematic and powerful family of bottom-up parsers.
+
+
+TRAP 7:
+
+"Top-down and bottom-up use the same derivation direction."
+
+FALSE.
+
+Top-down → leftmost derivation.
+
+Bottom-up → rightmost derivation in reverse.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. INTERVIEW QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1. What is bottom-up parsing?
+
+Answer:
+
+A parsing technique that starts from the input and reduces it
+toward the grammar's start symbol.
+
+
+Q2. Why is it called bottom-up?
+
+Answer:
+
+Because the parse tree is conceptually constructed from leaves
+toward the root.
+
+
+Q3. What is shift-reduce parsing?
+
+Answer:
+
+A bottom-up parsing technique that uses a stack and performs
+shift, reduce, accept, and error actions.
+
+
+Q4. What is a handle?
+
+Answer:
+
+The substring that should be reduced in the next step of the
+reverse rightmost derivation.
+
+
+Q5. What is handle pruning?
+
+Answer:
+
+Repeatedly finding and reducing handles until the start symbol
+is obtained.
+
+
+Q6. What is shift-reduce conflict?
+
+Answer:
+
+A conflict between choosing SHIFT and REDUCE.
+
+
+Q7. What is reduce-reduce conflict?
+
+Answer:
+
+A conflict between two possible REDUCE actions.
+
+
+Q8. Which derivation is associated with bottom-up parsing?
+
+Answer:
+
+Rightmost derivation in reverse.
+
+
+Q9. Which is generally more powerful: LL or LR?
+
+Answer:
+
+LR parsing handles a larger class of context-free grammars than
+LL(1) parsing.
+
+
+Q10. Why are shift-reduce parsers important?
+
+Answer:
+
+They form the conceptual foundation of LR-family bottom-up parsers,
+which are widely used for programming-language grammars.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. PRACTICAL COMPILER CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A practical parser may receive:
+
+TOKEN STREAM:
+
+id + id * id
+
+
+The bottom-up parser does not simply start with E.
+
+Instead, it processes the token stream and gradually builds
+non-terminals.
+
+Conceptually:
+
+id + id * id
+↓
+F + id * id
+↓
+T + id * id
+↓
+E + id * id
+↓
+E + F * id
+↓
+E + T * id
+↓
+E + T * F
+↓
+E + T
+↓
+E
+
+
+The exact sequence depends on the grammar and parser strategy.
+
+
+This demonstrates:
+
+INPUT → STRUCTURE → START SYMBOL
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. BOTTOM-UP PARSING IN REAL COMPILERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A compiler may use parser generators based on LR-family methods.
+
+Examples include tools and technologies associated with:
+
+• Yacc
+• Bison
+• LR parsing
+• LALR parsing
+
+
+Typical flow:
+
+Lexer
+  ↓
+Tokens
+  ↓
+LR/LALR Parser
+  ↓
+AST
+  ↓
+Semantic Analysis
+
+
+The lexer supplies tokens.
+
+The parser determines grammatical structure.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. CHAPTER 11 CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 11:
+
+TOP-DOWN PARSING
+
+Main ideas:
+
+FIRST
+FOLLOW
+LL(1)
+Predictive parsing
+Recursive descent
+
+
+Chapter 12:
+
+BOTTOM-UP PARSING
+
+Main ideas:
+
+Shift
+Reduce
+Handle
+Handle pruning
+Shift-reduce conflicts
+Reduce-reduce conflicts
+
+
+Chapter 13:
+
+LR PARSING
+
+Main ideas:
+
+LR(0)
+Items
+Closure
+GOTO
+Canonical collection
+SLR(1)
+LR(1)
+CLR(1)
+LALR(1)
+Parsing tables
+Conflicts
+
+
+Therefore:
+
+CHAPTER 11
+TOP-DOWN
+   ↓
+CHAPTER 12
+BOTTOM-UP BASICS
+   ↓
+CHAPTER 13
+LR FAMILY
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. EXAM MEMORY TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Concept                  Remember
+
+Top-down                 Start → Input
+
+Bottom-up                Input → Start
+
+Top-down derivation      Leftmost
+
+Bottom-up derivation     Rightmost in reverse
+
+Top-down example         LL(1)
+
+Bottom-up example        LR
+
+Basic bottom-up method   Shift-reduce
+
+SHIFT                    Input → Stack
+
+REDUCE                   RHS → LHS
+
+Handle                   Next reducible substring
+
+Handle pruning           Repeated handle reduction
+
+SR conflict              Shift vs Reduce
+
+RR conflict              Reduce vs Reduce
+
+Accept                   Start symbol + end marker
+
+Error                    No valid action
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. QUICK SELF-TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Bottom-up parsing starts from what?
+
+ANSWER:
+Input string.
+
+
+2. Bottom-up parsing ends at what?
+
+ANSWER:
+Start symbol.
+
+
+3. Which derivation does it reverse?
+
+ANSWER:
+Rightmost derivation.
+
+
+4. What is shifted?
+
+ANSWER:
+Next input symbol/token.
+
+
+5. What is reduced?
+
+ANSWER:
+A handle matching a production RHS.
+
+
+6. What does a reduction produce?
+
+ANSWER:
+The production's LHS non-terminal.
+
+
+7. SHIFT vs REDUCE conflict is called?
+
+ANSWER:
+Shift-reduce conflict.
+
+
+8. Two possible reductions are called?
+
+ANSWER:
+Reduce-reduce conflict.
+
+
+9. Repeated handle reduction is called?
+
+ANSWER:
+Handle pruning.
+
+
+10. LR parsers belong to which general parsing approach?
+
+ANSWER:
+Bottom-up parsing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. CHAPTER 12 — MASTER CONCEPT MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                         PARSING
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+         TOP-DOWN                    BOTTOM-UP
+              │                           │
+              │                           │
+        Start → Input                Input → Start
+              │                           │
+        Leftmost derivation       Rightmost derivation
+                                      in reverse
+              │                           │
+          LL / RD                    Shift-Reduce
+                                          │
+                         ┌────────────────┼────────────────┐
+                         │                │                │
+                       SHIFT            REDUCE           ACCEPT
+                         │                │
+                    Input→Stack       RHS→LHS
+                                          │
+                                      HANDLE
+                                          │
+                                  HANDLE PRUNING
+                                          │
+                              ┌───────────┴───────────┐
+                              │                       │
+                         SR CONFLICT              RR CONFLICT
+                         Shift/Reduce             Reduce/Reduce
+                              │
+                              ▼
+                         LR PARSING
+                              │
+              ┌───────────────┼────────────────┐
+              │               │                │
+            LR(0)            SLR             LR(1)
+                                             / CLR
+                              │
+                            LALR
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. FINAL CHAPTER SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BOTTOM-UP PARSING:
+
+• Starts from the input.
+• Builds structure toward the start symbol.
+• Conceptually builds parse tree from leaves to root.
+• Corresponds to rightmost derivation in reverse.
+• Uses reduction of handles.
+• Shift-reduce parsing is the basic technique.
+• Uses a stack and input buffer.
+• Main actions are SHIFT, REDUCE, ACCEPT, ERROR.
+• A handle is the substring selected for the next valid reduction.
+• Handle pruning repeatedly reduces handles.
+• Shift-reduce conflict = SHIFT vs REDUCE.
+• Reduce-reduce conflict = REDUCE vs REDUCE.
+• LR parsing provides a systematic method for making these
+  bottom-up decisions.
+• LR-family parsing will be studied in Chapter 13.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. ONE-MINUTE REVISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TOP-DOWN:
+
+START
+  ↓
+INPUT
+
+LEFTMOST DERIVATION
+
+
+BOTTOM-UP:
+
+INPUT
+  ↓
+START
+
+RIGHTMOST DERIVATION IN REVERSE
+
+
+SHIFT:
+
+INPUT → STACK
+
+
+REDUCE:
+
+RHS → LHS
+
+
+HANDLE:
+
+Next substring to reduce.
+
+
+HANDLE PRUNING:
+
+Repeated handle reductions.
+
+
+SR:
+
+SHIFT vs REDUCE
+
+
+RR:
+
+REDUCE vs REDUCE
+
+
+LR:
+
+Powerful bottom-up parsing family.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHAPTER 12 COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NEXT MASTER-SYLLABUS CHAPTER:
+
+CHAPTER 13 — LR PARSING
+
+Topics:
+
+• LR parsing
+• LR parser architecture
+• LR(0)
+• LR(0) items
+• Augmented grammar
+• Closure
+• GOTO
+• Canonical collection of LR(0) items
+• LR(0) parsing table
+• SLR(1)
+• FOLLOW-based reductions
+• LR(1) items
+• CLR(1)
+• LALR(1)
+• SLR vs CLR vs LALR
+• Shift-reduce conflicts
+• Reduce-reduce conflicts
+• Conflict resolution
+• GATE-level LR problems
+• Parser construction
+• Interview concepts

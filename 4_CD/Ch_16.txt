@@ -1,0 +1,2678 @@
+Absolutely. Continuing the locked Compiler Design syllabus, Chapter 16 is Symbol Tables. I’ll keep it beginner-friendly first, then move toward GATE and interview level.
+
+============================================================
+CHAPTER 16 — SYMBOL TABLES
+============================================================
+Level: Absolute Beginner → University → GATE → Interview
+Phase: PHASE 4 — SEMANTIC ANALYSIS
+Prerequisite: Chapter 15 — Semantic Analysis Fundamentals
+============================================================
+
+
+1. WHAT IS A SYMBOL TABLE?
+------------------------------------------------------------
+
+A Symbol Table is a compiler data structure that stores
+information about identifiers used in a program.
+
+An identifier is a name given to a program entity.
+
+Examples:
+
+    variable name
+    function name
+    class name
+    parameter name
+    constant name
+
+
+Example:
+
+    int age;
+    float salary;
+
+Here:
+
+    age
+    salary
+
+are identifiers.
+
+
+The compiler needs information about them.
+
+For example:
+
+    age    → int
+    salary → float
+
+
+This information can be maintained in a SYMBOL TABLE.
+
+
+------------------------------------------------------------
+SIMPLE DEFINITION
+------------------------------------------------------------
+
+Symbol Table:
+
+    A data structure used by a compiler to store and retrieve
+    information about program identifiers and their attributes.
+
+
+------------------------------------------------------------
+REAL-WORLD ANALOGY
+------------------------------------------------------------
+
+Think about a college student database.
+
+    Roll No. → Name → Branch → Semester
+
+Similarly, a compiler maintains information about program
+names.
+
+    Identifier → Type → Scope → Other attributes
+
+
+Example:
+
+    age → int → local
+
+
+============================================================
+2. WHY DOES A COMPILER NEED A SYMBOL TABLE?
+============================================================
+
+Consider:
+
+    int x;
+    x = 10;
+
+
+When the compiler sees:
+
+    x
+
+it needs to know:
+
+    • Was x declared?
+    • What is the type of x?
+    • What is the scope of x?
+    • Where is x stored?
+    • What other properties does x have?
+
+
+The symbol table provides this information.
+
+
+Without an appropriate symbol-table mechanism, managing
+identifiers and their attributes would be difficult.
+
+
+============================================================
+3. BASIC SYMBOL TABLE EXAMPLE
+============================================================
+
+Program:
+
+    int x;
+    float y;
+    char c;
+
+
+Conceptual symbol table:
+
+    +------------+--------+---------+
+    | Identifier | Type   | Scope   |
+    +------------+--------+---------+
+    | x          | int    | global  |
+    | y          | float  | global  |
+    | c          | char   | global  |
+    +------------+--------+---------+
+
+
+The exact fields depend on the compiler and programming
+language.
+
+
+============================================================
+4. INFORMATION STORED IN A SYMBOL TABLE
+============================================================
+
+A symbol-table entry can contain different attributes.
+
+Common information includes:
+
+    1. Name / identifier
+    2. Data type
+    3. Scope
+    4. Storage location
+    5. Size
+    6. Memory address/offset
+    7. Function return type
+    8. Parameter information
+    9. Number of parameters
+   10. Array dimensions
+   11. Structure/class information
+   12. Visibility information
+   13. Other compiler-specific attributes
+
+
+Example:
+
+    int x;
+
+
+Possible entry:
+
+    Name:
+        x
+
+    Type:
+        int
+
+    Scope:
+        local
+
+    Size:
+        4 bytes (language/platform dependent)
+
+    Offset:
+        compiler-dependent
+
+
+IMPORTANT:
+
+The exact symbol-table fields are NOT universal.
+
+They depend on:
+
+    • Programming language
+    • Compiler design
+    • Target machine
+    • Optimization requirements
+
+
+============================================================
+5. SYMBOL TABLE ENTRY
+============================================================
+
+A symbol table consists of entries.
+
+Conceptually:
+
+    Symbol Table
+         |
+         +---- Entry 1
+         |
+         +---- Entry 2
+         |
+         +---- Entry 3
+
+
+Example:
+
+    int x;
+    float y;
+
+
+Entries:
+
+    Entry 1:
+        name = x
+        type = int
+
+    Entry 2:
+        name = y
+        type = float
+
+
+============================================================
+6. MAIN OPERATIONS OF A SYMBOL TABLE
+============================================================
+
+The most important operations are:
+
+    • INSERT
+    • LOOKUP
+    • DELETE
+
+Other implementations may also provide:
+
+    • UPDATE
+    • BEGIN SCOPE
+    • END SCOPE
+    • MODIFY
+    • SEARCH
+
+
+The three fundamental operations to remember are:
+
+    INSERT
+    LOOKUP
+    DELETE
+
+
+============================================================
+7. INSERT OPERATION
+============================================================
+
+INSERT adds a new identifier and its attributes to the
+symbol table.
+
+Example:
+
+    int x;
+
+
+Compiler performs conceptually:
+
+    INSERT(x, int)
+
+
+Symbol table:
+
+    +------+------+
+    | Name | Type |
+    +------+------+
+    | x    | int  |
+    +------+------+
+
+
+------------------------------------------------------------
+WHY INSERT?
+------------------------------------------------------------
+
+When a declaration is encountered, the compiler needs to
+record the identifier.
+
+
+Example:
+
+    float salary;
+
+Conceptually:
+
+    INSERT(salary, float)
+
+
+============================================================
+8. LOOKUP OPERATION
+============================================================
+
+LOOKUP searches for an identifier in the symbol table.
+
+Example:
+
+    int x;
+
+    x = 10;
+
+
+When compiler encounters x:
+
+    LOOKUP(x)
+
+
+If found:
+
+    x → int
+
+
+The semantic analyzer can then use this information for
+type checking and other checks.
+
+
+------------------------------------------------------------
+MEMORY TRICK
+------------------------------------------------------------
+
+INSERT:
+
+    Put information INTO table.
+
+
+LOOKUP:
+
+    Find information FROM table.
+
+
+============================================================
+9. DELETE OPERATION
+============================================================
+
+DELETE removes an identifier from the currently relevant
+symbol-table structure.
+
+This is especially important when dealing with scopes.
+
+Example:
+
+    {
+        int x;
+    }
+
+
+When the scope ends, information associated with that
+scope may be discarded or the corresponding scope table
+may be removed, depending on implementation.
+
+
+Conceptually:
+
+    DELETE(x)
+
+
+However, practical symbol-table implementations often
+manage scopes using separate tables or scope stacks rather
+than literally deleting every entry individually.
+
+
+============================================================
+10. SYMBOL TABLE API — SIMPLE VIEW
+============================================================
+
+A conceptual symbol-table interface might be:
+
+    insert(name, attributes)
+    lookup(name)
+    delete(name)
+
+
+Example:
+
+    insert("x", int)
+
+    lookup("x")
+
+    delete("x")
+
+
+Possible implementation:
+
+    class SymbolTable
+    {
+        insert()
+        lookup()
+        delete()
+    }
+
+
+The actual implementation depends on the compiler.
+
+
+============================================================
+11. SYMBOL TABLE AND DECLARATIONS
+============================================================
+
+Consider:
+
+    int age;
+    float salary;
+
+
+During semantic processing:
+
+    int age;
+
+        ↓
+
+    INSERT(age, int)
+
+
+Then:
+
+    float salary;
+
+        ↓
+
+    INSERT(salary, float)
+
+
+Symbol table:
+
+    +---------+--------+
+    | Name    | Type   |
+    +---------+--------+
+    | age     | int    |
+    | salary  | float  |
+    +---------+--------+
+
+
+============================================================
+12. SYMBOL TABLE AND VARIABLE USE
+============================================================
+
+Program:
+
+    int x;
+
+    x = 20;
+
+
+During declaration:
+
+    INSERT(x, int)
+
+
+During use:
+
+    LOOKUP(x)
+
+
+Result:
+
+    x exists
+    x has type int
+
+
+Semantic analyzer can then check:
+
+    int x;
+    x = 20;
+
+    int ← int
+
+Valid.
+
+
+============================================================
+13. UNDECLARED VARIABLE USING SYMBOL TABLE
+============================================================
+
+Program:
+
+    x = 20;
+
+
+Suppose x has never been declared.
+
+Compiler performs:
+
+    LOOKUP(x)
+
+
+Result:
+
+    NOT FOUND
+
+
+Semantic analyzer can report:
+
+    Semantic Error:
+    x is not declared.
+
+
+Therefore:
+
+    Symbol Table
+          ↓
+       lookup
+          ↓
+    identifier found?
+       /       \
+     YES        NO
+      ↓          ↓
+    continue    error
+
+
+============================================================
+14. SYMBOL TABLE AND TYPE CHECKING
+============================================================
+
+Program:
+
+    int x;
+    x = "hello";
+
+
+Symbol table:
+
+    x → int
+
+
+When checking assignment:
+
+    x = "hello"
+
+
+Compiler obtains:
+
+    type(x) = int
+
+and:
+
+    type("hello") = string
+
+
+Then checks:
+
+    int ← string
+
+
+If incompatible:
+
+    Semantic Error.
+
+
+Therefore:
+
+    Symbol Table
+         +
+    Type Information
+         ↓
+    Type Checking
+
+
+============================================================
+15. SYMBOL TABLE AND SCOPE
+============================================================
+
+Scope is the region in which an identifier can be used.
+
+Symbol tables must therefore support scope management.
+
+
+Example:
+
+    int x = 10;
+
+    {
+        int y = 20;
+        print(x);
+        print(y);
+    }
+
+
+There are at least two conceptual scopes:
+
+    Global Scope
+        |
+        +--- x
+
+    Inner Scope
+        |
+        +--- y
+
+
+Inside the inner scope:
+
+    x → found in outer/global scope
+    y → found in current/inner scope
+
+
+============================================================
+16. NESTED SCOPES
+============================================================
+
+Scopes can be nested.
+
+Example:
+
+    int a;
+
+    {
+        int b;
+
+        {
+            int c;
+        }
+    }
+
+
+Conceptually:
+
+    Scope 1
+    ├── a
+    │
+    └── Scope 2
+        ├── b
+        │
+        └── Scope 3
+            └── c
+
+
+The compiler needs a way to determine where to search for
+an identifier.
+
+
+============================================================
+17. SCOPE STACK
+============================================================
+
+One common conceptual technique is a stack of symbol tables.
+
+Example:
+
+    Global Scope
+        ↓
+    [Table 1]
+
+Enter inner block:
+
+    Global Scope
+        ↓
+    [Table 1]
+        ↓
+    [Table 2]
+
+Enter another block:
+
+    Global Scope
+        ↓
+    [Table 1]
+        ↓
+    [Table 2]
+        ↓
+    [Table 3]
+
+
+When leaving the innermost scope:
+
+    [Table 3]
+
+is removed from the active scope stack.
+
+
+============================================================
+18. LOOKUP WITH NESTED SCOPES
+============================================================
+
+Suppose:
+
+    int x;
+
+    {
+        int y;
+
+        {
+            int z;
+        }
+    }
+
+
+Inside the scope containing z:
+
+    LOOKUP(z)
+
+Search:
+
+    Current scope
+        ↓
+    Found z
+
+
+Now:
+
+    LOOKUP(y)
+
+Search:
+
+    Current scope
+        ↓
+    Not found
+        ↓
+    Parent scope
+        ↓
+    Found y
+
+
+Now:
+
+    LOOKUP(x)
+
+Search:
+
+    Current scope
+        ↓
+    Not found
+        ↓
+    Parent scope
+        ↓
+    Not found
+        ↓
+    Outer scope
+        ↓
+    Found x
+
+
+This is a fundamental nested-scope lookup idea.
+
+
+============================================================
+19. SHADOWING
+============================================================
+
+Consider:
+
+    int x = 10;
+
+    {
+        int x = 20;
+        print(x);
+    }
+
+
+There are two x declarations.
+
+Outer:
+
+    x → 10
+
+
+Inner:
+
+    x → 20
+
+
+Inside the inner scope:
+
+    lookup(x)
+
+should normally find the INNER x first.
+
+
+Search:
+
+    Current scope
+        ↓
+    x found
+        ↓
+    STOP
+
+
+The outer x is shadowed.
+
+
+============================================================
+20. SYMBOL TABLE IMPLEMENTATION
+============================================================
+
+A symbol table can be implemented using different data
+structures.
+
+Common choices include:
+
+    • Linear list
+    • Linked list
+    • Hash table
+    • Tree
+    • Balanced tree
+    • Other specialized structures
+
+
+The choice affects:
+
+    • Lookup speed
+    • Insertion speed
+    • Memory usage
+    • Scope management
+    • Implementation complexity
+
+
+============================================================
+21. LINEAR SEARCH IMPLEMENTATION
+============================================================
+
+Simplest approach:
+
+    Store entries in a list.
+
+Example:
+
+    [x, int]
+    [y, float]
+    [z, char]
+    [count, int]
+
+
+To find:
+
+    z
+
+
+Compiler searches sequentially:
+
+    x → no
+    y → no
+    z → YES
+
+
+Time complexity:
+
+    Search ≈ O(n)
+
+
+where n is the number of entries searched.
+
+
+Advantages:
+
+    • Very simple
+    • Easy to implement
+
+
+Disadvantages:
+
+    • Slow for large symbol tables
+    • Lookup can require scanning many entries
+
+
+============================================================
+22. HASH TABLE IMPLEMENTATION
+============================================================
+
+Hash tables are commonly used because identifier lookup can
+be very efficient on average.
+
+Basic idea:
+
+    identifier
+         ↓
+    hash function
+         ↓
+    hash value/index
+         ↓
+    table location
+
+
+Example:
+
+    hash("count")
+          ↓
+        17
+          ↓
+    Table[17]
+
+
+Conceptually:
+
+    +-------+----------------+
+    | Index | Entry          |
+    +-------+----------------+
+    | 0     |                |
+    | 1     | x              |
+    | 2     |                |
+    | ...   |                |
+    | 17    | count          |
+    +-------+----------------+
+
+
+============================================================
+23. WHAT IS A HASH FUNCTION?
+============================================================
+
+A hash function maps a key to an index in a hash table.
+
+Conceptually:
+
+    h(key) = index
+
+
+Example:
+
+    h("x") = 5
+
+
+Then:
+
+    x
+
+is stored around:
+
+    table[5]
+
+
+The actual hash function is implementation-dependent.
+
+
+============================================================
+24. HASH COLLISION
+============================================================
+
+A collision occurs when two different identifiers produce
+the same hash-table index.
+
+Example:
+
+    h("x") = 5
+    h("abc") = 5
+
+
+Both want:
+
+    table[5]
+
+
+This is a collision.
+
+
+Common collision-handling techniques include:
+
+    • Chaining
+    • Open addressing
+
+
+============================================================
+25. CHAINING
+============================================================
+
+In chaining, each hash-table position can maintain a list
+of entries.
+
+Example:
+
+    table[5]
+
+       ↓
+
+    [x] → [abc] → [temp] → NULL
+
+
+All entries have the same hash index.
+
+
+Advantages:
+
+    • Simple collision handling
+    • Multiple entries can share a bucket
+
+
+============================================================
+26. OPEN ADDRESSING
+============================================================
+
+With open addressing, when a collision occurs, another
+location in the table is searched.
+
+Examples:
+
+    • Linear probing
+    • Quadratic probing
+    • Double hashing
+
+
+Conceptually:
+
+    index 5 occupied
+         ↓
+    try index 6
+         ↓
+    if occupied
+         ↓
+    try another position
+
+
+============================================================
+27. HASH TABLE COMPLEXITY
+============================================================
+
+For a well-designed hash table:
+
+    Average lookup:
+        O(1)
+
+    Average insertion:
+        O(1)
+
+But in the worst case:
+
+    O(n)
+
+
+because many keys may collide.
+
+
+IMPORTANT GATE FACT:
+
+    Hash table average lookup → O(1)
+    Hash table worst-case lookup → O(n)
+
+
+Do NOT blindly answer:
+
+    "Hash table lookup is always O(1)."
+
+That is incorrect.
+
+
+============================================================
+28. TREE-BASED SYMBOL TABLE
+============================================================
+
+A symbol table can also be implemented using a tree.
+
+For example:
+
+    Binary Search Tree (BST)
+
+
+Conceptually:
+
+             m
+           /   \
+          g     t
+         / \   / \
+        c   j p   z
+
+
+Identifiers can be organized according to ordering.
+
+
+Lookup in a balanced search tree can be:
+
+    O(log n)
+
+
+But an ordinary unbalanced BST can degrade to:
+
+    O(n)
+
+
+============================================================
+29. HASH TABLE VS TREE
+============================================================
+
++----------------------+---------------------------+
+| Feature              | Hash Table               |
++----------------------+---------------------------+
+| Average lookup       | O(1)                     |
+| Worst-case lookup    | O(n)                     |
+| Ordering             | Usually not maintained  |
+| Main idea            | Hash function            |
++----------------------+---------------------------+
+
+
++----------------------+---------------------------+
+| Feature              | Balanced Tree            |
++----------------------+---------------------------+
+| Lookup               | O(log n)                 |
+| Ordering             | Maintained                |
+| Main idea            | Tree structure            |
++----------------------+---------------------------+
+
+
+The best structure depends on compiler requirements.
+
+
+============================================================
+30. SYMBOL TABLE FOR FUNCTIONS
+============================================================
+
+Consider:
+
+    int add(int a, int b)
+    {
+        return a + b;
+    }
+
+
+A symbol table can store information such as:
+
+    Name:
+        add
+
+    Entity:
+        function
+
+    Return type:
+        int
+
+    Parameters:
+        a → int
+        b → int
+
+    Number of parameters:
+        2
+
+
+The parameters may themselves have entries in the appropriate
+scope.
+
+
+============================================================
+31. SYMBOL TABLE FOR ARRAYS
+============================================================
+
+Example:
+
+    int marks[10];
+
+
+A symbol-table entry can conceptually contain:
+
+    Name:
+        marks
+
+    Type:
+        int array
+
+    Dimensions:
+        1
+
+    Size:
+        10 elements
+
+    Element type:
+        int
+
+
+Exact representation depends on compiler design.
+
+
+============================================================
+32. SYMBOL TABLE FOR STRUCTURES / CLASSES
+============================================================
+
+Example:
+
+    struct Student
+    {
+        int roll;
+        float marks;
+    };
+
+
+The compiler may maintain information for:
+
+    Student
+    roll
+    marks
+
+
+Conceptually:
+
+    Student
+       |
+       +--- roll  → int
+       |
+       +--- marks → float
+
+
+More sophisticated languages require richer symbol-table
+representations for:
+
+    • Classes
+    • Methods
+    • Fields
+    • Inheritance
+    • Generic types
+    • Namespaces
+
+
+============================================================
+33. SYMBOL TABLE AND PROCEDURE SCOPE
+============================================================
+
+Example:
+
+    int x;
+
+    void fun()
+    {
+        int y;
+    }
+
+
+Conceptually:
+
+    Global Symbol Table
+        |
+        +--- x
+        |
+        +--- fun
+              |
+              ↓
+        Function Symbol Table
+              |
+              +--- y
+
+
+This allows the compiler to manage nested/local declarations.
+
+
+============================================================
+34. BEGIN SCOPE AND END SCOPE
+============================================================
+
+A compiler can conceptually support:
+
+    BEGIN_SCOPE()
+    END_SCOPE()
+
+
+Example:
+
+    int x;
+
+    {
+        int y;
+    }
+
+
+Processing:
+
+    INSERT(x)
+
+    BEGIN_SCOPE()
+
+    INSERT(y)
+
+    END_SCOPE()
+
+
+After leaving the block, y should no longer be visible from
+the outer scope under normal block-scope rules.
+
+
+============================================================
+35. SCOPE MANAGEMENT USING STACK
+============================================================
+
+Suppose:
+
+    Global
+       ↓
+    Function
+       ↓
+    Block
+
+
+Scope stack:
+
+    +----------------+
+    | Block Table    | ← top
+    +----------------+
+    | Function Table |
+    +----------------+
+    | Global Table   |
+    +----------------+
+
+
+Lookup starts at the TOP.
+
+If not found:
+
+    move downward.
+
+
+Therefore:
+
+    Current Scope
+        ↓
+    Parent Scope
+        ↓
+    Outer Scope
+        ↓
+    Global Scope
+
+
+============================================================
+36. INSERTION WITH SCOPE
+============================================================
+
+Example:
+
+    int x;
+
+    {
+        int y;
+    }
+
+
+Global:
+
+    INSERT(x)
+
+
+Enter block:
+
+    BEGIN_SCOPE()
+
+    INSERT(y)
+
+
+The y entry belongs to the inner scope.
+
+
+When block ends:
+
+    END_SCOPE()
+
+
+The compiler can deactivate/remove the inner scope.
+
+
+============================================================
+37. DUPLICATE DECLARATION
+============================================================
+
+Consider:
+
+    int x;
+    int x;
+
+
+Depending on language rules, declaring x twice in the same
+scope may be illegal.
+
+Compiler can perform:
+
+    lookup_current_scope(x)
+
+
+If x already exists:
+
+    Duplicate declaration error.
+
+
+IMPORTANT:
+
+For declaration checking, the compiler may need to distinguish:
+
+    lookup current scope
+
+from:
+
+    lookup all enclosing scopes.
+
+
+Why?
+
+Because shadowing may be legal in an inner scope even if the
+same name exists outside.
+
+
+============================================================
+38. CURRENT-SCOPE LOOKUP VS GLOBAL LOOKUP
+============================================================
+
+Suppose:
+
+    int x;
+
+    {
+        int x;
+    }
+
+
+When declaring the inner x:
+
+    Should the compiler reject it?
+
+Not necessarily.
+
+If shadowing is permitted, the compiler checks whether x
+already exists in the CURRENT scope.
+
+The outer x can still exist.
+
+
+Therefore:
+
+    lookup_current_scope(x)
+
+and:
+
+    lookup(x)
+
+can have different purposes.
+
+
+============================================================
+39. SYMBOL TABLE DURING COMPILATION
+============================================================
+
+Simplified process:
+
+    Source Program
+          ↓
+    Lexical Analysis
+          ↓
+    Tokens
+          ↓
+    Syntax Analysis
+          ↓
+    AST
+          ↓
+    Semantic Analysis
+          ↓
+    Symbol Table operations
+          ↓
+    Type / Scope / Declaration checking
+          ↓
+    IR
+          ↓
+    Optimization
+          ↓
+    Code Generation
+
+
+Symbol-table information may be needed across multiple
+compiler phases, not only semantic analysis.
+
+
+============================================================
+40. SYMBOL TABLE AND LEXICAL ANALYSIS
+============================================================
+
+The lexer recognizes identifiers.
+
+Example:
+
+    int count;
+
+Tokens:
+
+    KEYWORD(int)
+    IDENTIFIER(count)
+    SEMICOLON
+
+
+The identifier token can provide:
+
+    count
+
+
+The compiler can later insert/find information about count
+in the symbol table.
+
+
+The exact division of responsibility varies among compiler
+implementations.
+
+
+============================================================
+41. SYMBOL TABLE AND SYNTAX ANALYSIS
+============================================================
+
+Parser mainly determines grammatical structure.
+
+But parser actions may interact with symbol information in
+some compiler designs.
+
+For example, parser generators may execute semantic actions
+associated with productions.
+
+Still, semantic checks are primarily associated with semantic
+analysis.
+
+
+============================================================
+42. SYMBOL TABLE AND SEMANTIC ANALYSIS
+============================================================
+
+This is the MOST IMPORTANT connection.
+
+Semantic analyzer asks:
+
+    "What does this identifier mean?"
+
+Symbol table answers:
+
+    "Here is the information associated with that identifier."
+
+
+Example:
+
+    int x;
+
+    x = 10;
+
+
+Semantic analyzer:
+
+    lookup(x)
+
+gets:
+
+    x → int
+
+
+Then:
+
+    type(10) = int
+
+Check:
+
+    int ← int
+
+Valid.
+
+
+============================================================
+43. SYMBOL TABLE AND INTERMEDIATE CODE GENERATION
+============================================================
+
+Later compiler phases may need:
+
+    • Type information
+    • Size
+    • Offset
+    • Storage information
+    • Function information
+
+
+Example:
+
+    int x;
+
+Code generation may need to know where x is located.
+
+
+Thus symbol-table information can continue to be useful after
+semantic analysis.
+
+
+============================================================
+44. SYMBOL TABLE AND CODE GENERATION
+============================================================
+
+Suppose:
+
+    int x;
+
+
+Eventually x needs storage.
+
+The compiler may associate information such as:
+
+    x
+    type = int
+    size = ...
+    offset = ...
+
+
+The code generator can use this information to generate
+appropriate target instructions.
+
+
+Exact storage allocation depends on the runtime environment
+and compiler.
+
+
+============================================================
+45. SYMBOL TABLE — COMPLETE EXAMPLE
+============================================================
+
+Program:
+
+    int x;
+
+    void fun()
+    {
+        float y;
+
+        {
+            char z;
+        }
+    }
+
+
+Conceptual organization:
+
+
+GLOBAL SCOPE
+
+    +------+----------+
+    | Name | Info     |
+    +------+----------+
+    | x    | int      |
+    | fun  | function |
+    +------+----------+
+
+
+FUNCTION SCOPE
+
+    +------+----------+
+    | Name | Info     |
+    +------+----------+
+    | y    | float    |
+    +------+----------+
+
+
+INNER BLOCK SCOPE
+
+    +------+----------+
+    | Name | Info     |
+    +------+----------+
+    | z    | char     |
+    +------+----------+
+
+
+Lookup for z:
+
+    Inner block → FOUND
+
+
+Lookup for y from inner block:
+
+    Inner block → not found
+         ↓
+    Function scope → FOUND
+
+
+Lookup for x:
+
+    Inner block → not found
+         ↓
+    Function scope → not found
+         ↓
+    Global scope → FOUND
+
+
+============================================================
+46. SYMBOL TABLE DATA STRUCTURE CHOICES
+============================================================
+
+Possible implementations:
+
+    1. Linear list
+    2. Linked list
+    3. Hash table
+    4. Binary search tree
+    5. Balanced tree
+    6. Specialized compiler structures
+
+
+Comparison:
+
+    Linear list:
+        Simple
+        O(n) lookup
+
+
+    Hash table:
+        Average O(1) lookup
+        Collision management required
+
+
+    Balanced tree:
+        O(log n) lookup
+        Maintains ordering
+
+
+============================================================
+47. GATE — IMPORTANT COMPLEXITY FACTS
+============================================================
+
+If n entries are searched using a linear list:
+
+    Search = O(n)
+
+
+Hash table with good hashing:
+
+    Average = O(1)
+    Worst   = O(n)
+
+
+Balanced BST:
+
+    Search = O(log n)
+
+
+Unbalanced BST:
+
+    Average depends on shape
+    Worst = O(n)
+
+
+These complexity facts are frequently useful in
+data-structure/compiler questions.
+
+
+============================================================
+48. GATE TRAP — "SYMBOL TABLE IS ONLY FOR VARIABLES"
+============================================================
+
+WRONG.
+
+
+Symbol tables can contain information about:
+
+    • Variables
+    • Functions
+    • Parameters
+    • Constants
+    • Types
+    • Classes
+    • Methods
+    • Labels
+    • Other named entities
+
+
+The exact entities depend on the language.
+
+
+============================================================
+49. GATE TRAP — "SYMBOL TABLE IS USED ONLY IN SEMANTIC ANALYSIS"
+============================================================
+
+WRONG.
+
+
+Symbol-table information may be used by multiple compiler
+phases.
+
+Examples:
+
+    Lexical analysis
+    Syntax/semantic processing
+    Intermediate-code generation
+    Optimization
+    Code generation
+
+
+Semantic analysis is especially dependent on it.
+
+
+============================================================
+50. GATE TRAP — HASH TABLE ALWAYS O(1)
+============================================================
+
+WRONG.
+
+
+Correct:
+
+    Average:
+        O(1)
+
+    Worst case:
+        O(n)
+
+
+Poor hashing or many collisions can degrade performance.
+
+
+============================================================
+51. GATE TRAP — OUTER VARIABLE IS ALWAYS USED
+============================================================
+
+WRONG.
+
+
+Consider:
+
+    int x = 10;
+
+    {
+        int x = 20;
+        print(x);
+    }
+
+
+The inner x normally shadows the outer x.
+
+
+Lookup begins in the current scope.
+
+
+============================================================
+52. GATE TRAP — DELETE ALWAYS MEANS PHYSICALLY ERASE
+============================================================
+
+Not necessarily.
+
+
+Symbol-table implementations can manage scope by:
+
+    • Separate scope tables
+    • Scope stack
+    • Activation/deactivation
+    • Removing a scope structure
+
+
+So "delete" is an abstract operation; implementation details
+vary.
+
+
+============================================================
+53. INTERVIEW QUESTION 1
+============================================================
+
+Q:
+What is a symbol table?
+
+Answer:
+
+A symbol table is a compiler data structure that stores
+information about identifiers and their attributes, such as
+type, scope, storage information, and function-related
+information.
+
+
+============================================================
+54. INTERVIEW QUESTION 2
+============================================================
+
+Q:
+What are the basic operations on a symbol table?
+
+Answer:
+
+The fundamental operations are:
+
+    INSERT
+    LOOKUP
+    DELETE
+
+
+Scope-related implementations may additionally provide
+operations such as BEGIN_SCOPE and END_SCOPE.
+
+
+============================================================
+55. INTERVIEW QUESTION 3
+============================================================
+
+Q:
+Why is a symbol table required?
+
+Answer:
+
+It allows the compiler to efficiently manage identifiers and
+retrieve information required for declaration checking, scope
+resolution, type checking, and later compilation stages.
+
+
+============================================================
+56. INTERVIEW QUESTION 4
+============================================================
+
+Q:
+Which data structure is commonly used to implement a symbol
+table?
+
+Answer:
+
+A hash table is a common choice because it provides average
+O(1) lookup and insertion when the hash function and table
+are appropriately designed.
+
+Other structures such as balanced trees can also be used.
+
+
+============================================================
+57. INTERVIEW QUESTION 5
+============================================================
+
+Q:
+How are nested scopes handled?
+
+Answer:
+
+A compiler can maintain a stack or hierarchy of symbol tables.
+Lookup generally starts in the current scope and proceeds
+through enclosing scopes until the identifier is found or
+no scope remains.
+
+
+============================================================
+58. INTERVIEW QUESTION 6
+============================================================
+
+Q:
+What happens when an undeclared variable is used?
+
+Example:
+
+    x = 10;
+
+If lookup(x) fails in the relevant visible scopes, the
+semantic analyzer reports an undeclared-identifier error.
+
+
+============================================================
+59. INTERVIEW QUESTION 7
+============================================================
+
+Q:
+Can two variables with the same name exist?
+
+Answer:
+
+Yes, depending on scope and language rules.
+
+For example:
+
+    int x = 10;
+
+    {
+        int x = 20;
+    }
+
+The inner x can shadow the outer x if the language permits
+such declarations.
+
+
+============================================================
+60. INTERVIEW QUESTION 8
+============================================================
+
+Q:
+What is the relationship between a symbol table and
+semantic analysis?
+
+Answer:
+
+Semantic analysis uses symbol-table information to resolve
+identifiers and perform checks such as declaration checking,
+scope checking, and type checking.
+
+
+============================================================
+61. PRACTICAL MINI SYMBOL TABLE
+============================================================
+
+A very simple implementation could conceptually use:
+
+    dictionary / hash map
+
+
+Example:
+
+    symbol_table = {
+        "x":    "int",
+        "y":    "float",
+        "name": "string"
+    }
+
+
+Lookup:
+
+    symbol_table["x"]
+
+Result:
+
+    int
+
+
+This is conceptually similar to a hash-table-based symbol
+table.
+
+
+A real compiler requires much richer information and scope
+management.
+
+
+============================================================
+62. SIMPLE PSEUDOCODE
+============================================================
+
+INSERT:
+
+    insert(name, attributes):
+        if name already exists in current scope:
+            report duplicate declaration
+        else:
+            add name and attributes
+
+
+LOOKUP:
+
+    lookup(name):
+        current_scope = current scope
+
+        while current_scope exists:
+            if name exists in current_scope:
+                return entry
+
+            current_scope = parent scope
+
+        return NOT_FOUND
+
+
+BEGIN_SCOPE:
+
+    push(new_scope)
+
+
+END_SCOPE:
+
+    pop(current_scope)
+
+
+This is a conceptual implementation.
+
+
+============================================================
+63. SYMBOL TABLE WITH SCOPE STACK
+============================================================
+
+Conceptual pseudocode:
+
+    scopes = [global_scope]
+
+
+    BEGIN_SCOPE():
+        scopes.push(new_scope)
+
+
+    END_SCOPE():
+        scopes.pop()
+
+
+    INSERT(name, info):
+        scopes.top().insert(name, info)
+
+
+    LOOKUP(name):
+        for scope from top to bottom:
+            if scope contains name:
+                return scope[name]
+
+        return NOT_FOUND
+
+
+This naturally supports nested scopes and shadowing.
+
+
+============================================================
+64. COMPLETE PRACTICAL EXAMPLE
+============================================================
+
+Program:
+
+    int x;
+
+    {
+        float y;
+
+        {
+            char z;
+            x = 10;
+            y = 2.5;
+            z = 'A';
+        }
+    }
+
+
+GLOBAL TABLE:
+
+    x → int
+
+
+ENTER FIRST BLOCK:
+
+    y → float
+
+
+ENTER SECOND BLOCK:
+
+    z → char
+
+
+Now:
+
+    lookup(x)
+
+    Second block → no
+    First block  → no
+    Global       → YES
+
+    x → int
+
+
+    lookup(y)
+
+    Second block → no
+    First block  → YES
+
+    y → float
+
+
+    lookup(z)
+
+    Second block → YES
+
+    z → char
+
+
+============================================================
+65. SYMBOL TABLE + SEMANTIC ANALYSIS
+============================================================
+
+Consider:
+
+    int x;
+
+    {
+        float x;
+
+        x = 10.5;
+    }
+
+
+Global:
+
+    x → int
+
+
+Inner:
+
+    x → float
+
+
+When checking:
+
+    x = 10.5;
+
+
+Lookup begins in inner scope:
+
+    x → float
+
+
+Expression:
+
+    10.5 → float
+
+
+Assignment:
+
+    float ← float
+
+Valid.
+
+
+The outer:
+
+    x → int
+
+is shadowed in the inner scope.
+
+
+============================================================
+66. SYMBOL TABLE + TYPE CHECKING
+============================================================
+
+Program:
+
+    int x;
+
+    {
+        float y;
+
+        y = x;
+    }
+
+
+Lookup:
+
+    y → float
+    x → int
+
+
+Assignment:
+
+    float ← int
+
+
+Depending on language conversion rules:
+
+    may be allowed through numeric conversion.
+
+
+The important point:
+
+    Symbol table provides the declared types;
+    semantic rules determine compatibility.
+
+
+============================================================
+67. SYMBOL TABLE + FUNCTION CALL CHECKING
+============================================================
+
+Declaration:
+
+    int add(int, int);
+
+
+Symbol table conceptually:
+
+    add:
+        kind = function
+        return type = int
+        parameter types = [int, int]
+
+
+Call:
+
+    add(10, 20);
+
+
+Semantic analyzer:
+
+    lookup(add)
+          ↓
+    function found
+          ↓
+    expected arguments = 2
+          ↓
+    actual arguments = 2
+          ↓
+    types compatible
+          ↓
+    valid
+
+
+============================================================
+68. SYMBOL TABLE + UNDECLARED FUNCTION
+============================================================
+
+Program:
+
+    result = multiply(10, 20);
+
+
+If:
+
+    multiply
+
+does not exist in visible symbol tables:
+
+    lookup(multiply)
+          ↓
+       NOT FOUND
+          ↓
+    semantic error
+
+
+============================================================
+69. IMPORTANT DIFFERENCE:
+    SYMBOL TABLE vs SCOPE
+============================================================
+
+SYMBOL TABLE:
+
+    Data structure that stores symbol information.
+
+
+SCOPE:
+
+    Region/rule that determines where a symbol is visible.
+
+
+Relationship:
+
+    Scope determines visibility.
+
+    Symbol table stores information used to manage that
+    visibility.
+
+
+Example:
+
+    Global Scope
+       ↓
+    Global Symbol Table
+
+
+    Local Scope
+       ↓
+    Local Symbol Table
+
+
+============================================================
+70. IMPORTANT DIFFERENCE:
+    SYMBOL TABLE vs AST
+============================================================
+
+AST:
+
+    Represents program structure in tree form.
+
+
+Symbol Table:
+
+    Stores information about named entities.
+
+
+Example:
+
+    x = 10 + 20;
+
+
+AST:
+
+         =
+        / \
+       x   +
+          / \
+        10  20
+
+
+Symbol table:
+
+    x → int
+
+
+They work together.
+
+
+============================================================
+71. IMPORTANT DIFFERENCE:
+    SYMBOL TABLE vs PARSE TABLE
+============================================================
+
+Do NOT confuse these.
+
+SYMBOL TABLE:
+
+    Stores information about identifiers.
+
+
+PARSING TABLE:
+
+    Used by parsing algorithms such as LL/LR parsing
+    to determine parser actions.
+
+
+Example:
+
+    LL(1) parsing table
+
+is NOT the same thing as:
+
+    compiler symbol table.
+
+
+============================================================
+72. SYMBOL TABLE AND COMPILER PHASES
+============================================================
+
+Simplified:
+
+    Lexical Analysis
+          ↓
+    recognizes identifiers
+          ↓
+    Syntax Analysis
+          ↓
+    builds structure
+          ↓
+    Semantic Analysis
+          ↓
+    uses symbol table heavily
+          ↓
+    IR Generation
+          ↓
+    may use symbol information
+          ↓
+    Optimization
+          ↓
+    may use symbol/type information
+          ↓
+    Code Generation
+          ↓
+    may use size/offset/storage information
+
+
+============================================================
+73. GATE-LEVEL CONCEPTUAL QUESTION
+============================================================
+
+Question:
+
+    A variable x is declared in an outer scope and another x
+    is declared in an inner scope. During lookup from the
+    inner scope, which x is normally found first?
+
+Answer:
+
+    The inner x.
+
+Reason:
+
+    Lookup normally begins from the current/innermost scope
+    and proceeds outward.
+
+
+============================================================
+74. GATE-LEVEL COMPLEXITY QUESTION
+============================================================
+
+Question:
+
+    A symbol table uses a hash table with a good hash
+    function. What is the expected average lookup complexity?
+
+Answer:
+
+    O(1)
+
+
+But:
+
+    Worst case = O(n)
+
+
+because of possible collisions.
+
+
+============================================================
+75. GATE-LEVEL CONCEPTUAL QUESTION
+============================================================
+
+Question:
+
+    Which compiler phase heavily uses the symbol table for
+    type and scope checking?
+
+Answer:
+
+    Semantic Analysis.
+
+
+However:
+
+    Symbol-table information can be used by multiple compiler
+    phases.
+
+
+============================================================
+76. HIGH-LEVEL SYMBOL TABLE ARCHITECTURE
+============================================================
+
+                 SYMBOL TABLE
+                       |
+        +--------------+--------------+
+        |              |              |
+      Names          Types          Scope
+        |              |              |
+   identifiers     int/float/etc.   visibility
+   functions       structures      nesting
+   parameters      classes         shadowing
+        |              |              |
+        +--------------+--------------+
+                       |
+                 Semantic Analysis
+                       |
+        +--------------+--------------+
+        |              |              |
+   Declaration      Type Check    Name Resolution
+     Check
+                       |
+                       ↓
+                 Valid Program
+
+
+============================================================
+77. MOST IMPORTANT FACTS TO MEMORIZE
+============================================================
+
+★ Symbol table stores identifier information.
+
+★ Common operations:
+
+      INSERT
+      LOOKUP
+      DELETE
+
+★ Hash tables are a common implementation.
+
+★ Hash-table average lookup:
+
+      O(1)
+
+★ Hash-table worst-case lookup:
+
+      O(n)
+
+★ Balanced search tree lookup:
+
+      O(log n)
+
+★ Linear search:
+
+      O(n)
+
+★ Nested scopes can be managed using a stack/hierarchy of
+  symbol tables.
+
+★ Lookup generally begins at the current scope.
+
+★ If not found, lookup proceeds toward enclosing scopes.
+
+★ Inner declarations can shadow outer declarations.
+
+★ Semantic analysis heavily relies on symbol tables.
+
+★ Symbol-table information may also be used by other
+  compiler phases.
+
+★ Exact symbol-table fields depend on the language and
+  compiler implementation.
+
+
+============================================================
+78. ULTRA-SHORT REVISION
+============================================================
+
+SYMBOL TABLE
+    ↓
+Stores identifier information.
+
+
+INSERT
+    ↓
+Add identifier.
+
+
+LOOKUP
+    ↓
+Find identifier.
+
+
+DELETE
+    ↓
+Remove/deactivate identifier information.
+
+
+SCOPE
+    ↓
+Determines where identifier is visible.
+
+
+NESTED SCOPE
+    ↓
+Search current → parent → outer → global.
+
+
+SHADOWING
+    ↓
+Inner declaration hides outer declaration.
+
+
+HASH TABLE
+    ↓
+Average lookup O(1).
+
+
+BALANCED TREE
+    ↓
+Lookup O(log n).
+
+
+SEMANTIC ANALYSIS
+    ↓
+Uses symbol table for:
+    • Name resolution
+    • Declaration checking
+    • Scope checking
+    • Type checking
+
+
+============================================================
+79. CHAPTER 16 — FINAL MEMORY MAP
+============================================================
+
+                         SYMBOL TABLE
+                              |
+             +----------------+----------------+
+             |                |                |
+          INSERT            LOOKUP           DELETE
+             |                |                |
+             +----------------+----------------+
+                              |
+                           SCOPES
+                              |
+                    +---------+---------+
+                    |                   |
+                 Current             Parent
+                    |                   |
+                    +---------+---------+
+                              |
+                         Name Resolution
+                              |
+                       Semantic Analysis
+                              |
+             +----------------+----------------+
+             |                |                |
+        Type Checking   Declaration Check   Scope Check
+             |
+             ↓
+       Annotated AST / Valid Representation
+             |
+             ↓
+             IR
+             |
+             ↓
+       Optimization / Code Generation
+
+
+============================================================
+80. CHAPTER 16 COMPLETE
+============================================================
+
+NEXT MASTER-SYLLABUS TOPIC:
+
+    CHAPTER 17 — TYPE SYSTEMS
+
+Topics:
+
+    • What is a Type System?
+    • Type Expressions
+    • Primitive Types
+    • Structured Types
+    • Type Equivalence
+    • Name Equivalence
+    • Structural Equivalence
+    • Type Compatibility
+    • Type Checking
+    • Type Conversion
+    • Coercion
+    • Strong Typing
+    • Weak Typing
+    • Type Inference
+    • Compiler Type Rules
+    • GATE Concepts
+    • GATE Traps
+    • Interview Questions
+    • Practical Examples
+
+============================================================
+END OF CHAPTER 16
+============================================================

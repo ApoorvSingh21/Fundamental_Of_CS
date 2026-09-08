@@ -1,0 +1,2117 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                  COMPILER DESIGN — CHAPTER 29                       ║
+║                    REGISTER ALLOCATION                              ║
+║                                                                      ║
+║ PHASE 7 — CODE GENERATION                                           ║
+║ LEVEL: BEGINNER → INTERMEDIATE → ADVANCED → GATE → INTERVIEW        ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 29 explains how a compiler decides which program values
+should be placed in which CPU registers.
+
+MAIN TOPICS:
+
+1. What is a register?
+2. Why register allocation is required
+3. Register allocation vs register assignment
+4. Register pressure
+5. Live variables
+6. Live ranges
+7. Interference
+8. Interference graphs
+9. Graph coloring
+10. Spilling
+11. Register coalescing
+12. Caller-saved and callee-saved registers
+13. Linear-scan allocation
+14. Register allocation in loops
+15. Calling-convention constraints
+16. GATE concepts and traps
+17. Interview questions
+18. Practical examples
+
+
+BIG PICTURE:
+
+Intermediate Representation
+          ↓
+Basic Blocks / CFG
+          ↓
+Instruction Selection
+          ↓
+★ REGISTER ALLOCATION ★
+          ↓
+Register Assignment
+          ↓
+Spilling if necessary
+          ↓
+Machine Code
+
+
+CORE QUESTION:
+
+    "Which values should live in CPU registers?"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHAT IS A CPU REGISTER?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A register is a very small and very fast storage location inside
+the CPU.
+
+Example:
+
+    R1
+    R2
+    R3
+    R4
+
+A machine instruction may operate directly on registers.
+
+Example:
+
+    ADD R1, R2
+
+Conceptually:
+
+    R1 = R1 + R2
+
+
+Registers are much more limited than main memory.
+
+For example, a CPU might provide only a limited number of general
+purpose registers.
+
+Therefore the compiler must use them carefully.
+
+
+MEMORY HIERARCHY:
+
+    Registers
+       ↓
+    Cache
+       ↓
+    Main Memory
+       ↓
+    Storage
+
+Generally:
+
+    Register access is much faster than ordinary memory access.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. WHY REGISTER ALLOCATION IS NEEDED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    a = b + c
+    d = a * e
+    f = d + g
+    h = f * i
+
+
+The compiler may want:
+
+    a
+    d
+    f
+    h
+
+in registers.
+
+But suppose the target machine has only:
+
+    R1
+    R2
+
+There are more simultaneously useful values than available registers.
+
+Therefore the compiler must decide:
+
+    Which values get registers?
+
+and:
+
+    Which values must remain in memory?
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. SIMPLE REAL-WORLD ANALOGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Imagine you have:
+
+    10 books
+
+but only:
+
+    3 desks
+
+You cannot keep all books on the desks.
+
+You must decide:
+
+    Which books are needed immediately?
+
+Those books stay on the desks.
+
+Other books can be kept elsewhere.
+
+Similarly:
+
+    Program values = books
+
+    CPU registers = desks
+
+    Memory = storage room
+
+Register allocation decides which values deserve the limited
+register space.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. REGISTER ALLOCATION — DEFINITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Register allocation is the process of assigning program values to
+a limited set of machine registers while attempting to minimize
+memory accesses and maintain correct program behavior.
+
+Simple:
+
+    Many values
+        ↓
+    Few registers
+        ↓
+    Choose which values occupy registers
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. REGISTER ALLOCATION vs REGISTER ASSIGNMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+These terms are related but should be distinguished.
+
+REGISTER ALLOCATION:
+
+    Decide which values should reside in registers.
+
+REGISTER ASSIGNMENT:
+
+    Decide exactly which physical register receives each value.
+
+
+Example:
+
+    Values:
+
+        a
+        b
+        c
+
+    Available:
+
+        R1
+        R2
+
+
+Allocation decision:
+
+    a → register
+    b → register
+    c → memory/spill
+
+
+Assignment:
+
+    a → R1
+    b → R2
+
+
+MEMORY TRICK:
+
+    ALLOCATION = WHO gets a register?
+
+    ASSIGNMENT = WHICH register?
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. REGISTER PRESSURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Register pressure means the demand for registers at a particular
+point in the program.
+
+If many values are simultaneously live:
+
+    Register pressure = HIGH
+
+
+If only a few values are live:
+
+    Register pressure = LOW
+
+
+Example:
+
+    R1
+    R2
+    R3
+
+Only three registers are available.
+
+Suppose four values are simultaneously live:
+
+    a
+    b
+    c
+    d
+
+Then:
+
+    Required = 4
+    Available = 3
+
+Therefore at least one value may need to be spilled.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. LIVE VARIABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A variable is LIVE at a program point if its current value may be
+used later before being overwritten.
+
+Example:
+
+    1. x = 10
+    2. y = x + 5
+    3. print(y)
+
+
+After instruction 1:
+
+    x is live
+
+because instruction 2 uses x.
+
+After instruction 2:
+
+    x may no longer be live
+    y is live
+
+because instruction 3 uses y.
+
+
+This concept is fundamental to register allocation.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. LIVE RANGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A live range is the region of program execution during which a
+value is live.
+
+Example:
+
+    1. x = 10
+    2. y = x + 1
+    3. z = y + 2
+    4. print(z)
+
+
+Conceptually:
+
+    x:
+       [1────2]
+
+    y:
+          [2────3]
+
+    z:
+               [3────4]
+
+
+The compiler can reuse a register when a previous value is no longer
+live.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. REGISTER REUSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    1. x = a + b
+    2. y = x + c
+    3. z = y + d
+
+
+After instruction 2, if x is never used again,
+its register can be reused for another value.
+
+Conceptually:
+
+    R1 = x
+
+then later:
+
+    R1 = y
+
+The same register can hold different values at different times.
+
+This is one of the major benefits of liveness analysis.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. INTERFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Two values interfere if they are simultaneously live and therefore
+cannot safely occupy the same register.
+
+Example:
+
+    a is live
+    b is live
+
+at the same program point.
+
+Then:
+
+    a ↔ b
+
+interfere.
+
+
+Therefore:
+
+    a and b cannot use the same register
+    while both are simultaneously live.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. INTERFERENCE GRAPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An interference graph represents register conflicts.
+
+Definition:
+
+    Vertex = program value
+
+    Edge = two values interfere
+
+
+Example:
+
+    a and b are simultaneously live
+    b and c are simultaneously live
+    a and c are simultaneously live
+
+
+Graph:
+
+          a
+         / \
+        /   \
+       b─────c
+
+
+This is a triangle.
+
+Each pair interferes.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. WHY INTERFERENCE GRAPH IS IMPORTANT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    Number of registers = K
+
+We need to assign at most K different registers to mutually
+interfering values.
+
+This can be modeled as:
+
+    GRAPH COLORING
+
+
+Each:
+
+    Color = physical register
+
+Each:
+
+    Vertex = program value
+
+Adjacent vertices must receive different colors.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. GRAPH COLORING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose there are:
+
+    3 registers
+
+Then we have:
+
+    3 colors
+
+Let:
+
+    R1 = Color 1
+    R2 = Color 2
+    R3 = Color 3
+
+
+Graph:
+
+          a
+         / \
+        /   \
+       b────c
+
+
+Because all three vertices interfere:
+
+    a → R1
+    b → R2
+    c → R3
+
+
+This is a valid 3-coloring.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. K-COLORING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If a graph can be colored using at most K colors,
+we say it is:
+
+    K-colorable.
+
+
+For register allocation:
+
+    K = number of available registers.
+
+
+Example:
+
+    4 registers
+
+means:
+
+    4 colors available.
+
+
+If the interference graph cannot be colored with K colors,
+the compiler may need to spill one or more values.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. SPILLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Spilling occurs when there are not enough registers to hold all
+required live values.
+
+The compiler moves one or more values from registers to memory.
+
+Example:
+
+    R1 → x
+    R2 → y
+
+If another value z needs a register:
+
+    store one existing value in memory
+            ↓
+    free register
+            ↓
+    use register for z
+
+
+Conceptually:
+
+    STORE x, R1
+    ...
+    LOAD R1, x
+
+
+These extra memory operations are called spill code.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. SPILL COST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Not all variables are equally good candidates for spilling.
+
+Suppose:
+
+    x is used once
+
+and:
+
+    y is used inside a million-iteration loop.
+
+Spilling y is usually much more expensive.
+
+Therefore compiler tries to estimate:
+
+    spill cost
+
+
+Factors may include:
+
+• Number of uses
+• Loop depth
+• Frequency of execution
+• Number of loads/stores required
+• Live-range characteristics
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. SPILLING INSIDE LOOPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    for(i = 0; i < 1000000; i++)
+        x = x + a[i];
+
+
+If x is spilled and must be loaded/stored every iteration,
+performance can become much worse.
+
+Therefore compilers generally try to avoid spilling heavily used
+values in inner loops.
+
+IMPORTANT EXAM IDEA:
+
+    Spill cost is strongly affected by execution frequency.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. GRAPH-COLORING REGISTER ALLOCATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A classical approach is:
+
+    1. Build interference graph.
+    2. Simplify graph.
+    3. Select/spill candidates if necessary.
+    4. Assign colors.
+    5. Rewrite program if spilling occurs.
+    6. Repeat if required.
+
+
+Conceptually:
+
+    Program
+       ↓
+    Liveness Analysis
+       ↓
+    Interference Graph
+       ↓
+    Graph Simplification
+       ↓
+    Coloring
+       ↓
+    Register Assignment
+       ↓
+    Spill if necessary
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. GRAPH SIMPLIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose there are K registers.
+
+A node with degree less than K is often a useful candidate for
+simplification.
+
+Example:
+
+    K = 3
+
+If a node has:
+
+    degree = 2
+
+it has fewer than 3 neighbors.
+
+It can often be removed temporarily and placed on a stack.
+
+Later, when registers are assigned, a color may be chosen for it
+that differs from its neighbors.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. SIMPLIFY AND SELECT IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Classical graph-coloring allocation uses a process conceptually
+similar to:
+
+    SIMPLIFY
+        ↓
+    SELECT
+        ↓
+    COLOR
+
+
+During simplify:
+
+    Remove low-degree nodes.
+
+
+Store them:
+
+    stack
+
+Then restore them in reverse order.
+
+During select:
+
+    Give each node a register/color not used by its neighbors.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. WHAT IF NO LOW-DEGREE NODE EXISTS?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    K = 3
+
+and every remaining node has:
+
+    degree ≥ 3
+
+
+The graph may still be 3-colorable,
+but simple simplification cannot guarantee it.
+
+A node may be selected as a potential:
+
+    SPILL CANDIDATE
+
+
+Compiler estimates its spill cost.
+
+Then it may remove that node and continue.
+
+Later, if coloring fails,
+actual spilling may be required.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. COALESCING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose code contains:
+
+    MOV R1, R2
+
+
+This move may be unnecessary if the values in R1 and R2 can be
+assigned the same register appropriately.
+
+Register coalescing attempts to eliminate unnecessary move
+instructions.
+
+Example:
+
+    x = y
+
+Instead of:
+
+    MOV R2, R1
+
+if x and y can safely share a register,
+the compiler may assign:
+
+    x → R1
+    y → R1
+
+
+Then the move may disappear.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. WHY COALESCING IS NOT ALWAYS SAFE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    x and y interfere.
+
+Then they cannot share the same register.
+
+Therefore aggressive coalescing can increase interference and make
+register allocation harder.
+
+Trade-off:
+
+    Fewer MOV instructions
+
+versus:
+
+    Easier register coloring
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. LIVE-RANGE SPLITTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A long live range may create unnecessary register pressure.
+
+The compiler can split a live range.
+
+Example:
+
+    x is live across a large region.
+
+Instead of keeping x in one register for the entire region,
+the compiler may:
+
+    register
+       ↓
+    memory
+       ↓
+    register
+
+
+or create separate live ranges.
+
+This can reduce register pressure.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. LINEAR-SCAN REGISTER ALLOCATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Linear scan is another register-allocation approach.
+
+It is particularly attractive when compilation speed matters.
+
+Basic idea:
+
+    1. Compute live intervals.
+    2. Sort intervals by program position.
+    3. Scan them linearly.
+    4. Assign registers.
+    5. Spill intervals when necessary.
+
+
+Conceptually:
+
+    Live intervals:
+
+    a: [1────5]
+    b:    [2────7]
+    c:         [6────9]
+
+
+The allocator processes them in order.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. GRAPH COLORING vs LINEAR SCAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
++----------------------+---------------------------------------+
+| Graph Coloring       | Linear Scan                          |
++----------------------+---------------------------------------+
+| Uses interference    | Uses live intervals                  |
+| graph                |                                       |
+| Potentially complex  | Relatively fast                      |
+| Can produce good     | Often useful for fast compilation    |
+| allocations          |                                       |
+| More analysis        | Simpler implementation               |
++----------------------+---------------------------------------+
+
+
+General idea:
+
+    Graph Coloring → quality-oriented
+
+    Linear Scan → compilation-speed-oriented
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. CALLER-SAVED REGISTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Calling conventions divide registers into categories.
+
+Caller-saved registers:
+
+    The caller cannot assume their values survive a function call.
+
+If caller needs a value after the call,
+caller may need to save it.
+
+
+Example:
+
+    caller:
+        x = 10
+        CALL foo
+        use x
+
+
+If x is in a caller-saved register,
+the caller may need to preserve x across the call.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. CALLEE-SAVED REGISTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Callee-saved registers must be preserved by the called function
+if it uses them.
+
+Conceptually:
+
+    Caller
+       ↓
+      CALL
+       ↓
+    Callee saves required register
+       ↓
+    Callee executes
+       ↓
+    Callee restores register
+       ↓
+      RET
+
+
+Exact conventions depend on the ABI and architecture.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. CALLING CONVENTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A calling convention specifies rules such as:
+
+• How arguments are passed
+• Which registers are caller-saved
+• Which registers are callee-saved
+• Where return values are placed
+• Stack alignment
+• How the stack frame is organized
+
+
+Register allocation must respect these rules.
+
+Therefore:
+
+    Register Allocation
+          ↕
+    Calling Convention / ABI
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. REGISTER CLASSES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Modern machines may have different register classes.
+
+Examples:
+
+    General-purpose registers
+
+    Floating-point registers
+
+    Vector/SIMD registers
+
+
+An operation may require a specific register class.
+
+For example:
+
+    floating-point value
+        ↓
+    floating-point register
+
+
+Therefore register allocation is not always simply:
+
+    "choose any register."
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. FIXED REGISTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Some machine instructions require particular registers.
+
+Example conceptually:
+
+    DIV
+
+might use a special register pair.
+
+Then the compiler must account for these fixed-register constraints.
+
+This can create:
+
+• Additional moves
+• Register conflicts
+• Spilling
+• Live-range constraints
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. REGISTER ALLOCATION WITH BASIC BLOCKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Recall Chapter 27:
+
+    Program
+       ↓
+    Basic Blocks
+       ↓
+    CFG
+
+
+Register allocation uses information about values across these
+blocks.
+
+Example:
+
+             B1
+            /  \
+           B2  B3
+            \  /
+             B4
+
+
+A variable may remain live:
+
+    B1 → B2 → B4
+
+or:
+
+    B1 → B3 → B4
+
+
+The allocator must consider the complete control-flow structure,
+not just one instruction.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. LIVE VARIABLE ANALYSIS CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Register allocation depends heavily on liveness.
+
+At each program point, determine:
+
+    Which values may be used later?
+
+
+Then:
+
+    simultaneously live values
+             ↓
+       interference
+             ↓
+      interference graph
+             ↓
+      register allocation
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. SIMPLE LIVENESS EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Code:
+
+    1. a = 10
+    2. b = 20
+    3. c = a + b
+    4. print(c)
+
+
+At instruction 3:
+
+    a = live
+    b = live
+
+
+After instruction 3:
+
+    a and b are no longer needed
+    c is live
+
+
+Therefore:
+
+    a and b cannot share a register at instruction 3.
+
+But after their last use,
+their registers can be reused for c.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. INTERFERENCE GRAPH EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose at one point:
+
+    a, b, c
+
+are all live.
+
+Then:
+
+    a interferes with b
+    a interferes with c
+    b interferes with c
+
+
+Graph:
+
+             a
+            / \
+           /   \
+          b─────c
+
+
+If there are 3 registers:
+
+    a → R1
+    b → R2
+    c → R3
+
+
+If there are only 2 registers:
+
+    3 mutually interfering values
+    +
+    2 registers
+
+means:
+
+    At least one value must be spilled.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. IMPORTANT MATHEMATICAL IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If:
+
+    K = number of registers
+
+and:
+
+    maximum simultaneously live values > K
+
+then some value must be stored somewhere other than a register,
+assuming all those values truly require distinct registers.
+
+In the interference graph:
+
+    Clique size > K
+
+implies:
+
+    K registers are insufficient.
+
+This is a useful GATE-level observation.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. CLIQUE AND REGISTER REQUIREMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A clique is a set of vertices where every pair is connected.
+
+If an interference graph contains a clique of size:
+
+    K + 1
+
+then at least:
+
+    K + 1
+
+different registers are required for those simultaneously interfering
+values.
+
+Therefore with only K registers:
+
+    spilling is unavoidable for that set.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. REGISTER PRESSURE IN LOOPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Loops often increase register pressure because values may remain
+live across multiple iterations.
+
+Example:
+
+    for (...) {
+        a = ...
+        b = ...
+        c = ...
+        d = ...
+        e = ...
+    }
+
+
+If many values remain live throughout the loop,
+register demand can become high.
+
+Compiler may:
+
+• Spill values
+• Split live ranges
+• Reuse registers
+• Optimize loop code
+• Reorder computations
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. REMATERIALIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sometimes instead of loading a spilled value from memory,
+the compiler can recompute it cheaply.
+
+Example:
+
+    x = 5
+
+
+If x is spilled, compiler may later simply regenerate:
+
+    MOV R1, #5
+
+
+instead of:
+
+    LOAD R1, [memory]
+
+
+This technique is called:
+
+    REMATERIALIZATION
+
+
+It is useful for inexpensive-to-recompute values.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. REGISTER ALLOCATION AND CONSTANTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A constant may not need a dedicated register.
+
+Example:
+
+    x = y + 5
+
+
+If the machine supports:
+
+    ADD R1, #5
+
+then:
+
+    5
+
+can be represented as an immediate operand.
+
+This reduces register pressure.
+
+Therefore instruction selection and register allocation interact.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. REGISTER ALLOCATION AND OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Better register allocation can reduce:
+
+• Loads
+• Stores
+• Move instructions
+• Memory traffic
+
+
+Therefore:
+
+    Good register allocation
+            ↓
+    Fewer memory operations
+            ↓
+    Better performance
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. REGISTER SPILLING EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Assume only:
+
+    R1, R2
+
+are available.
+
+Suppose:
+
+    a
+    b
+    c
+
+must all be live.
+
+Possible strategy:
+
+    a → R1
+    b → R2
+    c → memory
+
+
+Later, when c is required:
+
+    LOAD R1, c
+
+
+If a is no longer live,
+R1 can be reused.
+
+Then:
+
+    c → R1
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. COMPLETE REGISTER ALLOCATION EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IR:
+
+    1. t1 = a + b
+    2. t2 = t1 * c
+    3. t3 = t2 + d
+    4. x = t3
+
+
+Suppose:
+
+    R1
+    R2
+
+are available.
+
+A possible allocation:
+
+    t1 → R1
+
+    t2 → R1
+
+    t3 → R1
+
+Why?
+
+After each operation, the previous temporary may become dead.
+
+Possible machine code:
+
+    LOAD R1, a
+    ADD  R1, b
+    MUL  R1, c
+    ADD  R1, d
+    STORE x, R1
+
+
+Only one register is required for this simple straight-line case.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. EXAMPLE WHERE TWO REGISTERS ARE REQUIRED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expression:
+
+    x = (a + b) * (c + d)
+
+
+Suppose compiler evaluates left side first:
+
+    t1 = a + b
+    t2 = c + d
+    x  = t1 * t2
+
+
+If t1 must remain live while computing t2,
+then:
+
+    t1 → R1
+    t2 → R2
+
+
+Then:
+
+    MUL R1, R2
+
+
+The number of registers required depends on evaluation order and
+liveness.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. EXPRESSION EVALUATION ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Instruction selection and register allocation can interact through
+expression evaluation order.
+
+For:
+
+    x = (a+b) + (c+d)
+
+
+If one side is evaluated and stored before evaluating the other,
+register pressure may differ from another evaluation order.
+
+Compiler may choose an order that:
+
+• Reduces temporary values
+• Reduces register pressure
+• Reduces spills
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. CALLER-SAVED vs CALLEE-SAVED — MEMORY TRICK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Remember:
+
+    CALLER-SAVED
+        ↓
+    Caller protects value if needed across call.
+
+
+    CALLEE-SAVED
+        ↓
+    Callee protects/restores it if it uses it.
+
+
+Short memory trick:
+
+    Caller-saved = Caller responsibility
+
+    Callee-saved = Callee responsibility
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. REGISTER ALLOCATION PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A simplified pipeline:
+
+    IR
+     ↓
+    Instruction Selection
+     ↓
+    Liveness Analysis
+     ↓
+    Build Interference Graph
+     ↓
+    Register Allocation
+     ↓
+    Register Assignment
+     ↓
+    Spill Code if needed
+     ↓
+    Rewrite / Reallocate
+     ↓
+    Final Machine Code
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. GRAPH-COLORING EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    Registers = 3
+
+Graph:
+
+          A
+         / \
+        /   \
+       B────C
+       |
+       D
+
+
+Edges:
+
+    A-B
+    A-C
+    B-C
+    B-D
+
+
+Possible coloring:
+
+    A → R1
+    B → R2
+    C → R3
+    D → R1
+
+
+Why can D use R1?
+
+D interferes with B,
+but not with A or C.
+
+Therefore:
+
+    D and A can share R1.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. IMPORTANT REGISTER-ALLOCATION FACT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Two variables can use the same physical register if:
+
+    Their live ranges do not overlap.
+
+They do NOT need different registers merely because they have
+different names.
+
+Example:
+
+    x = ...
+    use x
+
+    // x dead
+
+    y = ...
+
+Then:
+
+    x → R1
+    y → R1
+
+is perfectly valid.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. GATE IMPORTANT CONCEPTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+★ Register allocation deals with limited registers.
+
+★ Register assignment chooses specific physical registers.
+
+★ Live values compete for registers.
+
+★ Two simultaneously live interfering values cannot share
+  the same register.
+
+★ Interference graph:
+      vertex = value
+      edge = interference
+
+★ Register allocation can be modeled as graph coloring.
+
+★ Number of colors corresponds to available registers.
+
+★ If graph cannot be colored with K colors, spilling may be needed.
+
+★ Spilling introduces memory operations.
+
+★ High register pressure increases spill probability.
+
+★ Loop frequency strongly affects spill cost.
+
+★ Caller-saved and callee-saved are ABI concepts.
+
+★ Linear scan is generally faster and simpler than sophisticated
+  graph-coloring approaches.
+
+★ Coalescing attempts to eliminate unnecessary moves.
+
+★ Rematerialization can recompute cheap values instead of loading
+  them from memory.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. GATE TRAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRAP 1
+──────
+
+"Two variables with different names must use different registers."
+
+FALSE.
+
+If their live ranges do not overlap, they may share a register.
+
+
+TRAP 2
+──────
+
+"Every variable requires a register."
+
+FALSE.
+
+Some values can remain in memory or be recomputed.
+
+
+TRAP 3
+──────
+
+"Register allocation and register assignment are identical."
+
+Not exactly.
+
+Allocation determines who gets registers;
+assignment chooses specific registers.
+
+
+TRAP 4
+──────
+
+"More registers always increase execution time."
+
+Generally false.
+
+More registers typically reduce register pressure and spills,
+although architectural effects can be more complex.
+
+
+TRAP 5
+──────
+
+"Every interference graph requires spilling."
+
+FALSE.
+
+If it is K-colorable, K registers may be sufficient.
+
+
+TRAP 6
+──────
+
+"An edge in the interference graph means the variables are used
+in the same statement."
+
+FALSE.
+
+It means their live ranges overlap / they are simultaneously live
+in a relevant program point.
+
+
+TRAP 7
+──────
+
+"Spilling means deleting a variable."
+
+FALSE.
+
+Spilling means storing a value in memory rather than keeping it
+in a register for part of its live range.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+53. INTERVIEW QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1. What is register allocation?
+
+ANSWER:
+
+Register allocation assigns program values to a limited set of
+machine registers while attempting to minimize expensive memory
+operations.
+
+
+Q2. What is register pressure?
+
+ANSWER:
+
+Register pressure is the demand for registers at a program point.
+It increases when many values are simultaneously live.
+
+
+Q3. What is a live variable?
+
+ANSWER:
+
+A variable is live at a program point if its current value may be
+used later before being overwritten.
+
+
+Q4. What is an interference graph?
+
+ANSWER:
+
+A graph in which vertices represent program values and edges connect
+values whose live ranges overlap so they cannot share a register.
+
+
+Q5. How is graph coloring related to register allocation?
+
+ANSWER:
+
+Each graph color represents a physical register, and adjacent
+interfering values must receive different colors.
+
+
+Q6. What is spilling?
+
+ANSWER:
+
+Spilling moves a value from a register to memory when available
+registers are insufficient.
+
+
+Q7. What is register coalescing?
+
+ANSWER:
+
+Coalescing attempts to assign compatible values to the same register
+to eliminate unnecessary move instructions.
+
+
+Q8. What is linear-scan allocation?
+
+ANSWER:
+
+It allocates registers by scanning live intervals in program order.
+It is generally faster than sophisticated graph-based allocation.
+
+
+Q9. What are caller-saved registers?
+
+ANSWER:
+
+Registers whose values are not guaranteed to survive a function call;
+the caller must preserve needed values.
+
+
+Q10. What are callee-saved registers?
+
+ANSWER:
+
+Registers that a called function must preserve if it uses them,
+according to the calling convention.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+54. PRACTICAL MINI EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    t1 = a + b
+    t2 = t1 * c
+    t3 = t2 + d
+    result = t3
+
+
+Assume:
+
+    R1
+    R2
+
+
+Liveness may allow:
+
+    t1 → R1
+    t2 → R1
+    t3 → R1
+
+
+because:
+
+    t1 dies before t2 needs the register
+    t2 dies before t3 needs the register
+
+
+Generated code:
+
+    LOAD R1, a
+    ADD  R1, b
+    MUL  R1, c
+    ADD  R1, d
+    STORE result, R1
+
+
+No spilling is required.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+55. PRACTICAL SPILL EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Assume:
+
+    Only R1 and R2 exist.
+
+Suppose:
+
+    a
+    b
+    c
+
+are simultaneously live.
+
+Allocation:
+
+    a → R1
+    b → R2
+    c → memory
+
+
+When c is needed:
+
+    STORE c, memory
+    ...
+    LOAD R1, c
+
+
+If R1 becomes free,
+c can occupy R1.
+
+The compiler has inserted spill/reload operations.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+56. CHAPTER 29 CONNECTION MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 26:
+    Code Generation
+          ↓
+Chapter 27:
+    Basic Blocks + CFG
+          ↓
+Chapter 28:
+    Instruction Selection
+          ↓
+★ Chapter 29:
+    Register Allocation
+          ↓
+    Register Assignment
+          ↓
+    Spilling
+          ↓
+Chapter 30:
+    Optimization Fundamentals
+
+
+IMPORTANT CONNECTION:
+
+    CFG
+     ↓
+    Liveness
+     ↓
+    Interference
+     ↓
+    Register Allocation
+     ↓
+    Efficient Machine Code
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+57. REGISTER ALLOCATION MASTER FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                  PROGRAM VALUES
+                        │
+                        ↓
+                 Liveness Analysis
+                        │
+                        ↓
+                  Live Ranges
+                        │
+                        ↓
+                Interference Graph
+                        │
+                        ↓
+                  Graph Coloring
+                        │
+             ┌──────────┴──────────┐
+             ↓                     ↓
+       K-colorable             Not K-colorable
+             ↓                     ↓
+      Assign registers          Spill
+             │                     │
+             │                 Memory
+             │                     │
+             └──────────┬──────────┘
+                        ↓
+                  Machine Code
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+58. ONE-PAGE REVISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGISTER ALLOCATION
+    ↓
+Limited registers
+    ↓
+Many program values
+    ↓
+Analyze liveness
+    ↓
+Find interference
+    ↓
+Build interference graph
+    ↓
+Color graph
+    ↓
+Assign registers
+    ↓
+Spill if necessary
+
+
+KEY TERMS:
+
+Register:
+    Fast CPU storage.
+
+Live variable:
+    Value potentially used later.
+
+Live range:
+    Region where value is live.
+
+Interference:
+    Two values cannot share a register.
+
+Interference graph:
+    Values + conflicts.
+
+Color:
+    Physical register.
+
+Spill:
+    Move value to memory.
+
+Coalescing:
+    Remove unnecessary moves.
+
+Linear scan:
+    Fast interval-based allocation.
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+59. FINAL EXAM CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You should now be able to:
+
+[✓] Define register
+[✓] Explain why registers are limited
+[✓] Define register allocation
+[✓] Distinguish allocation and assignment
+[✓] Explain register pressure
+[✓] Define live variable
+[✓] Define live range
+[✓] Identify interference
+[✓] Construct simple interference graphs
+[✓] Explain graph coloring
+[✓] Determine required registers from simple graphs
+[✓] Explain spilling
+[✓] Understand spill cost
+[✓] Explain loop-related spill cost
+[✓] Explain graph-coloring allocation
+[✓] Explain graph simplification
+[✓] Explain register coalescing
+[✓] Explain live-range splitting
+[✓] Explain linear-scan allocation
+[✓] Compare graph coloring and linear scan
+[✓] Explain caller-saved registers
+[✓] Explain callee-saved registers
+[✓] Explain calling-convention constraints
+[✓] Understand register classes
+[✓] Understand fixed-register constraints
+[✓] Connect CFG with liveness
+[✓] Connect liveness with interference
+[✓] Connect interference with register allocation
+[✓] Solve basic GATE-level problems
+[✓] Answer register-allocation interview questions
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+60. MOST IMPORTANT FORMULAS / RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RULE 1:
+
+    Simultaneously live values
+            ↓
+       may interfere
+
+
+RULE 2:
+
+    Interfering values
+            ↓
+    cannot share the same register
+
+
+RULE 3:
+
+    Number of colors
+            =
+    Number of available registers
+
+
+RULE 4:
+
+    Clique of size K+1
+            ↓
+    Requires at least K+1 colors
+            ↓
+    K registers are insufficient
+
+
+RULE 5:
+
+    High register pressure
+            ↓
+    Higher probability of spilling
+
+
+RULE 6:
+
+    Heavy loop use
+            ↓
+    High spill cost
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+61. FINAL MASTER CONCEPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The most important idea in Chapter 29 is:
+
+    MANY VALUES
+        ↓
+    FEW REGISTERS
+        ↓
+    FIND LIVE VALUES
+        ↓
+    DETECT CONFLICTS
+        ↓
+    BUILD INTERFERENCE GRAPH
+        ↓
+    COLOR GRAPH
+        ↓
+    ASSIGN REGISTERS
+        ↓
+    SPILL WHEN NECESSARY
+        ↓
+    EFFICIENT MACHINE CODE
+
+
+In one sentence:
+
+    REGISTER ALLOCATION is the process of efficiently mapping
+    program values to limited physical registers while respecting
+    their live ranges and interference.
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                     CHAPTER 29 COMPLETE                             ║
+║                                                                      ║
+║ NEXT CHAPTER: CHAPTER 30 — OPTIMIZATION FUNDAMENTALS                ║
+║                                                                      ║
+║ Type "NEXT" to continue.                                             ║
+╚══════════════════════════════════════════════════════════════════════╝2

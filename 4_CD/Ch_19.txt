@@ -1,0 +1,2431 @@
+====================================================================
+              COMPILER DESIGN — CHAPTER 19
+             INTERMEDIATE REPRESENTATION (IR)
+       Beginner → Core → GATE → Interview → Practical
+====================================================================
+
+MASTER SYLLABUS POSITION
+------------------------
+
+PHASE 5 — INTERMEDIATE REPRESENTATION
+
+Chapter 18 → Attribute Grammars
+Chapter 19 → Intermediate Representation    ← CURRENT
+Chapter 20 → Three-Address Code
+Chapter 21 → Boolean Expressions & Control Flow
+
+
+====================================================================
+1. WHAT IS INTERMEDIATE REPRESENTATION?
+====================================================================
+
+Intermediate Representation (IR) is an internal representation
+of a source program used by the compiler between the front end
+and the back end.
+
+Simple idea:
+
+    Source Program
+          ↓
+    Front End
+          ↓
+         IR
+          ↓
+    Back End
+          ↓
+    Target Program
+
+
+IR is NOT usually the original source code.
+
+IR is NOT usually the final machine code.
+
+It is an intermediate form that makes compiler processing easier.
+
+
+--------------------------------------------------------------------
+Simple analogy
+--------------------------------------------------------------------
+
+Suppose you speak:
+
+    Hindi
+
+and another person understands:
+
+    English
+
+Instead of translating:
+
+    Hindi → Machine language directly
+
+we can use an intermediate language:
+
+    Hindi → English → Target language
+
+
+Similarly:
+
+    Source Language
+          ↓
+          IR
+          ↓
+    Target Language
+
+
+====================================================================
+2. WHY DO WE NEED IR?
+====================================================================
+
+Without a useful IR, a compiler may need to directly connect
+every source language with every target machine.
+
+Suppose there are:
+
+    5 source languages
+    5 target machines
+
+Direct implementation could require:
+
+    5 × 5 = 25
+
+source-target combinations.
+
+With a common IR:
+
+    Source Language
+         ↓
+    Common IR
+         ↓
+    Target Machine
+
+The front end handles:
+
+    Source → IR
+
+The back end handles:
+
+    IR → Target
+
+This makes compiler design more modular.
+
+
+====================================================================
+3. FRONT END AND BACK END
+====================================================================
+
+The compiler can conceptually be divided into:
+
+    FRONT END
+    ----------
+    Source Program
+          ↓
+    Lexical Analysis
+          ↓
+    Syntax Analysis
+          ↓
+    Semantic Analysis
+          ↓
+          IR
+
+
+    BACK END
+    --------
+          IR
+          ↓
+    Optimization
+          ↓
+    Code Generation
+          ↓
+    Target Code
+
+
+Important:
+
+    Front end is mainly concerned with understanding
+    the source program.
+
+    Back end is mainly concerned with transforming IR
+    into efficient target code.
+
+
+====================================================================
+4. WHERE DOES IR FIT?
+====================================================================
+
+Complete compiler view:
+
+    Source Program
+          ↓
+    Lexical Analyzer
+          ↓
+        Tokens
+          ↓
+    Syntax Analyzer
+          ↓
+      Parse Tree / AST
+          ↓
+    Semantic Analyzer
+          ↓
+    Annotated AST
+          ↓
+    Intermediate Representation
+          ↓
+    IR Optimization
+          ↓
+    Target Code Generation
+          ↓
+    Machine / Assembly Code
+
+
+====================================================================
+5. CHARACTERISTICS OF A GOOD IR
+====================================================================
+
+A useful IR should ideally be:
+
+    1. Easy to generate
+    2. Easy to analyze
+    3. Easy to optimize
+    4. Easy to translate into target code
+    5. Independent, or relatively independent, of
+       a particular target machine
+    6. Precise enough to preserve program meaning
+    7. Efficient to manipulate
+
+
+Important:
+
+    There is no single IR that is best for every compiler.
+
+
+====================================================================
+6. IR REQUIREMENTS
+====================================================================
+
+A compiler IR should provide a good balance between:
+
+    EXPRESSIVENESS
+        ↓
+    Can it represent required program constructs?
+
+    ANALYZABILITY
+        ↓
+    Can compiler algorithms analyze it easily?
+
+    OPTIMIZABILITY
+        ↓
+    Can optimizations be performed effectively?
+
+    CODE GENERATION
+        ↓
+    Can target code be generated efficiently?
+
+    SIMPLICITY
+        ↓
+    Is the representation manageable?
+
+
+====================================================================
+7. TYPES OF INTERMEDIATE REPRESENTATIONS
+====================================================================
+
+Important representations:
+
+    1. Parse Tree
+    2. Abstract Syntax Tree (AST)
+    3. DAG
+    4. Control Flow Graph (CFG)
+    5. Linear IR
+    6. Three-Address Code
+    7. SSA
+    8. Stack Machine IR
+
+
+These representations emphasize different aspects
+of a program.
+
+
+====================================================================
+8. PARSE TREE
+====================================================================
+
+A parse tree represents the complete syntactic derivation
+according to a grammar.
+
+Example:
+
+    a + b
+
+
+Conceptual parse tree:
+
+                 E
+              /  |  \
+             E   +   T
+             |       |
+             a       b
+
+
+A parse tree contains grammar-related details.
+
+
+====================================================================
+9. ABSTRACT SYNTAX TREE (AST)
+====================================================================
+
+An Abstract Syntax Tree removes unnecessary grammar details
+and represents the essential structure of the program.
+
+For:
+
+    a + b
+
+
+AST:
+
+             +
+            / \
+           a   b
+
+
+The operator '+' becomes the parent node.
+
+Operands become children.
+
+
+====================================================================
+10. PARSE TREE vs AST
+====================================================================
+
++-------------------+--------------------------------+
+| Parse Tree        | AST                            |
++-------------------+--------------------------------+
+| Detailed syntax   | Abstract structure             |
+| Grammar-oriented  | Meaning-oriented structure     |
+| More nodes        | Usually fewer nodes            |
+| Contains grammar  | Removes unnecessary grammar    |
+| symbols/details   | details                        |
+| Useful for        | Useful for semantic analysis,  |
+| parsing           | optimization and translation   |
++-------------------+--------------------------------+
+
+
+IMPORTANT:
+
+    AST is generally more compact than a parse tree.
+
+
+====================================================================
+11. EXAMPLE — PARSE TREE vs AST
+====================================================================
+
+Expression:
+
+    a + b * c
+
+
+Because multiplication has higher precedence:
+
+    a + (b * c)
+
+
+AST:
+
+              +
+             / \
+            a   *
+               / \
+              b   c
+
+
+This structure directly represents the important
+operator hierarchy.
+
+
+====================================================================
+12. WHY AST IS IMPORTANT
+====================================================================
+
+AST is commonly used for:
+
+    • Semantic analysis
+    • Type checking
+    • Symbol resolution
+    • Optimization
+    • Code generation
+    • Refactoring
+    • Static analysis
+
+
+Example:
+
+    int x;
+    x = 10 + 20;
+
+
+AST can represent:
+
+            =
+           / \
+          x   +
+             / \
+            10  20
+
+
+Semantic information can then be attached conceptually
+to AST nodes.
+
+
+====================================================================
+13. DAG — DIRECTED ACYCLIC GRAPH
+====================================================================
+
+DAG stands for:
+
+    Directed Acyclic Graph
+
+
+A DAG can represent expressions and can identify
+shared subexpressions.
+
+
+Example:
+
+    a + b * c
+
+is represented as a directed graph.
+
+
+The important property:
+
+    No directed cycle.
+
+
+====================================================================
+14. WHY DAG IS USED IN COMPILERS
+====================================================================
+
+DAG is especially useful for:
+
+    • Common subexpression detection
+    • Local optimization
+    • Identifying shared computations
+    • Expression representation
+
+
+Example:
+
+    a = b + c
+    d = b + c
+
+
+The expression:
+
+    b + c
+
+is repeated.
+
+A DAG can represent the common expression once and
+allow both assignments to refer to it.
+
+
+====================================================================
+15. DAG EXAMPLE
+====================================================================
+
+Code:
+
+    x = a + b
+    y = a + b
+
+
+Without sharing:
+
+    a + b
+    a + b
+
+Two separate computations may be generated.
+
+DAG idea:
+
+          +
+         / \
+        a   b
+         \ /
+        shared node
+
+
+Both x and y can reference the same expression node.
+
+
+This can help detect common subexpressions.
+
+
+====================================================================
+16. DAG vs AST
+====================================================================
+
+AST:
+
+    Usually a tree.
+
+    Each non-root node generally has one parent.
+
+DAG:
+
+    A graph.
+
+    A node may be shared by multiple parents.
+
+Therefore:
+
+    AST → hierarchical tree structure
+
+    DAG → allows sharing of common subexpressions
+
+
+====================================================================
+17. CONTROL FLOW GRAPH (CFG)
+====================================================================
+
+Control Flow Graph represents the possible flow of execution
+between basic blocks of a program.
+
+It is different from:
+
+    Context-Free Grammar (CFG)
+
+Both are commonly abbreviated CFG.
+
+Context-Free Grammar:
+
+    Used for syntax.
+
+Control Flow Graph:
+
+    Used for program control flow.
+
+
+In compiler discussions, context determines the meaning.
+
+
+====================================================================
+18. BASIC BLOCK
+====================================================================
+
+A basic block is a sequence of consecutive instructions
+with:
+
+    • One entry point
+    • One exit point
+
+There is no jump into the middle of the block.
+
+Example:
+
+    t1 = a + b
+    t2 = t1 * c
+    x = t2
+
+
+These instructions can form one basic block.
+
+
+====================================================================
+19. CONTROL FLOW GRAPH EXAMPLE
+====================================================================
+
+Consider:
+
+    if (x < 10)
+        y = 1;
+    else
+        y = 2;
+
+Conceptual flow:
+
+                [Condition]
+                 /       \
+                /         \
+        [y = 1]           [y = 2]
+                \         /
+                 \       /
+                  [Next]
+
+
+The nodes represent basic blocks.
+
+Edges represent possible control flow.
+
+
+====================================================================
+20. CFG IN COMPILER OPTIMIZATION
+====================================================================
+
+Control Flow Graph is useful for:
+
+    • Reachability analysis
+    • Loop detection
+    • Dominators
+    • Data-flow analysis
+    • Dead-code detection
+    • Optimization
+    • Code generation
+
+
+Chapter 27 will cover basic blocks and control-flow
+graphs in much greater detail.
+
+
+====================================================================
+21. LINEAR IR
+====================================================================
+
+Linear IR represents instructions in a sequence.
+
+Example:
+
+    t1 = b * c
+    t2 = a + t1
+    x = t2
+
+
+It is called linear because instructions are arranged
+in a sequence.
+
+Examples include forms of:
+
+    • Three-address code
+    • Stack-based intermediate code
+    • Machine-like instruction sequences
+
+
+====================================================================
+22. THREE-ADDRESS CODE
+====================================================================
+
+Three-Address Code (TAC) is an important linear IR.
+
+Typical instruction form:
+
+    x = y op z
+
+
+Example:
+
+    a + b * c
+
+
+can become:
+
+    t1 = b * c
+    t2 = a + t1
+
+
+Here:
+
+    t1
+    t2
+
+are temporary variables.
+
+
+Detailed TAC is the topic of:
+
+    CHAPTER 20
+
+
+====================================================================
+23. WHY USE TEMPORARIES?
+====================================================================
+
+Consider:
+
+    a + b * c - d
+
+
+Instead of representing the whole expression as one huge
+instruction, break it into simple operations:
+
+    t1 = b * c
+    t2 = a + t1
+    t3 = t2 - d
+
+
+This makes:
+
+    • Optimization easier
+    • Code generation easier
+    • Data-flow analysis easier
+    • Dependencies clearer
+
+
+====================================================================
+24. SSA — STATIC SINGLE ASSIGNMENT
+====================================================================
+
+SSA stands for:
+
+    Static Single Assignment.
+
+
+Main property:
+
+    Each variable is assigned exactly once
+    in the SSA representation.
+
+
+Example ordinary code:
+
+    x = 10
+    x = 20
+
+
+SSA-style representation:
+
+    x1 = 10
+    x2 = 20
+
+
+Each version is assigned once.
+
+
+IMPORTANT:
+
+    SSA does not mean the original source variable can
+    only ever be assigned once.
+
+It means each SSA version is assigned once.
+
+
+====================================================================
+25. WHY SSA IS IMPORTANT
+====================================================================
+
+SSA makes many optimization problems easier.
+
+It is useful for:
+
+    • Constant propagation
+    • Dead-code elimination
+    • Value numbering
+    • Data-flow reasoning
+    • Optimization
+    • Def-use analysis
+
+
+Modern optimizing compilers commonly use SSA or
+SSA-like internal forms.
+
+
+====================================================================
+26. PHI FUNCTION
+====================================================================
+
+SSA introduces a special concept:
+
+    φ (phi) function
+
+
+Consider:
+
+    if (condition)
+        x = 10;
+    else
+        x = 20;
+
+After the branches:
+
+    x can have different incoming values.
+
+
+SSA conceptually uses:
+
+    x3 = φ(x1, x2)
+
+
+Meaning:
+
+    choose the value coming from the predecessor
+    corresponding to the actual control-flow path.
+
+
+Conceptual graph:
+
+             condition
+              /     \
+             /       \
+          x1=10      x2=20
+             \       /
+              \     /
+             x3=φ(x1,x2)
+
+
+IMPORTANT:
+
+    φ is associated with control-flow merging in SSA.
+
+
+====================================================================
+27. SSA — GATE IMPORTANT
+====================================================================
+
+Question:
+
+    What is the defining property of SSA?
+
+Answer:
+
+    Each variable version has exactly one assignment.
+
+
+Trap:
+
+    "Every source-level variable is assigned only once."
+
+FALSE.
+
+SSA creates distinct versions.
+
+
+Example:
+
+    x = 1
+    x = 2
+
+becomes conceptually:
+
+    x1 = 1
+    x2 = 2
+
+
+====================================================================
+28. STACK MACHINE IR
+====================================================================
+
+Stack Machine IR represents computation using a stack.
+
+Example:
+
+    a + b
+
+
+Conceptually:
+
+    PUSH a
+    PUSH b
+    ADD
+
+
+The ADD operation:
+
+    pops two values
+    performs addition
+    pushes the result
+
+
+Stack:
+
+    Before ADD:
+
+        b
+        a
+
+    After ADD:
+
+        a+b
+
+
+====================================================================
+29. STACK MACHINE IR EXAMPLE
+====================================================================
+
+Expression:
+
+    (a + b) * c
+
+
+Possible stack representation:
+
+    PUSH a
+    PUSH b
+    ADD
+    PUSH c
+    MUL
+
+
+Step-by-step:
+
+    PUSH a
+    PUSH b
+
+    Stack:
+        b
+        a
+
+    ADD
+
+    Stack:
+        a+b
+
+    PUSH c
+
+    Stack:
+        c
+        a+b
+
+    MUL
+
+    Stack:
+        (a+b)*c
+
+
+====================================================================
+30. STACK IR vs THREE-ADDRESS CODE
+====================================================================
+
+Expression:
+
+    a + b * c
+
+
+Three-address style:
+
+    t1 = b * c
+    t2 = a + t1
+
+
+Stack style:
+
+    PUSH a
+    PUSH b
+    PUSH c
+    MUL
+    ADD
+
+
+Difference:
+
+    TAC explicitly names temporary locations.
+
+    Stack IR relies on an operand stack.
+
+
+====================================================================
+31. LINEAR vs GRAPH IR
+====================================================================
+
+Linear IR:
+
+    Instructions appear sequentially.
+
+Example:
+
+    t1 = a + b
+    t2 = t1 * c
+
+
+Graph-oriented IR:
+
+    Relationships are represented explicitly using
+    graph structures.
+
+Examples:
+
+    • DAG
+    • Control Flow Graph
+
+
+SSA is often represented together with CFG.
+
+
+====================================================================
+32. IR LEVELS
+====================================================================
+
+A compiler can have multiple IR levels.
+
+For example:
+
+    High-level source
+          ↓
+    High-level IR
+          ↓
+    Middle-level IR
+          ↓
+    Low-level IR
+          ↓
+    Machine code
+
+
+A high-level IR may preserve more source-level information.
+
+A low-level IR may be closer to machine instructions.
+
+
+====================================================================
+33. HIGH-LEVEL IR
+====================================================================
+
+High-level IR can retain information such as:
+
+    • Types
+    • Structured control flow
+    • High-level operations
+    • Objects
+    • Arrays
+    • Functions
+
+
+Advantage:
+
+    Easier high-level analysis and optimization.
+
+
+====================================================================
+34. LOW-LEVEL IR
+====================================================================
+
+Low-level IR is closer to the target machine.
+
+It may contain:
+
+    • Registers
+    • Memory operations
+    • Explicit control flow
+    • Machine-like instructions
+    • Address calculations
+
+
+Advantage:
+
+    Easier final code generation.
+
+
+====================================================================
+35. IR AND MACHINE INDEPENDENCE
+====================================================================
+
+One important purpose of IR is to separate:
+
+    SOURCE-SPECIFIC concerns
+
+from:
+
+    TARGET-MACHINE concerns.
+
+
+Conceptually:
+
+    Source Language
+          ↓
+    Source-dependent Front End
+          ↓
+          IR
+          ↓
+    Target-dependent Back End
+          ↓
+    Target Machine
+
+
+This separation supports compiler portability.
+
+
+====================================================================
+36. IR AND OPTIMIZATION
+====================================================================
+
+A major reason for using IR is optimization.
+
+Example:
+
+    x = 2 * 3
+
+
+IR:
+
+    t1 = 2 * 3
+    x = t1
+
+
+Optimization:
+
+    t1 = 6
+    x = t1
+
+
+Further simplification may produce:
+
+    x = 6
+
+
+This is constant folding.
+
+
+Other optimizations may include:
+
+    • Common subexpression elimination
+    • Dead-code elimination
+    • Constant propagation
+    • Copy propagation
+    • Loop optimization
+
+
+These will be studied in later chapters.
+
+
+====================================================================
+37. IR PRESERVES PROGRAM MEANING
+====================================================================
+
+An important requirement is:
+
+    Semantic equivalence must be preserved.
+
+
+If source program computes:
+
+    x = a + b
+
+IR must represent the same computation.
+
+
+Optimization can change the representation but should preserve
+the required observable behavior according to the language
+and compiler rules.
+
+
+====================================================================
+38. IR AND SEMANTIC ANALYSIS
+====================================================================
+
+Before producing meaningful IR, the compiler may need:
+
+    • Type information
+    • Symbol information
+    • Scope information
+    • Function information
+
+
+Example:
+
+    int x;
+    x = 10 + 20;
+
+
+Semantic analysis confirms:
+
+    x exists
+    x is int
+    RHS is compatible with x
+
+
+Then IR can be generated:
+
+    t1 = 10 + 20
+    x = t1
+
+
+Therefore:
+
+    Semantic Analysis
+           ↓
+       Validated AST
+           ↓
+           IR
+
+
+====================================================================
+39. IR AND AST
+====================================================================
+
+AST:
+
+    Represents hierarchical program structure.
+
+
+IR:
+
+    Represents program in a form convenient for
+    optimization and/or code generation.
+
+
+Example:
+
+    Source:
+
+        a + b * c
+
+
+AST:
+
+              +
+             / \
+            a   *
+               / \
+              b   c
+
+
+TAC:
+
+    t1 = b * c
+    t2 = a + t1
+
+
+Both represent the same computation but have different purposes.
+
+
+====================================================================
+40. AST vs TAC
+====================================================================
+
++----------------+--------------------------------+
+| AST            | TAC                            |
++----------------+--------------------------------+
+| Tree structure | Linear instruction style       |
+| High-level     | Lower-level                    |
+| Represents     | Represents operations          |
+| syntax         | explicitly                    |
+| Good for       | Good for optimization/code     |
+| semantic work  | generation                     |
++----------------+--------------------------------+
+
+
+Important:
+
+    AST itself can be considered an intermediate representation
+    in many compiler designs.
+
+IR is a broad term, not necessarily one single representation.
+
+
+====================================================================
+41. IR vs TARGET CODE
+====================================================================
+
+IR:
+
+    Compiler-internal representation.
+
+
+Target code:
+
+    Code intended for the target machine/runtime.
+
+
+Example:
+
+    IR:
+
+        t1 = a + b
+        x = t1
+
+
+Target assembly might conceptually become:
+
+        LOAD R1, a
+        ADD  R1, b
+        STORE x, R1
+
+
+The exact target instructions depend on the machine.
+
+
+====================================================================
+42. MULTIPLE IRs
+====================================================================
+
+A compiler may use more than one IR.
+
+Example:
+
+    Source
+      ↓
+    AST
+      ↓
+    High-Level IR
+      ↓
+    SSA-based IR
+      ↓
+    Low-Level IR
+      ↓
+    Machine Code
+
+
+Why?
+
+Different representations are better for different tasks.
+
+
+====================================================================
+43. IR DESIGN TRADE-OFF
+====================================================================
+
+There is no perfect IR.
+
+A very high-level IR:
+
+    + Easy to understand
+    + Retains useful semantic information
+
+    - May be difficult for low-level code generation
+
+
+A very low-level IR:
+
+    + Close to machine code
+    + Easy for final code generation
+
+    - May lose useful high-level structure
+
+
+Therefore compilers may use several levels/forms.
+
+
+====================================================================
+44. MODERN COMPILER EXAMPLES
+====================================================================
+
+LLVM:
+
+    LLVM IR
+
+GCC:
+
+    Uses multiple internal representations, including
+    GENERIC, GIMPLE and RTL.
+
+Java:
+
+    JVM bytecode is an intermediate representation between
+    Java source and execution on the JVM.
+
+
+JIT systems:
+
+    May translate/intermediate forms further at runtime.
+
+
+IMPORTANT:
+
+    Exact internal pipelines differ between compiler versions
+    and implementations.
+
+
+====================================================================
+45. LLVM IR — BASIC IDEA
+====================================================================
+
+LLVM IR is a typed intermediate representation used in
+the LLVM compiler infrastructure.
+
+It supports concepts such as:
+
+    • SSA
+    • Typed values
+    • Basic blocks
+    • Functions
+    • Memory operations
+    • Control flow
+
+
+Conceptual LLVM-style code:
+
+    %t1 = add i32 %a, %b
+
+
+This means conceptually:
+
+    t1 = a + b
+
+
+LLVM IR is designed to support analysis, optimization,
+and code generation.
+
+
+====================================================================
+46. JVM BYTECODE
+====================================================================
+
+Java source:
+
+    Java source
+          ↓
+    Java compiler
+          ↓
+    JVM bytecode
+          ↓
+    JVM
+          ↓
+    Execution
+
+
+JVM bytecode is an intermediate instruction representation
+for the Java Virtual Machine.
+
+
+It is generally stack-oriented.
+
+
+Example concept:
+
+    iload
+    iload
+    iadd
+
+
+The JVM can interpret bytecode and/or use JIT compilation
+to generate native machine code.
+
+
+====================================================================
+47. IR IN GCC
+====================================================================
+
+GCC uses multiple intermediate representations.
+
+Important names:
+
+    GENERIC
+    GIMPLE
+    RTL
+
+
+High-level idea:
+
+    Source
+      ↓
+    GENERIC
+      ↓
+    GIMPLE
+      ↓
+    Optimization
+      ↓
+    RTL
+      ↓
+    Target code
+
+
+This demonstrates that real compilers can have
+multiple IR levels.
+
+
+====================================================================
+48. IR AND COMPILER PASSES
+====================================================================
+
+A compiler pass performs a transformation or analysis
+over an intermediate representation.
+
+Examples:
+
+    Parse
+      ↓
+    AST construction
+      ↓
+    Semantic analysis
+      ↓
+    IR generation
+      ↓
+    Optimization pass
+      ↓
+    Another optimization pass
+      ↓
+    Code generation
+
+
+An IR provides a common representation on which many
+passes can operate.
+
+
+====================================================================
+49. IR TRANSFORMATION
+====================================================================
+
+Suppose:
+
+    t1 = a + 0
+    x = t1
+
+
+Optimization recognizes:
+
+    a + 0 = a
+
+
+Transforms to:
+
+    x = a
+
+
+The meaning is preserved while representation is simplified.
+
+
+====================================================================
+50. IR AND DATA-FLOW ANALYSIS
+====================================================================
+
+Many compiler analyses operate on IR.
+
+Examples:
+
+    • Reaching definitions
+    • Available expressions
+    • Live-variable analysis
+    • Very busy expressions
+
+
+These analyses often work over:
+
+    Basic Blocks
+          ↓
+    Control Flow Graph
+          ↓
+    IR instructions
+
+
+Data-flow analysis is covered in:
+
+    Chapter 32.
+
+
+====================================================================
+51. IR AND BASIC BLOCKS
+====================================================================
+
+Consider:
+
+    t1 = a + b
+    if t1 < 10 goto L1
+    t2 = c + d
+    goto L2
+L1:
+    t2 = c - d
+L2:
+    x = t2
+
+
+This can be divided into basic blocks.
+
+The blocks form:
+
+    Control Flow Graph
+
+
+IR instructions live inside the blocks.
+
+
+====================================================================
+52. IR AND CODE GENERATION
+====================================================================
+
+Code generator receives IR:
+
+    t1 = a + b
+    x = t1
+
+
+and converts it into target instructions.
+
+Conceptually:
+
+    LOAD R1, a
+    ADD R1, b
+    STORE x, R1
+
+
+The code generator must handle:
+
+    • Instruction selection
+    • Register allocation
+    • Addressing modes
+    • Instruction ordering
+
+
+These are covered later.
+
+
+====================================================================
+53. INTERMEDIATE REPRESENTATION — COMPLETE PIPELINE
+====================================================================
+
+Example:
+
+    Source:
+
+        x = a + b * c;
+
+
+Step 1 — AST:
+
+              =
+             / \
+            x   +
+               / \
+              a   *
+                 / \
+                b   c
+
+
+Step 2 — TAC:
+
+        t1 = b * c
+        t2 = a + t1
+        x = t2
+
+
+Step 3 — Optimization:
+
+        Possibly simplify or transform if opportunities exist.
+
+
+Step 4 — Target code:
+
+        LOAD R1, b
+        MUL  R1, c
+        ADD  R1, a
+        STORE x, R1
+
+Exact instructions depend on the target machine.
+
+
+====================================================================
+54. DIFFERENT IR REPRESENTATIONS OF SAME EXPRESSION
+====================================================================
+
+Expression:
+
+    a + b * c
+
+
+AST:
+
+              +
+             / \
+            a   *
+               / \
+              b   c
+
+
+DAG:
+
+    Similar structure, with possible node sharing.
+
+
+TAC:
+
+    t1 = b * c
+    t2 = a + t1
+
+
+Stack IR:
+
+    PUSH a
+    PUSH b
+    PUSH c
+    MUL
+    ADD
+
+
+SSA:
+
+    t1 = b * c
+    t2 = a + t1
+
+If variables are reassigned, SSA creates versions.
+
+
+CFG:
+
+    Represents how execution moves among basic blocks,
+    especially when branches/loops exist.
+
+
+====================================================================
+55. IMPORTANT DIFFERENCE — DAG vs CONTROL FLOW GRAPH
+====================================================================
+
+DAG:
+
+    Represents relationships among computations/expressions.
+
+CFG:
+
+    Represents relationships among control-flow blocks.
+
+
+DAG question:
+
+    "Can these computations be shared?"
+
+
+CFG question:
+
+    "Where can execution go next?"
+
+
+====================================================================
+56. IMPORTANT DIFFERENCE — AST vs CFG
+====================================================================
+
+AST:
+
+    Represents hierarchical syntax structure.
+
+
+CFG:
+
+    Represents possible execution flow.
+
+
+Example:
+
+    if / else
+
+AST can represent:
+
+    condition
+    then-part
+    else-part
+
+
+CFG represents:
+
+    condition block
+       ↙     ↘
+    then     else
+       ↘     ↙
+        merge
+
+
+====================================================================
+57. IR TAXONOMY
+====================================================================
+
+                         IR
+                          |
+        +-----------------+------------------+
+        |                 |                  |
+      Tree              Linear              Graph
+        |                 |                  |
+       AST               TAC                DAG
+       |                 |                  CFG
+       |              Stack IR              SSA*
+       |
+    Syntax-oriented
+
+* SSA is a property/form often represented together with
+  CFG rather than simply being one independent graph type.
+
+
+====================================================================
+58. GATE IMPORTANT CONCEPTS
+====================================================================
+
+1.
+
+    AST removes unnecessary syntactic details.
+
+
+2.
+
+    DAG can represent shared subexpressions.
+
+
+3.
+
+    CFG represents control flow between basic blocks.
+
+
+4.
+
+    TAC breaks complex expressions into simple instructions.
+
+
+5.
+
+    SSA gives each variable version a single definition.
+
+
+6.
+
+    φ-functions are used at control-flow merge points
+    in SSA when needed.
+
+
+7.
+
+    Stack IR uses an operand stack.
+
+
+8.
+
+    IR separates front-end concerns from back-end concerns.
+
+
+9.
+
+    A compiler may use multiple IRs.
+
+
+10.
+
+    IR is useful for optimization.
+
+
+====================================================================
+59. GATE TRAPS
+====================================================================
+
+TRAP 1:
+
+    "IR is always machine-independent."
+
+Be careful.
+
+Many IRs are designed to provide machine independence,
+but some IRs are deliberately target-oriented or
+machine-specific.
+
+Therefore do not treat every IR as completely
+machine-independent.
+
+
+TRAP 2:
+
+    "AST and IR are completely different things."
+
+Not necessarily.
+
+AST can itself serve as an intermediate representation
+in a compiler.
+
+
+TRAP 3:
+
+    "SSA means a source variable cannot be assigned twice."
+
+False.
+
+SSA versions are single-assignment.
+
+
+TRAP 4:
+
+    "DAG is used to represent control flow."
+
+Generally false.
+
+DAG is commonly used for expression dependencies/shared
+subexpressions.
+
+CFG represents control flow.
+
+
+TRAP 5:
+
+    "CFG always means Context-Free Grammar."
+
+False.
+
+In compiler contexts CFG may mean:
+
+    Context-Free Grammar
+
+or:
+
+    Control Flow Graph.
+
+
+====================================================================
+60. GATE MCQ PRACTICE — CONCEPT 1
+====================================================================
+
+Question:
+
+Which representation is most directly useful for representing
+shared common subexpressions?
+
+A. Parse tree
+B. DAG
+C. Stack
+D. Symbol table
+
+Answer:
+
+    B. DAG
+
+
+Reason:
+
+DAG permits shared nodes and is useful for detecting common
+subexpressions.
+
+
+====================================================================
+61. GATE MCQ PRACTICE — CONCEPT 2
+====================================================================
+
+Question:
+
+Which representation primarily describes possible execution
+paths?
+
+A. AST
+B. DAG
+C. Control Flow Graph
+D. Parse tree
+
+Answer:
+
+    C. Control Flow Graph
+
+
+====================================================================
+62. GATE MCQ PRACTICE — CONCEPT 3
+====================================================================
+
+Question:
+
+What is the defining property of SSA?
+
+A. Every expression occurs once.
+B. Every source variable occurs once.
+C. Every variable version has one definition.
+D. Every function has one return statement.
+
+Answer:
+
+    C.
+
+
+====================================================================
+63. GATE MCQ PRACTICE — CONCEPT 4
+====================================================================
+
+Expression:
+
+    a + b * c
+
+A valid TAC representation is:
+
+A.
+
+    t1 = a + b
+    t2 = t1 * c
+
+B.
+
+    t1 = b * c
+    t2 = a + t1
+
+C.
+
+    t1 = a * c
+    t2 = t1 + b
+
+D.
+
+    t1 = a + b + c
+
+Answer:
+
+    B
+
+
+Reason:
+
+    Multiplication has higher precedence than addition.
+
+
+====================================================================
+64. INTERVIEW QUESTION — WHY IR?
+====================================================================
+
+Question:
+
+Why do compilers use intermediate representation?
+
+Answer:
+
+IR provides a structured internal form between source-level
+analysis and target-code generation. It improves modularity,
+enables optimization, and allows different source languages
+and target architectures to be handled by reusable compiler
+components.
+
+
+====================================================================
+65. INTERVIEW QUESTION — AST vs IR
+====================================================================
+
+Question:
+
+Is AST an IR?
+
+Answer:
+
+AST can be considered an intermediate representation in many
+compiler designs, especially in the front end. However,
+"IR" is a broader term covering many internal representations,
+including ASTs, TAC, SSA-based representations, and
+machine-oriented forms.
+
+
+====================================================================
+66. INTERVIEW QUESTION — WHY SSA?
+====================================================================
+
+Question:
+
+Why is SSA useful?
+
+Answer:
+
+SSA makes definitions and uses of values explicit by giving
+each SSA version a single definition. This simplifies many
+optimization and data-flow analyses.
+
+
+====================================================================
+67. INTERVIEW QUESTION — DAG
+====================================================================
+
+Question:
+
+Why is DAG useful in compilers?
+
+Answer:
+
+A DAG can represent shared computations, making common
+subexpression detection and some local optimizations easier.
+
+
+====================================================================
+68. INTERVIEW QUESTION — CFG
+====================================================================
+
+Question:
+
+What is a Control Flow Graph?
+
+Answer:
+
+A CFG is a directed graph whose nodes generally represent
+basic blocks and whose edges represent possible transfers
+of control between those blocks.
+
+
+====================================================================
+69. INTERVIEW QUESTION — MULTIPLE IRs
+====================================================================
+
+Question:
+
+Why can a compiler use multiple IRs?
+
+Answer:
+
+Different stages require different representations. A
+high-level IR can preserve semantic information, while
+a lower-level IR can make optimization and machine-specific
+code generation easier.
+
+
+====================================================================
+70. PRACTICAL MINI EXERCISE
+====================================================================
+
+Convert:
+
+    x = a + b * c
+
+
+into TAC.
+
+Step 1:
+
+    Multiplication first.
+
+Step 2:
+
+    Create temporary:
+
+    t1 = b * c
+
+Step 3:
+
+    Addition:
+
+    t2 = a + t1
+
+Step 4:
+
+    Assignment:
+
+    x = t2
+
+
+Final:
+
+    t1 = b * c
+    t2 = a + t1
+    x = t2
+
+
+====================================================================
+71. PRACTICAL MINI EXERCISE — STACK IR
+====================================================================
+
+Convert:
+
+    (a + b) * c
+
+
+Stack representation:
+
+    PUSH a
+    PUSH b
+    ADD
+    PUSH c
+    MUL
+
+
+====================================================================
+72. PRACTICAL MINI EXERCISE — SSA
+====================================================================
+
+Original:
+
+    x = 10
+    y = x + 5
+    x = 20
+    z = x + 1
+
+
+SSA-style concept:
+
+    x1 = 10
+    y1 = x1 + 5
+    x2 = 20
+    z1 = x2 + 1
+
+
+Each SSA version has one definition.
+
+
+====================================================================
+73. IR AND OPTIMIZATION EXAMPLE
+====================================================================
+
+Before:
+
+    t1 = a + 0
+    t2 = t1 * 1
+    x = t2
+
+
+Optimization:
+
+    a + 0 = a
+
+    a * 1 = a
+
+
+After:
+
+    x = a
+
+
+The exact transformations depend on language semantics
+and compiler assumptions.
+
+
+====================================================================
+74. CHAPTER 19 — MOST IMPORTANT TABLE
+====================================================================
+
++----------------------+-----------------------------------+
+| Representation       | Main Purpose                      |
++----------------------+-----------------------------------+
+| Parse Tree           | Full syntactic structure         |
+| AST                  | Abstract program structure       |
+| DAG                  | Shared expressions               |
+| CFG                  | Control flow                     |
+| TAC                  | Explicit simple operations       |
+| Stack IR             | Stack-based computation          |
+| SSA                  | Single definition per version    |
++----------------------+-----------------------------------+
+
+
+====================================================================
+75. CHAPTER 19 — MASTER COMPARISON
+====================================================================
+
+                PARSE TREE
+                    |
+                    ↓
+                  AST
+                    |
+                    ↓
+             Semantic Analysis
+                    |
+                    ↓
+              Intermediate IR
+                    |
+       +------------+-------------+
+       |            |             |
+      TAC          SSA          Stack
+       |            |             |
+       +------------+-------------+
+                    |
+                    ↓
+              Optimization
+                    |
+                    ↓
+                  CFG
+             /             \
+       Basic Blocks       Edges
+             \             /
+                    ↓
+             Code Generation
+                    ↓
+               Target Code
+
+
+Note:
+
+    In a real compiler, these structures can coexist and
+    the exact ordering is implementation-dependent.
+
+
+====================================================================
+76. CHAPTER 19 — GATE MEMORY MAP
+====================================================================
+
+IR
+ |
+ +-- Tree
+ |    |
+ |    +-- Parse Tree
+ |    +-- AST
+ |
+ +-- Expression Graph
+ |    |
+ |    +-- DAG
+ |
+ +-- Linear
+ |    |
+ |    +-- TAC
+ |    +-- Stack IR
+ |
+ +-- Control Flow
+ |    |
+ |    +-- Basic Blocks
+ |    +-- CFG
+ |
+ +-- Value/Definition Form
+      |
+      +-- SSA
+
+
+MEMORY:
+
+    AST → structure
+
+    DAG → sharing
+
+    CFG → flow
+
+    TAC → operations
+
+    Stack → stack
+
+    SSA → one definition per version
+
+
+====================================================================
+77. CHAPTER 19 — ULTRA-SHORT REVISION
+====================================================================
+
+IR:
+
+    Intermediate representation used internally by compiler.
+
+WHY?
+
+    Modularity + optimization + easier code generation.
+
+
+AST:
+
+    Abstract syntax structure.
+
+
+DAG:
+
+    Directed acyclic graph; useful for shared expressions.
+
+
+CFG:
+
+    Control Flow Graph; represents possible execution flow.
+
+
+TAC:
+
+    Three-address code; simple linear operations.
+
+
+SSA:
+
+    Static Single Assignment; each SSA variable version
+    has one definition.
+
+
+PHI:
+
+    Used at SSA control-flow merge points when needed.
+
+
+STACK IR:
+
+    Uses operand stack.
+
+
+MULTIPLE IR:
+
+    Real compilers may use several representations.
+
+
+====================================================================
+78. CHAPTER 19 — FINAL EXAM CHECKLIST
+====================================================================
+
+You should now be able to answer:
+
+[✓] What is IR?
+[✓] Why is IR needed?
+[✓] Where does IR fit in compiler architecture?
+[✓] What is AST?
+[✓] Parse Tree vs AST?
+[✓] What is DAG?
+[✓] Why is DAG useful?
+[✓] What is a Control Flow Graph?
+[✓] What is a basic block?
+[✓] What is linear IR?
+[✓] What is TAC?
+[✓] What is SSA?
+[✓] What is a phi function?
+[✓] What is Stack Machine IR?
+[✓] AST vs TAC?
+[✓] DAG vs CFG?
+[✓] IR vs target code?
+[✓] Why can compilers use multiple IRs?
+[✓] How is IR used in optimization?
+[✓] What are LLVM IR, GIMPLE, RTL and JVM bytecode?
+
+
+====================================================================
+79. CHAPTER 19 — FINAL SUMMARY
+====================================================================
+
+Intermediate Representation is the internal form through which
+a compiler represents a program between source-level processing
+and target-code generation.
+
+Core pipeline:
+
+    SOURCE
+      ↓
+    LEXICAL ANALYSIS
+      ↓
+    SYNTAX ANALYSIS
+      ↓
+    AST
+      ↓
+    SEMANTIC ANALYSIS
+      ↓
+    IR
+      ↓
+    OPTIMIZATION
+      ↓
+    CODE GENERATION
+      ↓
+    TARGET CODE
+
+
+Important representations:
+
+    Parse Tree
+        → Complete grammar structure
+
+    AST
+        → Abstract syntax structure
+
+    DAG
+        → Shared expression representation
+
+    CFG
+        → Control-flow representation
+
+    TAC
+        → Simple explicit operations
+
+    Stack IR
+        → Stack-based operations
+
+    SSA
+        → Single definition per SSA version
+
+
+Most important GATE relationship:
+
+    AST → structure
+    DAG → sharing
+    CFG → control flow
+    TAC → operations
+    SSA → definitions/values
+
+
+====================================================================
+CHAPTER 19 COMPLETE
+====================================================================
+
+NEXT MASTER-SYLLABUS CHAPTER:
+
+    CHAPTER 20 — THREE-ADDRESS CODE (TAC)
+
+Topics:
+
+    • What is Three-Address Code?
+    • TAC instructions
+    • Temporaries
+    • Assignment statements
+    • Unary and binary operations
+    • Relational operations
+    • Boolean expressions
+    • Conditional jumps
+    • Unconditional jumps
+    • Labels
+    • Arrays
+    • Pointers
+    • Function/procedure calls
+    • Return statements
+    • Quadruples
+    • Triples
+    • Indirect Triples
+    • TAC generation from expressions
+    • TAC generation from control flow
+    • GATE numerical problems
+    • GATE traps
+    • Interview questions
+    • Practical examples
+
+Type:
+
+    NEXT
+
+to move to Chapter 20.
+====================================================================

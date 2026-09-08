@@ -1,0 +1,3463 @@
+======================================================================
+                 COMPILER DESIGN — CHAPTER 26
+                  CODE GENERATION FUNDAMENTALS
+======================================================================
+
+LEVEL:
+Beginner → Intermediate → Advanced → GATE → Interview → Practical
+
+MASTER SYLLABUS:
+Chapter 26 — Code Generation Fundamentals
+------------------------------------------------------------
+1. Target machine
+2. Instruction selection
+3. Register allocation
+4. Register assignment
+5. Addressing modes
+6. Instruction ordering
+7. Issues in code generation
+8. GATE concepts and numerical problems
+9. Interview questions
+10. Practical compiler connection
+------------------------------------------------------------
+
+
+======================================================================
+1. WHAT IS CODE GENERATION?
+======================================================================
+
+CODE GENERATION is the compiler phase that converts an intermediate
+representation (IR) into target-machine code.
+
+Simple flow:
+
+    Source Program
+          ↓
+    Lexical Analysis
+          ↓
+    Syntax Analysis
+          ↓
+    Semantic Analysis
+          ↓
+    Intermediate Representation
+          ↓
+    Optimization
+          ↓
+    CODE GENERATION
+          ↓
+    Target Code
+
+
+In simple words:
+
+    Code generation answers:
+
+    "How can I execute this IR on the target machine?"
+
+
+Example source:
+
+    x = a + b;
+
+
+Possible intermediate representation:
+
+    t1 = a + b
+    x = t1
+
+
+Possible target-like instructions:
+
+    LOAD R1, a
+    ADD  R1, b
+    STORE x, R1
+
+
+The exact instructions depend on the target architecture.
+
+
+======================================================================
+2. WHY DO WE NEED CODE GENERATION?
+======================================================================
+
+The compiler's intermediate representation is generally
+machine-independent.
+
+But the CPU understands machine-specific instructions.
+
+Therefore:
+
+    Machine-independent IR
+              ↓
+        Code Generator
+              ↓
+    Machine-dependent code
+
+
+Example:
+
+    IR:
+
+        t1 = a + b
+
+
+One target machine might use:
+
+        LOAD R1, a
+        ADD  R1, b
+
+
+Another architecture may use a different instruction sequence.
+
+
+Therefore, code generation is where the compiler connects:
+
+    HIGH-LEVEL COMPILER REPRESENTATION
+
+                    ↓
+
+              TARGET MACHINE
+
+
+======================================================================
+3. INPUT AND OUTPUT OF CODE GENERATOR
+======================================================================
+
+INPUT:
+
+    • Intermediate representation
+    • Symbol-table information
+    • Type/size information
+    • Target-machine information
+    • Register information
+    • Calling-convention information
+    • Optimization information
+
+
+OUTPUT:
+
+    Target code
+
+
+Target code may be:
+
+    • assembly code
+    • machine code
+    • object code
+    • another lower-level representation
+
+
+Depending on the compiler architecture.
+
+
+======================================================================
+4. CODE GENERATION POSITION IN COMPILER
+======================================================================
+
+Complete simplified compiler:
+
+    SOURCE
+       ↓
+    Lexer
+       ↓
+    Tokens
+       ↓
+    Parser
+       ↓
+    AST
+       ↓
+    Semantic Analysis
+       ↓
+    IR Generation
+       ↓
+    Optimization
+       ↓
+    CODE GENERATION
+       ↓
+    Assembly / Object Code
+       ↓
+    Linker
+       ↓
+    Executable
+
+
+Code generation belongs primarily to the:
+
+    BACK END
+
+
+Remember:
+
+    Front End:
+        understands source program.
+
+    Middle End:
+        transforms/optimizes IR.
+
+    Back End:
+        produces target-dependent code.
+
+
+======================================================================
+5. WHAT IS TARGET CODE?
+======================================================================
+
+TARGET CODE is code generated for a target machine or target
+instruction set.
+
+
+Example:
+
+    Source:
+
+        x = a + b;
+
+
+IR:
+
+        t1 = a + b
+        x = t1
+
+
+Target-like code:
+
+        LOAD R1, a
+        ADD  R1, b
+        STORE x, R1
+
+
+Here:
+
+    R1 = target-machine register.
+
+
+======================================================================
+6. TARGET MACHINE
+======================================================================
+
+A TARGET MACHINE is the machine architecture for which the compiler
+generates code.
+
+
+Examples include architectures based on:
+
+    • x86-64
+    • ARM
+    • RISC-V
+    • other instruction-set architectures
+
+
+The target machine determines:
+
+    • available instructions
+    • registers
+    • register sizes
+    • addressing modes
+    • instruction formats
+    • memory model
+    • calling convention/ABI
+    • instruction costs
+
+
+Therefore:
+
+    Same IR
+       ↓
+    different target
+       ↓
+    potentially different machine code
+
+
+======================================================================
+7. TARGET-MACHINE MODELS
+======================================================================
+
+For learning compiler code generation, target machines are often
+classified according to how operands are handled.
+
+
+Common conceptual models:
+
+    1. Stack machine
+    2. Accumulator machine
+    3. Register machine
+    4. Register-memory machine
+    5. Load-store / register-register machine
+
+
+These models help us understand instruction selection.
+
+
+======================================================================
+8. STACK MACHINE
+======================================================================
+
+A STACK MACHINE uses a stack for operands.
+
+
+Example:
+
+    x = a + b;
+
+
+Conceptually:
+
+    PUSH a
+    PUSH b
+    ADD
+    POP x
+
+
+ADD operates on values at the top of the stack.
+
+
+Diagram:
+
+        b
+        a
+       ---
+      STACK
+        |
+       ADD
+        ↓
+      result
+
+
+Advantages:
+
+    • simple instruction format
+    • fewer explicit operand addresses
+    • easy conceptual evaluation
+
+
+Disadvantages:
+
+    • stack operations may create more instructions
+    • less explicit register control
+
+
+Examples of stack-oriented execution concepts include JVM bytecode.
+
+
+======================================================================
+9. ACCUMULATOR MACHINE
+======================================================================
+
+An ACCUMULATOR machine uses a special register called an
+accumulator.
+
+
+Example:
+
+    x = a + b;
+
+
+Conceptually:
+
+    LOAD a
+    ADD b
+    STORE x
+
+
+Here:
+
+    accumulator = a
+    accumulator = accumulator + b
+    x = accumulator
+
+
+This is simpler than a general register machine but provides
+less flexibility.
+
+
+======================================================================
+10. REGISTER MACHINE
+======================================================================
+
+A REGISTER MACHINE provides multiple general-purpose registers.
+
+
+Example:
+
+    x = a + b;
+
+
+Possible code:
+
+    LOAD R1, a
+    LOAD R2, b
+    ADD  R1, R2
+    STORE x, R1
+
+
+Registers:
+
+    R1
+    R2
+
+
+contain operands/results.
+
+
+Modern general-purpose CPUs use register-based execution models,
+although their exact instruction sets differ.
+
+
+======================================================================
+11. LOAD-STORE ARCHITECTURE
+======================================================================
+
+A LOAD-STORE architecture, commonly associated with RISC designs,
+generally uses:
+
+    LOAD
+        memory → register
+
+    STORE
+        register → memory
+
+Arithmetic operations generally operate on registers.
+
+
+Example:
+
+    x = a + b;
+
+
+Conceptually:
+
+    LOAD R1, a
+    LOAD R2, b
+    ADD  R3, R1, R2
+    STORE x, R3
+
+
+Here:
+
+    arithmetic:
+        R1, R2 → R3
+
+    memory:
+        accessed through LOAD/STORE
+
+
+IMPORTANT:
+
+The exact instruction set depends on the architecture.
+
+
+======================================================================
+12. REGISTER-MEMORY ARCHITECTURE
+======================================================================
+
+Some instruction sets allow operations directly involving a memory
+operand.
+
+
+Conceptually:
+
+    LOAD R1, a
+    ADD R1, b
+    STORE x, R1
+
+
+The ADD can use:
+
+    register + memory
+
+
+This can reduce explicit load instructions compared with a strict
+load-store design.
+
+
+Again:
+
+    exact behavior is architecture-specific.
+
+
+======================================================================
+13. IMPORTANT TARGET-MACHINE CHARACTERISTICS
+======================================================================
+
+A code generator must know:
+
+    +--------------------------------+
+    | Number of registers            |
+    +--------------------------------+
+    | Register types                 |
+    +--------------------------------+
+    | Register sizes                 |
+    +--------------------------------+
+    | Instruction set                |
+    +--------------------------------+
+    | Addressing modes               |
+    +--------------------------------+
+    | Instruction costs              |
+    +--------------------------------+
+    | Memory organization             |
+    +--------------------------------+
+    | Calling convention              |
+    +--------------------------------+
+    | Alignment requirements          |
+    +--------------------------------+
+
+
+These characteristics affect generated code.
+
+
+======================================================================
+14. MAIN GOALS OF CODE GENERATION
+======================================================================
+
+A code generator should produce code that is:
+
+    1. Correct
+    2. Efficient
+    3. Compact when useful
+    4. Compatible with the target architecture
+    5. Compatible with the ABI
+    6. Reasonably fast to generate
+
+
+The most important requirement is:
+
+    CORRECTNESS
+
+
+Incorrect but fast code is not acceptable.
+
+
+======================================================================
+15. MAJOR TASKS OF CODE GENERATION
+======================================================================
+
+The code-generation phase commonly involves:
+
+    1. Instruction selection
+    2. Register allocation
+    3. Register assignment
+    4. Address computation
+    5. Instruction ordering / scheduling
+    6. Control-flow translation
+    7. Procedure-call generation
+    8. Handling machine constraints
+
+
+This chapter focuses on the major fundamentals.
+
+
+======================================================================
+16. INSTRUCTION SELECTION
+======================================================================
+
+INSTRUCTION SELECTION means:
+
+    Choosing target-machine instructions that implement the
+    operations represented in IR.
+
+
+Example:
+
+    IR:
+
+        t1 = a + b
+
+
+Possible target instructions:
+
+    LOAD R1, a
+    ADD R1, b
+
+
+The code generator selects:
+
+    LOAD
+    ADD
+
+
+for the IR operation.
+
+
+The goal is not merely to generate correct instructions.
+
+It should ideally select efficient instructions.
+
+
+======================================================================
+17. SIMPLE INSTRUCTION SELECTION
+======================================================================
+
+Suppose:
+
+    x = a + b
+
+
+IR:
+
+    t1 = a + b
+    x = t1
+
+
+A simple selection might generate:
+
+    LOAD R1, a
+    ADD  R1, b
+    STORE x, R1
+
+
+Mapping:
+
+    IR operation       Target operation
+
+    a                  LOAD R1,a
+    +                  ADD R1,b
+    x                  STORE x,R1
+
+
+This is a direct translation.
+
+
+======================================================================
+18. BETTER INSTRUCTION SELECTION
+======================================================================
+
+A more advanced code generator may recognize machine-specific
+instructions or patterns.
+
+
+For example:
+
+    x = x + 1
+
+
+Instead of:
+
+    LOAD R1, x
+    ADD R1, 1
+    STORE x, R1
+
+
+A target architecture may provide an increment instruction.
+
+Conceptually:
+
+    INC x
+
+
+Whether this is actually preferable depends on the target ISA,
+microarchitecture, optimization goals, and compiler.
+
+
+Therefore:
+
+    instruction selection is a target-dependent optimization problem.
+
+
+======================================================================
+19. INSTRUCTION SELECTION AS PATTERN MATCHING
+======================================================================
+
+A compiler can view IR or expression trees as patterns.
+
+
+Example expression:
+
+    a + b
+
+
+Expression tree:
+
+          +
+         / \
+        a   b
+
+
+Code generator matches this tree with an instruction pattern.
+
+
+Conceptually:
+
+    + operator
+       ↓
+    ADD instruction
+
+
+For:
+
+    a * 2
+
+
+The compiler may recognize a machine-supported shift or immediate
+operation when semantically appropriate.
+
+
+Example conceptual alternative:
+
+    multiplication by power of 2
+        ↓
+    shift
+
+
+But only if it preserves the required semantics.
+
+
+======================================================================
+20. EXPRESSION TREE
+======================================================================
+
+For:
+
+    x = (a + b) * c
+
+
+Expression tree:
+
+              *
+             / \
+            +   c
+           / \
+          a   b
+
+
+A code generator can traverse this tree and generate instructions.
+
+
+Possible sequence:
+
+    LOAD R1, a
+    ADD  R1, b
+    MUL  R1, c
+    STORE x, R1
+
+
+This is a simple tree-based approach.
+
+
+======================================================================
+21. DAG AND INSTRUCTION SELECTION
+======================================================================
+
+DAG = Directed Acyclic Graph.
+
+
+Suppose:
+
+    x = (a+b) * (a+b)
+
+
+Naively:
+
+    calculate a+b
+    calculate a+b again
+
+
+But a compiler may recognize common subexpression sharing.
+
+
+Conceptually:
+
+          *
+         / \
+        +   +
+       / \ / \
+      a  b a  b
+
+
+DAG representation can share:
+
+          *
+         / \
+        +---+
+       / \
+      a   b
+
+
+The common expression:
+
+    a + b
+
+can potentially be computed once.
+
+
+This connects instruction selection with optimization.
+
+
+======================================================================
+22. REGISTER
+======================================================================
+
+A REGISTER is a small, fast storage location inside the CPU.
+
+
+Example:
+
+    R1
+    R2
+    R3
+
+
+Registers are much faster to access than ordinary memory in many
+contexts.
+
+
+Therefore, code generators try to keep frequently used values in
+registers when profitable.
+
+
+Example:
+
+    R1 = a
+    R2 = b
+    R3 = R1 + R2
+
+
+Instead of repeatedly loading from memory.
+
+
+======================================================================
+23. WHY REGISTERS MATTER
+======================================================================
+
+CPU operations commonly work most efficiently with registers.
+
+Compare conceptually:
+
+
+MEMORY-HEAVY:
+
+    LOAD a
+    LOAD b
+    ADD
+    STORE x
+
+
+REGISTER-BASED:
+
+    LOAD R1,a
+    LOAD R2,b
+    ADD R3,R1,R2
+    STORE x,R3
+
+
+If values are reused:
+
+    keeping them in registers can avoid repeated memory operations.
+
+
+Therefore:
+
+    Registers are valuable compiler resources.
+
+
+======================================================================
+24. REGISTER ALLOCATION
+======================================================================
+
+REGISTER ALLOCATION means:
+
+    Deciding which program values should reside in machine registers
+    at different points in the program.
+
+
+Suppose we have:
+
+    t1 = a + b
+    t2 = t1 * c
+    t3 = t2 + d
+
+
+The compiler must decide:
+
+    Which registers should hold:
+
+        t1
+        t2
+        t3
+
+
+For example:
+
+    t1 → R1
+    t2 → R2
+    t3 → R1
+
+
+if R1 can be reused after t1 is no longer needed.
+
+
+IMPORTANT:
+
+    Allocation decides WHICH values get registers and when.
+
+
+======================================================================
+25. REGISTER ASSIGNMENT
+======================================================================
+
+REGISTER ASSIGNMENT means:
+
+    Mapping allocated values to specific physical registers.
+
+
+Example:
+
+    Allocation decides:
+
+        t1 should be in a register.
+
+    Assignment decides:
+
+        t1 → R1
+
+
+Similarly:
+
+    t2 → R2
+
+
+Simple distinction:
+
+    ALLOCATION:
+        Who gets registers?
+
+
+    ASSIGNMENT:
+        Which register does each allocated value get?
+
+
+This distinction is frequently tested conceptually.
+
+
+======================================================================
+26. ALLOCATION VS ASSIGNMENT
+======================================================================
+
+Example:
+
+    Values:
+
+        a
+        b
+        c
+
+
+Available registers:
+
+        R1
+        R2
+
+
+Suppose the compiler decides:
+
+    a → register
+    b → register
+    c → memory
+
+
+This is:
+
+    REGISTER ALLOCATION.
+
+
+Then:
+
+    a → R1
+    b → R2
+
+
+This is:
+
+    REGISTER ASSIGNMENT.
+
+
+Memory trick:
+
+    ALLOCATION = WHETHER / WHO
+
+    ASSIGNMENT = WHICH REGISTER
+
+
+======================================================================
+27. REGISTER SPILLING
+======================================================================
+
+What if there are more live values than available registers?
+
+
+Example:
+
+    10 simultaneously needed values
+
+but:
+
+    only 4 registers
+
+
+The compiler cannot keep everything in registers.
+
+
+Some values must be moved to memory.
+
+This is called:
+
+    SPILLING
+
+
+Conceptually:
+
+    Register pressure
+          ↓
+    insufficient registers
+          ↓
+    spill value to memory
+          ↓
+    reload when needed
+
+
+Spilling can increase:
+
+    • memory operations
+    • code size
+    • execution time
+
+
+======================================================================
+28. REGISTER PRESSURE
+======================================================================
+
+REGISTER PRESSURE means:
+
+    The demand for registers at a point in the program.
+
+
+High register pressure:
+
+    many simultaneously live values.
+
+
+Low register pressure:
+
+    few simultaneously live values.
+
+
+Example:
+
+    t1 = ...
+    t2 = ...
+    t3 = ...
+    t4 = ...
+    t5 = ...
+
+
+If all remain live at the same point:
+
+    register pressure may be high.
+
+
+This becomes important in register allocation.
+
+
+======================================================================
+29. LIVE VALUE
+======================================================================
+
+A value is LIVE at a program point if its current value may be used
+later before being overwritten.
+
+
+Example:
+
+    t1 = a + b
+    x = t1 + c
+
+
+Between these statements:
+
+    t1 is live.
+
+
+After:
+
+    x = t1 + c
+
+
+if t1 is never used again:
+
+    t1 is dead.
+
+
+Therefore:
+
+    dead values need not occupy registers.
+
+
+This is the basis of register reuse.
+
+
+======================================================================
+30. REGISTER REUSE
+======================================================================
+
+Example:
+
+    t1 = a + b
+    t2 = t1 * c
+    t3 = d + e
+
+
+After t1 is used in:
+
+    t2 = t1 * c
+
+
+t1 may no longer be needed.
+
+
+Therefore:
+
+    register holding t1
+       ↓
+    becomes available
+       ↓
+    can hold t3
+
+
+This reduces register pressure.
+
+
+======================================================================
+31. ADDRESSING MODES
+======================================================================
+
+An ADDRESSING MODE defines how an instruction identifies or computes
+the location/value of an operand.
+
+
+Common conceptual addressing modes include:
+
+    1. Immediate
+    2. Register
+    3. Direct / absolute
+    4. Indirect
+    5. Register indirect
+    6. Indexed
+    7. Base + offset
+    8. PC-relative
+    9. Auto-increment/decrement
+       (architecture-dependent)
+
+
+Different architectures support different subsets.
+
+
+======================================================================
+32. IMMEDIATE ADDRESSING
+======================================================================
+
+In immediate addressing, the operand value is directly encoded
+in the instruction.
+
+
+Example:
+
+    ADD R1, #5
+
+
+Here:
+
+    5
+
+is the immediate constant.
+
+
+Meaning:
+
+    R1 = R1 + 5
+
+
+No memory lookup is needed to obtain the constant itself.
+
+
+Memory trick:
+
+    IMMEDIATE = VALUE IS IN INSTRUCTION
+
+
+======================================================================
+33. REGISTER ADDRESSING
+======================================================================
+
+The operand is stored in a register.
+
+
+Example:
+
+    ADD R1, R2
+
+
+Meaning conceptually:
+
+    R1 = R1 + R2
+
+
+Here:
+
+    R2
+
+identifies the operand register.
+
+
+Memory trick:
+
+    REGISTER = OPERAND IN REGISTER
+
+
+======================================================================
+34. DIRECT ADDRESSING
+======================================================================
+
+In direct addressing, the instruction contains or identifies a
+memory address for the operand.
+
+
+Conceptual:
+
+    LOAD R1, [1000]
+
+
+Meaning:
+
+    R1 = memory[1000]
+
+
+The exact terminology and supported forms vary by architecture.
+
+
+Memory trick:
+
+    DIRECT = ADDRESS IS SPECIFIED DIRECTLY
+
+
+======================================================================
+35. INDIRECT ADDRESSING
+======================================================================
+
+In indirect addressing, the instruction uses a location that contains
+the address of the actual operand.
+
+
+Conceptually:
+
+    memory[1000] = 5000
+
+    LOAD R1, [[1000]]
+
+
+Then:
+
+    R1 = memory[5000]
+
+
+This is an additional level of indirection.
+
+
+Memory trick:
+
+    INDIRECT = ADDRESS OF ADDRESS
+
+
+======================================================================
+36. REGISTER INDIRECT ADDRESSING
+======================================================================
+
+A register contains the memory address of the operand.
+
+
+Example:
+
+    R2 = address of x
+
+    LOAD R1, [R2]
+
+
+Meaning:
+
+    R1 = memory[R2]
+
+
+This is very useful for:
+
+    • pointers
+    • arrays
+    • dynamic data structures
+
+
+Memory trick:
+
+    REGISTER INDIRECT:
+
+        register → address → memory
+
+
+======================================================================
+37. BASE + OFFSET ADDRESSING
+======================================================================
+
+An effective address is computed as:
+
+    base register + offset
+
+
+Example:
+
+    LOAD R1, 8(R2)
+
+
+Conceptually:
+
+    effective address = R2 + 8
+
+
+This is extremely useful for:
+
+    • stack-frame variables
+    • structure fields
+    • arrays
+    • objects
+
+
+Example:
+
+    FP = frame pointer
+
+    local variable x at offset -8
+
+    LOAD R1, -8(FP)
+
+
+Conceptually:
+
+    address(x) = FP - 8
+
+
+======================================================================
+38. INDEXED ADDRESSING
+======================================================================
+
+Indexed addressing computes an address using a base/address and
+an index.
+
+
+Conceptually:
+
+    address = base + index
+
+
+For an array:
+
+    A[i]
+
+
+If each element has size 4:
+
+    address(A[i]) = base(A) + i × 4
+
+
+The actual machine instruction may support scaling, or the compiler
+may generate multiplication/shift/add instructions.
+
+
+======================================================================
+39. PC-RELATIVE ADDRESSING
+======================================================================
+
+PC = PROGRAM COUNTER.
+
+
+PC-relative addressing computes an address relative to the current
+instruction position.
+
+
+Conceptually:
+
+    target address
+        =
+    PC + offset
+
+
+This is commonly useful for:
+
+    • branches
+    • position-independent code
+    • accessing nearby code/data
+
+
+Exact details depend on architecture.
+
+
+======================================================================
+40. ADDRESSING-MODE SUMMARY
+======================================================================
+
++----------------------+----------------------------------+
+| Mode                 | Basic idea                       |
++----------------------+----------------------------------+
+| Immediate            | Value in instruction             |
+| Register             | Value in register                |
+| Direct               | Address identifies memory        |
+| Indirect             | Address points to another addr   |
+| Register indirect    | Register contains address        |
+| Base + offset        | Base register + constant         |
+| Indexed              | Base/address + index             |
+| PC-relative          | PC + displacement                |
++----------------------+----------------------------------+
+
+
+======================================================================
+41. WHY ADDRESSING MODES MATTER
+======================================================================
+
+A code generator uses addressing modes to efficiently access:
+
+    • variables
+    • arrays
+    • pointers
+    • structures
+    • stack-frame locations
+    • global data
+    • branches
+    • functions
+
+
+Example:
+
+    local variable:
+        base + offset
+
+
+Array:
+
+    base + index × element_size
+
+
+Pointer:
+
+    register indirect
+
+
+Constant:
+
+    immediate
+
+
+Therefore:
+
+    Addressing modes strongly influence code generation.
+
+
+======================================================================
+42. INSTRUCTION ORDERING
+======================================================================
+
+INSTRUCTION ORDERING means deciding the order in which generated
+instructions are placed.
+
+
+A compiler must preserve:
+
+    • program semantics
+    • data dependencies
+    • control dependencies
+    • required memory behavior
+
+
+while potentially improving:
+
+    • performance
+    • pipeline utilization
+    • instruction-level parallelism
+    • register usage
+
+
+======================================================================
+43. DATA DEPENDENCY
+======================================================================
+
+Suppose:
+
+    t1 = a + b
+    t2 = t1 * c
+
+
+The second operation depends on the first.
+
+
+Therefore:
+
+    t1 = a+b
+
+must happen before:
+
+    t2 = t1*c
+
+
+Dependency:
+
+    t1 production
+          ↓
+    t2 consumption
+
+
+The compiler cannot arbitrarily reverse them.
+
+
+======================================================================
+44. INDEPENDENT INSTRUCTIONS
+======================================================================
+
+Suppose:
+
+    t1 = a + b
+    t2 = c + d
+
+
+These operations may be independent if there are no hidden
+dependencies.
+
+
+Conceptually:
+
+    t1 = a+b
+
+    t2 = c+d
+
+
+Their relative ordering may sometimes be changed for performance,
+subject to all language, memory, and machine constraints.
+
+
+This is the basis of instruction scheduling.
+
+
+======================================================================
+45. INSTRUCTION SCHEDULING
+======================================================================
+
+INSTRUCTION SCHEDULING attempts to arrange instructions to improve
+machine execution while preserving correctness.
+
+
+Example:
+
+    I1: load a
+    I2: add
+    I3: load c
+    I4: add
+
+
+If I2 depends on I1, they cannot be arbitrarily reversed.
+
+
+But an independent instruction may sometimes be placed between
+dependent operations to reduce stalls.
+
+
+Conceptually:
+
+    I1
+    independent instruction
+    dependent instruction
+
+
+This can improve pipeline utilization on suitable architectures.
+
+
+======================================================================
+46. DEPENDENCY TYPES
+======================================================================
+
+Important dependency categories include:
+
+    RAW
+    WAR
+    WAW
+
+
+RAW:
+
+    Read After Write
+
+WAR:
+
+    Write After Read
+
+WAW:
+
+    Write After Write
+
+
+These are commonly discussed in instruction scheduling and
+architecture.
+
+
+--------------------------------------------------
+RAW — READ AFTER WRITE
+--------------------------------------------------
+
+A later operation needs a value produced by an earlier operation.
+
+
+Example:
+
+    I1: R1 = R2 + R3
+    I2: R4 = R1 + R5
+
+
+I2 reads R1 after I1 writes R1.
+
+
+Therefore:
+
+    I1 → I2
+
+
+RAW is a true/data dependency.
+
+
+--------------------------------------------------
+WAR — WRITE AFTER READ
+--------------------------------------------------
+
+A later instruction writes a location that an earlier instruction
+must read first.
+
+
+--------------------------------------------------
+WAW — WRITE AFTER WRITE
+--------------------------------------------------
+
+Two writes target the same location and their ordering may matter.
+
+
+For compiler instruction scheduling, these dependencies must be
+handled correctly.
+
+
+======================================================================
+47. CODE-GENERATION ISSUES
+======================================================================
+
+A code generator must handle several difficult problems:
+
+    1. Correctness
+    2. Instruction selection
+    3. Register allocation
+    4. Register assignment
+    5. Spilling
+    6. Address calculation
+    7. Instruction ordering
+    8. Control flow
+    9. Procedure calls
+    10. Calling conventions
+    11. Data representation
+    12. Memory alignment
+    13. Machine-specific constraints
+    14. Code size
+    15. Execution speed
+
+
+These concerns interact with each other.
+
+
+======================================================================
+48. CORRECTNESS VS OPTIMIZATION
+======================================================================
+
+Suppose the compiler has two possible instruction sequences:
+
+    Sequence A:
+        5 instructions
+
+    Sequence B:
+        3 instructions
+
+
+Sequence B is not automatically better.
+
+The compiler must ensure:
+
+    • same program semantics
+    • valid register usage
+    • valid memory access
+    • correct control flow
+    • correct calling convention
+    • required side effects preserved
+
+
+Therefore:
+
+    Correctness first.
+
+    Optimization second.
+
+
+======================================================================
+49. TARGET-SPECIFIC CONSTRAINTS
+======================================================================
+
+A target machine may impose constraints such as:
+
+    • limited registers
+    • specific registers required for certain instructions
+    • instruction operand restrictions
+    • immediate-size limits
+    • alignment requirements
+    • special-purpose registers
+    • calling-convention rules
+
+
+Example:
+
+    An instruction may require its destination to be a particular
+    register.
+
+
+The code generator must satisfy such constraints.
+
+
+======================================================================
+50. REGISTER ALLOCATION — GRAPH COLORING IDEA
+======================================================================
+
+An important approach to register allocation is:
+
+    GRAPH COLORING
+
+
+Basic idea:
+
+    • Each live range/value becomes a node.
+    • An edge connects two values if they cannot share a register.
+    • Each available register corresponds to a color.
+
+
+Example:
+
+    t1 ---- t2
+     \      /
+      \    /
+       t3
+
+
+If:
+
+    3 registers available
+
+we need up to:
+
+    3 colors
+
+
+If graph cannot be colored with available registers:
+
+    spilling may be required.
+
+
+Detailed graph-coloring allocation is covered later in Chapter 29.
+
+
+======================================================================
+51. LIVE RANGE
+======================================================================
+
+A LIVE RANGE is the region of program execution over which a value
+must remain available.
+
+
+Example:
+
+    t1 = a + b
+    x = t1 + c
+    y = d + e
+
+
+t1 is needed from its definition until its last use.
+
+
+If two values have overlapping live ranges:
+
+    they generally cannot use the same register simultaneously.
+
+
+This concept is fundamental to register allocation.
+
+
+======================================================================
+52. SIMPLE REGISTER ALLOCATION EXAMPLE
+======================================================================
+
+Suppose:
+
+    t1 = a + b
+    t2 = t1 + c
+    t3 = t2 + d
+
+
+Initially:
+
+    t1 live
+
+Then:
+
+    t2 depends on t1.
+
+
+After t1's last use:
+
+    t1 dead
+
+
+Therefore its register can be reused.
+
+
+Possible conceptual assignment:
+
+    t1 → R1
+    t2 → R1
+    t3 → R1
+
+
+if the live ranges do not overlap at those points.
+
+
+This demonstrates register reuse.
+
+
+======================================================================
+53. REGISTER ALLOCATION WITH SPILLING
+======================================================================
+
+Suppose:
+
+    t1
+    t2
+    t3
+    t4
+    t5
+
+are simultaneously live.
+
+Available:
+
+    R1
+    R2
+    R3
+
+
+Only three can remain in registers.
+
+
+Possible:
+
+    t1 → R1
+    t2 → R2
+    t3 → R3
+    t4 → memory
+    t5 → memory
+
+
+When t4 is needed:
+
+    LOAD t4 into a register
+
+
+This introduces extra memory traffic.
+
+
+======================================================================
+54. MEMORY ACCESS AND ADDRESS GENERATION
+======================================================================
+
+Consider:
+
+    A[i]
+
+
+The compiler must calculate:
+
+    address(A[i])
+
+
+For element size S:
+
+    address = base(A) + i × S
+
+
+Example:
+
+    integer size = 4 bytes
+
+    A[3]:
+
+    address = base(A) + 3×4
+
+            = base(A) + 12
+
+
+The target machine may support:
+
+    base + index × scale
+
+
+or compiler may construct the address using multiple instructions.
+
+
+======================================================================
+55. STRUCTURE / OBJECT ACCESS
+======================================================================
+
+Suppose:
+
+    object.field
+
+
+The compiler may know that:
+
+    field offset = 16
+
+
+If object address is in R1:
+
+    address(field) = R1 + 16
+
+
+Conceptually:
+
+    LOAD R2, 16(R1)
+
+
+This demonstrates:
+
+    base + offset addressing.
+
+
+======================================================================
+56. STACK-FRAME ACCESS
+======================================================================
+
+From Chapter 23/24:
+
+    local variables may be accessed relative to a frame pointer
+    or stack pointer.
+
+
+Example:
+
+    local x at offset -8 from FP.
+
+
+Conceptually:
+
+    LOAD R1, -8(FP)
+
+
+Parameter:
+
+    at offset +16
+
+could conceptually be:
+
+    LOAD R2, 16(FP)
+
+
+Exact offsets and direction depend on architecture/ABI.
+
+
+======================================================================
+57. GLOBAL VARIABLE ACCESS
+======================================================================
+
+A global variable may be accessed using:
+
+    • absolute/direct addressing
+    • PC-relative addressing
+    • a global data register
+    • another ABI-specific mechanism
+
+
+Example conceptual:
+
+    LOAD R1, [global_x]
+
+
+Again, actual generated code depends on target architecture,
+linkage, position independence, and ABI.
+
+
+======================================================================
+58. POINTER ACCESS
+======================================================================
+
+Suppose:
+
+    int *p;
+
+    x = *p;
+
+
+If:
+
+    R1 = p
+
+
+then conceptually:
+
+    LOAD R2, [R1]
+
+Now:
+
+    R2 = value pointed to by p.
+
+
+This is:
+
+    register indirect addressing.
+
+
+For:
+
+    *p = x
+
+
+conceptually:
+
+    STORE [R1], R2
+
+
+where R2 contains x.
+
+
+======================================================================
+59. CONTROL FLOW CODE GENERATION
+======================================================================
+
+Suppose:
+
+    if (a < b)
+        x = 1;
+    else
+        x = 2;
+
+
+IR may contain:
+
+    if a < b goto L1
+    goto L2
+
+    L1:
+        x = 1
+        goto L3
+
+    L2:
+        x = 2
+
+    L3:
+
+
+Code generator converts these into target branches.
+
+
+Conceptually:
+
+    CMP a,b
+    BLT L1
+    JMP L2
+
+    L1:
+        ...
+        JMP L3
+
+    L2:
+        ...
+
+    L3:
+
+
+Exact branch mnemonics depend on architecture.
+
+
+======================================================================
+60. PROCEDURE CALL CODE GENERATION
+======================================================================
+
+From Chapter 24:
+
+    x = add(a,b)
+
+
+Code generation must follow the target ABI.
+
+
+Conceptually:
+
+    put a in argument location
+    put b in argument location
+    CALL add
+    receive return value
+    store into x
+
+
+The argument locations may be:
+
+    • registers
+    • stack
+    • both
+
+
+Return value may be:
+
+    • designated register
+    • memory/hidden location
+    • ABI-specific mechanism
+
+
+======================================================================
+61. CODE GENERATION AND CALLING CONVENTIONS
+======================================================================
+
+The code generator must know:
+
+    • argument registers
+    • return-value registers
+    • caller-saved registers
+    • callee-saved registers
+    • stack alignment
+    • call/return mechanism
+
+
+Therefore:
+
+    Code Generation
+          +
+    ABI
+          +
+    Calling Convention
+
+
+must work together.
+
+
+======================================================================
+62. INSTRUCTION COST
+======================================================================
+
+Different instructions can have different costs depending on the
+target and optimization objective.
+
+
+A compiler may consider:
+
+    • instruction count
+    • latency
+    • throughput
+    • code size
+    • register pressure
+    • memory traffic
+    • branch behavior
+
+
+A simple textbook model may treat:
+
+    each instruction = cost 1
+
+
+But real machines are much more complicated.
+
+
+======================================================================
+63. CODE SIZE VS SPEED
+======================================================================
+
+Sometimes the shortest code is not the fastest.
+
+Example:
+
+    Sequence A:
+        fewer instructions
+
+    Sequence B:
+        more instructions but better pipeline/register behavior
+
+
+Compiler optimization may choose based on:
+
+    • speed
+    • code size
+    • power
+    • compilation goals
+
+
+Therefore:
+
+    "Minimum number of instructions always means fastest."
+
+is FALSE.
+
+
+======================================================================
+64. INSTRUCTION SELECTION VS REGISTER ALLOCATION
+======================================================================
+
+INSTRUCTION SELECTION:
+
+    Which machine instructions should be used?
+
+
+REGISTER ALLOCATION:
+
+    Which values should reside in registers?
+
+
+REGISTER ASSIGNMENT:
+
+    Which physical registers should hold those values?
+
+
+INSTRUCTION SCHEDULING:
+
+    In what order should instructions be arranged?
+
+
+Memory:
+
+    SELECT
+       ↓
+    ALLOCATE
+       ↓
+    ASSIGN
+       ↓
+    ORDER
+
+
+In real compilers, these decisions can interact and may be performed
+iteratively rather than in a simple fixed sequence.
+
+
+======================================================================
+65. CODE GENERATOR DATA FLOW
+======================================================================
+
+Conceptually:
+
+                 IR
+                  |
+                  ↓
+          Instruction Selection
+                  |
+                  ↓
+          Register Allocation
+                  |
+                  ↓
+          Register Assignment
+                  |
+                  ↓
+          Address Generation
+                  |
+                  ↓
+          Instruction Scheduling
+                  |
+                  ↓
+             Target Code
+
+
+Actual production compilers may interleave these tasks and perform
+multiple lowering/optimization passes.
+
+
+======================================================================
+66. SIMPLE COMPLETE EXAMPLE
+======================================================================
+
+SOURCE:
+
+    x = (a + b) * c;
+
+
+STEP 1 — AST:
+
+              =
+             / \
+            x   *
+               / \
+              +   c
+             / \
+            a   b
+
+
+STEP 2 — IR:
+
+    t1 = a + b
+    t2 = t1 * c
+    x = t2
+
+
+STEP 3 — INSTRUCTION SELECTION:
+
+    LOAD
+    ADD
+    MUL
+    STORE
+
+
+STEP 4 — REGISTER ALLOCATION:
+
+    t1 → R1
+    t2 → R1
+
+    if t1's lifetime ends before t2 needs the register.
+
+
+STEP 5 — TARGET-LIKE CODE:
+
+    LOAD R1, a
+    ADD  R1, b
+    MUL  R1, c
+    STORE x, R1
+
+
+This is the fundamental code-generation process.
+
+
+======================================================================
+67. ANOTHER EXAMPLE — MULTIPLE REGISTERS
+======================================================================
+
+SOURCE:
+
+    x = a + b * c;
+
+
+AST:
+
+              +
+             / \
+            a   *
+               / \
+              b   c
+
+
+IR:
+
+    t1 = b * c
+    t2 = a + t1
+    x = t2
+
+
+Possible target-like code:
+
+    LOAD R1, b
+    LOAD R2, c
+    MUL  R1, R2
+    LOAD R3, a
+    ADD  R3, R1
+    STORE x, R3
+
+
+The code generator has to decide:
+
+    • which values stay in registers
+    • when registers can be reused
+    • which instructions implement operations
+
+
+======================================================================
+68. GATE CONCEPT — NUMBER OF REGISTERS
+======================================================================
+
+Suppose:
+
+    5 values are simultaneously live.
+
+
+Available registers:
+
+    3
+
+
+Then:
+
+    at least 2 values cannot simultaneously remain in those
+    3 registers.
+
+
+Possible solution:
+
+    spill some values to memory.
+
+
+IMPORTANT:
+
+This does not necessarily mean exactly two values must be spilled
+in the final generated program; allocation and reuse depend on
+live ranges and code structure.
+
+
+======================================================================
+69. GATE CONCEPT — REGISTER REUSE
+======================================================================
+
+Suppose:
+
+    t1 is live during statements 1–3.
+
+    t2 is live during statements 4–6.
+
+
+Their live ranges do not overlap.
+
+
+Therefore:
+
+    t1 and t2 may share the same physical register.
+
+
+Example:
+
+    t1 → R1
+
+    after t1 dies:
+
+    t2 → R1
+
+
+This is one of the most important reasons register allocation can
+use fewer physical registers than the number of program temporaries.
+
+
+======================================================================
+70. GATE CONCEPT — ADDRESSING MODE
+======================================================================
+
+Suppose:
+
+    R1 = 1000
+
+
+Instruction:
+
+    LOAD R2, 20(R1)
+
+
+Effective address:
+
+    1000 + 20
+    = 1020
+
+
+Therefore:
+
+    R2 = memory[1020]
+
+
+This is:
+
+    BASE + OFFSET
+
+
+======================================================================
+71. GATE CONCEPT — ARRAY ADDRESS
+======================================================================
+
+Suppose:
+
+    base(A) = 1000
+
+    element size = 4 bytes
+
+    i = 3
+
+
+For:
+
+    A[3]
+
+
+Address:
+
+    base + i × element_size
+
+    = 1000 + 3×4
+
+    = 1012
+
+
+Therefore:
+
+    address(A[3]) = 1012
+
+
+This is a high-value code-generation calculation.
+
+
+======================================================================
+72. GATE CONCEPT — IMMEDIATE
+======================================================================
+
+Instruction:
+
+    ADD R1, #10
+
+
+Here:
+
+    10
+
+is an immediate constant.
+
+
+It is not:
+
+    memory address 10
+
+
+It means:
+
+    add the value 10.
+
+
+======================================================================
+73. GATE TRAP — ALLOCATION VS ASSIGNMENT
+======================================================================
+
+Statement:
+
+    "Register allocation determines whether a value should be kept
+     in a register and which exact register it uses."
+
+This combines two related but conceptually distinct tasks.
+
+
+Better distinction:
+
+    Allocation:
+        decide which values/intervals receive register resources.
+
+
+    Assignment:
+        map those allocated values to particular physical registers.
+
+
+======================================================================
+74. GATE TRAP — ADDRESSING MODES
+======================================================================
+
+Remember:
+
+    Immediate:
+        value itself
+
+
+    Register:
+        register contains value
+
+
+    Register indirect:
+        register contains address
+
+
+    Base + offset:
+        effective address = base + offset
+
+
+Do not confuse:
+
+    value
+    address
+    address of address
+
+
+======================================================================
+75. GATE TRAP — CODE GENERATION
+======================================================================
+
+Statement:
+
+    "Code generation converts source code directly into machine code."
+
+Usually FALSE in the standard compiler pipeline.
+
+Typically:
+
+    Source
+      ↓
+    Front end
+      ↓
+    IR
+      ↓
+    Optimization/lowering
+      ↓
+    Code generation
+      ↓
+    Target code
+
+
+Code generation generally works from an IR/lower-level representation,
+not raw source text.
+
+
+======================================================================
+76. GATE TRAP — TARGET INDEPENDENCE
+======================================================================
+
+Instruction selection is:
+
+    target-dependent.
+
+
+IR is designed to provide:
+
+    machine-independent or less machine-specific representation.
+
+
+Therefore:
+
+    IR → target-specific code
+
+is a key role of the back end.
+
+
+======================================================================
+77. GATE TRAP — SPILLING
+======================================================================
+
+Spilling occurs when:
+
+    register demand exceeds available register resources.
+
+
+Spilling usually means:
+
+    move a value between registers and memory.
+
+
+It can increase:
+
+    • memory traffic
+    • execution cost
+    • code size
+
+
+======================================================================
+78. GATE TRAP — DEPENDENCY
+======================================================================
+
+If:
+
+    I2 uses a value produced by I1,
+
+
+then:
+
+    I2 cannot execute as if I1 had not produced the value.
+
+
+This is a true data dependency:
+
+    RAW = Read After Write
+
+
+======================================================================
+79. INTERVIEW QUESTIONS
+======================================================================
+
+Q1. What is code generation?
+
+Answer:
+
+Code generation is the compiler back-end activity that translates
+IR or a lower-level representation into target-machine code while
+preserving program semantics.
+
+
+Q2. What is instruction selection?
+
+Answer:
+
+Instruction selection chooses target-machine instructions or
+instruction patterns to implement IR operations.
+
+
+Q3. What is register allocation?
+
+Answer:
+
+Register allocation decides which values/live ranges should reside
+in physical registers at different program points.
+
+
+Q4. What is register assignment?
+
+Answer:
+
+Register assignment maps allocated values to particular physical
+registers.
+
+
+Q5. What is spilling?
+
+Answer:
+
+Spilling moves values to memory when available registers are
+insufficient, reloading them when needed.
+
+
+======================================================================
+80. INTERVIEW — ADDRESSING MODES
+======================================================================
+
+Q6. What is immediate addressing?
+
+The constant operand is encoded directly in the instruction.
+
+
+Q7. What is register addressing?
+
+The operand is held in a register identified by the instruction.
+
+
+Q8. What is register indirect addressing?
+
+A register contains the memory address of the operand.
+
+
+Q9. What is base-plus-offset addressing?
+
+The effective address is computed from a base register plus an
+offset.
+
+
+Q10. Why are addressing modes important?
+
+They provide efficient ways to access variables, arrays, pointers,
+stack-frame locations, globals, and control-flow targets.
+
+
+======================================================================
+81. INTERVIEW — TARGET MACHINE
+======================================================================
+
+Q11. What information does a code generator need about the target?
+
+Answer:
+
+It may need the target instruction set, registers, addressing modes,
+instruction constraints/costs, data representation, ABI, calling
+convention, alignment rules, and other machine-specific details.
+
+
+Q12. Why are registers important?
+
+They provide fast storage for values used by generated instructions,
+so efficient register use can reduce memory traffic.
+
+
+Q13. What is register pressure?
+
+It is the demand for registers caused by simultaneously live values.
+
+
+Q14. What is instruction scheduling?
+
+It is arranging generated instructions to improve execution while
+preserving dependencies and program semantics.
+
+
+======================================================================
+82. INTERVIEW — PRACTICAL
+======================================================================
+
+Q15. How does a compiler generate code for:
+
+    x = a + b?
+
+
+Answer conceptually:
+
+    Load operands
+    perform addition
+    store result
+
+
+For a register-based target:
+
+    LOAD R1,a
+    ADD R1,b
+    STORE x,R1
+
+
+The exact instructions depend on the target architecture.
+
+
+Q16. How does a compiler access a local variable?
+
+Often using a stack/frame pointer plus a known offset, subject to
+ABI and optimization.
+
+
+Q17. How does a compiler access A[i]?
+
+Conceptually:
+
+    base(A) + i × element_size
+
+
+possibly using a target addressing mode.
+
+
+======================================================================
+83. PRACTICAL MINI CODE GENERATOR
+======================================================================
+
+Suppose the IR is:
+
+    t1 = a + b
+    t2 = t1 * c
+    x = t2
+
+
+A simple educational code generator could apply rules:
+
+    ADD:
+        LOAD R1, left
+        ADD R1, right
+        result → R1
+
+
+    MUL:
+        MUL R1, right
+
+
+    ASSIGN:
+        STORE destination, R1
+
+
+Output:
+
+    LOAD R1, a
+    ADD  R1, b
+    MUL  R1, c
+    STORE x, R1
+
+
+This is a simple rule-based code generator.
+
+
+======================================================================
+84. PSEUDOCODE FOR SIMPLE CODE GENERATOR
+======================================================================
+
+    generate(node):
+
+        if node = ADD:
+            generate(left)
+            generate(right)
+            emit(ADD)
+
+        if node = MUL:
+            generate(left)
+            generate(right)
+            emit(MUL)
+
+        if node = ASSIGN:
+            generate(expression)
+            emit(STORE destination)
+
+
+A real compiler needs substantially more machinery for:
+
+    • registers
+    • spills
+    • calling conventions
+    • control flow
+    • types
+    • instruction constraints
+    • optimization
+
+
+======================================================================
+85. CODE GENERATION FOR POINTERS
+======================================================================
+
+Source:
+
+    x = *p;
+
+
+Suppose:
+
+    p → R1
+
+
+Then:
+
+    LOAD R2, [R1]
+    STORE x, R2
+
+
+For:
+
+    *p = x
+
+
+Conceptually:
+
+    LOAD R2, x
+    STORE [R1], R2
+
+
+This connects:
+
+    pointer semantics
+        ↓
+    addressing modes
+        ↓
+    code generation
+
+
+======================================================================
+86. CODE GENERATION FOR ARRAYS
+======================================================================
+
+Source:
+
+    x = A[i];
+
+
+Suppose:
+
+    base(A) = R1
+    index i = R2
+    element size = 4
+
+
+Effective address:
+
+    R1 + R2×4
+
+
+Conceptually:
+
+    LOAD R3, [R1 + R2×4]
+    STORE x, R3
+
+
+If the target does not support scaled indexing directly,
+the compiler may generate separate instructions to compute the
+address.
+
+
+======================================================================
+87. CODE GENERATION FOR LOCAL VARIABLES
+======================================================================
+
+Suppose:
+
+    int x;
+
+
+and compiler assigns:
+
+    offset(x) = -8
+
+relative to FP.
+
+
+Then:
+
+    x
+
+can conceptually be accessed as:
+
+    -8(FP)
+
+
+Example:
+
+    LOAD R1, -8(FP)
+
+
+This demonstrates the connection between:
+
+    Activation Record
+            ↓
+    Frame Pointer
+            ↓
+    Offset
+            ↓
+    Addressing Mode
+            ↓
+    Code Generation
+
+
+======================================================================
+88. CODE GENERATION FOR FUNCTION RETURN
+======================================================================
+
+Source:
+
+    return x;
+
+
+Conceptually:
+
+    load x into the ABI-defined return-value location
+    execute return sequence
+
+
+For example:
+
+    LOAD return_register, x
+    RETURN
+
+
+The exact return register and instruction are target-dependent.
+
+
+======================================================================
+89. CODE GENERATION FOR FUNCTION CALL
+======================================================================
+
+Source:
+
+    y = f(a,b);
+
+
+Conceptually:
+
+    prepare a
+    prepare b
+    CALL f
+    receive result
+    y = result
+
+
+Possible target-like representation:
+
+    move a → argument location 1
+    move b → argument location 2
+    CALL f
+    move return register → y
+
+
+Exact locations depend on the ABI.
+
+
+======================================================================
+90. CODE GENERATION AND OPTIMIZATION
+======================================================================
+
+Optimization before or during code generation may improve:
+
+    • register use
+    • instruction count
+    • memory accesses
+    • branches
+    • instruction selection
+    • code size
+
+
+Example:
+
+    t1 = a + b
+    x = t1
+
+
+The compiler may eliminate unnecessary temporary storage and generate:
+
+    LOAD R1,a
+    ADD R1,b
+    STORE x,R1
+
+
+Instead of:
+
+    compute t1
+    store t1
+    reload t1
+    store x
+
+
+This demonstrates the interaction between IR optimization and
+code generation.
+
+
+======================================================================
+91. IMPORTANT CODE-GENERATION PROBLEMS
+======================================================================
+
+A good code generator must answer:
+
+    Q1. Which instruction implements this operation?
+
+    Q2. Which registers should contain the operands?
+
+    Q3. When can a register be reused?
+
+    Q4. Which values should be spilled?
+
+    Q5. How is the memory address calculated?
+
+    Q6. What addressing mode is best?
+
+    Q7. What order should instructions execute?
+
+    Q8. How should branches be generated?
+
+    Q9. How should function calls follow the ABI?
+
+    Q10. How can performance improve without changing semantics?
+
+
+These are central compiler back-end problems.
+
+
+======================================================================
+92. BIG PICTURE — CODE GENERATION
+======================================================================
+
+                        IR
+                         |
+                         ↓
+               +------------------+
+               | Instruction      |
+               | Selection        |
+               +------------------+
+                         |
+                         ↓
+               +------------------+
+               | Register         |
+               | Allocation       |
+               +------------------+
+                         |
+                         ↓
+               +------------------+
+               | Register         |
+               | Assignment       |
+               +------------------+
+                         |
+                         ↓
+               +------------------+
+               | Address          |
+               | Generation       |
+               +------------------+
+                         |
+                         ↓
+               +------------------+
+               | Instruction      |
+               | Ordering         |
+               +------------------+
+                         |
+                         ↓
+                    Target Code
+
+
+======================================================================
+93. MASTER COMPARISON TABLE
+======================================================================
+
++----------------------+--------------------------------------------+
+| Concept              | Main Question                              |
++----------------------+--------------------------------------------+
+| Code generation      | How do we produce target code?             |
+| Instruction selection| Which machine instructions?                |
+| Register allocation  | Which values get registers?                |
+| Register assignment  | Which physical register?                   |
+| Spilling             | What if registers are insufficient?        |
+| Addressing mode      | How is an operand/address represented?     |
+| Scheduling            | In what order should instructions execute? |
+| Target machine       | What machine are we generating for?        |
++----------------------+--------------------------------------------+
+
+
+======================================================================
+94. TOP MEMORY TRICKS
+======================================================================
+
+CODE GENERATION:
+
+    IR → MACHINE/TARGET CODE
+
+
+INSTRUCTION SELECTION:
+
+    SELECT INSTRUCTIONS
+
+
+REGISTER ALLOCATION:
+
+    DECIDE WHO GETS REGISTERS
+
+
+REGISTER ASSIGNMENT:
+
+    DECIDE WHICH REGISTER
+
+
+SPILLING:
+
+    NOT ENOUGH REGISTERS → MEMORY
+
+
+IMMEDIATE:
+
+    VALUE IN INSTRUCTION
+
+
+REGISTER:
+
+    VALUE IN REGISTER
+
+
+REGISTER INDIRECT:
+
+    REGISTER CONTAINS ADDRESS
+
+
+BASE + OFFSET:
+
+    BASE + CONSTANT
+
+
+STATIC FRAME ACCESS:
+
+    FRAME POINTER + OFFSET
+
+
+ARRAY:
+
+    BASE + INDEX × ELEMENT SIZE
+
+
+SCHEDULING:
+
+    ORDER INSTRUCTIONS
+
+
+======================================================================
+95. TOP 15 GATE FACTS
+======================================================================
+
+★ Code generation is primarily a back-end activity.
+
+★ Code generator normally receives IR/lower-level representation.
+
+★ Target machine determines available instructions and registers.
+
+★ Instruction selection chooses target instruction patterns.
+
+★ Register allocation decides which values receive registers.
+
+★ Register assignment maps values to specific physical registers.
+
+★ Spilling occurs when register resources are insufficient.
+
+★ Live values influence register pressure.
+
+★ Non-overlapping live ranges can often share a register.
+
+★ Immediate addressing provides a constant operand.
+
+★ Register indirect addressing uses a register containing an address.
+
+★ Base + offset computes an address from base plus displacement.
+
+★ Array addressing commonly involves base + index × element size.
+
+★ Instruction scheduling must preserve dependencies.
+
+★ Correctness is more fundamental than optimization.
+
+
+======================================================================
+96. CHAPTER 26 CONNECTION WITH PREVIOUS CHAPTERS
+======================================================================
+
+Chapter 20:
+    Three-Address Code
+        ↓
+    provides IR
+
+
+Chapter 21:
+    Boolean & Control Flow
+        ↓
+    provides branches/control structures
+
+
+Chapter 22:
+    Runtime Storage
+        ↓
+    provides memory organization
+
+
+Chapter 23:
+    Activation Records
+        ↓
+    provides stack-frame information
+
+
+Chapter 24:
+    Procedure Calls
+        ↓
+    provides calling convention/call sequence
+
+
+Chapter 25:
+    Recursion & Scope
+        ↓
+    provides non-local access/runtime nesting
+
+
+Chapter 26:
+    Code Generation Fundamentals
+        ↓
+    converts these representations into target code
+
+
+Therefore:
+
+    Chapters 20–25
+           ↓
+        IR + Runtime
+           ↓
+    Chapter 26
+           ↓
+      Target Code
+
+
+======================================================================
+97. WHAT YOU MUST REMEMBER FOR GATE
+======================================================================
+
+If you remember only these concepts, remember:
+
+
+    1. IR → target code = code generation.
+
+    2. Instruction selection:
+           choose machine instructions.
+
+    3. Register allocation:
+           decide which values use registers.
+
+    4. Register assignment:
+           map values to actual registers.
+
+    5. Spilling:
+           move values to memory when registers are insufficient.
+
+    6. Immediate:
+           constant is directly available.
+
+    7. Register:
+           operand is in a register.
+
+    8. Register indirect:
+           register contains address.
+
+    9. Base + offset:
+           effective address = base + offset.
+
+    10. Array:
+           address = base + index × element size.
+
+    11. Scheduling:
+           reorder independent operations where legal.
+
+    12. RAW:
+           true dependency — Read After Write.
+
+    13. Static frame variable:
+           often accessed through frame pointer + offset.
+
+    14. Function calls:
+           generated according to ABI/calling convention.
+
+    15. Register pressure:
+           number of simultaneously needed register values.
+
+
+======================================================================
+98. FINAL REVISION
+======================================================================
+
+                         CODE GENERATION
+                               |
+              +----------------+----------------+
+              |                                 |
+        TARGET MACHINE                    IR INPUT
+              |                                 |
+      +-------+-------+                         |
+      |       |       |                         |
+   Registers ISA  Addressing                    |
+              |    Modes                        |
+              +-------+-------------------------+
+                      |
+                      ↓
+              INSTRUCTION SELECTION
+                      |
+                      ↓
+              REGISTER ALLOCATION
+                      |
+                      ↓
+              REGISTER ASSIGNMENT
+                      |
+                 +----+----+
+                 |         |
+              enough?    no
+                 |         |
+                 ↓         ↓
+              registers  SPILL
+                 |         |
+                 +----+----+
+                      |
+                      ↓
+             ADDRESS GENERATION
+                      |
+                      ↓
+              INSTRUCTION ORDER
+                      |
+                      ↓
+                 TARGET CODE
+
+
+======================================================================
+CHAPTER 26 COMPLETE
+======================================================================
+
+MASTER PHASE 7 STATUS:
+
+    Chapter 26 — Code Generation Fundamentals       ✓
+
+
+NEXT CHAPTER:
+
+    CHAPTER 27 — BASIC BLOCKS & CONTROL FLOW
+
+Topics:
+    • Basic blocks
+    • Leaders
+    • Formation of basic blocks
+    • Control-flow graphs
+    • Flow graphs
+    • Successors and predecessors
+    • Entry/exit nodes
+    • Dominators
+    • Natural loops
+    • Loop identification
+    • GATE numerical problems
+    • Interview questions
+    • Practical compiler implementation
+
+Type NEXT to continue.
+======================================================================

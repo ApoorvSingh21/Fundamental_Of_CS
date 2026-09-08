@@ -1,0 +1,2780 @@
+oThe uploaded master syllabus isn’t currently returning searchable content for Chapter 13, so I’ll follow the Chapter 13 topics already established in your master syllabus/project context and teach them from fundamentals through GATE and interview level.
+
+╔══════════════════════════════════════════════════════════════════════╗
+║ CHAPTER 13 — LR PARSING                                             ║
+║ Compiler Design — Beginner → GATE → Interview → Practical           ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LR parsing is a family of BOTTOM-UP parsers.
+
+LR parsers read the input:
+
+LEFT → RIGHT
+
+and construct:
+
+RIGHTMOST DERIVATION IN REVERSE.
+
+
+LR means:
+
+L = scan input from Left to Right
+R = construct a Rightmost derivation in reverse
+
+
+The major LR parser types are:
+
+        LR PARSING
+             │
+     ┌───────┼────────┐
+     │       │        │
+   LR(0)    SLR(1)   LR(1)
+                       │
+                    CLR(1)
+                       │
+                    LALR(1)
+
+
+Important:
+
+SLR, CLR and LALR are all LR-family bottom-up parsing methods.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHY DO WE NEED LR PARSING?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+From Chapter 12:
+
+Bottom-up parsing requires decisions such as:
+
+• Should I SHIFT?
+• Should I REDUCE?
+• Which production should I REDUCE?
+
+For complicated grammars, manually finding handles is difficult.
+
+LR parsing provides a systematic method for making these decisions.
+
+Instead of manually guessing the handle, an LR parser uses:
+
+• Parser states
+• LR items
+• Closure
+• GOTO
+• ACTION table
+• GOTO table
+• Stack
+
+
+Therefore:
+
+BOTTOM-UP PARSING
+        ↓
+SHIFT-REDUCE PARSING
+        ↓
+LR PARSING
+        ↓
+SYSTEMATIC PARSING TABLES
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. BASIC LR PARSER ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An LR parser typically contains:
+
+1. Input buffer
+2. Stack
+3. ACTION table
+4. GOTO table
+
+
+                    INPUT
+                      │
+                      ▼
+              ┌──────────────┐
+              │              │
+              │  LR PARSER   │
+              │              │
+              └──────────────┘
+                      │
+               ┌──────┴──────┐
+               │             │
+               ▼             ▼
+            ACTION          GOTO
+             TABLE          TABLE
+               │             │
+               └──────┬──────┘
+                      ▼
+                    STACK
+
+
+The parser uses:
+
+CURRENT STATE
++
+LOOKAHEAD TOKEN
+
+to determine the next action.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. LR PARSER ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The ACTION table can specify:
+
+1. SHIFT
+2. REDUCE
+3. ACCEPT
+4. ERROR
+
+
+Example:
+
+ACTION[3, id] = shift 5
+
+means:
+
+If the current state is 3
+and lookahead is id,
+
+SHIFT the input token and move to state 5.
+
+
+Example:
+
+ACTION[6, +] = reduce A → α
+
+means:
+
+In state 6 with lookahead +,
+
+REDUCE using:
+
+A → α
+
+
+Example:
+
+ACTION[2, $] = ACCEPT
+
+means:
+
+The complete input has been successfully recognized.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. GOTO TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GOTO is used after recognizing a non-terminal.
+
+Example:
+
+GOTO[3,A] = 7
+
+
+means:
+
+If the parser is in state 3 and obtains non-terminal A,
+go to state 7.
+
+
+Important distinction:
+
+ACTION table:
+
+Usually used with TERMINALS.
+
+GOTO table:
+
+Used with NON-TERMINALS.
+
+
+Memory:
+
+ACTION → terminals
+
+GOTO → non-terminals
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. LR PARSER STACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An LR parser stack contains states and, conceptually,
+grammar symbols associated with those states.
+
+A simplified representation:
+
+        $  0  E  1  +  3  T  4
+                          ↑
+                       top/state
+
+
+The exact stack format depends on implementation.
+
+The important idea is:
+
+The CURRENT STATE is critical for deciding
+the parser action.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. THE KEY IDEA: LR ITEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An LR item represents how much of a production has already
+been recognized.
+
+Consider:
+
+A → XYZ
+
+
+Possible LR(0) items are:
+
+A → • XYZ
+A → X • YZ
+A → XY • Z
+A → XYZ •
+
+
+The dot:
+
+•
+
+shows the parser's current position in the production.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. MEANING OF THE DOT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Production:
+
+A → XYZ
+
+
+Item:
+
+A → • XYZ
+
+means:
+
+Nothing has been recognized yet.
+
+
+Item:
+
+A → X • YZ
+
+means:
+
+X has already been recognized.
+
+The parser expects:
+
+Y
+
+
+Item:
+
+A → XY • Z
+
+means:
+
+XY has already been recognized.
+
+The parser expects:
+
+Z
+
+
+Item:
+
+A → XYZ •
+
+means:
+
+Entire RHS has been recognized.
+
+
+This final item is called a:
+
+COMPLETED ITEM.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. LR(0) ITEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LR(0) items do NOT contain lookahead symbols.
+
+For:
+
+A → XYZ
+
+LR(0) items:
+
+A → •XYZ
+A → X•YZ
+A → XY•Z
+A → XYZ•
+
+
+Notice:
+
+There is no lookahead after the production.
+
+
+That is the meaning of:
+
+LR(0)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. COMPLETED LR(0) ITEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An item such as:
+
+A → XYZ•
+
+
+has the dot at the end.
+
+This means:
+
+The RHS has been completely recognized.
+
+Therefore:
+
+REDUCTION may be possible.
+
+
+Example:
+
+A → id•
+
+
+means:
+
+id has been recognized as A.
+
+So:
+
+A → id
+
+is a candidate reduction.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. AUGMENTED GRAMMAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before constructing LR items, we usually AUGMENT the grammar.
+
+Suppose the original grammar is:
+
+S → CC
+
+
+Introduce a new start symbol:
+
+S'
+
+and write:
+
+S' → S
+
+
+This is called:
+
+AUGMENTED GRAMMAR.
+
+
+Why?
+
+It gives the parser a unique production representing
+successful completion.
+
+
+The item:
+
+S' → S•
+
+
+means:
+
+The entire grammar has been recognized.
+
+Therefore:
+
+ACCEPT.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. WHY DO WE AUGMENT THE GRAMMAR?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The augmented production:
+
+S' → S
+
+
+creates a special completed item:
+
+S' → S•
+
+
+When this item is reached and the input is exhausted:
+
+ACCEPT
+
+
+So:
+
+AUGMENTED START PRODUCTION
+
+is used to identify the successful completion of parsing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. EXAMPLE OF LR(0) ITEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+S → C C
+C → c C
+C → d
+
+
+Augment:
+
+S' → S
+
+
+Initial item:
+
+S' → •S
+
+
+Because S appears immediately after the dot:
+
+S' → •S
+
+
+we need to include productions of S:
+
+S → •CC
+
+
+Now C appears immediately after the dot:
+
+S → •CC
+
+Therefore include productions of C:
+
+C → •cC
+C → •d
+
+
+So the initial collection/state I₀ is:
+
+I₀:
+
+S' → •S
+S  → •CC
+C  → •cC
+C  → •d
+
+
+This process is called:
+
+CLOSURE.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. CLOSURE OPERATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Closure is used to expand an LR item set.
+
+Rule:
+
+If an item contains:
+
+A → α • B β
+
+where B is a NON-TERMINAL,
+
+then add:
+
+B → • γ
+
+for every production:
+
+B → γ
+
+
+Repeat until no new items can be added.
+
+
+Simple memory:
+
+DOT BEFORE NON-TERMINAL
+        ↓
+ADD THAT NON-TERMINAL'S PRODUCTIONS
+        ↓
+PUT DOT AT BEGINNING
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. CLOSURE EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+S' → S
+S  → AB
+A  → a
+B  → b
+
+
+Start item:
+
+S' → •S
+
+
+Since S is after dot:
+
+Add:
+
+S → •AB
+
+
+Now A is after dot:
+
+Add:
+
+A → •a
+
+
+So:
+
+CLOSURE({S' → •S})
+
+
+=
+
+{
+S' → •S
+S  → •AB
+A  → •a
+}
+
+
+B is NOT expanded yet because in:
+
+S → •AB
+
+the dot is before A, not B.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. GOTO OPERATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GOTO tells us:
+
+"After recognizing a particular grammar symbol,
+which LR state should we move to?"
+
+
+Formal idea:
+
+GOTO(I, X)
+
+means:
+
+Take item set I,
+move the dot over symbol X wherever possible,
+then apply closure.
+
+
+Example:
+
+If:
+
+I:
+
+A → •aB
+
+
+then:
+
+GOTO(I,a)
+
+
+contains:
+
+A → a•B
+
+
+and then closure is applied if necessary.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. CLOSURE VS GOTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CLOSURE:
+
+Expands items when dot is before a non-terminal.
+
+
+GOTO:
+
+Moves the dot across a grammar symbol.
+
+
+Memory:
+
+CLOSURE
+=
+EXPAND
+
+
+GOTO
+=
+MOVE DOT
+
+
+Example:
+
+A → α • B β
+
+Closure:
+
+Add productions of B with dot at beginning.
+
+
+Goto on B:
+
+A → α B • β
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. CANONICAL COLLECTION OF LR(0) ITEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The complete set of LR(0) item states is called the:
+
+CANONICAL COLLECTION OF LR(0) ITEMS.
+
+
+Construction:
+
+1. Augment grammar.
+2. Create initial item:
+       S' → •S
+3. Apply closure.
+4. Compute GOTO on grammar symbols.
+5. Create new states.
+6. Repeat until no new states appear.
+
+
+Conceptually:
+
+I₀
+ │
+ ├── GOTO(a)
+ │
+ ├── GOTO(A)
+ │
+ └── GOTO(B)
+       ↓
+     New states
+       ↓
+     Continue
+       ↓
+No new states
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. COMPLETE LR(0) CONSTRUCTION PROCESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given grammar G:
+
+STEP 1:
+
+Augment:
+
+S' → S
+
+
+STEP 2:
+
+Construct:
+
+I₀ = CLOSURE({S' → •S})
+
+
+STEP 3:
+
+For every grammar symbol X:
+
+Compute:
+
+GOTO(I₀,X)
+
+
+STEP 4:
+
+For every newly created state I:
+
+Compute:
+
+GOTO(I,X)
+
+
+STEP 5:
+
+Continue until all states are known.
+
+
+STEP 6:
+
+Construct ACTION and GOTO tables.
+
+
+STEP 7:
+
+Check for conflicts.
+
+
+This produces an LR(0) parser if the grammar satisfies
+the LR(0) requirements.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. LR(0) PARSING TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The LR(0) table has two sections:
+
+ACTION
+
+and:
+
+GOTO
+
+
+ACTION columns:
+
+Terminals + $
+
+
+GOTO columns:
+
+Non-terminals
+
+
+Example:
+
+          ACTION             GOTO
+       id   +   $          E    T
+     ┌────┬───┬───┐      ┌────┬────┐
+  0  │    │   │   │      │    │    │
+     ├────┼───┼───┤      ├────┼────┤
+  1  │    │   │   │      │    │    │
+     └────┴───┴───┘      └────┴────┘
+
+
+Rows:
+
+Parser states.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. HOW SHIFT ACTIONS ARE CREATED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose state I contains:
+
+A → α • a β
+
+
+where a is a terminal.
+
+
+If:
+
+GOTO(I,a) = J
+
+
+then:
+
+ACTION[I,a] = SHIFT J
+
+
+Meaning:
+
+If the parser is in state I and sees terminal a,
+shift a and move to state J.
+
+
+Memory:
+
+DOT BEFORE TERMINAL
+        ↓
+SHIFT
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. HOW GOTO ENTRIES ARE CREATED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+GOTO(I,A) = J
+
+where A is a non-terminal.
+
+Then:
+
+GOTO[I,A] = J
+
+
+Memory:
+
+GOTO is primarily associated with:
+
+NON-TERMINALS.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. HOW REDUCE ACTIONS ARE CREATED IN LR(0)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose state I contains:
+
+A → α•
+
+
+This is a completed item.
+
+For LR(0), the reduction is placed for ALL input terminals
+(and typically $), because LR(0) has no lookahead information.
+
+So:
+
+ACTION[I,a] = REDUCE A → α
+
+for applicable terminal columns.
+
+
+This is a major source of LR(0) conflicts.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. ACCEPT ACTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If a state contains:
+
+S' → S•
+
+
+then:
+
+ACTION[I,$] = ACCEPT
+
+
+This is the special accepting item.
+
+
+Important:
+
+Only the augmented start production's completed item
+produces the ACCEPT action.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. LR(0) CONFLICTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Two important conflicts:
+
+1. Shift-Reduce Conflict
+2. Reduce-Reduce Conflict
+
+
+SHIFT-REDUCE:
+
+A state permits:
+
+SHIFT
+
+and:
+
+REDUCE
+
+
+REDUCE-REDUCE:
+
+A state permits:
+
+REDUCE A → α
+
+and:
+
+REDUCE B → β
+
+
+If conflicts occur:
+
+The grammar is not LR(0).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. WHY LR(0) IS LIMITED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LR(0) does not use lookahead.
+
+Suppose:
+
+A → α•
+
+
+A reduction may be placed very broadly.
+
+The parser cannot ask:
+
+"Should I reduce only when the next token is +?"
+
+because LR(0) has no lookahead information.
+
+This causes unnecessary conflicts.
+
+Therefore:
+
+LR(0)
+→ simple
+→ small amount of information
+→ limited grammar power
+
+
+This motivates:
+
+SLR(1).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. SLR(1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SLR means:
+
+SIMPLE LR
+
+
+SLR(1) improves LR(0) by using:
+
+FOLLOW sets.
+
+
+Instead of placing:
+
+A → α
+
+reduction on every terminal,
+
+we place the reduction only for terminals in:
+
+FOLLOW(A)
+
+
+This reduces unnecessary reductions and can eliminate
+some LR(0) conflicts.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. SLR(1) REDUCTION RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If state I contains:
+
+A → α•
+
+
+then for every:
+
+a ∈ FOLLOW(A)
+
+
+put:
+
+ACTION[I,a] = REDUCE A → α
+
+
+This is the key SLR rule.
+
+
+Compare:
+
+LR(0):
+
+Reduce broadly.
+
+
+SLR(1):
+
+Reduce only on:
+
+FOLLOW(A).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. EXAMPLE OF SLR REDUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+A → α
+
+
+and:
+
+FOLLOW(A) = {+, ), $}
+
+
+If a state contains:
+
+A → α•
+
+
+then SLR table gets:
+
+ACTION[I,+] = reduce A→α
+
+ACTION[I,)] = reduce A→α
+
+ACTION[I,$] = reduce A→α
+
+
+No reduction is placed under:
+
+*
+
+unless:
+
+* ∈ FOLLOW(A).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. LR(0) VS SLR(1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LR(0):
+
+Completed item:
+
+A → α•
+
+
+Reduction is placed broadly.
+
+
+SLR(1):
+
+Completed item:
+
+A → α•
+
+
+Reduction is placed only for:
+
+FOLLOW(A).
+
+
+Therefore:
+
+SLR(1) is more powerful than LR(0).
+
+
+And:
+
+Every LR(0) grammar is SLR(1).
+
+But:
+
+Not every SLR(1) grammar is LR(0).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. WHY SLR CAN STILL FAIL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SLR uses:
+
+FOLLOW(A)
+
+for all occurrences of A.
+
+
+But the correct reduction context may be more specific
+than the global FOLLOW set.
+
+This can still cause conflicts.
+
+Therefore we need more precise lookahead information.
+
+That leads to:
+
+LR(1).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. LR(1) ITEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LR(1) items contain:
+
+• Production
+• Dot position
+• One lookahead symbol
+
+
+Format:
+
+[A → α • β, a]
+
+
+where:
+
+a
+
+is the lookahead.
+
+
+Example:
+
+[A → X • Y, +]
+
+
+means:
+
+We have recognized X,
+we expect Y,
+and + is a possible lookahead associated with this item.
+
+
+The key difference:
+
+LR(0):
+
+A → α•
+
+
+LR(1):
+
+[A → α•, a]
+
+
+LR(1) has more contextual information.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. WHY LOOKAHEAD IS IMPORTANT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+A → α
+
+
+A completed item appears:
+
+[A → α•, +]
+
+
+This means:
+
+Reduce A → α only when lookahead is:
+
++
+
+
+Another item might be:
+
+[A → α•, )]
+
+
+Then reduction happens only when lookahead is:
+
+)
+
+
+This is much more precise than SLR's global:
+
+FOLLOW(A).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. CLR(1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CLR means:
+
+CANONICAL LR
+
+
+CLR(1) is essentially the canonical LR(1) parser.
+
+
+It uses:
+
+LR(1) items
+
+with:
+
+explicit lookahead symbols.
+
+
+Compared with SLR:
+
+SLR uses:
+
+FOLLOW(A)
+
+
+CLR uses:
+
+specific item-level lookahead.
+
+
+Therefore:
+
+CLR(1) is more powerful than SLR(1).
+
+
+But there is a major disadvantage:
+
+MORE STATES.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. LR(1) CLOSURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LR(1) closure is more detailed than LR(0) closure.
+
+Suppose we have:
+
+[A → α • B β, a]
+
+
+where B is a non-terminal.
+
+For each production:
+
+B → γ
+
+
+we add:
+
+[B → • γ, b]
+
+
+where:
+
+b ∈ FIRST(βa)
+
+
+This is a crucial LR(1) closure rule.
+
+
+Here:
+
+FIRST(βa)
+
+determines the appropriate lookahead.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. LR(1) CLOSURE — SIMPLE INTUITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+A → α • B β
+
+and lookahead is:
+
+a
+
+
+The parser wants to expand B.
+
+But what lookahead should B's productions receive?
+
+We examine:
+
+β followed by a
+
+
+and calculate:
+
+FIRST(βa)
+
+
+This gives the possible terminals that can follow B
+in this particular context.
+
+
+Therefore LR(1) uses:
+
+CONTEXT-SENSITIVE LOOKAHEAD.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. LR(0), SLR(1), CLR(1) — CORE DIFFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LR(0):
+
+No lookahead.
+
+
+SLR(1):
+
+Uses:
+
+FOLLOW(non-terminal)
+
+
+CLR(1):
+
+Uses:
+
+Item-specific LR(1) lookahead.
+
+
+Memory:
+
+LR(0)
+→ NONE
+
+
+SLR(1)
+→ FOLLOW
+
+
+CLR(1)
+→ EXACT ITEM LOOKAHEAD
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. LALR(1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LALR means:
+
+LOOK-AHEAD LR
+
+
+LALR(1) combines the advantages of:
+
+LR(1) precision
+
+with fewer states.
+
+
+Main idea:
+
+Construct canonical LR(1) states.
+
+Then merge states having the same:
+
+LR(0) CORE
+
+
+while combining their lookahead sets.
+
+
+Therefore:
+
+CLR(1)
+        ↓
+Find states with same LR(0) core
+        ↓
+Merge them
+        ↓
+LALR(1)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. WHAT IS AN LR(0) CORE?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider LR(1) items:
+
+[A → α • β, a]
+
+[A → α • β, b]
+
+
+Their LR(0) core is:
+
+A → α • β
+
+
+The lookahead is ignored when determining the core.
+
+
+So these two items have the same LR(0) core:
+
+[A → α • β, a]
+
+[A → α • β, b]
+
+
+Core:
+
+A → α • β
+
+
+This property is used to merge LALR states.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. LALR MERGING EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose two CLR states are:
+
+I₁:
+
+[A → α•β, a]
+
+
+I₂:
+
+[A → α•β, b]
+
+
+Their cores are identical:
+
+A → α•β
+
+
+LALR merges them:
+
+I:
+
+[A → α•β, a/b]
+
+
+Conceptually:
+
+lookahead set:
+
+{a,b}
+
+
+This reduces the number of states.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. WHY LALR IS POPULAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CLR(1):
+
+• Very powerful
+• Precise lookahead
+• Large number of states
+
+
+LALR(1):
+
+• Almost the same practical power for many programming-language
+  grammars
+• Much fewer states
+• More compact tables
+• Historically popular in parser generators
+
+
+LALR provides a practical balance:
+
+POWER + TABLE SIZE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. LR FAMILY POWER RELATIONSHIP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Important relationship:
+
+LR(0)
+   ⊂
+SLR(1)
+   ⊂
+LALR(1)
+   ⊂
+CLR(1)
+
+
+This is the commonly taught grammar-class inclusion relationship.
+
+
+Meaning:
+
+Every LR(0) grammar is SLR(1).
+
+Every SLR(1) grammar is LALR(1).
+
+Every LALR(1) grammar is CLR(1).
+
+
+The reverse implications do NOT generally hold.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. IMPORTANT NUANCE ABOUT LALR AND CLR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LALR is obtained by merging CLR states with identical LR(0) cores.
+
+Because merging can combine lookaheads, an LALR parser can introduce
+conflicts that were absent in the original CLR(1) parser.
+
+Therefore:
+
+CLR(1) is strictly more powerful than LALR(1)
+as a grammar class.
+
+
+This is an important GATE-level concept.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. COMPARISON: LR(0), SLR, CLR, LALR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                LR(0)     SLR(1)     CLR(1)      LALR(1)
+----------------------------------------------------------------
+Lookahead        None      FOLLOW     Specific    Specific
+
+Items            LR(0)     LR(0)      LR(1)       LR(1)
+
+Reduction        Broad     FOLLOW     Item        Item
+                                      lookahead   lookahead
+
+States           Small     Small      Large       Medium
+
+Power            Lowest    Higher     Highest     High
+
+Table size       Small     Small      Large       Medium
+
+Practical use    Limited   Common     Powerful    Very common
+
+
+Memory:
+
+LR(0) → No lookahead
+
+SLR → FOLLOW
+
+CLR → Complete LR(1)
+
+LALR → Merge compatible LR(1) states
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. LR PARSING TABLE CONSTRUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+General process:
+
+STEP 1:
+Augment grammar.
+
+STEP 2:
+Construct item sets.
+
+STEP 3:
+Compute closure.
+
+STEP 4:
+Compute GOTO.
+
+STEP 5:
+Construct states.
+
+STEP 6:
+Create ACTION table.
+
+STEP 7:
+Create GOTO table.
+
+STEP 8:
+Insert SHIFT actions.
+
+STEP 9:
+Insert REDUCE actions.
+
+STEP 10:
+Insert ACCEPT.
+
+STEP 11:
+Check conflicts.
+
+
+Different LR methods differ mainly in how reduction/lookahead
+information is determined.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. LR(0) TABLE RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If:
+
+[A → α • a β]
+
+and:
+
+GOTO(I,a) = J
+
+then:
+
+ACTION[I,a] = SHIFT J
+
+
+If:
+
+[A → α •]
+
+then:
+
+REDUCE A → α
+
+is entered broadly.
+
+
+If:
+
+[S' → S •]
+
+then:
+
+ACTION[I,$] = ACCEPT.
+
+
+GOTO:
+
+GOTO[I,A] = J
+
+for non-terminal A.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. SLR TABLE RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SHIFT:
+
+If:
+
+[A → α • a β]
+
+and:
+
+GOTO(I,a)=J
+
+then:
+
+ACTION[I,a] = SHIFT J
+
+
+REDUCE:
+
+If:
+
+[A → α •]
+
+then for every:
+
+a ∈ FOLLOW(A):
+
+ACTION[I,a] = REDUCE A→α
+
+
+ACCEPT:
+
+If:
+
+[S' → S•]
+
+then:
+
+ACTION[I,$] = ACCEPT.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. CLR(1) TABLE RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For an LR(1) item:
+
+[A → α • a β, b]
+
+
+If:
+
+GOTO(I,a)=J
+
+then:
+
+ACTION[I,a] = SHIFT J
+
+
+For completed item:
+
+[A → α•, a]
+
+
+put:
+
+ACTION[I,a] = REDUCE A→α
+
+
+Only the item's own lookahead controls the reduction.
+
+
+This is more precise than SLR.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. CONFLICT DETECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose a table cell receives:
+
+SHIFT 5
+
+and:
+
+REDUCE A→α
+
+
+Then:
+
+SHIFT-REDUCE CONFLICT.
+
+
+Suppose a cell receives:
+
+REDUCE A→α
+
+and:
+
+REDUCE B→β
+
+
+Then:
+
+REDUCE-REDUCE CONFLICT.
+
+
+If no conflict occurs:
+
+The grammar is accepted by that LR method.
+
+
+Example:
+
+No conflicts in SLR table
+⇒ grammar is SLR(1).
+
+
+No conflicts in CLR table
+⇒ grammar is CLR(1).
+
+
+No conflicts in LALR table
+⇒ grammar is LALR(1).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. WHY CONFLICTS MATTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A deterministic parser must know exactly what to do.
+
+If a cell says:
+
+SHIFT 5
+
+AND:
+
+REDUCE A→α
+
+
+the parser has two choices.
+
+Without additional rules:
+
+It cannot uniquely determine the correct action.
+
+
+Therefore:
+
+CONFLICT
+=
+PARSER CANNOT MAKE A UNIQUE DECISION.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. SHIFT-REDUCE CONFLICT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose the parser can:
+
+SHIFT next token
+
+or:
+
+REDUCE current handle.
+
+
+This is:
+
+SHIFT-REDUCE CONFLICT.
+
+
+Classic source:
+
+Ambiguous expression grammar:
+
+E → E + E
+  | E * E
+  | id
+
+
+Input:
+
+id + id * id
+
+
+Should parser:
+
+SHIFT *
+
+or:
+
+REDUCE E + E?
+
+
+Precedence determines the intended interpretation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. REDUCE-REDUCE CONFLICT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose a parser state permits:
+
+REDUCE A → α
+
+and:
+
+REDUCE B → β
+
+
+The parser cannot determine which production should be reduced.
+
+This is:
+
+REDUCE-REDUCE CONFLICT.
+
+
+Generally:
+
+RR conflicts are more problematic than SR conflicts.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+53. SLR VS LALR — IMPORTANT GATE CONCEPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SLR uses:
+
+FOLLOW(A)
+
+
+LALR uses:
+
+LR(1) lookaheads after merging states with the same LR(0) core.
+
+
+Therefore LALR can distinguish contexts that SLR cannot.
+
+
+Consequently:
+
+Some grammars are:
+
+NOT SLR(1)
+
+but:
+
+LALR(1).
+
+
+And some grammars can be:
+
+LALR(1)
+
+but not:
+
+SLR(1).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+54. LALR VS CLR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CLR:
+
+Uses separate LR(1) states.
+
+
+LALR:
+
+Merges states with identical LR(0) cores.
+
+
+Therefore:
+
+CLR usually has MORE states.
+
+LALR usually has FEWER states.
+
+
+But:
+
+Merging may introduce conflicts.
+
+
+Therefore:
+
+CLR is more powerful.
+
+LALR is more compact.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+55. STATE COUNT — EXAM IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generally:
+
+Number of LR(0) states
+≤
+Number of LALR(1) states
+≤
+Number of CLR(1) states
+
+
+Because LALR merges some CLR states.
+
+
+Important:
+
+LALR states correspond to groups of CLR states having
+the same LR(0) core.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+56. VERY IMPORTANT GATE RELATIONSHIP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar class:
+
+LR(0)
+   ↓
+SLR(1)
+   ↓
+LALR(1)
+   ↓
+CLR(1)
+
+
+Therefore:
+
+LR(0) ⊆ SLR(1) ⊆ LALR(1) ⊆ CLR(1)
+
+
+Strictly, these inclusions describe the grammar classes;
+the number of states is a separate issue.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+57. WHY LR PARSERS ARE POWERFUL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LR parsing can handle:
+
+• Left-recursive grammars
+• Many practical programming-language grammars
+• Complex operator structures
+• Grammars that are not LL(1)
+
+
+For example:
+
+E → E + T
+  | T
+
+
+This is left recursive.
+
+Top-down recursive descent has a problem with it.
+
+LR parsing can handle such left-recursive structures naturally.
+
+
+This is one reason bottom-up LR parsing is important.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+58. LEFT RECURSION: LL VS LR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+E → E + T | T
+
+
+For recursive descent:
+
+PROBLEM
+
+because:
+
+E calls E.
+
+
+For LR:
+
+NOT inherently a problem.
+
+
+Therefore:
+
+LEFT RECURSION
+
+is problematic for standard top-down recursive descent,
+but LR parsing is specifically capable of handling
+left-recursive grammars.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+59. LR PARSING WORKFLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Source code
+    ↓
+Lexer
+    ↓
+Tokens
+    ↓
+LR Parser
+    ↓
+ACTION/GOTO
+    ↓
+Shift/Reduce
+    ↓
+Parse Tree / AST
+
+
+Example tokens:
+
+id + id * id
+
+
+Parser decisions may look conceptually like:
+
+SHIFT id
+REDUCE F→id
+REDUCE T→F
+SHIFT +
+SHIFT id
+REDUCE F→id
+SHIFT *
+SHIFT id
+REDUCE F→id
+REDUCE T→T*F
+REDUCE E→E+T
+ACCEPT
+
+
+The exact sequence depends on the grammar and parser table.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+60. LR PARSING VS LL(1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LL(1):
+
+• Top-down
+• Leftmost derivation
+• One lookahead
+• Uses FIRST/FOLLOW
+• Predictive
+• Left recursion problematic
+• More restricted
+
+
+LR:
+
+• Bottom-up
+• Rightmost derivation in reverse
+• Uses parser states
+• Shift-reduce
+• Handles left recursion
+• More powerful
+• More complex to construct
+
+
+Memory:
+
+LL:
+    Predict production.
+
+
+LR:
+    Shift/reduce based on state and lookahead.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+61. PRACTICAL PARSER GENERATORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LR-family parsing is commonly associated with parser generators.
+
+Examples:
+
+• Yacc
+• Bison
+
+
+A typical architecture:
+
+Lex/Flex
+   ↓
+Tokens
+   ↓
+Yacc/Bison-generated parser
+   ↓
+AST / semantic actions
+
+
+Historically and practically, LALR-style parsing has been
+especially important in parser-generator tools.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+62. GATE TRAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRAP 1:
+
+"LR means left-to-right leftmost derivation."
+
+FALSE.
+
+LR:
+
+Left-to-right scanning
++
+Rightmost derivation in reverse.
+
+
+TRAP 2:
+
+"LR(0) uses one lookahead symbol."
+
+FALSE.
+
+LR(0) has NO lookahead.
+
+
+TRAP 3:
+
+"SLR uses LR(1) item-specific lookahead."
+
+FALSE.
+
+SLR uses:
+
+FOLLOW sets.
+
+
+TRAP 4:
+
+"CLR and SLR use the same reduction rule."
+
+FALSE.
+
+SLR:
+
+FOLLOW(A)
+
+
+CLR:
+
+specific LR(1) item lookahead.
+
+
+TRAP 5:
+
+"LALR has exactly the same states as CLR."
+
+FALSE.
+
+LALR MERGES compatible CLR states.
+
+
+TRAP 6:
+
+"LALR is more powerful than CLR."
+
+FALSE.
+
+CLR(1) is more powerful.
+
+
+TRAP 7:
+
+"LR(0) and SLR(1) have the same grammar power."
+
+FALSE.
+
+SLR(1) is more powerful.
+
+
+TRAP 8:
+
+"Completed item always means ACCEPT."
+
+FALSE.
+
+A completed item:
+
+A → α•
+
+usually indicates REDUCE.
+
+Only:
+
+S' → S•
+
+indicates ACCEPT.
+
+
+TRAP 9:
+
+"Closure moves the dot."
+
+Not directly.
+
+GOTO moves the dot.
+
+Closure adds productions for a non-terminal after the dot.
+
+
+TRAP 10:
+
+"GOTO is only for terminals."
+
+FALSE.
+
+GOTO is associated with transitions on grammar symbols,
+especially non-terminals in the parsing table.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+63. HIGH-VALUE GATE FACTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FACT 1:
+
+LR = Left-to-right scan + Rightmost derivation in reverse.
+
+
+FACT 2:
+
+LR(0) item:
+
+A → α • β
+
+
+FACT 3:
+
+Completed item:
+
+A → α •
+
+
+FACT 4:
+
+Augmented grammar:
+
+S' → S
+
+
+FACT 5:
+
+Accept item:
+
+S' → S •
+
+
+FACT 6:
+
+Closure:
+
+Expand non-terminal after dot.
+
+
+FACT 7:
+
+GOTO:
+
+Move dot across a symbol.
+
+
+FACT 8:
+
+SLR reduction uses:
+
+FOLLOW(A).
+
+
+FACT 9:
+
+CLR reduction uses:
+
+LR(1) item lookahead.
+
+
+FACT 10:
+
+LALR merges LR(1) states with identical LR(0) cores.
+
+
+FACT 11:
+
+LALR has fewer/equal states than CLR.
+
+
+FACT 12:
+
+CLR is more powerful than LALR.
+
+
+FACT 13:
+
+SLR is more powerful than LR(0).
+
+
+FACT 14:
+
+LR(0) ⊆ SLR(1) ⊆ LALR(1) ⊆ CLR(1).
+
+
+FACT 15:
+
+Multiple actions in one parsing-table cell indicate a conflict.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+64. INTERVIEW QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1. What is LR parsing?
+
+Answer:
+
+A family of bottom-up parsing techniques that scans input
+left-to-right and constructs a rightmost derivation in reverse.
+
+
+Q2. What is an LR(0) item?
+
+Answer:
+
+A production containing a dot that indicates how much of the
+production has been recognized.
+
+
+Q3. Why is the grammar augmented?
+
+Answer:
+
+To introduce a unique start production whose completed item
+identifies successful parsing.
+
+
+Q4. What is closure?
+
+Answer:
+
+An operation that adds productions for non-terminals appearing
+immediately after the dot.
+
+
+Q5. What is GOTO?
+
+Answer:
+
+An operation that moves the dot over a grammar symbol and then
+computes the resulting closure.
+
+
+Q6. What is SLR?
+
+Answer:
+
+Simple LR; it uses FOLLOW sets to determine where reductions
+should be placed.
+
+
+Q7. What is CLR?
+
+Answer:
+
+Canonical LR, using LR(1) items with explicit lookahead symbols.
+
+
+Q8. What is LALR?
+
+Answer:
+
+Look-Ahead LR; it merges CLR states with identical LR(0) cores.
+
+
+Q9. Which is more powerful: SLR or CLR?
+
+Answer:
+
+CLR.
+
+
+Q10. Which usually has fewer states: CLR or LALR?
+
+Answer:
+
+LALR.
+
+
+Q11. Which uses FOLLOW sets for reduction?
+
+Answer:
+
+SLR.
+
+
+Q12. Which uses item-specific lookahead?
+
+Answer:
+
+CLR/LR(1).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+65. EXAM COMPARISON TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                 LR(0)    SLR(1)    LALR(1)    CLR(1)
+---------------------------------------------------------
+Family            LR       LR        LR         LR
+
+Item type         LR(0)    LR(0)     LR(1)      LR(1)
+
+Lookahead         None     FOLLOW    Specific   Specific
+
+Reduction         Broad    FOLLOW    Item       Item
+
+States             Few      Few       Medium     Many
+
+Power              Low      Higher    High       Highest
+
+State merging      No       No        Yes        No
+
+Table size         Small    Small     Medium     Large
+
+Practical use      Low      Good      Very good  High
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+66. ONE COMPLETE MENTAL MODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Think of LR parsing as a GPS system for bottom-up parsing.
+
+The parser has:
+
+STACK
++
+CURRENT STATE
++
+LOOKAHEAD
++
+ACTION/GOTO TABLE
+
+
+The table tells it:
+
+"Given where you are and what token is next,
+what should you do?"
+
+
+Possible answer:
+
+SHIFT
+
+REDUCE
+
+ACCEPT
+
+ERROR
+
+
+Therefore:
+
+LR parsing = systematic bottom-up decision making.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+67. CHAPTER 13 MASTER CONCEPT MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                         LR PARSING
+                              │
+                     Bottom-Up Parsing
+                              │
+                     Rightmost Derivation
+                          in Reverse
+                              │
+                    ┌─────────┴─────────┐
+                    │                   │
+                  LR Items          ACTION/GOTO
+                    │                   │
+             ┌──────┴──────┐            │
+             │             │            │
+           LR(0)          LR(1)         │
+             │             │            │
+          Closure         Lookahead     │
+          GOTO               │          │
+             │               │          │
+       ┌─────┴─────┐     ┌───┴───┐      │
+       │           │     │       │      │
+     LR(0)        SLR   CLR     LALR     │
+                   │      │       │      │
+                FOLLOW  Exact    Merge   │
+                        Lookahead Cores   │
+                           │       │      │
+                           └───┬───┘      │
+                               │          │
+                            Conflicts     │
+                               │          │
+                    ┌──────────┴──────────┐
+                    │                     │
+               Shift-Reduce          Reduce-Reduce
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+68. ULTRA-SHORT REVISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LR:
+
+Left-to-right
++
+Rightmost derivation in reverse.
+
+
+LR(0):
+
+No lookahead.
+
+
+LR item:
+
+A → α • β
+
+
+Closure:
+
+Expand after dot.
+
+
+GOTO:
+
+Move dot.
+
+
+Augmented:
+
+S' → S
+
+
+Accept:
+
+S' → S•
+
+
+SLR:
+
+FOLLOW-based reduction.
+
+
+CLR:
+
+LR(1) item-specific lookahead.
+
+
+LALR:
+
+Merge LR(1) states with same LR(0) core.
+
+
+Power:
+
+LR(0)
+<
+SLR
+<
+LALR
+<
+CLR
+
+
+States:
+
+LALR < CLR
+(typically, because LALR merges states)
+
+
+Conflicts:
+
+SR = Shift/Reduce
+
+RR = Reduce/Reduce
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+69. CHAPTER 13 — FINAL SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LR parsing is a systematic bottom-up parsing technique.
+
+It:
+
+• Scans input left-to-right.
+• Constructs a rightmost derivation in reverse.
+• Uses parser states.
+• Uses LR items.
+• Uses closure and GOTO.
+• Uses ACTION and GOTO tables.
+• Performs SHIFT, REDUCE, ACCEPT and ERROR actions.
+
+
+LR(0):
+
+No lookahead.
+
+
+SLR(1):
+
+Uses FOLLOW sets.
+
+
+CLR(1):
+
+Uses explicit LR(1) lookahead.
+
+
+LALR(1):
+
+Merges CLR states with identical LR(0) cores.
+
+
+Important hierarchy:
+
+LR(0)
+   ⊂
+SLR(1)
+   ⊂
+LALR(1)
+   ⊂
+CLR(1)
+
+
+The most important concepts to master for GATE are:
+
+1. LR(0) items
+2. Augmented grammar
+3. Closure
+4. GOTO
+5. Canonical collection
+6. LR(0) table construction
+7. SLR reduction using FOLLOW
+8. LR(1) items
+9. CLR(1)
+10. LALR state merging
+11. Shift-reduce conflict
+12. Reduce-reduce conflict
+13. LR-family comparison
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHAPTER 13 COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NEXT MASTER-SYLLABUS CHAPTER:
+
+CHAPTER 14 — PARSER GENERATORS
+
+Topics:
+
+• Yacc
+• Bison
+• Grammar specification
+• Tokens
+• Semantic actions
+• Parser-generator workflow
+• Lex + Yacc / Flex + Bison
+• Parser construction
+• Shift/reduce handling
+• Practical parser generation
+• Error handling
+• Compiler integration
+• GATE/interview concepts

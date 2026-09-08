@@ -1,0 +1,2022 @@
+Chapter 33 — Loop Optimization
+
+============================================================
+COMPILER DESIGN — CHAPTER 33
+LOOP OPTIMIZATION
+============================================================
+
+LEVEL:
+Absolute Beginner → Intermediate → Advanced → GATE → Interview
+
+PREREQUISITES:
+• Basic Blocks
+• Control Flow Graph (CFG)
+• Data-Flow Analysis
+• Reaching Definitions
+• Live Variables
+• Available Expressions
+• Basic Compiler Optimization
+
+============================================================
+1. WHAT IS LOOP OPTIMIZATION?
+============================================================
+
+A LOOP is a section of a program that executes repeatedly.
+
+Example:
+
+for (i = 0; i < 100; i++) {
+    sum = sum + i;
+}
+
+The statements inside the loop may execute 100 times.
+
+If we can make the loop faster, even a small improvement can
+significantly improve the total program performance.
+
+Loop optimization = techniques used by a compiler to improve
+the efficiency of loops.
+
+Main goals:
+
+• Reduce number of instructions executed.
+• Reduce expensive computations.
+• Reduce memory accesses.
+• Reduce number of loop iterations when possible.
+• Improve register usage.
+• Improve CPU pipeline/cache behavior.
+• Preserve exactly the same program meaning.
+
+IMPORTANT:
+
+    Loop optimization must NOT change program semantics.
+
+============================================================
+2. WHY ARE LOOPS SO IMPORTANT?
+============================================================
+
+Consider:
+
+for (i = 0; i < 1,000,000; i++) {
+    x = a * b;
+}
+
+The multiplication:
+
+    a * b
+
+may be calculated 1,000,000 times.
+
+But if a and b do not change inside the loop, the result is
+always the same.
+
+Therefore:
+
+Before:
+
+    for (...) {
+        x = a * b;
+    }
+
+After:
+
+    t = a * b;
+
+    for (...) {
+        x = t;
+    }
+
+The expensive multiplication is performed only once.
+
+This is called:
+
+    LOOP-INVARIANT CODE MOTION
+
+============================================================
+3. COMMON LOOP OPTIMIZATION TECHNIQUES
+============================================================
+
+Important techniques:
+
+1. Loop-invariant code motion
+2. Strength reduction
+3. Induction variable elimination
+4. Loop unrolling
+5. Loop fusion
+6. Loop fission
+7. Loop interchange
+8. Loop peeling
+9. Loop unswitching
+10. Loop-invariant expression elimination
+11. Dead-code elimination inside loops
+12. Bounds-check elimination
+13. Software pipelining
+14. Loop vectorization
+
+For GATE and basic compiler courses, the most important are:
+
+    • Loop-invariant code motion
+    • Strength reduction
+    • Induction variable elimination
+    • Loop unrolling
+
+============================================================
+4. LOOP-INVARIANT CODE
+============================================================
+
+A computation is LOOP-INVARIANT if its value does not change
+from one iteration to another.
+
+Example:
+
+    for (i = 0; i < n; i++) {
+        x = a * b;
+        c[i] = x + i;
+    }
+
+If a and b are not modified inside the loop:
+
+    a * b
+
+is loop invariant.
+
+Original:
+
+    for (i = 0; i < n; i++) {
+        x = a * b;
+        c[i] = x + i;
+    }
+
+Optimized:
+
+    x = a * b;
+
+    for (i = 0; i < n; i++) {
+        c[i] = x + i;
+    }
+
+The calculation moves outside the loop.
+
+============================================================
+5. LOOP-INVARIANT CODE MOTION
+============================================================
+
+Definition:
+
+Loop-invariant code motion moves computations whose values do
+not change across loop iterations outside the loop.
+
+Example:
+
+    while (i < n) {
+        x = a + b;
+        y = x * i;
+        i++;
+    }
+
+Assume a and b are unchanged.
+
+Then:
+
+    x = a + b;
+
+is invariant.
+
+Optimized:
+
+    x = a + b;
+
+    while (i < n) {
+        y = x * i;
+        i++;
+    }
+
+============================================================
+6. CONDITIONS FOR SAFE LOOP-INVARIANT CODE MOTION
+============================================================
+
+A compiler cannot simply move every statement outside a loop.
+
+The compiler must ensure that moving the computation does not
+change the result.
+
+Typical requirements:
+
+1. The operands must have values that remain unchanged.
+
+2. The statement must execute whenever its original execution
+   was required, or moving it must not introduce unwanted
+   side effects.
+
+3. The computation must not depend on a value modified inside
+   the loop.
+
+4. Exceptions/side effects must be considered.
+
+Example:
+
+    while (condition) {
+        x = a / b;
+    }
+
+Moving:
+
+    x = a / b;
+
+outside the loop may be unsafe if the loop could execute zero
+times, or if division can produce an exception under the
+language semantics.
+
+Therefore optimization must consider control flow and
+language semantics.
+
+============================================================
+7. LOOP-INVARIANT CODE — DEPENDENCY IDEA
+============================================================
+
+Consider:
+
+    for (i = 0; i < n; i++) {
+        x = a + b;
+        y = x * i;
+    }
+
+First:
+
+    x = a + b
+
+is invariant.
+
+Then:
+
+    y = x * i
+
+is NOT invariant because i changes.
+
+Therefore:
+
+    x = a + b;
+
+    for (...) {
+        y = x * i;
+    }
+
+============================================================
+8. DOMINATORS AND LOOP IDENTIFICATION
+============================================================
+
+To optimize loops, the compiler first needs to identify loops.
+
+This is commonly done using the Control Flow Graph (CFG).
+
+A node D DOMINATES node N if every path from the entry node
+to N passes through D.
+
+Notation:
+
+    D dominates N
+
+or
+
+    D dom N
+
+------------------------------------------------------------
+BACK EDGE
+------------------------------------------------------------
+
+A CFG edge:
+
+    B → A
+
+is a BACK EDGE when A dominates B.
+
+This is important because back edges commonly identify loops.
+
+Example:
+
+        A
+        |
+        v
+        B
+       / \
+      v   v
+      C   D
+      |   |
+      +---+
+        |
+        v
+        B
+
+The edge:
+
+    C → B
+
+can be a back edge if B dominates C.
+
+============================================================
+9. NATURAL LOOP
+============================================================
+
+A natural loop is generally identified from a back edge.
+
+Suppose:
+
+    n → d
+
+is a back edge and d dominates n.
+
+The natural loop associated with the back edge consists of:
+
+• d
+• n
+• nodes that can reach n without passing through d
+
+Simplified idea:
+
+    Header = destination of back edge
+    Latch  = source of back edge
+
+Example:
+
+        A
+        |
+        v
+       [B] <------+
+        |         |
+        v         |
+       [C] -------+
+        |
+        v
+        D
+
+B is the loop header.
+
+C is the loop body.
+
+C → B is the back edge.
+
+============================================================
+10. LOOP HEADER
+============================================================
+
+The LOOP HEADER is the entry point of a loop.
+
+Example:
+
+        B
+       / \
+      C   D
+      |
+      +----> B
+
+Here B is the loop header.
+
+A natural loop normally has a single entry/header.
+
+============================================================
+11. LOOP PREHEADER
+============================================================
+
+A PREHEADER is a block placed immediately before the loop
+header.
+
+Example:
+
+        A
+        |
+        v
+    PREHEADER
+        |
+        v
+      HEADER
+       /   \
+      v     v
+    BODY    EXIT
+      |
+      +----> HEADER
+
+Why is a preheader useful?
+
+Because loop-invariant code can often be moved into it.
+
+Example:
+
+Before:
+
+    PREHEADER
+       |
+       v
+     HEADER
+       |
+       v
+     BODY:
+       x = a + b
+       ...
+       |
+       +----> HEADER
+
+After:
+
+    PREHEADER:
+       x = a + b
+       |
+       v
+     HEADER
+       |
+       v
+     BODY:
+       ...
+       |
+       +----> HEADER
+
+This is a major implementation detail of loop-invariant code
+motion.
+
+============================================================
+12. STRENGTH REDUCTION
+============================================================
+
+Strength reduction replaces an expensive operation with a
+cheaper operation.
+
+Examples:
+
+    multiplication → addition
+    division → addition/subtraction or shifts where valid
+
+Example:
+
+    for (i = 0; i < n; i++) {
+        x = i * 4;
+    }
+
+Instead of repeatedly calculating:
+
+    i * 4
+
+we can maintain a variable:
+
+    x = 0;
+
+    for (i = 0; i < n; i++) {
+        ...
+        x = x + 4;
+    }
+
+Now multiplication is replaced by addition.
+
+============================================================
+13. WHY IS IT CALLED "STRENGTH REDUCTION"?
+============================================================
+
+Operations have different computational costs.
+
+Conceptually:
+
+    expensive operation
+           ↓
+    cheaper operation
+
+Therefore:
+
+    operation strength decreases
+
+Hence:
+
+    STRENGTH REDUCTION
+
+IMPORTANT:
+
+Modern processors may make multiplication very efficient,
+so the compiler must use target-machine information before
+assuming one operation is always faster.
+
+============================================================
+14. INDUCTION VARIABLE
+============================================================
+
+An induction variable is a variable whose value changes by a
+fixed amount on every iteration.
+
+Example:
+
+    for (i = 0; i < n; i++) {
+        ...
+    }
+
+Here:
+
+    i = i + 1
+
+So i is an induction variable.
+
+Another example:
+
+    j = 0;
+
+    while (...) {
+        ...
+        j = j + 4;
+    }
+
+j is also an induction variable.
+
+============================================================
+15. BASIC INDUCTION VARIABLE
+============================================================
+
+A basic induction variable usually has the form:
+
+    i = i + c
+
+where c is constant.
+
+Example:
+
+    i = i + 1
+    j = j + 4
+    k = k - 2
+
+All can represent induction variables.
+
+============================================================
+16. DERIVED INDUCTION VARIABLE
+============================================================
+
+Suppose:
+
+    i = i + 1
+
+and:
+
+    j = 4 * i
+
+Then j is related to i.
+
+Instead of computing:
+
+    j = 4 * i
+
+each iteration, we can maintain:
+
+    j = j + 4
+
+Example:
+
+Before:
+
+    i = 0;
+    while (i < n) {
+        j = 4 * i;
+        ...
+        i++;
+    }
+
+After:
+
+    i = 0;
+    j = 0;
+
+    while (i < n) {
+        ...
+        j = j + 4;
+        i++;
+    }
+
+This combines:
+
+    Induction variable optimization
++
+    Strength reduction
+
+============================================================
+17. INDUCTION VARIABLE ELIMINATION
+============================================================
+
+Sometimes one induction variable is unnecessary.
+
+Example:
+
+    i = 0;
+    j = 0;
+
+    while (i < n) {
+        A[j] = ...;
+
+        i = i + 1;
+        j = j + 4;
+    }
+
+If j is completely determined by i:
+
+    j = 4 * i
+
+the compiler may be able to eliminate one variable, depending
+on how the loop is represented and target architecture.
+
+Goal:
+
+    Reduce unnecessary variables and instructions.
+
+============================================================
+18. LOOP UNROLLING
+============================================================
+
+Loop unrolling reduces loop-control overhead by executing
+multiple iterations in one loop body.
+
+Original:
+
+    for (i = 0; i < 8; i++) {
+        A[i] = A[i] + 1;
+    }
+
+Unrolled by factor 4:
+
+    for (i = 0; i < 8; i += 4) {
+        A[i]     = A[i]     + 1;
+        A[i + 1] = A[i + 1] + 1;
+        A[i + 2] = A[i + 2] + 1;
+        A[i + 3] = A[i + 3] + 1;
+    }
+
+The number of loop-control operations decreases.
+
+============================================================
+19. LOOP UNROLLING — WHY?
+============================================================
+
+Normal loop:
+
+    initialization
+    condition check
+    body
+    increment
+    jump
+
+These control operations execute repeatedly.
+
+Unrolling:
+
+    body
+    body
+    body
+    body
+    condition
+    increment
+
+Therefore:
+
+• fewer branch instructions
+• fewer loop-counter updates
+• potentially better instruction scheduling
+• more opportunities for instruction-level parallelism
+
+============================================================
+20. DISADVANTAGES OF LOOP UNROLLING
+============================================================
+
+Loop unrolling is NOT always beneficial.
+
+Disadvantages:
+
+1. Larger code size.
+
+2. Increased instruction-cache pressure.
+
+3. More register requirements.
+
+4. Possible register spilling.
+
+5. More complicated generated code.
+
+6. If loop count is not a multiple of the unroll factor,
+   remainder handling may be required.
+
+Example:
+
+    for (i = 0; i < n; i += 4)
+
+If n = 10:
+
+    iterations:
+    0,1,2,3
+    4,5,6,7
+    8,9 → remainder
+
+The compiler must handle the remaining two iterations.
+
+============================================================
+21. LOOP UNROLLING WITH REMAINDER
+============================================================
+
+Example:
+
+    for (i = 0; i < n; i++) {
+        A[i] = A[i] + 1;
+    }
+
+Unroll factor = 4.
+
+Possible conceptual form:
+
+    for (i = 0; i + 3 < n; i += 4) {
+        A[i]    ++;
+        A[i + 1]++;
+        A[i + 2]++;
+        A[i + 3]++;
+    }
+
+    while (i < n) {
+        A[i]++;
+        i++;
+    }
+
+The second loop handles the remainder.
+
+============================================================
+22. LOOP FUSION
+============================================================
+
+Loop fusion combines two loops having compatible iteration
+spaces.
+
+Before:
+
+    for (i = 0; i < n; i++)
+        A[i] = B[i] + 1;
+
+    for (i = 0; i < n; i++)
+        C[i] = A[i] * 2;
+
+After:
+
+    for (i = 0; i < n; i++) {
+        A[i] = B[i] + 1;
+        C[i] = A[i] * 2;
+    }
+
+Potential benefits:
+
+• Less loop-control overhead.
+• Better cache locality.
+• Fewer repeated condition checks.
+
+But fusion is legal only when dependencies allow it.
+
+============================================================
+23. LOOP FISSION
+============================================================
+
+Loop fission is the opposite of loop fusion.
+
+One loop is divided into multiple loops.
+
+Before:
+
+    for (i = 0; i < n; i++) {
+        A[i] = B[i] + 1;
+        C[i] = D[i] + 2;
+    }
+
+After:
+
+    for (i = 0; i < n; i++)
+        A[i] = B[i] + 1;
+
+    for (i = 0; i < n; i++)
+        C[i] = D[i] + 2;
+
+Why?
+
+Possible benefits:
+
+• Better cache behavior.
+• Better parallelism.
+• Better vectorization.
+• Separate independent computations.
+
+But it may increase loop overhead.
+
+============================================================
+24. LOOP INTERCHANGE
+============================================================
+
+Loop interchange swaps nested loops.
+
+Original:
+
+    for (i = 0; i < N; i++)
+        for (j = 0; j < M; j++)
+            A[i][j] = ...;
+
+Interchanged:
+
+    for (j = 0; j < M; j++)
+        for (i = 0; i < N; i++)
+            A[i][j] = ...;
+
+This can significantly affect memory locality.
+
+============================================================
+25. WHY LOOP INTERCHANGE MATTERS
+============================================================
+
+For row-major arrays, consecutive elements of a row are usually
+stored next to each other.
+
+Example:
+
+    A[0][0]
+    A[0][1]
+    A[0][2]
+    A[0][3]
+
+are adjacent in row-major representation.
+
+Therefore:
+
+    for (i)
+        for (j)
+            A[i][j]
+
+often has better locality than:
+
+    for (j)
+        for (i)
+            A[i][j]
+
+for row-major storage.
+
+IMPORTANT:
+
+The best loop order depends on the language's array layout,
+data layout, and access pattern.
+
+============================================================
+26. LOOP PEELING
+============================================================
+
+Loop peeling removes a small number of iterations from the
+beginning of a loop.
+
+Example:
+
+    for (i = 0; i < n; i++) {
+        ...
+    }
+
+A compiler may execute the first iteration separately:
+
+    if (n > 0) {
+        // first iteration
+    }
+
+    for (i = 1; i < n; i++) {
+        ...
+    }
+
+Why?
+
+Possible reasons:
+
+• Alignment.
+• Simplifying boundary conditions.
+• Enabling vectorization.
+• Handling special first iteration.
+
+============================================================
+27. LOOP UNSWITCHING
+============================================================
+
+Suppose:
+
+    for (i = 0; i < n; i++) {
+        if (condition)
+            A[i] = A[i] + 1;
+        else
+            A[i] = A[i] - 1;
+    }
+
+If condition does not change during the loop, repeatedly
+checking it is unnecessary.
+
+Conceptually:
+
+    if (condition) {
+        for (i = 0; i < n; i++)
+            A[i] = A[i] + 1;
+    }
+    else {
+        for (i = 0; i < n; i++)
+            A[i] = A[i] - 1;
+    }
+
+The conditional branch is moved outside the loop.
+
+This is called:
+
+    LOOP UNSWITCHING
+
+Trade-off:
+
+    less branching
+    BUT
+    more code duplication
+
+============================================================
+28. LOOP VECTORIZATION
+============================================================
+
+Vectorization transforms scalar operations into operations on
+multiple data elements at once.
+
+Scalar:
+
+    for (i = 0; i < 8; i++)
+        C[i] = A[i] + B[i];
+
+Conceptually:
+
+    C[0..3] = A[0..3] + B[0..3]
+    C[4..7] = A[4..7] + B[4..7]
+
+Using SIMD:
+
+    Single Instruction
+          ↓
+    Multiple Data elements
+
+SIMD = Single Instruction, Multiple Data.
+
+Benefits:
+
+• Process multiple elements per instruction.
+• Improve performance on suitable hardware.
+
+But vectorization requires dependency and safety analysis.
+
+============================================================
+29. LOOP-CARRIED DEPENDENCE
+============================================================
+
+A LOOP-CARRIED DEPENDENCE occurs when an operation in one
+iteration depends on an operation from another iteration.
+
+Example:
+
+    for (i = 1; i < n; i++)
+        A[i] = A[i - 1] + 1;
+
+Iteration i depends on:
+
+    A[i - 1]
+
+which was produced by the previous iteration.
+
+Therefore iterations cannot simply be executed independently.
+
+This can prevent or limit:
+
+• Vectorization
+• Parallelization
+• Some loop transformations
+
+============================================================
+30. INDEPENDENT LOOP
+============================================================
+
+Example:
+
+    for (i = 0; i < n; i++)
+        C[i] = A[i] + B[i];
+
+Each iteration uses:
+
+    A[i]
+    B[i]
+
+and produces:
+
+    C[i]
+
+There is generally no dependency between different i values.
+
+This is a good candidate for:
+
+• Vectorization
+• Parallel execution
+• Loop transformations
+
+============================================================
+31. DEPENDENCY IS CRITICAL
+============================================================
+
+Consider:
+
+    for (i = 1; i < n; i++)
+        A[i] = A[i - 1] + 1;
+
+Cannot freely reorder iterations.
+
+But:
+
+    for (i = 0; i < n; i++)
+        C[i] = A[i] + B[i];
+
+can often be reordered or vectorized.
+
+Therefore:
+
+    DEPENDENCY ANALYSIS
+            ↓
+    Determines legal optimizations
+
+============================================================
+32. LOOP-INVARIANT CODE MOTION — EXAMPLE
+============================================================
+
+Original:
+
+    for (i = 0; i < n; i++) {
+        x = a * b;
+        y = x + i;
+        A[i] = y;
+    }
+
+Assume a and b are unchanged.
+
+Step 1:
+
+    a * b
+
+is invariant.
+
+Step 2:
+
+Move it before the loop.
+
+Optimized:
+
+    x = a * b;
+
+    for (i = 0; i < n; i++) {
+        y = x + i;
+        A[i] = y;
+    }
+
+Cost comparison:
+
+Original:
+
+    multiplication = n times
+
+Optimized:
+
+    multiplication = 1 time
+
+Savings:
+
+    n - 1 multiplications
+
+============================================================
+33. STRENGTH REDUCTION — EXAMPLE
+============================================================
+
+Original:
+
+    for (i = 0; i < n; i++) {
+        x = i * 8;
+        A[x] = 0;
+    }
+
+Instead of calculating:
+
+    i * 8
+
+every iteration, maintain x:
+
+    x = 0;
+
+    for (i = 0; i < n; i++) {
+        A[x] = 0;
+        x = x + 8;
+    }
+
+Multiplication:
+
+    replaced by
+
+Addition.
+
+============================================================
+34. INDUCTION VARIABLE + STRENGTH REDUCTION
+============================================================
+
+Original:
+
+    i = 0;
+
+    while (i < n) {
+        j = 4 * i;
+        A[j] = 0;
+        i++;
+    }
+
+Here:
+
+    i = i + 1
+
+is an induction variable.
+
+And:
+
+    j = 4 * i
+
+is derived from i.
+
+Optimized:
+
+    i = 0;
+    j = 0;
+
+    while (i < n) {
+        A[j] = 0;
+        j = j + 4;
+        i = i + 1;
+    }
+
+Potentially:
+
+    multiplication removed.
+
+============================================================
+35. LOOP UNROLLING — EXAMPLE
+============================================================
+
+Original:
+
+    for (i = 0; i < 4; i++)
+        A[i] = A[i] + 1;
+
+Unrolled:
+
+    A[0] = A[0] + 1;
+    A[1] = A[1] + 1;
+    A[2] = A[2] + 1;
+    A[3] = A[3] + 1;
+
+Loop-control instructions are completely eliminated.
+
+This is an extreme form of unrolling for a fixed small loop.
+
+============================================================
+36. COMBINING OPTIMIZATIONS
+============================================================
+
+Multiple optimizations can be applied together.
+
+Original:
+
+    for (i = 0; i < n; i++) {
+        x = a * b;
+        j = i * 4;
+        A[j] = x + i;
+    }
+
+Optimization 1:
+
+    a * b
+
+is loop invariant.
+
+Optimization 2:
+
+    i * 4
+
+is related to an induction variable.
+
+Possible optimized structure:
+
+    x = a * b;
+    j = 0;
+
+    for (i = 0; i < n; i++) {
+        A[j] = x + i;
+        j = j + 4;
+    }
+
+Multiple expensive/redundant computations have been reduced.
+
+============================================================
+37. LOOP OPTIMIZATION AND BASIC BLOCKS
+============================================================
+
+A loop usually consists of several basic blocks.
+
+Example:
+
+    B1:
+        i = 0
+
+    B2:
+        if i >= n goto B5
+
+    B3:
+        A[i] = A[i] + 1
+
+    B4:
+        i = i + 1
+        goto B2
+
+    B5:
+        exit
+
+CFG:
+
+        B1
+         |
+         v
+        B2 <---------+
+       /  \          |
+      v    v         |
+     B3    B5        |
+      |              |
+      v              |
+     B4 -------------+
+
+Loop:
+
+    B2 → B3 → B4 → B2
+
+The compiler analyzes these blocks to perform loop
+optimizations safely.
+
+============================================================
+38. LOOP OPTIMIZATION AND DATA-FLOW ANALYSIS
+============================================================
+
+Chapter 32 introduced Data-Flow Analysis.
+
+Loop optimization uses data-flow information.
+
+Examples:
+
+Reaching definitions
+    ↓
+Determine which definition reaches a use.
+
+Live variables
+    ↓
+Determine whether a value is still needed.
+
+Available expressions
+    ↓
+Detect reusable computations.
+
+These analyses help the compiler determine whether an
+optimization is safe.
+
+============================================================
+39. DEAD CODE INSIDE LOOP
+============================================================
+
+Example:
+
+    for (i = 0; i < n; i++) {
+        x = 10;
+        y = 20;
+        z = x + i;
+    }
+
+If y is never used:
+
+    y = 20;
+
+is dead code.
+
+Remove it:
+
+    for (i = 0; i < n; i++) {
+        x = 10;
+        z = x + i;
+    }
+
+Removing dead code inside a loop is particularly useful because
+the unnecessary instruction may execute many times.
+
+============================================================
+40. LOOP-INVARIANT + DEAD CODE
+============================================================
+
+Example:
+
+    for (i = 0; i < n; i++) {
+        x = a + b;
+        y = 100;
+        z = x + i;
+    }
+
+Suppose y is never used.
+
+Then:
+
+Step 1:
+    Remove y = 100.
+
+Step 2:
+    Move a + b outside loop.
+
+Result:
+
+    x = a + b;
+
+    for (i = 0; i < n; i++) {
+        z = x + i;
+    }
+
+============================================================
+41. COMMON SUBEXPRESSION INSIDE LOOP
+============================================================
+
+Original:
+
+    for (i = 0; i < n; i++) {
+        x = a + b;
+        y = a + b;
+    }
+
+Same expression:
+
+    a + b
+
+appears twice.
+
+If safe:
+
+    t = a + b;
+
+    for (i = 0; i < n; i++) {
+        x = t;
+        y = t;
+    }
+
+If a and b are invariant, the expression can also be moved
+outside the loop.
+
+============================================================
+42. LOOP OPTIMIZATION PIPELINE
+============================================================
+
+A simplified compiler process:
+
+    Source Code
+         |
+         v
+    Lexical Analysis
+         |
+         v
+    Syntax Analysis
+         |
+         v
+    Semantic Analysis
+         |
+         v
+    Intermediate Representation
+         |
+         v
+    Basic Blocks
+         |
+         v
+    CFG
+         |
+         v
+    Loop Detection
+         |
+         v
+    Data-Flow Analysis
+         |
+         v
+    Loop Optimization
+         |
+         v
+    Other Optimizations
+         |
+         v
+    Code Generation
+
+============================================================
+43. IMPORTANT LOOP OPTIMIZATION COMPARISON
+============================================================
+
+Technique                  Main idea
+------------------------------------------------------------
+Loop-invariant motion      Move unchanged computation outside
+Strength reduction         Expensive operation → cheaper operation
+Induction elimination      Remove unnecessary induction variable
+Loop unrolling             Execute multiple iterations together
+Loop fusion                Combine two loops
+Loop fission               Split one loop into multiple loops
+Loop interchange           Swap nested loop order
+Loop peeling               Separate initial iterations
+Loop unswitching           Move invariant condition outside
+Vectorization              Process multiple data elements at once
+
+============================================================
+44. LOOP OPTIMIZATION — GATE IMPORTANT TABLE
+============================================================
+
+Technique:
+    Loop invariant code motion
+
+Purpose:
+    Remove repeated invariant computation.
+
+Technique:
+    Strength reduction
+
+Purpose:
+    Replace expensive operation with cheaper operation.
+
+Technique:
+    Induction variable elimination
+
+Purpose:
+    Remove unnecessary loop variables.
+
+Technique:
+    Loop unrolling
+
+Purpose:
+    Reduce loop-control overhead.
+
+Technique:
+    Loop fusion
+
+Purpose:
+    Combine compatible loops.
+
+Technique:
+    Loop fission
+
+Purpose:
+    Split loop for locality/parallelism/vectorization.
+
+Technique:
+    Loop interchange
+
+Purpose:
+    Improve memory locality in nested loops.
+
+============================================================
+45. GATE TRAP #1
+============================================================
+
+Question:
+
+Which optimization replaces multiplication by repeated
+addition?
+
+Answer:
+
+    Strength reduction
+
+NOT:
+
+    Loop unrolling.
+
+Why?
+
+Unrolling changes how many iterations are grouped together.
+
+Strength reduction changes the operation itself.
+
+============================================================
+46. GATE TRAP #2
+============================================================
+
+Question:
+
+Which optimization moves a computation outside the loop?
+
+Answer:
+
+    Loop-invariant code motion
+
+Example:
+
+    for (...) {
+        x = a + b;
+    }
+
+becomes:
+
+    x = a + b;
+
+    for (...) {
+        ...
+    }
+
+provided it is safe.
+
+============================================================
+47. GATE TRAP #3
+============================================================
+
+Loop unrolling:
+
+    Does NOT necessarily reduce total number of useful
+    computations.
+
+It primarily reduces:
+
+    loop-control overhead
+
+and can expose more optimization opportunities.
+
+============================================================
+48. GATE TRAP #4
+============================================================
+
+Loop interchange is especially related to:
+
+    Memory locality / cache behavior
+
+when nested loops access arrays.
+
+It does NOT mean:
+
+    "always swap loops."
+
+Correctness and dependencies must be preserved.
+
+============================================================
+49. GATE TRAP #5
+============================================================
+
+Loop fusion:
+
+    Two loops → one loop
+
+Loop fission:
+
+    One loop → two or more loops
+
+Remember:
+
+    FUSION = JOIN
+    FISSION = SPLIT
+
+============================================================
+50. GATE TRAP #6
+============================================================
+
+A loop-carried dependency can prevent:
+
+    Independent parallel execution
+
+Example:
+
+    A[i] = A[i-1] + 1
+
+because iteration i depends on iteration i-1.
+
+============================================================
+51. IMPORTANT FORMULAS / CONCEPTS
+============================================================
+
+Loop invariant:
+
+    value unchanged across iterations
+
+Strength reduction:
+
+    expensive operation → cheaper equivalent operation
+
+Induction variable:
+
+    i = i + c
+
+Back edge:
+
+    edge to a dominator / loop header in a natural loop
+
+Natural loop:
+
+    loop identified from a back edge
+
+Preheader:
+
+    block before loop header, useful for code motion
+
+Unrolling:
+
+    multiple iterations → one expanded loop body
+
+============================================================
+52. MINI GATE-STYLE QUESTION 1
+============================================================
+
+Given:
+
+    for(i=0; i<n; i++)
+        x = a*b;
+
+Assume a and b never change.
+
+Which optimization is most appropriate?
+
+A. Loop interchange
+B. Loop-invariant code motion
+C. Loop fission
+D. Loop peeling
+
+Answer:
+
+    B
+
+Because:
+
+    a*b
+
+has the same value in every iteration.
+
+============================================================
+53. MINI GATE-STYLE QUESTION 2
+============================================================
+
+Given:
+
+    for(i=0; i<n; i++)
+        x = i*4;
+
+Replacing i*4 with a variable incremented by 4 is:
+
+A. Loop fusion
+B. Strength reduction
+C. Loop peeling
+D. Loop fission
+
+Answer:
+
+    B
+
+============================================================
+54. MINI GATE-STYLE QUESTION 3
+============================================================
+
+Which transformation reduces loop-control overhead?
+
+A. Loop unrolling
+B. Loop fission
+C. Loop interchange
+D. Constant propagation
+
+Answer:
+
+    A
+
+============================================================
+55. MINI GATE-STYLE QUESTION 4
+============================================================
+
+Which is the opposite of loop fusion?
+
+A. Loop unrolling
+B. Loop peeling
+C. Loop fission
+D. Strength reduction
+
+Answer:
+
+    C
+
+============================================================
+56. MINI GATE-STYLE QUESTION 5
+============================================================
+
+Consider:
+
+    for(i=1; i<n; i++)
+        A[i] = A[i-1] + 1;
+
+The loop has:
+
+A. No dependency
+B. Loop-carried dependency
+C. Only lexical dependency
+D. No data dependency
+
+Answer:
+
+    B
+
+Because iteration i requires the result/value from i-1.
+
+============================================================
+57. INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is loop optimization?
+
+Answer:
+Optimization techniques that improve the performance of
+repeated computations in loops while preserving program
+semantics.
+
+Q2. What is loop-invariant code motion?
+
+Answer:
+Moving computations whose values remain unchanged across loop
+iterations outside the loop.
+
+Q3. What is strength reduction?
+
+Answer:
+Replacing a relatively expensive operation with a cheaper
+equivalent operation.
+
+Q4. What is an induction variable?
+
+Answer:
+A variable whose value changes by a fixed amount each loop
+iteration.
+
+Q5. What is loop unrolling?
+
+Answer:
+Expanding the loop body so that multiple iterations are
+performed per loop iteration.
+
+Q6. What is loop fusion?
+
+Answer:
+Combining compatible loops into one loop.
+
+Q7. What is loop fission?
+
+Answer:
+Splitting one loop into multiple loops.
+
+Q8. Why is loop interchange useful?
+
+Answer:
+It can improve memory locality for nested loops.
+
+Q9. What is a loop-carried dependency?
+
+Answer:
+A dependency where one iteration depends on another iteration.
+
+Q10. Why is a preheader useful?
+
+Answer:
+It provides a location outside the loop body where
+loop-invariant computations can be safely placed.
+
+============================================================
+58. PRACTICAL COMPILER EXAMPLE
+============================================================
+
+Source:
+
+    int sum = 0;
+
+    for (int i = 0; i < n; i++) {
+        int x = a * b;
+        sum = sum + x + i;
+    }
+
+Assume a and b are never modified.
+
+Original repeated work:
+
+    a * b
+
+for every iteration.
+
+Optimized conceptual code:
+
+    int x = a * b;
+    int sum = 0;
+
+    for (int i = 0; i < n; i++) {
+        sum = sum + x + i;
+    }
+
+If n is very large:
+
+    Original:
+        multiplication ≈ n times
+
+    Optimized:
+        multiplication = 1 time
+
+============================================================
+59. BIG PICTURE
+============================================================
+
+Loop optimization can be understood through four major ideas:
+
+                    LOOP OPTIMIZATION
+                           |
+          +----------------+----------------+
+          |                |                |
+          v                v                v
+      REMOVE           REPLACE           REDUCE
+      WORK             EXPENSIVE         CONTROL
+          |             WORK             OVERHEAD
+          |                |                |
+          v                v                v
+    Invariant         Strength          Unrolling
+    motion            reduction
+    Dead code
+    elimination
+
+And:
+
+          +-------------------------------+
+          |       CHANGE LOOP STRUCTURE   |
+          +-------------------------------+
+          | Fusion                        |
+          | Fission                       |
+          | Interchange                   |
+          | Peeling                       |
+          | Unswitching                   |
+          +-------------------------------+
+
+============================================================
+60. MEMORY TRICKS
+============================================================
+
+INVARIANT:
+
+    "Doesn't change"
+        ↓
+    Move OUT of loop
+
+STRENGTH:
+
+    "Expensive → Cheap"
+
+INDUCTION:
+
+    "Changes regularly"
+
+UNROLL:
+
+    "Many iterations → one expanded body"
+
+FUSION:
+
+    "JOIN loops"
+
+FISSION:
+
+    "SPLIT loop"
+
+INTERCHANGE:
+
+    "SWAP nested loops"
+
+PEELING:
+
+    "Remove first few iterations"
+
+UNSWITCHING:
+
+    "Move invariant IF outside loop"
+
+VECTORIZE:
+
+    "One instruction → many data elements"
+
+============================================================
+61. CHAPTER 33 — ONE-PAGE REVISION
+============================================================
+
+LOOP OPTIMIZATION
+        |
+        +-- Loop-invariant code motion
+        |       ↓
+        |   Move unchanged computation outside
+        |
+        +-- Strength reduction
+        |       ↓
+        |   Expensive operation → cheaper operation
+        |
+        +-- Induction variable optimization
+        |       ↓
+        |   Simplify/remove loop counters
+        |
+        +-- Loop unrolling
+        |       ↓
+        |   Reduce loop-control overhead
+        |
+        +-- Loop fusion
+        |       ↓
+        |   Two loops → one
+        |
+        +-- Loop fission
+        |       ↓
+        |   One loop → multiple loops
+        |
+        +-- Loop interchange
+        |       ↓
+        |   Swap nested loops
+        |
+        +-- Loop peeling
+        |       ↓
+        |   Separate initial iterations
+        |
+        +-- Loop unswitching
+        |       ↓
+        |   Move invariant condition outside
+        |
+        +-- Vectorization
+                ↓
+            SIMD execution
+
+KEY DEPENDENCY CONCEPT:
+
+    Loop-carried dependency
+            ↓
+    limits parallelism/vectorization
+
+KEY CFG CONCEPT:
+
+    Back edge
+        ↓
+    Natural loop
+        ↓
+    Loop header
+        ↓
+    Preheader
+        ↓
+    Code motion
+
+============================================================
+62. CHAPTER 33 FINAL CHECKLIST
+============================================================
+
+You should now understand:
+
+[✓] What loop optimization is
+[✓] Why loops are important
+[✓] Loop-invariant code
+[✓] Loop-invariant code motion
+[✓] Preheader
+[✓] Back edge
+[✓] Natural loop
+[✓] Loop header
+[✓] Strength reduction
+[✓] Induction variables
+[✓] Derived induction variables
+[✓] Induction variable elimination
+[✓] Loop unrolling
+[✓] Loop fusion
+[✓] Loop fission
+[✓] Loop interchange
+[✓] Loop peeling
+[✓] Loop unswitching
+[✓] Loop vectorization
+[✓] Loop-carried dependency
+[✓] Data-flow analysis connection
+[✓] CFG connection
+[✓] GATE traps
+[✓] Interview questions
+
+============================================================
+MASTER CONCEPT MAP
+============================================================
+
+                 LOOP OPTIMIZATION
+                         |
+       +-----------------+------------------+
+       |                 |                  |
+       v                 v                  v
+   ANALYZE            OPTIMIZE          TRANSFORM
+       |                 |                  |
+       |                 |                  |
+      CFG          Invariant motion      Fusion
+      Loops        Strength reduction    Fission
+      Back edges   Induction variables   Interchange
+      Dependencies Unrolling             Peeling
+                    Vectorization         Unswitching
+       |
+       v
+ Data-Flow Analysis
+       |
+       v
+ Safe Transformation
+       |
+       v
+ Faster Generated Code
+
+============================================================
+END OF CHAPTER 33
+============================================================
+
+NEXT CHAPTER:
+Chapter 34 — Advanced Optimization
+============================================================

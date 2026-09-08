@@ -1,0 +1,1978 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                    COMPILER DESIGN                                 ║
+║                    CHAPTER 31                                      ║
+║                    BASIC OPTIMIZATIONS                             ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 8 — OPTIMIZATION
+
+CHAPTER 31 — BASIC OPTIMIZATIONS
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 30 introduced compiler optimization.
+
+Chapter 31 focuses on the most important BASIC optimization
+techniques used by compilers.
+
+Main topics:
+
+1. Constant Folding
+2. Constant Propagation
+3. Copy Propagation
+4. Common Subexpression Elimination
+5. Dead Code Elimination
+6. Algebraic Simplification
+7. Strength Reduction
+8. Unreachable Code Elimination
+9. Control-Flow Simplification
+10. Basic Block Optimization
+11. Local Optimization
+12. Combining multiple optimizations
+
+The central idea:
+
+        ORIGINAL CODE
+              ↓
+        Analyze the code
+              ↓
+        Find unnecessary work
+              ↓
+        Transform safely
+              ↓
+        OPTIMIZED CODE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHAT IS BASIC OPTIMIZATION?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Basic optimization means applying relatively straightforward
+transformations that improve code efficiency without changing its
+required meaning.
+
+Example:
+
+    x = 10 + 20;
+
+can become:
+
+    x = 30;
+
+The compiler does not need to perform the addition at runtime.
+
+Important:
+
+    Optimization must preserve required semantics.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. LOCAL OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Local optimization operates primarily within a single basic block.
+
+A basic block has:
+
+• One entry point
+• One exit point
+• No internal branching into the middle
+• No branching out except at the end
+
+Example:
+
+    B1:
+        a = 10
+        b = 20
+        c = a + b
+        d = c * 2
+
+This entire sequence can be analyzed as one local region.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. EXAMPLE OF LOCAL OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    B1:
+        x = 10
+        y = 20
+        z = x + y
+        w = z * 2
+
+Constant propagation/folding can produce:
+
+    B1:
+        x = 10
+        y = 20
+        z = 30
+        w = 60
+
+If x and y are no longer required later, further optimization may
+remove them depending on the surrounding program.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. CONSTANT FOLDING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Definition:
+
+Constant folding evaluates an expression containing constants during
+compilation rather than at runtime.
+
+Example:
+
+    x = 10 + 20;
+
+becomes:
+
+    x = 30;
+
+Another example:
+
+    y = 5 * 4 + 2;
+
+becomes:
+
+    y = 22;
+
+
+IMPORTANT:
+
+        CONSTANT FOLDING
+              =
+    Compile-time evaluation
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. MORE CONSTANT FOLDING EXAMPLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    10 + 5       → 15
+
+    20 - 8       → 12
+
+    4 * 5        → 20
+
+    100 / 10     → 10
+
+    2 * 3 + 4    → 10
+
+    true && true → true
+
+    5 > 3        → true
+
+Subject to the language's semantics, type rules, overflow rules, and
+other constraints.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. CONSTANT PROPAGATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Constant propagation replaces a variable with a known constant value.
+
+Example:
+
+    x = 10;
+    y = x + 5;
+
+The compiler knows:
+
+    x = 10
+
+Therefore:
+
+    y = 10 + 5;
+
+Then constant folding gives:
+
+    y = 15;
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. CONSTANT FOLDING VS CONSTANT PROPAGATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VERY IMPORTANT FOR GATE:
+
+┌───────────────────────┬────────────────────────────────────────────┐
+│ Technique             │ Meaning                                    │
+├───────────────────────┼────────────────────────────────────────────┤
+│ Constant folding      │ Evaluates constant expressions              │
+│ Constant propagation  │ Replaces known constant variables           │
+└───────────────────────┴────────────────────────────────────────────┘
+
+Example:
+
+    x = 10;
+    y = x + 5;
+
+Constant propagation:
+
+    x = 10;
+    y = 10 + 5;
+
+Constant folding:
+
+    x = 10;
+    y = 15;
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. COPY PROPAGATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Copy propagation handles assignments where one variable simply copies
+another.
+
+Example:
+
+    x = y;
+    z = x + 5;
+
+Replace x with y:
+
+    x = y;
+    z = y + 5;
+
+If x is no longer needed, the copy may eventually be eliminated.
+
+Basic idea:
+
+    x = y
+    ↓
+    Replace later uses of x with y
+    ↓
+    Remove unnecessary copy if safe
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. COPY PROPAGATION EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    a = b;
+    c = a + d;
+    e = c * 2;
+
+After copy propagation:
+
+    a = b;
+    c = b + d;
+    e = c * 2;
+
+If a has no later use:
+
+    a = b;
+
+may become dead and can potentially be removed.
+
+Result:
+
+    c = b + d;
+    e = c * 2;
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. COMMON SUBEXPRESSION ELIMINATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Common Subexpression Elimination (CSE) removes repeated computation.
+
+Original:
+
+    x = a + b;
+    y = a + b;
+
+The expression:
+
+    a + b
+
+is computed twice.
+
+Optimized:
+
+    t = a + b;
+    x = t;
+    y = t;
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. WHEN IS A SUBEXPRESSION REALLY COMMON?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    x = a + b;
+    a = 10;
+    y = a + b;
+
+The two expressions:
+
+    a + b
+
+are NOT necessarily equivalent.
+
+Why?
+
+Because a changed between the two expressions.
+
+Therefore CSE requires appropriate conditions, including that the
+operands and relevant memory state have not changed in a way that
+invalidates reuse.
+
+This is a major exam concept.
+
+Remember:
+
+    SAME TEXT ≠ ALWAYS SAME VALUE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. CSE EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    t1 = a * b;
+    x = t1 + c;
+    t2 = a * b;
+    y = t2 + d;
+
+If a and b remain unchanged:
+
+    t1 = a * b;
+    x = t1 + c;
+    t2 = t1;
+    y = t2 + d;
+
+Then copy propagation may further simplify:
+
+    t1 = a * b;
+    x = t1 + c;
+    y = t1 + d;
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. DEAD CODE ELIMINATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Dead code is code whose result is not needed and which has no relevant
+side effects.
+
+Example:
+
+    x = 10;
+    x = 20;
+
+If the first assignment is never used:
+
+    x = 10;
+
+is dead.
+
+Optimized:
+
+    x = 20;
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. DEAD CODE — IMPORTANT CONDITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    x = f();
+
+Even if x is never used, the assignment may NOT be removable.
+
+Why?
+
+Because:
+
+    f()
+
+may have side effects.
+
+For example:
+
+    f() {
+        print("Hello");
+    }
+
+Removing:
+
+    x = f();
+
+would remove the printing operation.
+
+Therefore:
+
+    DEAD RESULT
+        ≠
+    DEAD STATEMENT
+
+The compiler must consider side effects.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. DEAD CODE EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    x = 10;
+    y = 20;
+    z = x + 5;
+    return z;
+
+If y is never used and assigning 20 has no side effects:
+
+    x = 10;
+    z = x + 5;
+    return z;
+
+Then constant folding/propagation may produce:
+
+    return 15;
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. UNREACHABLE CODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Unreachable code is code that cannot be executed along any valid
+execution path.
+
+Example:
+
+    return 10;
+    x = 20;
+
+The statement:
+
+    x = 20;
+
+is unreachable after the return in that sequence.
+
+It can potentially be removed.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. UNREACHABLE CODE WITH CONSTANT CONDITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+    if (false) {
+        x = 10;
+    } else {
+        x = 20;
+    }
+
+If the condition is known at compile time, the compiler can simplify:
+
+    x = 20;
+
+The unreachable branch can be eliminated.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. ALGEBRAIC SIMPLIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Algebraic identities can simplify expressions.
+
+Common examples:
+
+    x + 0 → x
+
+    x - 0 → x
+
+    x * 1 → x
+
+    x / 1 → x
+
+    x * 0 → 0
+
+    x - x → 0
+
+However, real compiler implementations must respect the programming
+language's semantics, especially for:
+
+• Floating-point values
+• Overflow
+• Exceptions
+• NaN/infinity
+• Volatile/observable operations
+• Undefined or implementation-defined behavior
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. ALGEBRAIC SIMPLIFICATION EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    x = y + 0;
+    z = x * 1;
+
+After algebraic simplification:
+
+    x = y;
+    z = x;
+
+Then copy propagation may produce:
+
+    z = y;
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. STRENGTH REDUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Strength reduction replaces an operation with another operation that
+is potentially cheaper.
+
+Classic conceptual example:
+
+    x * 2
+
+may become:
+
+    x + x
+
+For appropriate integer semantics and target architecture, a shift
+may also be used:
+
+    x * 2 → x << 1
+
+But a real compiler must consider the exact type and machine
+semantics.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. STRENGTH REDUCTION IN LOOPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    for (i = 0; i < n; i++) {
+        x = i * 4;
+    }
+
+Instead of calculating:
+
+    i * 4
+
+from scratch each iteration, the compiler may maintain an incrementing
+value:
+
+    value = 0;
+
+    for (i = 0; i < n; i++) {
+        x = value;
+        value = value + 4;
+    }
+
+This illustrates the basic idea of strength reduction.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. CODE MOTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Code motion moves a computation to another location so that it is
+executed fewer times.
+
+Example:
+
+    while (condition) {
+        x = a * b;
+        ...
+    }
+
+If:
+
+    a
+
+and
+
+    b
+
+do not change inside the loop, the multiplication is loop invariant.
+
+It may be moved outside:
+
+    x = a * b;
+
+    while (condition) {
+        ...
+    }
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. LOOP-INVARIANT CODE MOTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    for (i = 0; i < n; i++) {
+        x = a * b;
+        y = x + i;
+    }
+
+Optimized conceptually:
+
+    x = a * b;
+
+    for (i = 0; i < n; i++) {
+        y = x + i;
+    }
+
+Before:
+
+    n multiplications
+
+After:
+
+    1 multiplication
+
+assuming the transformation is valid.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. CONTROL-FLOW SIMPLIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The compiler can simplify unnecessary control flow.
+
+Example:
+
+    if (true) {
+        x = 10;
+    }
+
+can become:
+
+    x = 10;
+
+Another:
+
+    if (false) {
+        x = 10;
+    }
+
+can become:
+
+    [removed]
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. JUMP OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose generated code contains:
+
+    goto L1;
+
+    L1:
+        goto L2;
+
+The first jump can potentially be redirected:
+
+    goto L2;
+
+This is an example of control-flow simplification.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. REDUNDANT JUMP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+    goto L1;
+
+    L1:
+        statement;
+
+If execution naturally reaches L1 anyway, the jump may be unnecessary
+depending on the surrounding control flow.
+
+The compiler can remove redundant branches when safe.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. BASIC BLOCK OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    B1:
+        a = 10
+        b = 20
+        c = a + b
+        d = c * 1
+        e = d + 0
+
+Optimization:
+
+    a = 10
+    b = 20
+    c = 30
+    d = c
+    e = d
+
+Then copy propagation:
+
+    a = 10
+    b = 20
+    c = 30
+    d = c
+    e = c
+
+If only e is needed:
+
+    e = 30
+
+The final result depends on which values are live and whether any
+statements have side effects.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. DAG FOR BASIC BLOCK OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A DAG = Directed Acyclic Graph.
+
+For a basic block, a DAG can represent:
+
+• Values
+• Dependencies
+• Repeated expressions
+• Computation relationships
+
+Example:
+
+    a = b + c;
+    d = b + c;
+
+The expression:
+
+    b + c
+
+can be represented once in the DAG.
+
+Both a and d can refer to the same computed node.
+
+This helps identify common subexpressions.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. BASIC BLOCK DAG EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Statements:
+
+    a = b + c;
+    d = b + c;
+    e = a * d;
+
+Conceptual DAG:
+
+          b       c
+           \     /
+            \   /
+             [+]
+             / \
+            a   d
+             \ /
+              *
+              |
+              e
+
+The b+c computation is shared.
+
+Therefore:
+
+    t = b + c;
+    a = t;
+    d = t;
+    e = a * d;
+
+can represent the computation more efficiently.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. REDUNDANT COMPUTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+    x = a + b;
+    y = a + b;
+    z = a + b;
+
+Without optimization:
+
+    a+b calculated 3 times.
+
+With CSE:
+
+    t = a + b;
+    x = t;
+    y = t;
+    z = t;
+
+One computation is reused.
+
+Potential benefit:
+
+    3 computations → 1 computation
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. REDUNDANT LOADS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Conceptually:
+
+    x = memory[a];
+    y = memory[a];
+
+If the compiler can prove that memory[a] has not changed between
+these accesses, it may reuse the loaded value.
+
+Example:
+
+    t = memory[a];
+    x = t;
+    y = t;
+
+However, aliasing, volatile accesses, function calls, concurrency,
+and language memory semantics can make this analysis more complex.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. REDUNDANT STORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider conceptually:
+
+    memory[x] = 10;
+    memory[x] = 20;
+
+If the first store has no observable effect before being overwritten,
+it may potentially be removed.
+
+Result:
+
+    memory[x] = 20;
+
+Again, actual legality depends on memory semantics and whether the
+store is observable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. PEEPHOLE OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Peephole optimization examines a small sequence of target
+instructions.
+
+Example:
+
+    MOV R1, R1
+
+This instruction does nothing.
+
+It can be removed:
+
+    [removed]
+
+Another conceptual example:
+
+    ADD R1, 0
+
+may be eliminated if the machine semantics make this safe.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. LOCAL VALUE NUMBERING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Local Value Numbering (LVN) is a technique for identifying equivalent
+values/computations within a local region, often a basic block.
+
+Example:
+
+    a = b + c;
+    d = b + c;
+
+The compiler can recognize that:
+
+    b + c
+
+already has a computed value.
+
+Conceptually:
+
+    a = value1
+    d = value1
+
+LVN can help detect:
+
+• Redundant computations
+• Equivalent expressions
+• Some constant expressions
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. COPY ELIMINATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+    x = y;
+    z = x;
+
+The compiler may propagate:
+
+    z = y;
+
+Then if x has no other use:
+
+    x = y;
+
+can potentially be removed.
+
+This reduces unnecessary data movement.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. TEMPORARY ELIMINATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Intermediate code often introduces temporaries.
+
+Example:
+
+    t1 = a + b;
+    x = t1;
+
+If t1 is used only once, it may sometimes be eliminated or folded into
+the consuming operation, depending on the IR.
+
+Conceptually:
+
+    x = a + b;
+
+instead of:
+
+    t1 = a + b;
+    x = t1;
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. COMBINING OPTIMIZATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Optimizations often work together.
+
+Example:
+
+    x = 10;
+    y = x + 20;
+    z = y * 1;
+    w = z + 0;
+
+Step 1 — Constant propagation:
+
+    x = 10;
+    y = 10 + 20;
+    z = y * 1;
+    w = z + 0;
+
+Step 2 — Constant folding:
+
+    x = 10;
+    y = 30;
+    z = y * 1;
+    w = z + 0;
+
+Step 3 — Algebraic simplification:
+
+    x = 10;
+    y = 30;
+    z = y;
+    w = z;
+
+Step 4 — Copy propagation:
+
+    x = 10;
+    y = 30;
+    z = y;
+    w = y;
+
+Step 5 — Dead code elimination:
+
+If x, y and z are not otherwise needed:
+
+    w = 30;
+
+Potentially:
+
+    return 30;
+
+This shows why optimization is usually iterative.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. OPTIMIZATION ITERATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+One pass may create opportunities for another.
+
+Example:
+
+    x = 2 + 3;
+    y = x;
+    z = y + 0;
+
+Constant folding:
+
+    x = 5;
+    y = x;
+    z = y + 0;
+
+Copy propagation:
+
+    x = 5;
+    y = 5;
+    z = y + 0;
+
+Algebraic simplification:
+
+    x = 5;
+    y = 5;
+    z = y;
+
+Further propagation:
+
+    z = 5;
+
+More dead-code elimination may be possible.
+
+Therefore:
+
+    Optimization A
+          ↓
+    exposes opportunity
+          ↓
+    Optimization B
+          ↓
+    exposes opportunity
+          ↓
+    Optimization C
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. OPTIMIZATION FIXPOINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sometimes optimization passes are repeatedly applied until no further
+useful transformation is available.
+
+Conceptually:
+
+    IR
+     ↓
+    Optimization
+     ↓
+    New IR
+     ↓
+    Optimization
+     ↓
+    New IR
+     ↓
+    ...
+     ↓
+    No useful changes
+     ↓
+    FIXPOINT
+
+A fixpoint means applying the selected transformations no longer
+produces further relevant changes under the optimizer's rules.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. EXAMPLE — FULL BASIC OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    a = 10;
+    b = 20;
+    c = a + b;
+    d = a + b;
+    e = c * 1;
+    f = e + 0;
+    unused = 100;
+
+Step 1 — Constant propagation:
+
+    a = 10;
+    b = 20;
+    c = 10 + 20;
+    d = 10 + 20;
+    e = c * 1;
+    f = e + 0;
+    unused = 100;
+
+Step 2 — Constant folding:
+
+    a = 10;
+    b = 20;
+    c = 30;
+    d = 30;
+    e = c * 1;
+    f = e + 0;
+    unused = 100;
+
+Step 3 — Algebraic simplification:
+
+    a = 10;
+    b = 20;
+    c = 30;
+    d = c;
+    e = c;
+    f = e;
+    unused = 100;
+
+Step 4 — Copy propagation:
+
+    a = 10;
+    b = 20;
+    c = 30;
+    d = c;
+    e = c;
+    f = c;
+    unused = 100;
+
+Step 5 — Dead code elimination:
+
+If only f is required:
+
+    f = 30;
+
+This is a simplified conceptual example of multiple optimization
+passes interacting.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. OPTIMIZATION AND SIDE EFFECTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Side effect = an operation that changes something observable outside
+its direct returned value.
+
+Examples:
+
+    print()
+    file write
+    global variable modification
+    volatile memory access
+    I/O
+    certain function calls
+
+Example:
+
+    x = 10;
+    print("Hello");
+
+Even if x is unused:
+
+    x = 10;
+
+may be removable.
+
+But:
+
+    print("Hello");
+
+cannot be removed merely because its return value is unused.
+
+KEY IDEA:
+
+    Value unused
+         ≠
+    Operation removable
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. OPTIMIZATION AND ALIASING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Aliasing means two references/pointers may refer to the same memory
+location.
+
+Example:
+
+    int *p = &x;
+    int *q = &x;
+
+Both p and q may refer to x.
+
+This makes memory optimizations more difficult.
+
+Example:
+
+    x = *p;
+    *q = 10;
+    y = *p;
+
+If p and q may point to the same location, the second statement may
+change the value read by the third statement.
+
+Therefore the compiler needs alias information before reusing loads
+or moving memory operations.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. BASIC OPTIMIZATION AND THREE-ADDRESS CODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example TAC:
+
+    t1 = a + b
+    t2 = a + b
+    t3 = t1 * 2
+    t4 = t2 + 0
+
+CSE:
+
+    t1 = a + b
+    t2 = t1
+    t3 = t1 * 2
+    t4 = t2
+
+Copy propagation:
+
+    t1 = a + b
+    t3 = t1 * 2
+    t4 = t1
+
+This shows how Chapter 20 (TAC) connects directly to optimization.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. BASIC OPTIMIZATION AND CFG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Control Flow Graph:
+
+             B1
+            /  \
+           B2  B3
+            \  /
+             B4
+
+Local optimizations mainly inspect one block.
+
+Global optimizations need information across blocks.
+
+Therefore:
+
+    Basic Blocks
+         ↓
+    Control Flow Graph
+         ↓
+    Program-flow information
+         ↓
+    Global Optimization
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. BASIC OPTIMIZATION VS ADVANCED OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Basic optimization examples:
+
+    Constant folding
+    Constant propagation
+    Copy propagation
+    Algebraic simplification
+    CSE
+    DCE
+    Peephole optimization
+
+More advanced optimization requires concepts such as:
+
+    Data-flow analysis
+    Dominators
+    SSA
+    Loop analysis
+    Interprocedural analysis
+    Alias analysis
+
+These will become increasingly important in later chapters.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. IMPORTANT GATE COMPARISON TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────┬──────────────────────────────────────┐
+│ Optimization                │ Main idea                            │
+├─────────────────────────────┼──────────────────────────────────────┤
+│ Constant folding            │ Evaluate constants                  │
+│ Constant propagation        │ Propagate known constants            │
+│ Copy propagation            │ Replace copies with original value   │
+│ CSE                         │ Reuse repeated expressions            │
+│ Dead code elimination       │ Remove unnecessary computation        │
+│ Unreachable code elimination│ Remove code that cannot execute     │
+│ Algebraic simplification    │ Apply valid identities               │
+│ Strength reduction          │ Use cheaper equivalent operations   │
+│ Code motion                 │ Move computation to better location  │
+│ Loop invariant motion       │ Move loop-invariant computation      │
+│ Peephole optimization       │ Improve small instruction sequences  │
+└─────────────────────────────┴──────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. GATE TRAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRAP 1:
+
+    Constant propagation = constant folding
+
+FALSE.
+
+They are different techniques.
+
+------------------------------------------------------------
+
+TRAP 2:
+
+    CSE can reuse an expression regardless of variable changes.
+
+FALSE.
+
+Relevant operands/memory state must remain valid for reuse.
+
+------------------------------------------------------------
+
+TRAP 3:
+
+    Any unused variable assignment is dead code.
+
+FALSE.
+
+The assignment may involve side effects or observable memory behavior.
+
+------------------------------------------------------------
+
+TRAP 4:
+
+    Local optimization means optimizing the whole program.
+
+FALSE.
+
+Local optimization generally focuses on a basic block.
+
+------------------------------------------------------------
+
+TRAP 5:
+
+    Strength reduction is always safe.
+
+FALSE.
+
+It depends on language semantics, types, overflow behavior and target
+machine.
+
+------------------------------------------------------------
+
+TRAP 6:
+
+    More optimization always means smaller executable.
+
+FALSE.
+
+Some transformations increase code size.
+
+------------------------------------------------------------
+
+TRAP 7:
+
+    If two expressions look identical, CSE is always possible.
+
+FALSE.
+
+Program state between them matters.
+
+------------------------------------------------------------
+
+TRAP 8:
+
+    Dead code and unreachable code are exactly the same.
+
+FALSE.
+
+Dead code can be executable but unnecessary.
+Unreachable code cannot be reached.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. EXAM-STYLE CONCEPT QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1.
+
+    x = 5 + 10;
+
+Which optimization applies first?
+
+Answer:
+
+    Constant folding
+
+Result:
+
+    x = 15
+
+
+------------------------------------------------------------
+
+Q2.
+
+    x = 10;
+    y = x + 5;
+
+Which optimization can replace x with 10?
+
+Answer:
+
+    Constant propagation
+
+
+------------------------------------------------------------
+
+Q3.
+
+    x = y;
+    z = x + 2;
+
+Which optimization can replace x by y?
+
+Answer:
+
+    Copy propagation
+
+
+------------------------------------------------------------
+
+Q4.
+
+    x = a + b;
+    y = a + b;
+
+Which optimization can avoid repeated computation?
+
+Answer:
+
+    Common subexpression elimination
+
+
+------------------------------------------------------------
+
+Q5.
+
+    x = 10;
+    x = 20;
+
+If the first value is never used, what can remove x=10?
+
+Answer:
+
+    Dead code elimination
+
+
+------------------------------------------------------------
+
+Q6.
+
+    return;
+    x = 10;
+
+What type of code is x=10?
+
+Answer:
+
+    Unreachable code
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. INTERVIEW QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1. What is local optimization?
+
+Answer:
+
+Optimization performed within a local region, commonly a basic block.
+
+------------------------------------------------------------
+
+Q2. What is constant folding?
+
+Answer:
+
+Evaluating constant expressions at compile time.
+
+------------------------------------------------------------
+
+Q3. What is constant propagation?
+
+Answer:
+
+Replacing a variable with a value known to be constant.
+
+------------------------------------------------------------
+
+Q4. What is copy propagation?
+
+Answer:
+
+Replacing uses of a copied variable with the original variable/value
+when safe.
+
+------------------------------------------------------------
+
+Q5. What is CSE?
+
+Answer:
+
+Common Subexpression Elimination identifies repeated valid expressions
+and reuses an existing result.
+
+------------------------------------------------------------
+
+Q6. What is dead code elimination?
+
+Answer:
+
+Removing computations that do not affect required behavior and have no
+relevant side effects.
+
+------------------------------------------------------------
+
+Q7. What is strength reduction?
+
+Answer:
+
+Replacing a potentially expensive operation with an equivalent,
+potentially cheaper operation.
+
+------------------------------------------------------------
+
+Q8. What is peephole optimization?
+
+Answer:
+
+Optimization of a small sequence/window of instructions.
+
+------------------------------------------------------------
+
+Q9. Why are loops important in optimization?
+
+Answer:
+
+Because a small improvement inside a loop can produce a large total
+performance improvement when the loop executes many times.
+
+------------------------------------------------------------
+
+Q10. Why can't the compiler remove every unused assignment?
+
+Answer:
+
+Because an assignment or the expression used to compute its value may
+have observable side effects.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. PRACTICAL EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SOURCE:
+
+    int calculate() {
+        int a = 10;
+        int b = 20;
+        int c = a + b;
+        int d = c * 1;
+        int e = d + 0;
+        return e;
+    }
+
+Conceptual optimization:
+
+Step 1:
+
+    a = 10;
+    b = 20;
+    c = 10 + 20;
+    d = c * 1;
+    e = d + 0;
+
+Step 2:
+
+    a = 10;
+    b = 20;
+    c = 30;
+    d = c;
+    e = d;
+
+Step 3:
+
+    return 30;
+
+The compiler has removed unnecessary runtime computation.
+
+Potential final machine code is much simpler than the original
+source-level sequence.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. PRACTICAL COMPILER PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SOURCE:
+
+    x = 10 + 20;
+
+        ↓
+
+LEXICAL ANALYSIS
+
+        ↓
+
+SYNTAX ANALYSIS
+
+        ↓
+
+SEMANTIC ANALYSIS
+
+        ↓
+
+IR:
+
+    x = 10 + 20
+
+        ↓
+
+BASIC OPTIMIZATION:
+
+    x = 30
+
+        ↓
+
+CODE GENERATION
+
+        ↓
+
+TARGET CODE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+53. CHAPTER 31 — MASTER CONCEPT MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    BASIC OPTIMIZATION
+                           │
+         ┌─────────────────┼─────────────────┐
+         ↓                 ↓                 ↓
+     CONSTANT          REDUNDANCY        CONTROL FLOW
+         │                 │                 │
+    ┌────┴────┐       ┌────┼────┐       ┌────┴─────┐
+    ↓         ↓       ↓    ↓    ↓       ↓          ↓
+ Folding   Prop.     CSE  Copy  DCE   Unreachable  Jump
+                               Prop.               simplification
+         │
+         ↓
+    Algebraic
+    Simplification
+         │
+         ↓
+    Strength Reduction
+         │
+         ↓
+    Code Motion
+         │
+         ↓
+    Loop Optimization
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+54. CHAPTER 30 → CHAPTER 31 CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 30:
+
+    What is optimization?
+    Why optimize?
+    Types and goals of optimization.
+
+Chapter 31:
+
+    HOW do we actually optimize?
+
+Example:
+
+Chapter 30:
+    "Optimization improves code."
+
+Chapter 31:
+    "Use constant folding, propagation, CSE, DCE, algebraic
+     simplification, strength reduction, etc."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+55. CHAPTER 31 → CHAPTER 32 CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Basic optimization often needs information about program behavior.
+
+For example:
+
+    Is variable x constant here?
+
+    Is expression a+b still available?
+
+    Is variable x still needed?
+
+To answer such questions, compilers use:
+
+    DATA-FLOW ANALYSIS
+
+Therefore:
+
+    Chapter 31
+        ↓
+    Basic Optimizations
+        ↓
+    Need program-flow information
+        ↓
+    Chapter 32
+        ↓
+    DATA-FLOW ANALYSIS
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+56. ONE-PAGE REVISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BASIC OPTIMIZATIONS:
+
+1. CONSTANT FOLDING
+   Evaluate constants at compile time.
+
+   10 + 20 → 30
+
+
+2. CONSTANT PROPAGATION
+   Propagate known constants.
+
+   x=10; y=x+5
+   →
+   y=10+5
+
+
+3. COPY PROPAGATION
+   Propagate copied values.
+
+   x=y; z=x+1
+   →
+   z=y+1
+
+
+4. COMMON SUBEXPRESSION ELIMINATION
+   Reuse repeated valid expressions.
+
+   a+b calculated twice
+   →
+   calculate once
+
+
+5. DEAD CODE ELIMINATION
+   Remove unnecessary computation with no relevant side effects.
+
+
+6. UNREACHABLE CODE ELIMINATION
+   Remove code that cannot execute.
+
+
+7. ALGEBRAIC SIMPLIFICATION
+
+   x+0 → x
+   x*1 → x
+
+
+8. STRENGTH REDUCTION
+   Replace expensive operation with cheaper valid operation.
+
+
+9. CODE MOTION
+   Move computation to a location where it executes less often.
+
+
+10. PEEPHOLE OPTIMIZATION
+    Improve small sequences of target instructions.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+57. MUST-REMEMBER RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RULE 1:
+
+    Constant folding
+    = expression → constant result
+
+
+RULE 2:
+
+    Constant propagation
+    = variable → known constant
+
+
+RULE 3:
+
+    Copy propagation
+    = copied variable → original variable
+
+
+RULE 4:
+
+    CSE
+    = repeated expression → shared computation
+
+
+RULE 5:
+
+    DCE
+    = unnecessary computation → removed
+
+
+RULE 6:
+
+    Unreachable code
+    = cannot execute → removable
+
+
+RULE 7:
+
+    Local optimization
+    = basic-block oriented
+
+
+RULE 8:
+
+    Code inside loops deserves special attention because it executes
+    repeatedly.
+
+
+RULE 9:
+
+    Optimization must preserve required semantics.
+
+
+RULE 10:
+
+    Optimizations can interact with one another.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+58. FINAL MEMORY TRICK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Remember:
+
+    FOLD
+      ↓
+    PROPAGATE
+      ↓
+    COPY
+      ↓
+    REUSE
+      ↓
+    REMOVE
+      ↓
+    SIMPLIFY
+      ↓
+    REDUCE
+      ↓
+    MOVE
+
+Meaning:
+
+    FOLD       → Constant Folding
+    PROPAGATE  → Constant Propagation
+    COPY       → Copy Propagation
+    REUSE      → Common Subexpression Elimination
+    REMOVE     → Dead/Unreachable Code
+    SIMPLIFY   → Algebraic Simplification
+    REDUCE     → Strength Reduction
+    MOVE       → Code Motion
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+59. FINAL CHAPTER CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You should now be able to explain:
+
+[✓] Basic optimization
+[✓] Local optimization
+[✓] Basic blocks
+[✓] Constant folding
+[✓] Constant propagation
+[✓] Copy propagation
+[✓] Common subexpression elimination
+[✓] Dead code elimination
+[✓] Unreachable code elimination
+[✓] Algebraic simplification
+[✓] Strength reduction
+[✓] Code motion
+[✓] Loop invariant code motion
+[✓] Control-flow simplification
+[✓] Peephole optimization
+[✓] DAG-based basic block optimization
+[✓] Local value numbering
+[✓] Redundant computation
+[✓] Side effects
+[✓] Aliasing
+[✓] Optimization interaction
+[✓] Fixpoint concept
+[✓] GATE traps
+[✓] Interview questions
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                    CHAPTER 31 COMPLETE                              ║
+║                                                                      ║
+║ NEXT: CHAPTER 32 — DATA-FLOW ANALYSIS                               ║
+║                                                                      ║
+║ Type "NEXT" to continue.                                             ║
+╚══════════════════════════════════════════════════════════════════════╝

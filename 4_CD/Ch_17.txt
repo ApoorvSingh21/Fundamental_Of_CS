@@ -1,0 +1,2758 @@
+Continuing the locked syllabus: Chapter 17 — Type Systems. This chapter is especially important for GATE, compiler interviews, and semantic analysis.
+
+============================================================
+CHAPTER 17 — TYPE SYSTEMS
+============================================================
+Level: Absolute Beginner → University → GATE → Interview
+Phase: PHASE 4 — SEMANTIC ANALYSIS
+Prerequisite: Chapter 15 — Semantic Analysis
+             Chapter 16 — Symbol Tables
+============================================================
+
+
+1. WHAT IS A TYPE?
+------------------------------------------------------------
+
+A TYPE describes what kind of value a program entity can
+represent and what operations are normally valid on it.
+
+Common types:
+
+    int
+    float
+    char
+    boolean
+    string
+
+
+Example:
+
+    int age;
+
+Here:
+
+    age → int
+
+
+This means age is expected to hold an integer value.
+
+
+Another example:
+
+    float salary;
+
+    salary → float
+
+
+------------------------------------------------------------
+REAL-WORLD ANALOGY
+------------------------------------------------------------
+
+Think about containers.
+
+    Water bottle → stores water
+    Fuel tank    → stores fuel
+    Integer      → stores integer values
+
+
+Similarly:
+
+    int variable
+        ↓
+    integer values
+
+
+    float variable
+        ↓
+    floating-point values
+
+
+============================================================
+2. WHAT IS A TYPE SYSTEM?
+============================================================
+
+A type system is a collection of rules that determines:
+
+    • What types exist
+    • What values belong to those types
+    • Which operations are valid
+    • Which types are compatible
+    • How types can be converted
+    • How expressions receive types
+    • How type errors are detected
+
+
+Simple definition:
+
+    Type System = Rules for assigning and checking types
+                  in a programming language.
+
+
+============================================================
+3. WHY DO WE NEED TYPE SYSTEMS?
+============================================================
+
+Consider:
+
+    int x;
+    x = "hello";
+
+
+The syntax may be valid.
+
+But:
+
+    x → int
+    "hello" → string
+
+
+The type system can determine:
+
+    int ← string
+
+is not compatible under the language's rules.
+
+
+Therefore, type systems help detect programming errors.
+
+
+They also help the compiler determine:
+
+    • Which operations to perform
+    • How much storage is required
+    • Which conversions are needed
+    • Which machine instructions may be appropriate
+    • Whether expressions are valid
+
+
+============================================================
+4. TYPE SYSTEM AND SEMANTIC ANALYSIS
+============================================================
+
+Recall the compiler pipeline:
+
+    Source Program
+         ↓
+    Lexical Analysis
+         ↓
+    Syntax Analysis
+         ↓
+    AST
+         ↓
+    Semantic Analysis
+         ↓
+    Type Checking
+         ↓
+    Intermediate Representation
+         ↓
+    Optimization
+         ↓
+    Code Generation
+
+
+Type checking is an important part of semantic analysis.
+
+
+============================================================
+5. TYPES IN A SIMPLE PROGRAM
+============================================================
+
+Program:
+
+    int age;
+    float salary;
+    char grade;
+    bool passed;
+
+
+Type information:
+
+    age     → int
+    salary  → float
+    grade   → char
+    passed  → bool
+
+
+The symbol table can store this information.
+
+
+Conceptually:
+
+    +---------+--------+
+    | Name    | Type   |
+    +---------+--------+
+    | age     | int    |
+    | salary  | float  |
+    | grade   | char   |
+    | passed  | bool   |
+    +---------+--------+
+
+
+============================================================
+6. PRIMITIVE / BASIC TYPES
+============================================================
+
+Primitive types are fundamental types provided directly by
+a programming language.
+
+Common examples:
+
+    • Integer
+    • Floating point
+    • Character
+    • Boolean
+
+
+Example:
+
+    int
+    float
+    char
+    bool
+
+
+Exact primitive types vary between languages.
+
+
+------------------------------------------------------------
+EXAMPLE
+------------------------------------------------------------
+
+    int x = 10;
+    float y = 3.14;
+    char c = 'A';
+    bool flag = true;
+
+
+Types:
+
+    x    → int
+    y    → float
+    c    → char
+    flag → bool
+
+
+============================================================
+7. INTEGER TYPE
+============================================================
+
+The integer type represents whole-number values.
+
+Examples:
+
+    0
+    10
+    -5
+    1000
+
+
+Example:
+
+    int count = 10;
+
+
+Conceptually:
+
+    count → int
+
+
+The actual size/range depends on the programming language
+and implementation.
+
+
+============================================================
+8. FLOATING-POINT TYPE
+============================================================
+
+Floating-point types represent values containing a fractional
+component.
+
+Examples:
+
+    3.14
+    10.5
+    -2.75
+
+
+Example:
+
+    float price = 99.5;
+
+
+Therefore:
+
+    price → float
+
+
+============================================================
+9. CHARACTER TYPE
+============================================================
+
+A character type represents a character.
+
+Example:
+
+    char grade = 'A';
+
+
+Here:
+
+    grade → char
+
+
+The representation and character model depend on the
+programming language.
+
+
+============================================================
+10. BOOLEAN TYPE
+============================================================
+
+Boolean values normally represent logical truth values:
+
+    true
+    false
+
+
+Example:
+
+    bool passed = true;
+
+
+Therefore:
+
+    passed → bool
+
+
+Boolean types are heavily used in:
+
+    • Conditions
+    • Loops
+    • Logical operations
+    • Comparisons
+
+
+============================================================
+11. STRUCTURED / COMPOSITE TYPES
+============================================================
+
+Structured types are constructed from other types.
+
+Examples:
+
+    • Arrays
+    • Records/structures
+    • Tuples
+    • Classes
+    • Objects
+    • Functions/procedures
+
+
+Example:
+
+    int marks[5];
+
+
+This is a structured type:
+
+    array of 5 integers
+
+
+Conceptually:
+
+    Array
+      |
+      +--- element type = int
+      +--- size = 5
+
+
+============================================================
+12. ARRAY TYPE
+============================================================
+
+An array contains multiple elements of a specified type.
+
+Example:
+
+    int marks[5];
+
+
+Conceptually:
+
+    marks
+      ↓
+    array
+      ↓
+    5 elements
+      ↓
+    each element → int
+
+
+Therefore the type can be viewed conceptually as:
+
+    array(5, int)
+
+
+The exact type-expression notation can vary.
+
+
+============================================================
+13. MULTIDIMENSIONAL ARRAY
+============================================================
+
+Example:
+
+    int matrix[3][4];
+
+
+Conceptually:
+
+    array[3] of
+        array[4] of
+            int
+
+
+So the type is constructed recursively from other types.
+
+
+============================================================
+14. POINTER TYPE
+============================================================
+
+A pointer stores a reference/address to another object,
+depending on the language's model.
+
+Example in C:
+
+    int *p;
+
+
+Conceptually:
+
+    p → pointer to int
+
+
+Type expression:
+
+    pointer(int)
+
+
+This is an example of a constructed type.
+
+
+============================================================
+15. FUNCTION TYPE
+============================================================
+
+A function can also be described by a type.
+
+Example:
+
+    int add(int a, int b);
+
+
+Conceptually:
+
+    parameter types:
+        int, int
+
+    return type:
+        int
+
+
+Function type:
+
+    (int, int) → int
+
+
+Meaning:
+
+    Takes two int arguments
+    and returns an int.
+
+
+============================================================
+16. TYPE EXPRESSIONS
+============================================================
+
+A type expression is a formal way of representing a type.
+
+Type expressions can be built from:
+
+    • Basic types
+    • Type constructors
+    • Other type expressions
+
+
+Examples:
+
+    int
+
+    float
+
+    pointer(int)
+
+    array(10, int)
+
+    function(int, int → int)
+
+
+The exact notation can vary between textbooks.
+
+
+============================================================
+17. TYPE CONSTRUCTORS
+============================================================
+
+A type constructor creates a new type from existing types.
+
+Common conceptual constructors:
+
+    array
+    pointer
+    function
+    product/record
+    union
+
+
+Examples:
+
+    pointer(int)
+
+    array(10, int)
+
+    function(int, float → double)
+
+
+Think:
+
+    Basic Type
+        +
+    Constructor
+        ↓
+    New Type
+
+
+============================================================
+18. PRODUCT TYPE
+============================================================
+
+A product type combines multiple components.
+
+Example:
+
+    struct Student
+    {
+        int roll;
+        float marks;
+    };
+
+
+Conceptually:
+
+    Student =
+        int × float
+
+
+The × here represents a product/tuple-like combination,
+not numerical multiplication.
+
+
+============================================================
+19. RECORD / STRUCTURE TYPE
+============================================================
+
+Example:
+
+    struct Student
+    {
+        int roll;
+        float marks;
+    };
+
+
+It contains fields:
+
+    roll  → int
+    marks → float
+
+
+Conceptually:
+
+    Student
+       |
+       +--- roll  : int
+       |
+       +--- marks : float
+
+
+The compiler needs to maintain type information for these
+fields.
+
+
+============================================================
+20. TYPE EQUIVALENCE
+============================================================
+
+Type equivalence asks:
+
+    "When should two type expressions be considered the
+     same type?"
+
+
+This is important for determining whether two types can be
+treated as equivalent.
+
+
+Two major concepts commonly discussed are:
+
+    1. Name equivalence
+    2. Structural equivalence
+
+
+============================================================
+21. NAME EQUIVALENCE
+============================================================
+
+Under name equivalence, two types are considered equivalent
+when they originate from the same named type/declaration
+according to the language's rules.
+
+
+Example concept:
+
+    type A = ...
+    type B = ...
+
+
+Even if A and B have identical internal structures, they
+may be treated as different types because their names are
+different.
+
+
+------------------------------------------------------------
+IMPORTANT IDEA
+------------------------------------------------------------
+
+Name equivalence emphasizes:
+
+    "Do these types have the same declared type identity?"
+
+
+============================================================
+22. STRUCTURAL EQUIVALENCE
+============================================================
+
+Under structural equivalence, two types are equivalent if
+their structures are equivalent according to the language's
+rules.
+
+
+Example concept:
+
+    Type A:
+        record
+            int x
+            float y
+
+
+    Type B:
+        record
+            int x
+            float y
+
+
+Under a structural-equivalence system, they may be considered
+equivalent because their structures match.
+
+
+------------------------------------------------------------
+IMPORTANT IDEA
+------------------------------------------------------------
+
+Structural equivalence emphasizes:
+
+    "Do these types have the same structure?"
+
+
+============================================================
+23. NAME VS STRUCTURAL EQUIVALENCE
+============================================================
+
++----------------------+-----------------------------+
+| Name Equivalence     | Structural Equivalence     |
++----------------------+-----------------------------+
+| Based on type        | Based on type structure    |
+| identity/name        |                             |
+| Different names may  | Same structure may imply   |
+| mean different types | equivalence                |
++----------------------+-----------------------------+
+
+
+MEMORY TRICK:
+
+    NAME       → identity
+    STRUCTURE  → shape
+
+
+============================================================
+24. IMPORTANT EXAMPLE
+============================================================
+
+Suppose a language defines:
+
+    type A = array[10] of int;
+    type B = array[10] of int;
+
+
+Question:
+
+    Is A equivalent to B?
+
+
+Under NAME equivalence:
+
+    A ≠ B
+
+if they are distinct named types.
+
+
+Under STRUCTURAL equivalence:
+
+    A = B
+
+if their structures are considered identical.
+
+
+Therefore:
+
+    The answer depends on the type-equivalence rules
+    of the language.
+
+
+============================================================
+25. TYPE COMPATIBILITY
+============================================================
+
+Type compatibility asks:
+
+    "Can these types be used together for a particular
+     operation?"
+
+
+Examples:
+
+    int + int
+
+Usually compatible.
+
+
+    int assigned to float
+
+May be compatible through permitted numeric conversion.
+
+
+    int assigned from string
+
+Usually incompatible.
+
+
+IMPORTANT:
+
+    Type equivalence and type compatibility are related,
+    but they are NOT necessarily identical.
+
+
+============================================================
+26. TYPE EQUIVALENCE VS TYPE COMPATIBILITY
+============================================================
+
+TYPE EQUIVALENCE:
+
+    Are these two types considered the same?
+
+
+TYPE COMPATIBILITY:
+
+    Can these types be used together in this context?
+
+
+Example:
+
+    int
+    float
+
+
+They are not the same type.
+
+But a language may allow:
+
+    int → float
+
+
+Therefore:
+
+    Not equivalent
+    BUT
+    potentially compatible for assignment.
+
+
+============================================================
+27. TYPE CHECKING
+============================================================
+
+Type checking verifies that program constructs obey
+the language's type rules.
+
+
+Examples:
+
+    • Assignment
+    • Arithmetic operations
+    • Boolean operations
+    • Function calls
+    • Return statements
+    • Array indexing
+    • Pointer operations
+
+
+Example:
+
+    int x;
+    x = 10;
+
+
+Check:
+
+    type(x) = int
+    type(10) = int
+
+
+Therefore:
+
+    int ← int
+
+Valid.
+
+
+============================================================
+28. TYPE CHECKING — ARITHMETIC
+============================================================
+
+Example:
+
+    int a;
+    int b;
+    int c;
+
+    c = a + b;
+
+
+Type rules:
+
+    a → int
+    b → int
+
+    a + b → int
+
+    c → int
+
+
+Assignment:
+
+    int ← int
+
+Valid.
+
+
+============================================================
+29. TYPE CHECKING — INVALID ARITHMETIC
+============================================================
+
+Example:
+
+    int x;
+
+    x = 10 + "hello";
+
+
+Types:
+
+    10       → int
+    "hello"  → string
+
+
+Operation:
+
+    int + string
+
+
+If the language does not define this operation:
+
+    Semantic/type error.
+
+
+============================================================
+30. TYPE RULES
+============================================================
+
+Type rules formally specify how types are assigned to
+expressions and when operations are valid.
+
+
+Example conceptual rule:
+
+    If:
+
+        E1 : int
+        E2 : int
+
+    then:
+
+        E1 + E2 : int
+
+
+Here:
+
+    E1 : int
+
+means:
+
+    Expression E1 has type int.
+
+
+============================================================
+31. MORE TYPE RULES
+============================================================
+
+Assignment rule:
+
+    If:
+
+        x : T
+        E : T
+
+    then:
+
+        x = E
+
+    is valid.
+
+
+More generally, if the language permits compatible
+conversion:
+
+    E : T1
+    T1 can be converted to T2
+    x : T2
+
+then assignment may be valid.
+
+
+The exact rules are language-specific.
+
+
+============================================================
+32. TYPE INFERENCE
+============================================================
+
+Type inference means determining the type of an expression
+or variable from context without requiring the programmer
+to explicitly write the type everywhere.
+
+
+Example concept:
+
+    x = 10;
+
+
+A language may infer:
+
+    x → int
+
+
+Another example:
+
+    y = 3.14;
+
+could infer:
+
+    y → float
+
+
+The exact inference rules depend on the language.
+
+
+============================================================
+33. WHY TYPE INFERENCE IS USEFUL
+============================================================
+
+Type inference can:
+
+    • Reduce type annotations
+    • Make code shorter
+    • Preserve static type checking in some languages
+    • Determine expression types automatically
+
+
+For example, instead of:
+
+    int x = 10;
+
+
+a language might allow:
+
+    x = 10;
+
+
+and infer:
+
+    x : int
+
+
+============================================================
+34. STATIC TYPE CHECKING
+============================================================
+
+Static type checking performs type checking before runtime
+for relevant program constructs.
+
+Example:
+
+    int x;
+    x = "hello";
+
+
+The compiler can reject this before execution.
+
+
+Advantages:
+
+    • Earlier error detection
+    • Better compiler diagnostics
+    • Can support optimization
+    • Can prevent certain classes of runtime errors
+
+
+============================================================
+35. DYNAMIC TYPE CHECKING
+============================================================
+
+Dynamic type checking performs some type checks during
+program execution.
+
+Example concept:
+
+    x = 10;
+    x = "hello";
+
+
+A dynamically typed language may permit x to refer to values
+of different types at different times.
+
+
+The precise rules depend on the language.
+
+
+============================================================
+36. STATIC TYPING VS DYNAMIC TYPING
+============================================================
+
+STATIC TYPING:
+
+    Type constraints are generally established/enforced
+    before execution for relevant operations.
+
+
+DYNAMIC TYPING:
+
+    Type checking can depend on runtime values and execution.
+
+
+Comparison:
+
+    Static typing:
+        many type errors detected before execution
+
+
+    Dynamic typing:
+        some type errors detected during execution
+
+
+============================================================
+37. STRONG TYPING
+============================================================
+
+Strong typing generally means that the language enforces
+type distinctions relatively strictly and does not freely
+allow arbitrary incompatible operations.
+
+However:
+
+    "Strongly typed" has no single universally accepted
+    formal definition across all programming languages.
+
+
+Therefore, be careful with absolute statements.
+
+
+Conceptually:
+
+    Strong typing
+        ↓
+    stronger enforcement of type rules
+
+
+============================================================
+38. WEAK TYPING
+============================================================
+
+Weak typing generally refers to languages or language
+features where type distinctions may be less strictly
+enforced or where more implicit conversions are allowed.
+
+
+Again:
+
+    "Weakly typed" is not a universally precise formal
+    classification.
+
+
+It is safer to discuss the actual language rules rather
+than simply labeling a language strong or weak.
+
+
+============================================================
+39. STRONG VS WEAK — EXAM CAUTION
+============================================================
+
+Do NOT assume:
+
+    Strong typing = static typing
+
+or:
+
+    Weak typing = dynamic typing
+
+
+These are different dimensions.
+
+
+Possible dimensions include:
+
+    Static vs Dynamic
+    Stronger vs weaker type enforcement
+
+
+They should not automatically be treated as identical.
+
+
+============================================================
+40. TYPE CONVERSION
+============================================================
+
+Type conversion means changing a value from one type to
+another type.
+
+
+Example:
+
+    int → float
+
+
+Suppose:
+
+    int x = 10;
+
+and we need a float:
+
+    float y = (float)x;
+
+
+Conceptually:
+
+    10 (int)
+       ↓
+    conversion
+       ↓
+    10.0 (float)
+
+
+============================================================
+41. EXPLICIT TYPE CONVERSION
+============================================================
+
+When the programmer explicitly requests conversion, it is
+commonly called explicit conversion or casting.
+
+
+Example in C-like syntax:
+
+    float y = (float)x;
+
+
+The programmer explicitly writes:
+
+    (float)
+
+
+Therefore:
+
+    explicit conversion / cast
+
+
+============================================================
+42. IMPLICIT TYPE CONVERSION
+============================================================
+
+When the compiler automatically converts a value according
+to language rules, it is implicit conversion.
+
+
+Example:
+
+    int x = 10;
+    float y;
+
+    y = x;
+
+
+The compiler may conceptually perform:
+
+    y = (float)x;
+
+
+No explicit cast was written.
+
+
+============================================================
+43. COERCION
+============================================================
+
+Coercion refers to an implicit conversion performed by the
+language/compiler according to its type rules.
+
+
+Example:
+
+    int x = 10;
+    float y;
+
+    y = x;
+
+
+Conceptually:
+
+    int
+     ↓
+    coercion
+     ↓
+    float
+
+
+Important:
+
+    Coercion = implicit type conversion
+
+
+This terminology can vary somewhat between texts, so always
+consider the language/context.
+
+
+============================================================
+44. CASTING VS COERCION
+============================================================
+
+CASTING:
+
+    Programmer explicitly requests conversion.
+
+
+Example:
+
+    (float)x
+
+
+COERCION:
+
+    Conversion is automatically performed by the language
+    or compiler.
+
+
+Example:
+
+    float y = x;
+
+
+Memory:
+
+    CAST      → programmer asks
+    COERCION  → system/language automatically converts
+
+
+============================================================
+45. WIDENING CONVERSION
+============================================================
+
+A widening conversion converts a value to a type that can
+generally represent a broader range or precision.
+
+Example:
+
+    int → float
+
+depending on the language and representation.
+
+
+Conceptually:
+
+    smaller/narrower representation
+             ↓
+         wider type
+
+
+Such conversions are often allowed implicitly in languages
+with suitable rules.
+
+
+============================================================
+46. NARROWING CONVERSION
+============================================================
+
+A narrowing conversion converts to a type that may represent
+fewer values or less precision.
+
+Example:
+
+    float → int
+
+
+Example:
+
+    float x = 10.8;
+    int y = (int)x;
+
+
+Possible result:
+
+    y = 10
+
+depending on language semantics.
+
+
+Narrowing conversions may lose information.
+
+
+============================================================
+47. TYPE CONVERSION SUMMARY
+============================================================
+
+                TYPE CONVERSION
+                       |
+             +---------+---------+
+             |                   |
+          Explicit            Implicit
+             |                   |
+          Casting             Coercion
+             |                   |
+      programmer asks      compiler/language
+                           performs automatically
+
+
+Conversions can also be described as:
+
+    Widening
+    Narrowing
+
+
+============================================================
+48. TYPE COMPATIBILITY WITH CONVERSION
+============================================================
+
+Example:
+
+    int x = 10;
+    float y;
+
+    y = x;
+
+
+Types:
+
+    x → int
+    y → float
+
+
+Without conversion:
+
+    int ≠ float
+
+
+But if the language allows:
+
+    int → float
+
+
+then assignment may be compatible.
+
+
+Therefore:
+
+    Type equivalence ≠ Type compatibility.
+
+
+============================================================
+49. FUNCTION TYPE CHECKING
+============================================================
+
+Consider:
+
+    int add(int a, int b)
+    {
+        return a + b;
+    }
+
+
+Call:
+
+    add(10, 20);
+
+
+Semantic analyzer checks:
+
+    Function exists?
+        YES
+
+    Number of arguments?
+        2
+
+    Expected:
+        int, int
+
+    Actual:
+        int, int
+
+    Return type:
+        int
+
+
+Valid.
+
+
+============================================================
+50. FUNCTION TYPE ERROR
+============================================================
+
+Suppose:
+
+    int add(int a, int b);
+
+
+Call:
+
+    add(10, "hello");
+
+
+Expected:
+
+    int, int
+
+
+Actual:
+
+    int, string
+
+
+Therefore:
+
+    Type mismatch in function arguments.
+
+
+Semantic error.
+
+
+============================================================
+51. RETURN TYPE CHECKING
+============================================================
+
+Function:
+
+    int getValue()
+    {
+        return 10;
+    }
+
+
+Return expression:
+
+    10 → int
+
+
+Function return type:
+
+    int
+
+
+Therefore:
+
+    int ← int
+
+Valid.
+
+
+Now:
+
+    int getValue()
+    {
+        return "hello";
+    }
+
+
+Return:
+
+    string
+
+
+Expected:
+
+    int
+
+
+Potential semantic/type error.
+
+
+============================================================
+52. ARRAY TYPE CHECKING
+============================================================
+
+Example:
+
+    int marks[10];
+
+
+Valid indexing:
+
+    marks[2]
+
+
+Index:
+
+    2 → int
+
+
+Many languages require an integer-like index.
+
+
+Invalid example:
+
+    marks[2.5]
+
+
+Depending on the language:
+
+    float index may be invalid.
+
+
+Semantic/type checking can detect such violations.
+
+
+============================================================
+53. POINTER TYPE CHECKING
+============================================================
+
+Example:
+
+    int *p;
+    int x;
+
+    p = &x;
+
+
+Conceptually:
+
+    p → pointer(int)
+
+    &x → pointer(int)
+
+
+Therefore:
+
+    pointer(int) ← pointer(int)
+
+Compatible.
+
+
+Pointer rules are language-specific and can be much more
+complex in languages such as C/C++.
+
+
+============================================================
+54. TYPE SYSTEM AND SYMBOL TABLE
+============================================================
+
+These two components work together.
+
+Example:
+
+    int x;
+
+
+Symbol table:
+
+    x → int
+
+
+Then:
+
+    x + 10
+
+
+Semantic analyzer obtains:
+
+    type(x) = int
+    type(10) = int
+
+
+Type system says:
+
+    int + int → int
+
+
+Therefore:
+
+    x + 10 → int
+
+
+So:
+
+    Symbol Table
+          +
+      Type Rules
+          ↓
+      Type Checking
+
+
+============================================================
+55. TYPE SYSTEM AND AST
+============================================================
+
+Example:
+
+    x = 10 + 20;
+
+
+AST:
+
+            =
+           / \
+          x   +
+             / \
+           10  20
+
+
+Semantic analysis can determine:
+
+    x   → int
+    10  → int
+    20  → int
+    +   → int
+
+
+Annotated AST conceptually:
+
+            =
+           / \
+       x:int  +:int
+              /    \
+          10:int  20:int
+
+
+The exact annotation format depends on the compiler.
+
+
+============================================================
+56. TYPE CHECKING ALGORITHM — SIMPLE VIEW
+============================================================
+
+For an expression:
+
+    E1 + E2
+
+
+Compiler can conceptually do:
+
+    type1 = type(E1)
+    type2 = type(E2)
+
+    if addition is valid for type1 and type2:
+        result_type = appropriate result type
+    else:
+        report type error
+
+
+Example:
+
+    10 + 20
+
+    type(10) = int
+    type(20) = int
+
+    int + int
+
+    result = int
+
+
+============================================================
+57. TYPE CHECKING ASSIGNMENT
+============================================================
+
+For:
+
+    x = E;
+
+
+Compiler conceptually:
+
+    tx = type(x)
+    te = type(E)
+
+    if compatible(tx, te):
+        accept
+    else:
+        report error
+
+
+Example:
+
+    int x;
+    x = 10;
+
+
+    tx = int
+    te = int
+
+    compatible(int, int)
+
+    YES
+
+
+============================================================
+58. TYPE CHECKING WITH COERCION
+============================================================
+
+Example:
+
+    float x;
+    int y;
+
+    x = y;
+
+
+Compiler:
+
+    type(x) = float
+    type(y) = int
+
+
+Check:
+
+    Is int → float allowed?
+
+If yes:
+
+    insert coercion/conversion
+
+
+Conceptually:
+
+    x = (float)y;
+
+
+Then:
+
+    float ← float
+
+
+Valid.
+
+
+============================================================
+59. TYPE INFERENCE — SIMPLE EXAMPLE
+============================================================
+
+Suppose a language supports inference:
+
+    let x = 10;
+
+
+Compiler observes:
+
+    10 → int
+
+
+Therefore:
+
+    x → int
+
+
+Similarly:
+
+    let y = 3.14;
+
+
+Compiler infers:
+
+    y → float
+
+
+More advanced inference systems can derive types from
+relationships between expressions.
+
+
+============================================================
+60. TYPE INFERENCE — MORE ADVANCED IDEA
+============================================================
+
+Suppose:
+
+    f(x) = x + 1
+
+
+The compiler can infer constraints.
+
+For:
+
+    x + 1
+
+
+If + requires numeric-compatible operands:
+
+    x must satisfy appropriate numeric constraints.
+
+
+A sophisticated type system may infer a type for x and f
+from these constraints.
+
+
+This is common in languages with advanced inference systems.
+
+
+============================================================
+61. TYPE ERRORS
+============================================================
+
+Common type errors:
+
+    • Assigning incompatible types
+    • Invalid arithmetic
+    • Invalid comparison
+    • Invalid function arguments
+    • Wrong return type
+    • Invalid array index type
+    • Invalid pointer operation
+    • Invalid operator operands
+
+
+Example:
+
+    bool x;
+
+    x = 10 + "hello";
+
+
+Possible errors can occur at the expression level and
+assignment level.
+
+
+============================================================
+62. TYPE SYSTEM — FORMAL VIEW
+============================================================
+
+A type system can be viewed as a set of rules:
+
+    Expression
+         ↓
+    Type derivation
+         ↓
+    Resulting type
+
+
+For example:
+
+    E1 : int
+    E2 : int
+    ----------------
+    E1 + E2 : int
+
+
+This means:
+
+    If E1 is int
+    and E2 is int
+
+    then E1 + E2 is int.
+
+
+This style of notation is important for compiler theory.
+
+
+============================================================
+63. TYPE JUDGMENT
+============================================================
+
+A notation such as:
+
+    Γ ⊢ E : T
+
+
+is commonly used in formal type systems.
+
+Meaning, informally:
+
+    Under typing environment Γ,
+    expression E has type T.
+
+
+Here:
+
+    Γ (Gamma)
+        = typing environment
+
+
+    E
+        = expression
+
+
+    T
+        = type
+
+
+This connects type checking with formal programming-language
+theory.
+
+
+============================================================
+64. TYPING ENVIRONMENT
+============================================================
+
+A typing environment stores information about names and
+their types.
+
+Example:
+
+    Γ = { x : int, y : float }
+
+
+This means:
+
+    x → int
+    y → float
+
+
+In a compiler implementation, symbol-table information can
+serve a related practical role.
+
+
+============================================================
+65. TYPE RULE EXAMPLE
+============================================================
+
+Consider:
+
+    x + y
+
+
+Suppose:
+
+    Γ ⊢ x : int
+
+and:
+
+    Γ ⊢ y : int
+
+
+Then a type rule can derive:
+
+    Γ ⊢ x + y : int
+
+
+Conceptually:
+
+    x : int       y : int
+       \           /
+        \         /
+          x + y
+             ↓
+            int
+
+
+============================================================
+66. TYPE SYSTEM AND SEMANTICS
+============================================================
+
+Semantic analysis asks:
+
+    "Is this program meaningful according to the language?"
+
+
+The type system provides rules for answering questions such as:
+
+    • Is this operation valid?
+    • Is this assignment valid?
+    • What type does this expression produce?
+    • Can this function be called this way?
+    • Can this value be returned?
+
+
+Therefore:
+
+    Type System
+        ↓
+    Type Rules
+        ↓
+    Semantic Analysis
+        ↓
+    Type Checking
+
+
+============================================================
+67. GATE IMPORTANT:
+    NAME EQUIVALENCE
+============================================================
+
+Remember:
+
+    Name equivalence
+        ↓
+    Type identity based on declared/named type identity.
+
+
+Two types with the same structure may still be considered
+different if they have different type identities under the
+language's rules.
+
+
+============================================================
+68. GATE IMPORTANT:
+    STRUCTURAL EQUIVALENCE
+============================================================
+
+Structural equivalence:
+
+    Compare the structures of types.
+
+
+If structures satisfy the equivalence rules:
+
+    types may be considered equivalent.
+
+
+Memory:
+
+    Name → names/identity
+    Structural → structure/shape
+
+
+============================================================
+69. GATE IMPORTANT:
+    EQUIVALENCE ≠ COMPATIBILITY
+============================================================
+
+This is a common conceptual trap.
+
+Equivalence asks:
+
+    "Are they the same type?"
+
+
+Compatibility asks:
+
+    "Can they be used together in this context?"
+
+
+Two types can be:
+
+    Not identical
+    BUT
+    compatible through conversion.
+
+
+============================================================
+70. GATE IMPORTANT:
+    COERCION
+============================================================
+
+Coercion:
+
+    Automatic/implicit conversion according to language rules.
+
+
+Example:
+
+    int → float
+
+
+when the language permits it.
+
+
+Memory:
+
+    Explicit conversion → programmer writes it.
+
+    Coercion → language/compiler performs it automatically.
+
+
+============================================================
+71. GATE IMPORTANT:
+    STATIC VS DYNAMIC TYPING
+============================================================
+
+Static typing:
+
+    Type constraints are generally established/enforced
+    before execution for relevant constructs.
+
+
+Dynamic typing:
+
+    Some type checks depend on runtime values.
+
+
+Do NOT automatically equate:
+
+    static typing = strong typing
+
+or:
+
+    dynamic typing = weak typing.
+
+
+============================================================
+72. GATE TRAP:
+    "ALL CONVERSIONS ARE COERCIONS"
+============================================================
+
+WRONG.
+
+
+If the programmer explicitly writes:
+
+    (float)x
+
+
+that is an explicit conversion/cast.
+
+
+If the compiler automatically converts:
+
+    int → float
+
+according to language rules:
+
+    that is coercion.
+
+
+============================================================
+73. GATE TRAP:
+    "TYPE EQUIVALENCE AND TYPE COMPATIBILITY ARE SAME"
+============================================================
+
+WRONG.
+
+
+Equivalence:
+
+    same type?
+
+
+Compatibility:
+
+    usable together?
+
+
+A language can allow compatible conversions between
+non-identical types.
+
+
+============================================================
+74. GATE TRAP:
+    "STATIC TYPING MEANS NO RUNTIME TYPE CHECKING"
+============================================================
+
+Not necessarily.
+
+
+A statically typed language can still have runtime checks
+for certain constructs.
+
+Static typing means type constraints are generally established
+or enforced before execution for relevant constructs.
+
+
+============================================================
+75. GATE TRAP:
+    "DYNAMIC TYPING MEANS NO TYPE SYSTEM"
+============================================================
+
+WRONG.
+
+
+Dynamically typed languages still have type systems.
+
+The timing/location of some type checks differs.
+
+
+============================================================
+76. GATE TRAP:
+    "STRONG TYPING HAS ONE UNIVERSAL DEFINITION"
+============================================================
+
+WRONG.
+
+
+"Strongly typed" and "weakly typed" are often used
+informally and do not have one universally accepted
+formal definition.
+
+
+For exam questions, follow the precise definitions given
+in the question/textbook.
+
+
+============================================================
+77. INTERVIEW QUESTION 1
+============================================================
+
+Q:
+What is a type system?
+
+Answer:
+
+A type system is a collection of rules that assigns types
+to program constructs and determines which operations,
+assignments, conversions, and combinations of types are
+valid.
+
+
+============================================================
+78. INTERVIEW QUESTION 2
+============================================================
+
+Q:
+What is type checking?
+
+Answer:
+
+Type checking verifies that expressions and program
+constructs use types according to the language's rules.
+
+
+============================================================
+79. INTERVIEW QUESTION 3
+============================================================
+
+Q:
+What is the difference between name and structural
+equivalence?
+
+Answer:
+
+Name equivalence bases type identity on declared/named
+type identity, while structural equivalence bases equivalence
+on the structure of the types.
+
+
+============================================================
+80. INTERVIEW QUESTION 4
+============================================================
+
+Q:
+What is coercion?
+
+Answer:
+
+Coercion is an implicit type conversion performed according
+to the programming language's rules.
+
+
+============================================================
+81. INTERVIEW QUESTION 5
+============================================================
+
+Q:
+What is type inference?
+
+Answer:
+
+Type inference is the process of determining types from
+program context and expressions without requiring explicit
+type annotations everywhere.
+
+
+============================================================
+82. INTERVIEW QUESTION 6
+============================================================
+
+Q:
+What is the difference between casting and coercion?
+
+Answer:
+
+Casting is an explicit conversion requested by the
+programmer, while coercion is an implicit conversion
+performed automatically according to language rules.
+
+
+============================================================
+83. INTERVIEW QUESTION 7
+============================================================
+
+Q:
+What is the difference between type equivalence and
+type compatibility?
+
+Answer:
+
+Type equivalence determines whether two types are considered
+the same, while type compatibility determines whether they
+can be used together in a particular context.
+
+
+============================================================
+84. INTERVIEW QUESTION 8
+============================================================
+
+Q:
+Why does a compiler need a type system?
+
+Answer:
+
+It helps detect invalid operations and assignments, determine
+expression types, perform conversions, support semantic
+checking, and provide information useful to later compiler
+phases.
+
+
+============================================================
+85. PRACTICAL EXAMPLE — MINI TYPE CHECKER
+============================================================
+
+Program:
+
+    int x;
+    float y;
+
+    x = 10;
+    y = x;
+
+
+Symbol table:
+
+    x → int
+    y → float
+
+
+Check 1:
+
+    x = 10
+
+    int ← int
+
+    Valid.
+
+
+Check 2:
+
+    y = x
+
+    float ← int
+
+
+If int-to-float conversion is permitted:
+
+    insert coercion:
+
+    y = (float)x
+
+
+Then:
+
+    float ← float
+
+    Valid.
+
+
+============================================================
+86. PRACTICAL EXAMPLE — INVALID PROGRAM
+============================================================
+
+    int x;
+    bool flag;
+
+    x = true;
+    flag = 10;
+
+
+Symbol table:
+
+    x    → int
+    flag → bool
+
+
+Check:
+
+    x = true
+
+    int ← bool
+
+    Potential type error.
+
+
+Check:
+
+    flag = 10
+
+    bool ← int
+
+    Potential type error.
+
+
+Exact behavior depends on language rules.
+
+
+============================================================
+87. COMPLETE SEMANTIC TYPE-CHECKING PIPELINE
+============================================================
+
+SOURCE:
+
+    int x;
+    x = 10 + 20;
+
+
+             ↓
+
+        LEXICAL ANALYSIS
+
+             ↓
+
+           TOKENS
+
+             ↓
+
+        SYNTAX ANALYSIS
+
+             ↓
+
+             AST
+
+             ↓
+
+       SYMBOL TABLE
+
+        x → int
+
+             ↓
+
+       TYPE ANALYSIS
+
+        10 → int
+        20 → int
+
+        int + int → int
+
+             ↓
+
+       ASSIGNMENT CHECK
+
+        int ← int
+
+             ↓
+
+           VALID
+
+             ↓
+
+       INTERMEDIATE CODE
+
+
+============================================================
+88. TYPE SYSTEM MASTER MAP
+============================================================
+
+                         TYPE SYSTEM
+                              |
+          +-------------------+-------------------+
+          |                   |                   |
+        Types              Type Rules         Type Checking
+          |                   |                   |
+     +----+----+              |             +-----+------+
+     |         |              |             |            |
+ Primitive  Structured     Operations    Assignment   Functions
+     |         |              |             |            |
+ int        array          + - * /       x = E        calls
+ float      pointer        < > ==        returns      args
+ char       function       && ||          arrays
+ bool       record
+                              |
+                              ↓
+                       Type Compatibility
+                              |
+                 +------------+------------+
+                 |                         |
+              Equivalent               Convertible
+                 |                         |
+         Name / Structural             Coercion
+                                          |
+                                          ↓
+                                   Type-safe result
+
+
+============================================================
+89. CHAPTER 17 — EXAM REVISION TABLE
+============================================================
+
++----------------------+--------------------------------------+
+| Concept              | Key Idea                             |
++----------------------+--------------------------------------+
+| Type                 | Classification of values/entities   |
+| Type System          | Rules governing types               |
+| Primitive Type       | Basic built-in type                 |
+| Structured Type      | Type constructed from other types   |
+| Type Expression      | Formal representation of a type    |
+| Type Constructor     | Builds types from other types       |
+| Name Equivalence     | Based on type identity/name         |
+| Structural Equiv.    | Based on type structure             |
+| Compatibility        | Can types be used together?        |
+| Type Checking        | Verifies type rules                |
+| Type Inference       | Derives types from context         |
+| Conversion            | Changes one type to another        |
+| Casting              | Explicit conversion                |
+| Coercion              | Implicit conversion                |
+| Static Typing        | Type constraints mostly before run |
+| Dynamic Typing       | Some checks depend on runtime      |
++----------------------+--------------------------------------+
+
+
+============================================================
+90. ULTRA-SHORT MEMORY FORMULAS
+============================================================
+
+TYPE SYSTEM:
+
+    Types + Rules + Compatibility + Checking
+
+
+TYPE EQUIVALENCE:
+
+    "Are they the same type?"
+
+
+TYPE COMPATIBILITY:
+
+    "Can they work together?"
+
+
+NAME EQUIVALENCE:
+
+    NAME / IDENTITY
+
+
+STRUCTURAL EQUIVALENCE:
+
+    STRUCTURE / SHAPE
+
+
+CAST:
+
+    Explicit conversion
+
+
+COERCION:
+
+    Implicit conversion
+
+
+TYPE INFERENCE:
+
+    Derive type from context
+
+
+STATIC TYPING:
+
+    Type constraints generally established before execution
+
+
+DYNAMIC TYPING:
+
+    Some type checks depend on runtime values
+
+
+============================================================
+91. GATE QUICK CHECKLIST
+============================================================
+
+Before the exam, make sure you can answer:
+
+    □ What is a type system?
+    □ What is type checking?
+    □ What is a type expression?
+    □ What are primitive types?
+    □ What are structured types?
+    □ What are type constructors?
+    □ What is name equivalence?
+    □ What is structural equivalence?
+    □ What is type compatibility?
+    □ Equivalence vs compatibility?
+    □ What is type conversion?
+    □ What is casting?
+    □ What is coercion?
+    □ What is widening conversion?
+    □ What is narrowing conversion?
+    □ What is type inference?
+    □ Static vs dynamic typing?
+    □ Strong vs weak typing?
+    □ How does the symbol table support type checking?
+    □ How are function calls type-checked?
+    □ How are expressions assigned types?
+
+
+============================================================
+92. FINAL CHAPTER SUMMARY
+============================================================
+
+A TYPE tells us:
+
+    "What kind of value/entity is this?"
+
+
+A TYPE SYSTEM tells us:
+
+    "What are the rules for using these types?"
+
+
+TYPE CHECKING tells us:
+
+    "Is this use of types valid?"
+
+
+TYPE EQUIVALENCE asks:
+
+    "Are these types considered the same?"
+
+
+TYPE COMPATIBILITY asks:
+
+    "Can these types be used together?"
+
+
+NAME EQUIVALENCE:
+
+    Based primarily on declared type identity.
+
+
+STRUCTURAL EQUIVALENCE:
+
+    Based primarily on type structure.
+
+
+TYPE CONVERSION:
+
+    Changes one type to another.
+
+
+CASTING:
+
+    Explicit conversion.
+
+
+COERCION:
+
+    Implicit conversion.
+
+
+TYPE INFERENCE:
+
+    Compiler derives types from available information.
+
+
+============================================================
+93. FINAL COMPILER CONNECTION
+============================================================
+
+                  SOURCE PROGRAM
+                        ↓
+                   LEXER
+                        ↓
+                     TOKENS
+                        ↓
+                    PARSER
+                        ↓
+                      AST
+                        ↓
+              +-------------------+
+              | SEMANTIC ANALYSIS |
+              +-------------------+
+                        ↓
+                  SYMBOL TABLE
+                        +
+                   TYPE SYSTEM
+                        ↓
+                  TYPE CHECKING
+                        ↓
+              Annotated / Valid AST
+                        ↓
+                       IR
+                        ↓
+                  OPTIMIZATION
+                        ↓
+                 CODE GENERATION
+                        ↓
+                  TARGET CODE
+
+
+The key relationship is:
+
+    SYMBOL TABLE
+          +
+     TYPE SYSTEM
+          +
+      AST
+          ↓
+    SEMANTIC ANALYSIS
+          ↓
+     TYPE CHECKING
+          ↓
+       VALID IR
+
+
+============================================================
+CHAPTER 17 COMPLETE
+============================================================
+
+NEXT MASTER-SYLLABUS TOPIC:
+
+    CHAPTER 18 — ATTRIBUTE GRAMMARS
+
+Topics:
+
+    • Attributes
+    • Synthesized Attributes
+    • Inherited Attributes
+    • Attribute Grammars
+    • Syntax-Directed Definitions
+    • Syntax-Directed Translation
+    • Dependency Graphs
+    • S-Attributed Definitions
+    • L-Attributed Definitions
+    • Semantic Rules
+    • Attribute Evaluation
+    • Parse Tree Annotation
+    • GATE Problems
+    • GATE Traps
+    • Interview Questions
+    • Practical Examples
+
+============================================================
+END OF CHAPTER 17
+============================================================

@@ -1,0 +1,2509 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║             COMPILER DESIGN — CHAPTER 38: JIT & DYNAMIC COMPILATION         ║
+║                    Beginner → Intermediate → Advanced                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+SYLLABUS POSITION
+──────────────────────────────────────────────────────────────────────────────
+PHASE 9 — ADVANCED COMPILER CONCEPTS
+
+Chapter 38 — JIT & Dynamic Compilation
+
+Main topics:
+1. JIT compilation
+2. Dynamic compilation
+3. Interpreter + JIT architecture
+4. Hotspot detection
+5. Runtime profiling
+6. Baseline compilation
+7. Optimizing compilation
+8. Tiered compilation
+9. Speculative optimization
+10. Deoptimization
+11. Inline caching
+12. On-Stack Replacement
+13. Runtime code generation
+14. JIT optimization pipeline
+15. JIT vs AOT
+16. JVM/JIT architecture
+17. Advantages and disadvantages
+18. Practical examples
+19. GATE traps
+20. Interview questions
+21. Revision and concept map
+
+
+══════════════════════════════════════════════════════════════════════════════
+1. WHAT IS JIT COMPILATION?
+══════════════════════════════════════════════════════════════════════════════
+
+JIT = Just-In-Time compilation.
+
+A JIT compiler compiles code during program execution.
+
+Traditional compilation:
+
+    Source
+      ↓
+    Compiler
+      ↓
+    Machine Code
+      ↓
+    Execute
+
+
+JIT-based execution:
+
+    Source
+      ↓
+    Compiler
+      ↓
+    Intermediate Code
+      ↓
+    Runtime
+      ↓
+    JIT Compiler
+      ↓
+    Machine Code
+      ↓
+    Execute
+
+
+IMPORTANT:
+
+    JIT compilation happens at runtime.
+
+The JIT can use information collected while the program
+is running to optimize frequently executed code.
+
+
+══════════════════════════════════════════════════════════════════════════════
+2. WHY DO WE NEED JIT?
+══════════════════════════════════════════════════════════════════════════════
+
+Consider a large application containing:
+
+    10,000 functions
+
+Suppose only:
+
+    100 functions
+
+are executed frequently.
+
+A JIT compiler can focus optimization effort on the
+frequently executed code.
+
+Conceptually:
+
+    All program code
+          │
+          ▼
+    Runtime execution
+          │
+          ▼
+    Profile behavior
+          │
+          ▼
+    Find hot code
+          │
+          ▼
+    JIT compile hot code
+          │
+          ▼
+    Optimize heavily
+
+
+Therefore:
+
+    JIT = compile and optimize based on actual runtime behavior.
+
+
+══════════════════════════════════════════════════════════════════════════════
+3. BASIC JIT ARCHITECTURE
+══════════════════════════════════════════════════════════════════════════════
+
+A simplified architecture:
+
+                    PROGRAM
+                       │
+                       ▼
+                  Bytecode / IR
+                       │
+                       ▼
+                ┌───────────────┐
+                │    RUNTIME    │
+                └───────┬───────┘
+                        │
+              ┌─────────┴─────────┐
+              ▼                   ▼
+        Interpreter          JIT Compiler
+              │                   │
+              │              Native Code
+              │                   │
+              └─────────┬─────────┘
+                        ▼
+                       CPU
+
+
+Initially, code may be interpreted.
+
+Frequently executed code can then be compiled by the JIT.
+
+
+══════════════════════════════════════════════════════════════════════════════
+4. INTERPRETER + JIT
+══════════════════════════════════════════════════════════════════════════════
+
+A common execution strategy is:
+
+    Bytecode
+       ↓
+    Interpreter
+       ↓
+    Execute
+       ↓
+    Collect profile information
+       ↓
+    Detect hot code
+       ↓
+    JIT compile
+       ↓
+    Optimized native code
+
+
+This gives two important benefits:
+
+    Interpreter:
+        Can begin execution quickly.
+
+    JIT:
+        Can produce optimized native code for frequently
+        executed code.
+
+
+══════════════════════════════════════════════════════════════════════════════
+5. WHAT IS HOT CODE?
+══════════════════════════════════════════════════════════════════════════════
+
+Hot code means code that executes frequently or is
+otherwise important according to the runtime's profiling policy.
+
+Examples:
+
+    Hot function
+    Hot loop
+    Frequently executed branch
+
+Suppose:
+
+    main()
+      ↓
+    process()
+      ↓
+    calculate()
+      ↓
+    calculate()
+      ↓
+    calculate()
+      ↓
+    calculate()
+
+If calculate() executes millions of times, it may become
+a candidate for JIT compilation.
+
+Conceptually:
+
+    execution count
+          ↓
+    threshold reached
+          ↓
+    code becomes HOT
+          ↓
+    JIT compilation
+
+
+══════════════════════════════════════════════════════════════════════════════
+6. HOTSPOT DETECTION
+══════════════════════════════════════════════════════════════════════════════
+
+Hotspot detection identifies code worth optimizing.
+
+Possible information:
+
+    • Invocation count
+    • Loop iteration count
+    • Branch frequency
+    • Type information
+    • Method-call targets
+
+Conceptually:
+
+    Function A → 10 calls
+    Function B → 50 calls
+    Function C → 10,000,000 calls
+
+Likely priority:
+
+    Function C
+
+
+Important:
+
+    Hotness thresholds and policies depend on the runtime/JIT.
+
+
+══════════════════════════════════════════════════════════════════════════════
+7. RUNTIME PROFILING
+══════════════════════════════════════════════════════════════════════════════
+
+Profiling means collecting information about program behavior.
+
+A JIT may collect:
+
+    • How often a method executes
+    • Which branches are common
+    • Which types occur
+    • Which methods are called
+    • Which loops are hot
+
+Example:
+
+    if (condition)
+        A();
+    else
+        B();
+
+Runtime observes:
+
+    condition = true
+        98% of the time
+
+The JIT can use this information when optimizing.
+
+This is called:
+
+    Profile-guided / feedback-directed optimization.
+
+
+══════════════════════════════════════════════════════════════════════════════
+8. BASELINE COMPILER
+══════════════════════════════════════════════════════════════════════════════
+
+A baseline compiler produces native code relatively quickly
+with less aggressive optimization.
+
+Conceptually:
+
+    Bytecode
+       ↓
+    Baseline Compiler
+       ↓
+    Quickly generated native code
+
+
+Purpose:
+
+    Get reasonably efficient machine code quickly.
+
+It may perform simpler optimizations compared with
+an aggressive optimizing compiler.
+
+
+══════════════════════════════════════════════════════════════════════════════
+9. OPTIMIZING COMPILER
+══════════════════════════════════════════════════════════════════════════════
+
+An optimizing compiler spends more time analyzing code
+to generate faster native code.
+
+Conceptually:
+
+    Hot code
+       ↓
+    Optimizing Compiler
+       ↓
+    Aggressive optimization
+       ↓
+    High-performance native code
+
+
+Possible optimizations:
+
+    • Inlining
+    • Constant propagation
+    • Loop optimization
+    • Dead code elimination
+    • Devirtualization
+    • Escape analysis
+    • Vectorization
+    • Speculative optimization
+
+
+══════════════════════════════════════════════════════════════════════════════
+10. BASELINE vs OPTIMIZING COMPILER
+══════════════════════════════════════════════════════════════════════════════
+
+    BASELINE COMPILER
+
+    Goal:
+        Compile quickly.
+
+    Compilation time:
+        Relatively low.
+
+    Optimization:
+        Relatively simple.
+
+
+    OPTIMIZING COMPILER
+
+    Goal:
+        Produce highly optimized code.
+
+    Compilation time:
+        Higher.
+
+    Optimization:
+        More aggressive.
+
+
+Simplified:
+
+    Fast compilation
+         ↓
+    Baseline code
+
+    More compilation effort
+         ↓
+    Better optimized code
+
+
+══════════════════════════════════════════════════════════════════════════════
+11. TIERED COMPILATION
+══════════════════════════════════════════════════════════════════════════════
+
+Tiered compilation combines different levels of compilation.
+
+A simplified model:
+
+    Tier 0:
+        Interpreter
+
+          ↓
+
+    Tier 1:
+        Fast/baseline compiled code
+
+          ↓
+
+    Tier 2:
+        Optimized compiled code
+
+
+Conceptually:
+
+                 Program
+                    │
+                    ▼
+               Interpreter
+                    │
+             profiling begins
+                    │
+                    ▼
+             Baseline compiler
+                    │
+             more profiling
+                    │
+                    ▼
+            Optimizing compiler
+                    │
+                    ▼
+          Highly optimized code
+
+
+Advantages:
+
+    • Faster startup
+    • Better long-term performance
+    • Runtime adaptation
+
+
+══════════════════════════════════════════════════════════════════════════════
+12. WARM-UP
+══════════════════════════════════════════════════════════════════════════════
+
+JIT systems may exhibit warm-up behavior.
+
+At startup:
+
+    Program begins
+         ↓
+    Interpretation / basic compilation
+         ↓
+    Profile collection
+         ↓
+    Hot code detected
+         ↓
+    Optimization
+         ↓
+    Performance improves
+
+
+Therefore:
+
+    JIT applications may perform differently during
+    startup and after sufficient execution.
+
+
+══════════════════════════════════════════════════════════════════════════════
+13. JIT COMPILATION PIPELINE
+══════════════════════════════════════════════════════════════════════════════
+
+A simplified JIT pipeline:
+
+    Bytecode / IR
+         ↓
+    Parse / decode
+         ↓
+    Build IR
+         ↓
+    Profiling information
+         ↓
+    Optimization
+         ↓
+    Lowering
+         ↓
+    Instruction selection
+         ↓
+    Register allocation
+         ↓
+    Machine code
+         ↓
+    Install code
+         ↓
+    Execute native code
+
+
+The exact pipeline depends on the runtime and JIT.
+
+
+══════════════════════════════════════════════════════════════════════════════
+14. CODE CACHE
+══════════════════════════════════════════════════════════════════════════════
+
+JIT-generated native code needs memory.
+
+A runtime may maintain a code cache.
+
+Conceptually:
+
+    JIT compiler
+         ↓
+    Native machine code
+         ↓
+    ┌───────────────────────┐
+    │      CODE CACHE       │
+    ├───────────────────────┤
+    │ compiled method A     │
+    │ compiled method B     │
+    │ compiled loop C       │
+    │ ...                   │
+    └───────────────────────┘
+         ↓
+       CPU
+
+
+The runtime can execute the compiled code from this area.
+
+
+══════════════════════════════════════════════════════════════════════════════
+15. DYNAMIC COMPILATION
+══════════════════════════════════════════════════════════════════════════════
+
+Dynamic compilation means compilation decisions can be made
+while the program is running.
+
+Static compilation:
+
+    compile time
+        ↓
+    fixed machine code
+
+
+Dynamic compilation:
+
+    runtime behavior
+        ↓
+    compilation decision
+        ↓
+    generated machine code
+
+
+Dynamic compilation is useful when runtime behavior can provide
+information unavailable during ordinary ahead-of-time compilation.
+
+
+══════════════════════════════════════════════════════════════════════════════
+16. SPECULATIVE OPTIMIZATION
+══════════════════════════════════════════════════════════════════════════════
+
+JIT compilers can make assumptions based on observed behavior.
+
+Example:
+
+    A virtual call:
+
+        obj.calculate()
+
+Suppose profiling shows:
+
+    obj is almost always class A.
+
+JIT may optimize assuming:
+
+    obj → A
+
+Then it can generate a faster path.
+
+But the assumption may later become false.
+
+Therefore:
+
+    speculation
+        ↓
+    optimized code
+        ↓
+    assumption checked
+        ↓
+    assumption fails?
+       / \
+     NO   YES
+     │     │
+     ▼     ▼
+   continue deoptimize
+
+
+This is speculative optimization.
+
+
+══════════════════════════════════════════════════════════════════════════════
+17. GUARD
+══════════════════════════════════════════════════════════════════════════════
+
+A guard is a runtime check protecting a speculative assumption.
+
+Example assumption:
+
+    object is class A
+
+Optimized code may conceptually contain:
+
+    if object is A:
+        execute optimized path
+    else:
+        fallback/deoptimize
+
+The check is a:
+
+        Guard
+
+This allows aggressive optimization while preserving correctness.
+
+
+══════════════════════════════════════════════════════════════════════════════
+18. DEOPTIMIZATION
+══════════════════════════════════════════════════════════════════════════════
+
+Deoptimization means abandoning or leaving optimized code
+when its assumptions are no longer valid.
+
+Example:
+
+    JIT assumes:
+        x is Integer
+
+Optimized code:
+
+        fast integer operation
+
+Later:
+
+    x becomes another type.
+
+Then:
+
+    assumption fails
+          ↓
+    deoptimization
+          ↓
+    reconstruct appropriate execution state
+          ↓
+    continue using a safe execution path
+
+
+This is a key feature of many dynamic/JIT systems.
+
+
+══════════════════════════════════════════════════════════════════════════════
+19. WHY DEOPTIMIZATION IS NECESSARY
+══════════════════════════════════════════════════════════════════════════════
+
+Without deoptimization, speculative optimization would be
+unsafe when assumptions change.
+
+The runtime needs to maintain correctness.
+
+Therefore:
+
+    Aggressive optimization
+          +
+    Runtime checks
+          +
+    Deoptimization
+          =
+    Safe speculative optimization
+
+
+══════════════════════════════════════════════════════════════════════════════
+20. ON-STACK REPLACEMENT — OSR
+══════════════════════════════════════════════════════════════════════════════
+
+OSR = On-Stack Replacement.
+
+It allows currently executing code to switch from one
+execution version to another, often from interpreted/baseline
+execution into optimized native code.
+
+Example:
+
+    for (i = 0; i < 1,000,000; i++) {
+        work(i);
+    }
+
+Suppose the loop becomes hot while it is already running.
+
+Instead of waiting for the whole function to return:
+
+    running loop
+         ↓
+    loop becomes hot
+         ↓
+    JIT compiles loop
+         ↓
+    OSR
+         ↓
+    continue execution in optimized code
+
+
+This is extremely useful for long-running hot loops.
+
+
+══════════════════════════════════════════════════════════════════════════════
+21. OSR vs NORMAL JIT COMPILATION
+══════════════════════════════════════════════════════════════════════════════
+
+NORMAL METHOD JIT:
+
+    method starts
+       ↓
+    method finishes
+       ↓
+    compile method
+       ↓
+    future calls use compiled version
+
+
+OSR:
+
+    method already executing
+       ↓
+    hot loop detected
+       ↓
+    compile optimized version
+       ↓
+    switch current execution
+       ↓
+    continue from current program point
+
+
+Key idea:
+
+    OSR = replacement while execution is already in progress.
+
+
+══════════════════════════════════════════════════════════════════════════════
+22. INLINE CACHING
+══════════════════════════════════════════════════════════════════════════════
+
+Inline caching is an optimization commonly associated with
+dynamic method/property access.
+
+Suppose:
+
+    obj.method()
+
+The runtime repeatedly observes:
+
+    object type = A
+    method = A.method
+
+Instead of performing a full lookup every time, the runtime
+can cache the observed relationship.
+
+Conceptually:
+
+    object type
+         ↓
+      cache
+         ↓
+    target method
+
+
+Next call:
+
+    Is object still type A?
+
+    YES → use cached target
+
+    NO  → perform another lookup/fallback
+
+
+══════════════════════════════════════════════════════════════════════════════
+23. MONOMORPHIC INLINE CACHE
+══════════════════════════════════════════════════════════════════════════════
+
+Mono = one.
+
+A monomorphic inline cache observes one main target/type.
+
+Example:
+
+    obj.method()
+
+Observed repeatedly:
+
+    Dog → Dog.method
+
+Cache:
+
+    Dog → Dog.method
+
+If another type appears:
+
+    Cat
+
+the cache may no longer be sufficient.
+
+
+══════════════════════════════════════════════════════════════════════════════
+24. POLYMORPHIC INLINE CACHE
+══════════════════════════════════════════════════════════════════════════════
+
+Poly = multiple.
+
+Suppose observed calls are:
+
+    Dog → Dog.method
+    Cat → Cat.method
+
+A polymorphic inline cache can store multiple
+type-to-target relationships.
+
+Conceptually:
+
+    ┌───────────────┐
+    │ Inline Cache  │
+    ├───────────────┤
+    │ Dog → Dog.m   │
+    │ Cat → Cat.m   │
+    └───────────────┘
+
+
+This can speed up repeated dynamic dispatch.
+
+
+══════════════════════════════════════════════════════════════════════════════
+25. MEGAMORPHIC CALL SITE
+══════════════════════════════════════════════════════════════════════════════
+
+If a call site sees many different receiver types,
+it may become megamorphic.
+
+Conceptually:
+
+    method call
+       ↓
+    many different types
+       ↓
+    simple inline cache becomes less effective
+
+The runtime may fall back to a more general dispatch mechanism.
+
+Important hierarchy:
+
+    Monomorphic
+        ↓
+    one main type
+
+    Polymorphic
+        ↓
+    several types
+
+    Megamorphic
+        ↓
+    many types / highly diverse call site
+
+
+══════════════════════════════════════════════════════════════════════════════
+26. JIT + INLINE CACHING
+══════════════════════════════════════════════════════════════════════════════
+
+Inline caching provides runtime information.
+
+JIT can use that information.
+
+Example:
+
+    obj.method()
+
+        ↓
+
+    observed:
+        Dog → Dog.method
+
+        ↓
+
+    JIT recognizes common target
+
+        ↓
+
+    direct/optimized path
+
+        ↓
+
+    possible inlining
+
+
+Therefore:
+
+    Inline caching
+          +
+    Profiling
+          +
+    JIT
+          ↓
+    Faster dynamic dispatch
+
+
+══════════════════════════════════════════════════════════════════════════════
+27. JIT INLINING
+══════════════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    function square(x) {
+        return x*x;
+    }
+
+and:
+
+    y = square(5);
+
+JIT may replace the call conceptually with:
+
+    y = 5*5;
+
+Benefits:
+
+    • Removes call overhead
+    • Exposes code to further optimization
+    • May enable constant folding
+
+But inlining has a cost:
+
+    Too much inlining
+        ↓
+    Larger code
+        ↓
+    Possible instruction-cache pressure
+
+
+══════════════════════════════════════════════════════════════════════════════
+28. JIT + ESCAPE ANALYSIS
+══════════════════════════════════════════════════════════════════════════════
+
+JIT can perform escape analysis using runtime information.
+
+Example:
+
+    function f() {
+        obj = new Object();
+        use(obj);
+    }
+
+If JIT proves:
+
+    obj does not escape
+
+it may optimize its allocation.
+
+Possible result:
+
+    heap allocation
+         ↓
+    scalar replacement / allocation elimination
+         ↓
+    less allocation
+         ↓
+    less GC pressure
+
+
+══════════════════════════════════════════════════════════════════════════════
+29. JIT + GARBAGE COLLECTION
+══════════════════════════════════════════════════════════════════════════════
+
+JIT and GC must cooperate.
+
+JIT generates code that may create objects:
+
+    new Object()
+         ↓
+    allocation
+         ↓
+    heap
+         ↓
+    garbage collector
+
+
+JIT optimizations can reduce allocation.
+
+GC also needs information from generated code, such as
+where references are located at safepoints.
+
+Therefore:
+
+    JIT
+      ↕
+    Runtime
+      ↕
+    Garbage Collector
+
+
+══════════════════════════════════════════════════════════════════════════════
+30. SAFEPOINT
+══════════════════════════════════════════════════════════════════════════════
+
+A safepoint is a point where the runtime can safely perform
+certain runtime operations such as GC or other coordination.
+
+Conceptually:
+
+    Running JIT code
+         ↓
+    reaches safepoint
+         ↓
+    runtime can inspect/manage execution
+         ↓
+    GC or other runtime activity
+         ↓
+    execution continues
+
+
+The exact safepoint design depends on the runtime.
+
+
+══════════════════════════════════════════════════════════════════════════════
+31. JIT + SSA
+══════════════════════════════════════════════════════════════════════════════
+
+Modern JIT compilers often use SSA-based intermediate
+representations because SSA simplifies many optimizations.
+
+Pipeline:
+
+    Bytecode
+       ↓
+    JIT IR
+       ↓
+    SSA
+       ↓
+    Optimization
+       ↓
+    Lowering
+       ↓
+    Machine Code
+
+
+Possible optimizations:
+
+    Constant propagation
+    Dead code elimination
+    Value numbering
+    Loop optimization
+
+
+══════════════════════════════════════════════════════════════════════════════
+32. JIT + LOOP OPTIMIZATION
+══════════════════════════════════════════════════════════════════════════════
+
+Consider:
+
+    for (i = 0; i < 1000000; i++) {
+        sum += a[i];
+    }
+
+This loop may become hot.
+
+JIT can optimize it using techniques such as:
+
+    • Loop-invariant code motion
+    • Bounds-check elimination where provably safe
+    • Unrolling
+    • Vectorization
+    • Strength reduction
+
+Potential result:
+
+    repeated high-level operations
+          ↓
+    optimized machine instructions
+
+
+══════════════════════════════════════════════════════════════════════════════
+33. BOUNDS-CHECK ELIMINATION
+══════════════════════════════════════════════════════════════════════════════
+
+Some languages perform array bounds checking.
+
+Conceptually:
+
+    a[i]
+
+may require:
+
+    if i < length(a)
+        access a[i]
+    else
+        error
+
+If the compiler can prove that:
+
+    0 <= i < length(a)
+
+throughout a loop, it may eliminate repeated checks.
+
+This can improve performance.
+
+JIT runtime information may make such optimizations easier
+in some situations.
+
+
+══════════════════════════════════════════════════════════════════════════════
+34. VECTORISATION
+══════════════════════════════════════════════════════════════════════════════
+
+Vectorization means processing multiple data elements
+with one vector/SIMD instruction when possible.
+
+Scalar:
+
+    a[0] = b[0] + c[0]
+    a[1] = b[1] + c[1]
+    a[2] = b[2] + c[2]
+    a[3] = b[3] + c[3]
+
+Conceptually vectorized:
+
+    vector_add(
+        [b0,b1,b2,b3],
+        [c0,c1,c2,c3]
+    )
+
+      ↓
+
+    [a0,a1,a2,a3]
+
+JIT may use target CPU capabilities when generating code.
+
+
+══════════════════════════════════════════════════════════════════════════════
+35. JIT + CPU-SPECIFIC OPTIMIZATION
+══════════════════════════════════════════════════════════════════════════════
+
+A JIT compiler knows the machine on which the program
+is currently executing.
+
+It may exploit:
+
+    • CPU instruction sets
+    • SIMD extensions
+    • Available registers
+    • CPU-specific instructions
+
+Therefore:
+
+    Runtime environment
+          ↓
+    Detect hardware
+          ↓
+    JIT
+          ↓
+    Generate suitable native code
+
+
+This is an important advantage of runtime compilation.
+
+
+══════════════════════════════════════════════════════════════════════════════
+36. ADAPTIVE OPTIMIZATION
+══════════════════════════════════════════════════════════════════════════════
+
+Adaptive optimization means the compiler changes its
+optimization decisions based on observed runtime behavior.
+
+Example:
+
+    Initially:
+        interpret
+
+    After profiling:
+        compile
+
+    After more profiling:
+        optimize aggressively
+
+    If assumption fails:
+        deoptimize
+
+This creates a feedback loop:
+
+    Execute
+      ↓
+    Profile
+      ↓
+    Compile
+      ↓
+    Optimize
+      ↓
+    Execute
+      ↓
+    Profile again
+      ↓
+    Re-optimize if needed
+
+
+══════════════════════════════════════════════════════════════════════════════
+37. JIT FEEDBACK LOOP
+══════════════════════════════════════════════════════════════════════════════
+
+                 ┌───────────────────┐
+                 │     EXECUTE       │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │     PROFILE       │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │ DETECT HOT CODE   │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │   JIT COMPILE     │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │    OPTIMIZE       │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │  EXECUTE FASTER   │
+                 └─────────┬─────────┘
+                           │
+                           └──────────────→ PROFILE
+
+
+══════════════════════════════════════════════════════════════════════════════
+38. JVM + JIT ARCHITECTURE
+══════════════════════════════════════════════════════════════════════════════
+
+A simplified JVM model:
+
+        Java Source
+             │
+             ▼
+           javac
+             │
+             ▼
+        JVM Bytecode
+             │
+             ▼
+      ┌───────────────┐
+      │      JVM      │
+      ├───────────────┤
+      │ Class Loading │
+      │ Runtime       │
+      │ Interpreter   │
+      │ JIT           │
+      │ Garbage       │
+      │ Collector     │
+      └───────┬───────┘
+              │
+              ▼
+       Native Machine Code
+              │
+              ▼
+             CPU
+
+
+This is a simplified conceptual architecture; actual JVM
+implementations contain many additional components.
+
+
+══════════════════════════════════════════════════════════════════════════════
+39. JVM EXECUTION FLOW
+══════════════════════════════════════════════════════════════════════════════
+
+    .java source
+         ↓
+    Java compiler
+         ↓
+    .class bytecode
+         ↓
+    JVM loads bytecode
+         ↓
+    Initial execution
+         ↓
+    Profiling
+         ↓
+    Hot code detection
+         ↓
+    JIT compilation
+         ↓
+    Native code
+         ↓
+    Optimized execution
+
+
+══════════════════════════════════════════════════════════════════════════════
+40. JIT vs AOT
+══════════════════════════════════════════════════════════════════════════════
+
+AOT:
+
+    Source
+      ↓
+    Compiler
+      ↓
+    Native Code
+      ↓
+    Execution
+
+
+JIT:
+
+    Source
+      ↓
+    Intermediate representation
+      ↓
+    Runtime
+      ↓
+    Profile
+      ↓
+    JIT
+      ↓
+    Native Code
+
+
+AOT advantages:
+
+    • No JIT compilation overhead at runtime
+    • Potentially fast startup
+    • Predictable compilation process
+
+JIT advantages:
+
+    • Runtime profiling
+    • Adaptive optimization
+    • Runtime hardware knowledge
+    • Dynamic specialization
+
+
+══════════════════════════════════════════════════════════════════════════════
+41. JIT DISADVANTAGES
+══════════════════════════════════════════════════════════════════════════════
+
+JIT is powerful, but not free.
+
+Costs include:
+
+    1. Compilation overhead
+    2. Warm-up time
+    3. Memory required for compiler/runtime
+    4. Code-cache usage
+    5. Profiling overhead
+    6. Complexity
+    7. Potential deoptimization overhead
+
+Therefore:
+
+    JIT performance is a trade-off between:
+
+        compilation cost
+              +
+        execution performance
+
+
+══════════════════════════════════════════════════════════════════════════════
+42. AOT DISADVANTAGES
+══════════════════════════════════════════════════════════════════════════════
+
+AOT may have less runtime compilation overhead, but it
+may have less runtime knowledge.
+
+For example, before execution it may not know:
+
+    • Actual hot functions
+    • Actual branch frequencies
+    • Actual runtime types
+    • Exact runtime workload
+
+JIT can potentially learn these through profiling.
+
+
+══════════════════════════════════════════════════════════════════════════════
+43. HYBRID EXECUTION
+══════════════════════════════════════════════════════════════════════════════
+
+Modern language runtimes may combine:
+
+    AOT + Interpreter + JIT
+
+Conceptually:
+
+       Source
+          ↓
+       AOT/bytecode
+          ↓
+       Runtime
+          ↓
+    ┌─────┴──────┐
+    │            │
+Interpreter    JIT
+    │            │
+    └─────┬──────┘
+          ↓
+       Execution
+
+
+This allows different execution strategies for different
+parts of the application.
+
+
+══════════════════════════════════════════════════════════════════════════════
+44. JIT COMPILER MEMORY REQUIREMENTS
+══════════════════════════════════════════════════════════════════════════════
+
+JIT systems need memory for:
+
+    • Intermediate representation
+    • Compiler metadata
+    • Profiling data
+    • Generated native code
+    • Code cache
+    • Runtime structures
+
+Therefore JIT can increase runtime memory consumption.
+
+
+══════════════════════════════════════════════════════════════════════════════
+45. RUNTIME CODE GENERATION
+══════════════════════════════════════════════════════════════════════════════
+
+Runtime code generation means generating executable code
+while a program is running.
+
+JIT is one major example.
+
+Conceptually:
+
+    Runtime input / profile
+           ↓
+       Compiler
+           ↓
+     Native code
+           ↓
+       Execute
+
+
+Other systems can also dynamically generate specialized
+code for particular runtime conditions.
+
+
+══════════════════════════════════════════════════════════════════════════════
+46. SPECIALIZATION AT RUNTIME
+══════════════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    function add(a,b)
+
+is dynamically typed.
+
+At runtime:
+
+    a = integer
+    b = integer
+
+JIT may create a fast path specialized for integers.
+
+Conceptually:
+
+    Generic add
+        ↓
+    observe integer inputs
+        ↓
+    specialize
+        ↓
+    fast integer addition
+
+
+If later:
+
+    a = string
+
+the specialized assumption may fail.
+
+Then:
+
+    fallback/deoptimization/general path
+
+
+══════════════════════════════════════════════════════════════════════════════
+47. GUARDS + SPECIALIZATION
+══════════════════════════════════════════════════════════════════════════════
+
+Conceptually:
+
+    add(a,b)
+
+JIT generates:
+
+    if type(a) == Integer
+       AND
+       type(b) == Integer:
+
+           fast_integer_add()
+
+    else:
+
+           generic_add()
+
+
+This gives:
+
+    fast common case
+          +
+    correct fallback
+
+
+══════════════════════════════════════════════════════════════════════════════
+48. JIT + DEOPTIMIZATION EXAMPLE
+══════════════════════════════════════════════════════════════════════════════
+
+Suppose:
+
+    function add(x, y) {
+        return x + y;
+    }
+
+Observed:
+
+    x = integer
+    y = integer
+
+JIT:
+
+    assumes integer addition
+
+Generates:
+
+    integer_add(x,y)
+
+Later:
+
+    x = string
+    y = string
+
+Assumption fails.
+
+Runtime may:
+
+    detect failure
+         ↓
+    deoptimize
+         ↓
+    execute generic/string-compatible path
+
+
+IMPORTANT:
+
+    Speculation must preserve program correctness.
+
+
+══════════════════════════════════════════════════════════════════════════════
+49. JIT + DYNAMIC DISPATCH
+══════════════════════════════════════════════════════════════════════════════
+
+Normal dynamic dispatch:
+
+    obj.method()
+        ↓
+    determine type
+        ↓
+    lookup method
+        ↓
+    call
+
+
+JIT optimization:
+
+    profile
+       ↓
+    observe:
+       obj usually = Dog
+       ↓
+    guard:
+       obj == Dog
+       ↓
+    direct Dog.method()
+       ↓
+    possibly inline
+
+
+This can significantly reduce dispatch overhead
+in hot code.
+
+
+══════════════════════════════════════════════════════════════════════════════
+50. JIT + GARBAGE COLLECTION + CLOSURES
+══════════════════════════════════════════════════════════════════════════════
+
+These concepts connect across compiler chapters.
+
+Example:
+
+    function outer(x) {
+        return function(y) {
+            return x + y;
+        };
+    }
+
+Possible runtime behavior:
+
+    outer()
+       ↓
+    closure created
+       ↓
+    captured x stored in environment
+       ↓
+    heap allocation
+       ↓
+    GC manages environment
+
+JIT may optimize:
+
+    • Closure creation
+    • Function call
+    • Captured-variable access
+    • Allocation
+
+Potentially:
+
+    closure allocation
+         ↓
+    escape analysis
+         ↓
+    allocation eliminated or simplified
+
+
+══════════════════════════════════════════════════════════════════════════════
+51. JIT OPTIMIZATION PIPELINE — COMPLETE
+══════════════════════════════════════════════════════════════════════════════
+
+    BYTECODE / IR
+         │
+         ▼
+    Interpreter / Baseline
+         │
+         ▼
+    Runtime Profiling
+         │
+         ▼
+    Hotspot Detection
+         │
+         ▼
+    Build Optimizing IR
+         │
+         ▼
+    SSA / CFG Analysis
+         │
+         ▼
+    Optimization
+         │
+    ┌────┼─────────────────────────────┐
+    │    │             │               │
+    ▼    ▼             ▼               ▼
+ Inline Constant    Loop           Devirtualize
+       Propagation  Optimization
+    │    │             │               │
+    └────┴─────────────┴───────────────┘
+                     │
+                     ▼
+              Escape Analysis
+                     │
+                     ▼
+               Lowering
+                     │
+                     ▼
+            Instruction Selection
+                     │
+                     ▼
+            Register Allocation
+                     │
+                     ▼
+              Machine Code
+                     │
+                     ▼
+                 Code Cache
+                     │
+                     ▼
+                  Execute
+                     │
+                     ▼
+                More Profiling
+                     │
+                     ▼
+              Re-optimize / Deopt
+
+
+══════════════════════════════════════════════════════════════════════════════
+52. JIT AND MULTIPLE OPTIMIZATION LEVELS
+══════════════════════════════════════════════════════════════════════════════
+
+A runtime may have several levels of compilation.
+
+Conceptually:
+
+    Level 0:
+        Interpreter
+
+    Level 1:
+        Fast compiled code
+
+    Level 2:
+        More optimized code
+
+    Level 3:
+        Highly optimized code
+
+
+Why?
+
+Because compilation itself costs time.
+
+Not every function deserves the highest optimization level.
+
+Therefore:
+
+    Cold code:
+        little optimization
+
+    Warm code:
+        moderate optimization
+
+    Hot code:
+        aggressive optimization
+
+
+══════════════════════════════════════════════════════════════════════════════
+53. COLD, WARM AND HOT CODE
+══════════════════════════════════════════════════════════════════════════════
+
+    COLD
+        ↓
+    Rarely executed
+
+    WARM
+        ↓
+    Executed enough to matter
+
+    HOT
+        ↓
+    Frequently executed
+
+Optimization effort can be allocated accordingly.
+
+This is one reason JIT systems can be adaptive.
+
+
+══════════════════════════════════════════════════════════════════════════════
+54. PROFILE-GUIDED OPTIMIZATION IN JIT
+══════════════════════════════════════════════════════════════════════════════
+
+JIT profile information may include:
+
+    Method invocation counts
+    Loop counts
+    Branch probabilities
+    Receiver types
+    Allocation behavior
+
+Example:
+
+    if (x > 0)
+        A();
+    else
+        B();
+
+Profile:
+
+    A → 95%
+    B → 5%
+
+JIT can optimize the common path while retaining
+correct handling of the uncommon path.
+
+
+══════════════════════════════════════════════════════════════════════════════
+55. JIT CORRECTNESS
+══════════════════════════════════════════════════════════════════════════════
+
+A JIT compiler must preserve program semantics.
+
+That means:
+
+    Optimized code
+        must behave like
+    correct unoptimized execution
+
+Even if JIT makes assumptions:
+
+    assumption
+       ↓
+    guard
+       ↓
+    assumption valid?
+      / \
+    yes  no
+     │    │
+     ▼    ▼
+    fast  fallback/deopt
+
+
+This is fundamental.
+
+
+══════════════════════════════════════════════════════════════════════════════
+56. JIT SECURITY CONSIDERATIONS
+══════════════════════════════════════════════════════════════════════════════
+
+Runtime-generated executable code introduces security
+considerations.
+
+The runtime must carefully manage:
+
+    • Executable memory
+    • Code generation
+    • Permissions
+    • Runtime metadata
+    • Generated code integrity
+
+Modern systems commonly use protections such as
+write/execute separation policies where appropriate.
+
+The exact mechanism depends on the platform/runtime.
+
+
+══════════════════════════════════════════════════════════════════════════════
+57. JIT vs INTERPRETER vs AOT — MASTER TABLE
+══════════════════════════════════════════════════════════════════════════════
+
+    ┌──────────────┬───────────────┬──────────────┬───────────────┐
+    │ Feature      │ Interpreter   │ JIT          │ AOT           │
+    ├──────────────┼───────────────┼──────────────┼───────────────┤
+    │ Compile time │ Runtime       │ Runtime      │ Before run    │
+    │ Startup      │ Often quick   │ Warm-up      │ Often quick   │
+    │ Runtime      │ Execution     │ Compilation  │ Execution     │
+    │ profiling    │               │ + profiling  │               │
+    │ Optimization │ Limited       │ Adaptive     │ Compile-time  │
+    │ Machine code │ Not required  │ Generated    │ Generated     │
+    │ dynamically  │               │ at runtime   │ beforehand    │
+    └──────────────┴───────────────┴──────────────┴───────────────┘
+
+
+Simplified model:
+
+    Interpreter:
+        execute instructions
+
+    JIT:
+        execute + profile + compile hot code
+
+    AOT:
+        compile before execution
+
+
+══════════════════════════════════════════════════════════════════════════════
+58. GATE IMPORTANT POINTS
+══════════════════════════════════════════════════════════════════════════════
+
+1. JIT compilation occurs during runtime.
+
+2. Hotspot detection identifies frequently executed code.
+
+3. Runtime profiling provides information for optimization.
+
+4. Baseline compiler:
+       fast compilation, relatively less aggressive optimization.
+
+5. Optimizing compiler:
+       more compilation effort, stronger optimization.
+
+6. Tiered compilation:
+       combines different execution/compilation levels.
+
+7. Speculative optimization:
+       optimization based on runtime assumptions.
+
+8. Guard:
+       checks whether a speculative assumption remains valid.
+
+9. Deoptimization:
+       leaves optimized code when assumptions fail.
+
+10. OSR:
+       allows switching execution to optimized code while a
+       method/loop is already executing.
+
+11. Inline caching:
+       caches commonly observed dynamic dispatch relationships.
+
+12. Monomorphic:
+       one primary observed type.
+
+13. Polymorphic:
+       multiple observed types.
+
+14. Megamorphic:
+       many different types.
+
+15. JIT can exploit runtime hardware information.
+
+16. JIT may reduce abstraction overhead through:
+       inlining, specialization, devirtualization and
+       escape analysis.
+
+17. JIT has compilation and memory overhead.
+
+18. JIT can exhibit warm-up behavior.
+
+
+══════════════════════════════════════════════════════════════════════════════
+59. GATE TRAPS
+══════════════════════════════════════════════════════════════════════════════
+
+TRAP 1:
+
+    "JIT compilation occurs only before program execution."
+
+    WRONG.
+
+    JIT compilation occurs during execution.
+
+TRAP 2:
+
+    "JIT compiles every function with maximum optimization."
+
+    WRONG.
+
+    It commonly focuses effort according to runtime behavior.
+
+TRAP 3:
+
+    "Hot code means code that is syntactically complex."
+
+    WRONG.
+
+    Hotness primarily concerns runtime execution behavior/policy.
+
+TRAP 4:
+
+    "Deoptimization means the program has crashed."
+
+    WRONG.
+
+    Deoptimization is a controlled runtime mechanism for
+    leaving speculative optimized code.
+
+TRAP 5:
+
+    "OSR means restarting the entire application."
+
+    WRONG.
+
+    OSR allows execution to transition between versions while
+    execution is already in progress.
+
+TRAP 6:
+
+    "A baseline compiler always produces the best possible code."
+
+    WRONG.
+
+    Its priority is often fast compilation with reasonable code.
+
+TRAP 7:
+
+    "Inline caching means function inlining."
+
+    WRONG.
+
+    Inline caching caches dynamic lookup/dispatch information.
+
+TRAP 8:
+
+    "JIT has no compilation overhead."
+
+    WRONG.
+
+    JIT compilation itself costs time and resources.
+
+TRAP 9:
+
+    "JIT can optimize only using compile-time information."
+
+    WRONG.
+
+    Runtime profiling is one of its major sources of information.
+
+TRAP 10:
+
+    "Speculative optimization can ignore incorrect assumptions."
+
+    WRONG.
+
+    Guards, fallback paths and/or deoptimization are used to
+    preserve correctness.
+
+
+══════════════════════════════════════════════════════════════════════════════
+60. INTERVIEW QUESTIONS
+══════════════════════════════════════════════════════════════════════════════
+
+Q1. What is JIT?
+
+Answer:
+JIT is Just-In-Time compilation, where code is compiled into
+native machine code during program execution.
+
+Q2. Why is JIT useful?
+
+Answer:
+It can optimize frequently executed code using runtime information.
+
+Q3. What is hot code?
+
+Answer:
+Code that executes frequently or is otherwise selected by the
+runtime as important for optimization.
+
+Q4. What is runtime profiling?
+
+Answer:
+Collecting information about actual program execution such as
+method counts, branch behavior and runtime types.
+
+Q5. What is a baseline compiler?
+
+Answer:
+A compiler designed to produce reasonably efficient native code
+quickly, usually with less aggressive optimization.
+
+Q6. What is an optimizing compiler?
+
+Answer:
+A compiler that spends more resources to perform aggressive
+optimizations and produce faster code.
+
+Q7. What is tiered compilation?
+
+Answer:
+An execution strategy using multiple compilation/execution levels,
+such as interpretation, baseline compilation and optimized
+compilation.
+
+Q8. What is speculative optimization?
+
+Answer:
+Optimization based on assumptions derived from observed runtime
+behavior.
+
+Q9. What is a guard?
+
+Answer:
+A runtime check that verifies a speculative assumption before
+using an optimized path.
+
+Q10. What is deoptimization?
+
+Answer:
+The controlled process of leaving optimized code when an assumption
+used by that code becomes invalid.
+
+Q11. What is OSR?
+
+Answer:
+On-Stack Replacement allows currently executing code to transition
+to another compiled version, often an optimized version.
+
+Q12. What is inline caching?
+
+Answer:
+An optimization that caches commonly observed dynamic dispatch
+or lookup results.
+
+Q13. What is a monomorphic call site?
+
+Answer:
+A call site that predominantly observes one receiver/type.
+
+Q14. What is a polymorphic call site?
+
+Answer:
+A call site that observes multiple receiver/types.
+
+Q15. Why does JIT have warm-up time?
+
+Answer:
+Because profiling and runtime compilation/optimization happen
+after execution begins.
+
+Q16. What is adaptive optimization?
+
+Answer:
+Optimization decisions are adjusted dynamically according to
+runtime behavior.
+
+Q17. Why can JIT sometimes outperform AOT code?
+
+Answer:
+It can exploit actual runtime behavior, runtime types and
+available hardware when optimizing hot code.
+
+Q18. Why can JIT sometimes perform worse?
+
+Answer:
+Compilation, profiling and warm-up introduce runtime overhead,
+and not all code is hot enough to justify aggressive compilation.
+
+
+══════════════════════════════════════════════════════════════════════════════
+61. PRACTICAL EXAMPLE — HOT LOOP
+══════════════════════════════════════════════════════════════════════════════
+
+Program:
+
+    for (i = 0; i < 10; i++) {
+        sum = sum + i;
+    }
+
+Initially:
+
+    Interpreter / baseline execution
+
+Runtime observes:
+
+    loop executes repeatedly
+
+Then:
+
+    loop becomes hot
+          ↓
+    JIT compiles loop
+          ↓
+    optimization
+          ↓
+    native machine code
+          ↓
+    future iterations use optimized code
+
+
+For a very long-running loop, OSR may allow the current
+execution to transition into optimized code.
+
+
+══════════════════════════════════════════════════════════════════════════════
+62. PRACTICAL EXAMPLE — DYNAMIC METHOD CALL
+══════════════════════════════════════════════════════════════════════════════
+
+Code:
+
+    obj.calculate();
+
+Runtime observes:
+
+    Dog → calculate()
+    Dog → calculate()
+    Dog → calculate()
+    Dog → calculate()
+
+JIT learns:
+
+    likely receiver = Dog
+
+Possible optimization:
+
+    check obj is Dog
+        ↓
+    direct Dog.calculate()
+        ↓
+    possible inlining
+
+If:
+
+    Cat → calculate()
+
+appears later:
+
+    guard fails
+        ↓
+    fallback/deoptimization
+
+
+══════════════════════════════════════════════════════════════════════════════
+63. PRACTICAL EXAMPLE — COMPLETE JIT FLOW
+══════════════════════════════════════════════════════════════════════════════
+
+    Source Program
+          ↓
+    Bytecode / IR
+          ↓
+    Interpreter
+          ↓
+    Runtime Profiling
+          ↓
+    Hot Method Detected
+          ↓
+    Baseline Compilation
+          ↓
+    More Profiling
+          ↓
+    Optimizing JIT
+          ↓
+    SSA / CFG
+          ↓
+    Inlining
+          ↓
+    Constant Propagation
+          ↓
+    Loop Optimization
+          ↓
+    Devirtualization
+          ↓
+    Escape Analysis
+          ↓
+    Lowering
+          ↓
+    Register Allocation
+          ↓
+    Machine Code
+          ↓
+    Code Cache
+          ↓
+    Execute
+          ↓
+    More Profiling
+          ↓
+    Reoptimization / Deoptimization
+
+
+══════════════════════════════════════════════════════════════════════════════
+64. ONE-PAGE REVISION
+══════════════════════════════════════════════════════════════════════════════
+
+JIT
+    =
+    Compile during runtime.
+
+HOT CODE
+    =
+    Frequently executed/selected code.
+
+PROFILING
+    =
+    Collect runtime behavior.
+
+BASELINE COMPILER
+    =
+    Compile quickly.
+
+OPTIMIZING COMPILER
+    =
+    Compile more aggressively.
+
+TIERED COMPILATION
+    =
+    Multiple execution/compilation levels.
+
+SPECULATION
+    =
+    Optimize based on runtime assumptions.
+
+GUARD
+    =
+    Check assumption.
+
+DEOPTIMIZATION
+    =
+    Leave optimized code when assumption fails.
+
+OSR
+    =
+    Replace currently executing code with another version.
+
+INLINE CACHE
+    =
+    Cache dynamic lookup/dispatch results.
+
+MONOMORPHIC
+    =
+    One main observed type.
+
+POLYMORPHIC
+    =
+    Multiple observed types.
+
+MEGAMORPHIC
+    =
+    Many observed types.
+
+ADAPTIVE OPTIMIZATION
+    =
+    Continuously adapt optimization using runtime information.
+
+WARM-UP
+    =
+    Initial execution period before JIT optimization fully
+    takes effect.
+
+
+══════════════════════════════════════════════════════════════════════════════
+65. CONCEPT MAP
+══════════════════════════════════════════════════════════════════════════════
+
+                         JIT COMPILATION
+                                │
+             ┌──────────────────┼───────────────────┐
+             │                  │                   │
+        INTERPRETER          PROFILING          COMPILER
+             │                  │                   │
+        Initial run       Runtime data        Baseline
+                                                │
+                                                ▼
+                                          Optimizing JIT
+                                                │
+                    ┌───────────────────────────┼─────────────────┐
+                    │                           │                 │
+                 SSA/CFG                    SPECULATION       INLINING
+                    │                           │                 │
+               Optimization                  Guard          Devirtualization
+                    │                           │
+                    │                      Deoptimization
+                    │
+                    └───────────────┬─────────────────────────────┘
+                                    │
+                                  LOWERING
+                                    │
+                                    ▼
+                            MACHINE CODE
+                                    │
+                                    ▼
+                              CODE CACHE
+                                    │
+                                    ▼
+                                 EXECUTE
+                                    │
+                                    ▼
+                               PROFILING
+                                    │
+                                    └────────→ REOPTIMIZATION
+
+
+══════════════════════════════════════════════════════════════════════════════
+66. CHAPTER CONNECTION MAP
+══════════════════════════════════════════════════════════════════════════════
+
+Chapter 35:
+    Garbage Collection
+         ↓
+    JIT-generated objects + GC cooperation
+
+Chapter 36:
+    Modern Compiler Architecture
+         ↓
+    Front End → Middle End → Back End
+         ↓
+    JIT can reuse compiler infrastructure
+
+Chapter 37:
+    Advanced Language Features
+         ↓
+    Closures / Generics / Dynamic Dispatch / Exceptions
+         ↓
+    JIT can optimize their runtime behavior
+
+Chapter 38:
+    JIT & Dynamic Compilation
+         ↓
+    Runtime profiling
+         ↓
+    Hotspot detection
+         ↓
+    Adaptive optimization
+         ↓
+    Native machine code
+
+
+══════════════════════════════════════════════════════════════════════════════
+67. FINAL EXAM CHECKLIST
+══════════════════════════════════════════════════════════════════════════════
+
+[ ] Define JIT compilation
+[ ] Explain dynamic compilation
+[ ] Explain interpreter + JIT
+[ ] Explain hotspot detection
+[ ] Explain runtime profiling
+[ ] Explain baseline compiler
+[ ] Explain optimizing compiler
+[ ] Explain tiered compilation
+[ ] Explain warm-up
+[ ] Explain code cache
+[ ] Explain speculative optimization
+[ ] Explain guards
+[ ] Explain deoptimization
+[ ] Explain OSR
+[ ] Explain inline caching
+[ ] Explain monomorphic call sites
+[ ] Explain polymorphic call sites
+[ ] Explain megamorphic call sites
+[ ] Explain adaptive optimization
+[ ] Explain JIT inlining
+[ ] Explain JIT + escape analysis
+[ ] Explain JIT + GC
+[ ] Explain safepoints
+[ ] Explain JIT + SSA
+[ ] Explain JIT loop optimization
+[ ] Explain bounds-check elimination
+[ ] Explain vectorization
+[ ] Explain JIT CPU-specific optimization
+[ ] Compare JIT vs AOT
+[ ] Compare interpreter vs JIT
+[ ] Explain JVM/JIT relationship
+[ ] Explain JIT correctness
+[ ] Explain JIT compilation overhead
+
+
+══════════════════════════════════════════════════════════════════════════════
+68. MOST IMPORTANT MEMORY FORMULAS
+══════════════════════════════════════════════════════════════════════════════
+
+    JIT
+      =
+    Runtime Compilation
+
+    HOT CODE
+      =
+    Frequently Executed Code
+
+    PROFILING
+      =
+    Runtime Behavior Information
+
+    TIERED COMPILATION
+      =
+    Interpreter + Baseline + Optimized Compilation
+
+    SPECULATION
+      =
+    Runtime Observation → Assumption → Optimization
+
+    GUARD
+      =
+    Check Assumption
+
+    DEOPTIMIZATION
+      =
+    Invalid Assumption → Leave Optimized Code
+
+    OSR
+      =
+    Running Code → Replace with Optimized Version
+
+    INLINE CACHE
+      =
+    Cache Common Dynamic Lookup
+
+    ADAPTIVE OPTIMIZATION
+      =
+    Execute → Profile → Optimize → Execute → Reprofile
+
+    JIT TRADE-OFF
+      =
+    Compilation Cost + Memory Cost
+          VS
+    Improved Hot-Code Performance
+
+
+══════════════════════════════════════════════════════════════════════════════
+CHAPTER 38 COMPLETE
+══════════════════════════════════════════════════════════════════════════════
+
+MASTER SYLLABUS POSITION:
+
+    Chapter 35 → Garbage Collection                  ✓
+    Chapter 36 → Modern Compiler Architecture        ✓
+    Chapter 37 → Advanced Language Features          ✓
+    Chapter 38 → JIT & Dynamic Compilation           ✓
+
+NEXT:
+
+    CHAPTER 39 — ERROR HANDLING
+
+Expected topics:
+    • Compiler errors
+    • Lexical errors
+    • Syntax errors
+    • Semantic errors
+    • Runtime errors
+    • Error detection
+    • Error reporting
+    • Error recovery
+    • Panic-mode recovery
+    • Phrase-level recovery
+    • Error productions
+    • Global correction
+    • Error handling in lexical analysis
+    • Error handling in parsing
+    • Error handling in semantic analysis
+    • Compiler diagnostics
+    • Practical examples
+    • GATE traps
+    • Interview questions

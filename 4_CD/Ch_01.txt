@@ -1,0 +1,1829 @@
+============================================================
+CHAPTER 1 — INTRODUCTION TO COMPILERS
+============================================================
+
+OBJECTIVE
+------------------------------------------------------------
+
+Understand:
+
+    • What a compiler is
+    • Why compilers are required
+    • How source code becomes an executable program
+    • Compiler vs Interpreter
+    • Compiler vs Assembler
+    • Compiler vs Linker
+    • Compiler vs Loader
+    • Source program and target program
+    • Compilation process
+    • Front End and Back End
+    • Compiler passes
+    • Compiler phases
+    • Single-pass compiler
+    • Multi-pass compiler
+    • Cross compiler
+    • Bootstrap compiler
+    • Self-hosting compiler
+
+
+============================================================
+1.1 WHAT IS A COMPILER?
+============================================================
+
+A compiler is a system software that translates a program
+written in a source language into an equivalent program in
+a target language.
+
+Basic idea:
+
+    SOURCE PROGRAM
+          |
+          | Compiler
+          ↓
+    TARGET PROGRAM
+
+
+Example:
+
+    Source Language:
+    
+        C / C++ / Java / etc.
+
+    Target Language:
+
+        Machine Code / Assembly / Intermediate Code
+
+
+A simplified view:
+
+    Human-readable program
+             ↓
+          COMPILER
+             ↓
+    Machine-understandable program
+
+
+Example source code:
+
+    int a = 10;
+    int b = 20;
+    int c = a + b;
+
+
+A compiler analyzes this program and eventually produces
+instructions that can be executed by a computer.
+
+
+============================================================
+1.2 WHY DO WE NEED A COMPILER?
+============================================================
+
+Computers ultimately execute machine-level instructions.
+
+Humans generally prefer high-level programming languages
+because they are easier to write, understand, debug and
+maintain.
+
+Therefore:
+
+    Human
+      ↓
+    High-level language
+      ↓
+    Compiler
+      ↓
+    Lower-level representation
+      ↓
+    Machine
+      ↓
+    Execution
+
+
+Without translation, a processor cannot directly execute
+ordinary high-level source code such as:
+
+    x = a + b;
+
+
+The compiler performs the necessary translation.
+
+
+============================================================
+1.3 SOURCE PROGRAM
+============================================================
+
+A source program is the original program written by the
+programmer in a source programming language.
+
+Example:
+
+    int sum(int a, int b)
+    {
+        return a + b;
+    }
+
+
+Here:
+
+    Source language → C
+
+    Source program → the C program written by the programmer
+
+
+The source program is the INPUT to the compiler.
+
+
+============================================================
+1.4 TARGET PROGRAM
+============================================================
+
+The target program is the output representation generated
+by the compiler for a target machine or target language.
+
+Conceptually:
+
+    Source Program
+          ↓
+       Compiler
+          ↓
+    Target Program
+
+
+The target may be:
+
+    • Assembly code
+    • Machine code
+    • Object code
+    • Another intermediate/target representation
+
+
+The exact output depends on the compiler and compilation
+system.
+
+
+============================================================
+1.5 SOURCE LANGUAGE
+============================================================
+
+The source language is the language in which the original
+program is written.
+
+Examples:
+
+    C
+    C++
+    Java
+    Fortran
+    Rust
+    etc.
+
+
+Example:
+
+    int x = 10;
+
+
+If this is written in C, then:
+
+    Source Language = C
+
+
+============================================================
+1.6 TARGET LANGUAGE
+============================================================
+
+The target language is the language into which the source
+program is translated.
+
+Examples:
+
+    Source Language       Target Language
+    -----------------------------------------
+    C                     Assembly
+    C                     Machine code
+    C++                   Machine code
+    Java                  Bytecode
+
+
+Conceptually:
+
+    SOURCE LANGUAGE
+          ↓
+       COMPILER
+          ↓
+    TARGET LANGUAGE
+
+
+============================================================
+1.7 COMPILATION PROCESS
+============================================================
+
+A compiler does not simply replace one word with another.
+
+It performs several forms of analysis and transformation.
+
+
+General process:
+
+    SOURCE PROGRAM
+          ↓
+    Lexical Analysis
+          ↓
+    Syntax Analysis
+          ↓
+    Semantic Analysis
+          ↓
+    Intermediate Code Generation
+          ↓
+    Code Optimization
+          ↓
+    Code Generation
+          ↓
+    TARGET PROGRAM
+
+
+Additional components:
+
+    Symbol Table
+    Error Handling
+
+
+These components interact with multiple compiler phases.
+
+
+============================================================
+1.8 SIMPLE EXAMPLE OF COMPILATION
+============================================================
+
+Consider:
+
+    x = a + b * c;
+
+
+Step 1 — Source Code
+
+    x = a + b * c;
+
+
+Step 2 — Lexical Analysis
+
+    Tokens:
+
+    identifier
+    =
+    identifier
+    +
+    identifier
+    *
+    identifier
+
+
+Step 3 — Syntax Analysis
+
+    The parser determines the grammatical structure.
+
+             =
+            / \
+           x   +
+              / \
+             a   *
+                / \
+               b   c
+
+
+Step 4 — Semantic Analysis
+
+    The compiler checks whether the operation is meaningful.
+
+    Example checks:
+
+        • Are x, a, b and c declared?
+        • Are their types compatible?
+        • Is the assignment valid?
+
+
+Step 5 — Intermediate Code
+
+    A possible three-address representation:
+
+        t1 = b * c
+        t2 = a + t1
+        x = t2
+
+
+Step 6 — Optimization
+
+    The compiler may transform the intermediate
+    representation when beneficial.
+
+
+Step 7 — Code Generation
+
+    Target-machine instructions are generated.
+
+
+Overall:
+
+    x = a + b * c
+          ↓
+    TOKENS
+          ↓
+    PARSE STRUCTURE
+          ↓
+    SEMANTIC INFORMATION
+          ↓
+    INTERMEDIATE CODE
+          ↓
+    OPTIMIZED CODE
+          ↓
+    TARGET CODE
+
+
+============================================================
+1.9 COMPILER VS INTERPRETER
+============================================================
+
+Both are involved in executing programs written in
+high-level languages, but their processing approaches differ.
+
+
+------------------------------------------------------------
+COMPILER
+------------------------------------------------------------
+
+A compiler generally translates the source program into
+another representation before execution.
+
+Conceptually:
+
+    SOURCE PROGRAM
+          ↓
+       COMPILER
+          ↓
+    TARGET PROGRAM
+          ↓
+       EXECUTION
+
+
+Advantages commonly associated with compilation:
+
+    • Translation can be performed before execution.
+    • Generated target code can be reused.
+    • Optimization can improve generated code.
+
+
+------------------------------------------------------------
+INTERPRETER
+------------------------------------------------------------
+
+An interpreter generally executes the program by processing
+the source or an intermediate representation at runtime.
+
+
+Conceptually:
+
+    SOURCE / IR
+         ↓
+    INTERPRETER
+         ↓
+      EXECUTION
+
+
+------------------------------------------------------------
+COMPILER vs INTERPRETER
+------------------------------------------------------------
+
+    Compiler:
+
+        Source
+          ↓
+        Translation
+          ↓
+        Target
+          ↓
+        Execution
+
+
+    Interpreter:
+
+        Source / IR
+          ↓
+        Interpretation
+          ↓
+        Execution
+
+
+Important:
+
+    Modern language implementations may combine both
+    compilation and interpretation techniques.
+
+
+Example conceptual architecture:
+
+    Source Program
+          ↓
+       Compiler
+          ↓
+       Bytecode
+          ↓
+     Interpreter / JIT
+          ↓
+       Execution
+
+
+============================================================
+1.10 COMPILER VS ASSEMBLER
+============================================================
+
+------------------------------------------------------------
+COMPILER
+------------------------------------------------------------
+
+Translates a high-level language into a lower-level target
+representation.
+
+Example:
+
+    C
+     ↓
+    Compiler
+     ↓
+    Assembly / Machine Code
+
+
+------------------------------------------------------------
+ASSEMBLER
+------------------------------------------------------------
+
+An assembler translates assembly language into machine code
+or an object representation.
+
+Example:
+
+    Assembly
+       ↓
+    Assembler
+       ↓
+    Machine / Object Code
+
+
+Conceptually:
+
+    High-Level Language
+            ↓
+         Compiler
+            ↓
+        Assembly
+            ↓
+        Assembler
+            ↓
+      Machine/Object Code
+
+
+Key distinction:
+
+    Compiler:
+        High-level language → lower-level representation
+
+    Assembler:
+        Assembly language → machine/object representation
+
+
+============================================================
+1.11 COMPILER VS LINKER
+============================================================
+
+A compiler translates and/or transforms source code into
+lower-level output.
+
+A linker combines object files and libraries and resolves
+references needed to form a final executable or other linked
+output.
+
+
+Conceptual process:
+
+    Source File 1
+         ↓
+      Compiler
+         ↓
+      Object 1
+                         \
+                          \
+    Source File 2          → Linker → Executable
+         ↓                /
+      Compiler           /
+         ↓              /
+      Object 2 --------/
+
+
+Libraries can also participate:
+
+             Object Files
+                  +
+             Libraries
+                  ↓
+                LINKER
+                  ↓
+             Executable
+
+
+Example:
+
+    main.c
+       ↓
+    compiler
+       ↓
+    main.o
+       ↓
+       |
+       +--------+
+                |
+    library ---→ LINKER
+                |
+                ↓
+            executable
+
+
+============================================================
+1.12 COMPILER VS LOADER
+============================================================
+
+------------------------------------------------------------
+COMPILER
+------------------------------------------------------------
+
+Responsible for translation of the source program into a
+target representation.
+
+
+    Source Program
+          ↓
+       Compiler
+          ↓
+    Object / Target Code
+
+
+------------------------------------------------------------
+LOADER
+------------------------------------------------------------
+
+The loader is involved in loading a program into memory so
+that it can be executed.
+
+
+Conceptually:
+
+    Executable
+        ↓
+      Loader
+        ↓
+      Memory
+        ↓
+     Execution
+
+
+Therefore:
+
+    Compiler → Translation
+
+    Linker   → Linking
+
+    Loader   → Loading program for execution
+
+
+============================================================
+1.13 COMPLETE LANGUAGE PROCESSING FLOW
+============================================================
+
+A simplified overall flow is:
+
+    SOURCE PROGRAM
+          ↓
+     PREPROCESSOR
+          ↓
+       COMPILER
+          ↓
+     ASSEMBLER
+          ↓
+      OBJECT FILE
+          ↓
+       LINKER
+          ↓
+      EXECUTABLE
+          ↓
+       LOADER
+          ↓
+       MEMORY
+          ↓
+      EXECUTION
+
+
+Important components:
+
+    Preprocessor
+    Compiler
+    Assembler
+    Linker
+    Loader
+
+
+These are studied in greater detail in:
+
+    Chapter 3 — Language Processing System
+
+
+============================================================
+1.14 FRONT END AND BACK END
+============================================================
+
+A compiler can be conceptually divided into:
+
+    FRONT END
+        +
+    BACK END
+
+
+------------------------------------------------------------
+FRONT END
+------------------------------------------------------------
+
+The front end primarily deals with understanding and
+analyzing the source program.
+
+Major activities include:
+
+    • Lexical Analysis
+    • Syntax Analysis
+    • Semantic Analysis
+    • Intermediate Representation generation
+
+It is generally associated with the source language.
+
+
+Conceptually:
+
+    SOURCE CODE
+         ↓
+    ┌───────────────┐
+    │   FRONT END   │
+    └───────────────┘
+         ↓
+        IR
+
+
+------------------------------------------------------------
+BACK END
+------------------------------------------------------------
+
+The back end primarily deals with transforming the
+intermediate representation toward target-machine code.
+
+Major activities include:
+
+    • Optimization
+    • Instruction selection
+    • Register allocation
+    • Code generation
+
+It is strongly associated with the target machine.
+
+
+Conceptually:
+
+        IR
+         ↓
+    ┌───────────────┐
+    │    BACK END   │
+    └───────────────┘
+         ↓
+    TARGET CODE
+
+
+------------------------------------------------------------
+FRONT END + BACK END
+------------------------------------------------------------
+
+    Source Program
+          ↓
+    ┌───────────────┐
+    │   FRONT END   │
+    └───────────────┘
+          ↓
+          IR
+          ↓
+    ┌───────────────┐
+    │    BACK END   │
+    └───────────────┘
+          ↓
+     Target Code
+
+
+Important idea:
+
+    Front End → Understand the source
+
+    Back End  → Produce efficient target code
+
+
+============================================================
+1.15 COMPILER PHASES
+============================================================
+
+The major compiler phases are:
+
+    1. Lexical Analysis
+    2. Syntax Analysis
+    3. Semantic Analysis
+    4. Intermediate Code Generation
+    5. Code Optimization
+    6. Code Generation
+
+
+Supporting structures:
+
+    • Symbol Table
+    • Error Handling
+
+
+Complete conceptual architecture:
+
+                     SOURCE PROGRAM
+                           |
+                           ↓
+                 ┌──────────────────┐
+                 │ Lexical Analysis │
+                 └──────────────────┘
+                           |
+                           ↓
+                       TOKENS
+                           |
+                           ↓
+                 ┌──────────────────┐
+                 │ Syntax Analysis │
+                 └──────────────────┘
+                           |
+                           ↓
+                      PARSE TREE
+                           |
+                           ↓
+                ┌────────────────────┐
+                │ Semantic Analysis  │
+                └────────────────────┘
+                           |
+                           ↓
+                  ANNOTATED STRUCTURE
+                           |
+                           ↓
+              ┌─────────────────────────┐
+              │ Intermediate Code Gen.  │
+              └─────────────────────────┘
+                           |
+                           ↓
+                         IR
+                           |
+                           ↓
+                 ┌──────────────────┐
+                 │   Optimization  │
+                 └──────────────────┘
+                           |
+                           ↓
+                    OPTIMIZED IR
+                           |
+                           ↓
+                 ┌──────────────────┐
+                 │ Code Generation │
+                 └──────────────────┘
+                           |
+                           ↓
+                     TARGET CODE
+
+
+============================================================
+1.16 LEXICAL ANALYSIS
+============================================================
+
+Lexical Analysis is the first major compiler phase.
+
+Its main purpose is to convert the character sequence of
+the source program into tokens.
+
+
+Example:
+
+    int x = 10;
+
+
+Input:
+
+    i n t   x   =   1 0
+
+
+Output:
+
+    KEYWORD(int)
+    IDENTIFIER(x)
+    ASSIGNMENT(=)
+    NUMBER(10)
+
+
+Basic transformation:
+
+    Characters
+        ↓
+    Lexical Analyzer
+        ↓
+    Tokens
+
+
+Important terms:
+
+    Token
+    Lexeme
+    Pattern
+
+
+Detailed lexical analysis is covered in:
+
+    PHASE 2
+    Chapter 4 onwards
+
+
+============================================================
+1.17 SYNTAX ANALYSIS
+============================================================
+
+Syntax Analysis checks whether the sequence of tokens follows
+the grammar of the programming language.
+
+It is performed by a parser.
+
+
+Example:
+
+    x = a + b;
+
+
+The parser determines the structural relationship between
+the tokens.
+
+
+Conceptually:
+
+    Tokens
+      ↓
+    Parser
+      ↓
+    Parse Tree / AST
+
+
+Syntax analysis is covered in:
+
+    Chapter 9 — Context-Free Grammars
+    Chapter 10 — Grammar Transformations
+    Chapter 11 — Top-Down Parsing
+    Chapter 12 — Bottom-Up Parsing
+    Chapter 13 — LR Parsing
+    Chapter 14 — Parser Generators
+
+
+============================================================
+1.18 SEMANTIC ANALYSIS
+============================================================
+
+Semantic Analysis determines whether the syntactically valid
+program also makes sense according to the language rules.
+
+
+Example:
+
+    int x;
+
+    x = "hello";
+
+
+The syntax may be structurally valid, but assigning a string
+to an integer variable may violate the language's type rules.
+
+
+Semantic analysis includes concepts such as:
+
+    • Type checking
+    • Scope
+    • Binding
+    • Declaration
+    • Type compatibility
+    • Symbol tables
+
+
+Covered in:
+
+    Chapter 15 — Semantic Analysis Fundamentals
+    Chapter 16 — Symbol Tables
+    Chapter 17 — Type Systems
+    Chapter 18 — Attribute Grammars
+
+
+============================================================
+1.19 INTERMEDIATE CODE GENERATION
+============================================================
+
+The compiler may translate the analyzed program into an
+Intermediate Representation (IR).
+
+Why use IR?
+
+    Source Program
+          ↓
+        Front End
+          ↓
+          IR
+          ↓
+        Back End
+          ↓
+      Target Code
+
+
+IR provides an intermediate form between the source language
+and target machine.
+
+
+Example:
+
+    x = a + b * c;
+
+
+Possible three-address code:
+
+    t1 = b * c
+    t2 = a + t1
+    x = t2
+
+
+Covered in:
+
+    Chapter 19 — Intermediate Code / IR
+    Chapter 20 — Three-Address Code
+    Chapter 21 — Boolean Expressions & Control Flow
+
+
+============================================================
+1.20 CODE OPTIMIZATION
+============================================================
+
+Optimization attempts to improve the generated program
+while preserving its required behavior.
+
+
+Examples of optimization:
+
+    • Constant folding
+    • Constant propagation
+    • Copy propagation
+    • Dead-code elimination
+    • Common subexpression elimination
+    • Algebraic simplification
+
+
+Conceptual flow:
+
+    IR
+     ↓
+    Optimizer
+     ↓
+    Improved IR
+
+
+Example:
+
+    x = 10 * 20;
+
+
+The compiler can determine:
+
+    10 * 20 = 200
+
+and represent the computation more efficiently.
+
+
+Optimization is covered in:
+
+    PHASE 8
+    Chapters 30–34
+
+
+============================================================
+1.21 CODE GENERATION
+============================================================
+
+Code generation converts the final intermediate
+representation into target-machine instructions.
+
+
+Conceptually:
+
+    Optimized IR
+         ↓
+    Code Generator
+         ↓
+    Target Code
+
+
+Important concepts include:
+
+    • Instruction selection
+    • Register allocation
+    • Register assignment
+    • Addressing modes
+    • Instruction ordering
+
+
+Covered in:
+
+    Chapters 26–29
+
+
+============================================================
+1.22 SYMBOL TABLE
+============================================================
+
+A symbol table is a compiler data structure used to store
+information about identifiers and their properties.
+
+
+Example:
+
+    int x;
+    float y;
+
+
+Conceptually:
+
+    Identifier     Type
+    ---------------------
+    x              int
+    y              float
+
+
+A symbol table may contain information such as:
+
+    • Identifier name
+    • Type
+    • Scope
+    • Storage information
+    • Other language/compiler attributes
+
+
+Symbol tables interact with several compiler phases.
+
+
+Important implementation approaches include:
+
+    • Hash tables
+    • Trees
+    • Other suitable data structures
+
+
+Detailed study:
+
+    Chapter 16 — Symbol Tables
+
+
+============================================================
+1.23 ERROR HANDLING
+============================================================
+
+Errors can occur at different stages of compilation.
+
+Major categories include:
+
+    • Lexical errors
+    • Syntax errors
+    • Semantic errors
+    • Runtime errors
+    • Compile-time errors
+
+
+Examples:
+
+------------------------------------------------------------
+Lexical Error
+------------------------------------------------------------
+
+Invalid character/token pattern.
+
+    Example concept:
+    
+        invalid lexical symbol
+
+
+------------------------------------------------------------
+Syntax Error
+------------------------------------------------------------
+
+The token sequence does not follow the grammar.
+
+Example:
+
+    x = + ;
+
+
+------------------------------------------------------------
+Semantic Error
+------------------------------------------------------------
+
+The program structure may be syntactically valid, but
+violates semantic rules.
+
+Example:
+
+    int x;
+    x = "hello";
+
+
+Error handling and recovery are covered in:
+
+    Chapter 39 — Error Handling
+    Chapter 40 — Error Recovery
+
+
+============================================================
+1.24 COMPILER PASSES
+============================================================
+
+A compiler pass is a complete traversal/processing stage
+over a program representation.
+
+A compiler can be designed as:
+
+    • Single-pass
+    • Multi-pass
+
+
+------------------------------------------------------------
+SINGLE-PASS COMPILER
+------------------------------------------------------------
+
+A single-pass compiler attempts to process the source program
+in essentially one major pass.
+
+
+Conceptually:
+
+    Source
+      ↓
+    Single Pass
+      ↓
+    Target
+
+
+Advantages:
+
+    • Potentially faster compilation
+    • Simpler processing for suitable languages
+
+
+Limitations:
+
+    • More difficult to perform complex analyses
+    • Restrictions may exist on language/compiler design
+
+
+------------------------------------------------------------
+MULTI-PASS COMPILER
+------------------------------------------------------------
+
+A multi-pass compiler processes the program through multiple
+passes.
+
+Conceptually:
+
+    Source
+      ↓
+    Pass 1
+      ↓
+    Pass 2
+      ↓
+    Pass 3
+      ↓
+    ...
+      ↓
+    Target
+
+
+Each pass can perform a specific task or operate on an
+intermediate representation.
+
+
+Modern compiler architectures commonly use multiple
+processing stages.
+
+
+============================================================
+1.25 SINGLE-PASS vs MULTI-PASS
+============================================================
+
+    SINGLE-PASS
+
+        Source
+          ↓
+       Pass 1
+          ↓
+        Target
+
+
+    MULTI-PASS
+
+        Source
+          ↓
+       Pass 1
+          ↓
+       Pass 2
+          ↓
+       Pass 3
+          ↓
+         ...
+          ↓
+        Target
+
+
+General comparison:
+
+    Single-pass:
+        • Fewer major passes
+        • Can simplify processing
+        • May impose restrictions
+
+    Multi-pass:
+        • Multiple processing stages
+        • Better separation of compiler tasks
+        • Suitable for complex analyses and optimization
+
+
+============================================================
+1.26 CROSS COMPILER
+============================================================
+
+A cross compiler is a compiler that runs on one machine or
+platform but generates code for another target platform.
+
+
+Example:
+
+    Host Machine
+         |
+         | Cross Compiler
+         ↓
+    Target Machine
+
+
+Important terms:
+
+    HOST
+        The system on which the compiler runs.
+
+    TARGET
+        The system for which the compiler generates code.
+
+
+Conceptually:
+
+    HOST ≠ TARGET
+
+
+Example:
+
+    x86 computer
+        ↓
+    Cross Compiler
+        ↓
+    ARM executable
+
+
+Cross compilation is useful when:
+
+    • Target hardware is unavailable
+    • Target hardware has limited resources
+    • Embedded systems are being developed
+
+
+============================================================
+1.27 BOOTSTRAP COMPILER
+============================================================
+
+Bootstrapping refers to techniques used to develop a compiler
+for a language, particularly when the compiler itself may be
+written in that language or when moving a compiler to a new
+machine/platform.
+
+
+Basic idea:
+
+    Existing compiler/tools
+             ↓
+    Develop new compiler
+             ↓
+    Compile the compiler
+             ↓
+    New compiler
+
+
+The concept becomes especially important when a compiler
+becomes capable of compiling its own implementation.
+
+
+============================================================
+1.28 SELF-HOSTING COMPILER
+============================================================
+
+A self-hosting compiler is a compiler that is written in the
+same programming language that it compiles.
+
+
+Example concept:
+
+    Compiler implementation
+            written in
+              C
+              ↓
+        C Compiler
+              ↓
+          compiles
+              ↓
+       C source programs
+
+
+A simplified bootstrap process:
+
+    Existing compiler
+          ↓
+    Compile compiler source
+          ↓
+    New compiler
+          ↓
+    New compiler compiles itself
+
+
+Self-hosting is strongly related to:
+
+    • Bootstrapping
+    • Compiler portability
+    • Compiler development
+
+
+============================================================
+1.29 CROSS COMPILER vs SELF-HOSTING COMPILER
+============================================================
+
+These concepts describe different properties.
+
+CROSS COMPILER:
+
+    Where compiler runs
+            ≠
+    Where generated program runs
+
+
+SELF-HOSTING:
+
+    Compiler is implemented
+            in
+    The language it compiles
+
+
+They are not opposites.
+
+A compiler can potentially be:
+
+    • Self-hosting
+    • Cross-compiling
+
+at the same time.
+
+
+============================================================
+1.30 COMPILER ARCHITECTURE — COMPLETE VIEW
+============================================================
+
+                         SOURCE PROGRAM
+                               |
+                               ↓
+                    ┌───────────────────┐
+                    │ Lexical Analysis  │
+                    └───────────────────┘
+                               |
+                               ↓
+                           TOKENS
+                               |
+                               ↓
+                    ┌───────────────────┐
+                    │ Syntax Analysis  │
+                    └───────────────────┘
+                               |
+                               ↓
+                         PARSE TREE / AST
+                               |
+                               ↓
+                    ┌───────────────────┐
+                    │ Semantic Analysis │
+                    └───────────────────┘
+                               |
+                               ↓
+                      ANNOTATED AST / IR
+                               |
+                               ↓
+                  ┌────────────────────────┐
+                  │ Intermediate Code Gen. │
+                  └────────────────────────┘
+                               |
+                               ↓
+                              IR
+                               |
+                               ↓
+                    ┌───────────────────┐
+                    │    Optimization   │
+                    └───────────────────┘
+                               |
+                               ↓
+                         OPTIMIZED IR
+                               |
+                               ↓
+                    ┌───────────────────┐
+                    │ Code Generation   │
+                    └───────────────────┘
+                               |
+                               ↓
+                         TARGET CODE
+                               |
+                               ↓
+                       ASSEMBLER / LINKER
+                               |
+                               ↓
+                          EXECUTABLE
+                               |
+                               ↓
+                            LOADER
+                               |
+                               ↓
+                            MEMORY
+                               |
+                               ↓
+                          EXECUTION
+
+
+Supporting the phases:
+
+        ┌───────────────────┐
+        │    SYMBOL TABLE   │
+        └───────────────────┘
+                 ↕
+        Multiple compiler phases
+
+        ┌───────────────────┐
+        │   ERROR HANDLING  │
+        └───────────────────┘
+                 ↕
+        Multiple compiler phases
+
+
+============================================================
+1.31 FRONT END / MIDDLE END / BACK END
+============================================================
+
+A more detailed modern conceptual division is:
+
+    SOURCE
+      ↓
+    ┌───────────────┐
+    │   FRONT END   │
+    │               │
+    │ Lexer         │
+    │ Parser        │
+    │ Semantic      │
+    │ Analysis      │
+    └───────────────┘
+      ↓
+      IR
+      ↓
+    ┌───────────────┐
+    │  MIDDLE END   │
+    │               │
+    │ Optimization  │
+    │ Analysis      │
+    │ Transformation│
+    └───────────────┘
+      ↓
+    Optimized IR
+      ↓
+    ┌───────────────┐
+    │    BACK END   │
+    │               │
+    │ Instruction   │
+    │ Selection     │
+    │ Register      │
+    │ Allocation    │
+    │ Code Gen.     │
+    └───────────────┘
+      ↓
+    TARGET CODE
+
+
+This three-part terminology is particularly useful when
+studying modern compiler architectures.
+
+
+============================================================
+1.32 COMPILER PHASES vs COMPILER PASSES
+============================================================
+
+These terms must NOT be confused.
+
+
+PHASE:
+
+    A logical compiler activity.
+
+Examples:
+
+    Lexical Analysis
+    Syntax Analysis
+    Semantic Analysis
+    Optimization
+
+
+PASS:
+
+    A traversal/processing stage over a representation.
+
+
+Therefore:
+
+    Phase = WHAT the compiler does
+
+    Pass  = HOW processing is organized into traversals
+
+
+Multiple logical phases can sometimes be combined into a
+single pass.
+
+
+One phase can also participate in a larger multi-pass design.
+
+
+============================================================
+1.33 COMPILER vs ASSEMBLER vs LINKER vs LOADER
+============================================================
+
+    SOURCE CODE
+         |
+         ↓
+    ┌────────────┐
+    │  COMPILER  │
+    └────────────┘
+         |
+         ↓
+    Assembly / Object
+         |
+         ↓
+    ┌────────────┐
+    │ ASSEMBLER  │
+    └────────────┘
+         |
+         ↓
+    Object Code
+         |
+         ↓
+    ┌────────────┐
+    │   LINKER   │
+    └────────────┘
+         |
+         ↓
+    Executable
+         |
+         ↓
+    ┌────────────┐
+    │   LOADER   │
+    └────────────┘
+         |
+         ↓
+      MEMORY
+         |
+         ↓
+     EXECUTION
+
+
+Roles:
+
+    Compiler  → Translation / compilation
+
+    Assembler → Assembly → object/machine representation
+
+    Linker    → Combines object files/libraries and resolves
+                required references
+
+    Loader    → Loads executable into memory for execution
+
+
+============================================================
+1.34 KEY TERMINOLOGY
+============================================================
+
+SOURCE PROGRAM
+    Original program written by programmer.
+
+SOURCE LANGUAGE
+    Language used to write source program.
+
+TARGET PROGRAM
+    Output generated for the target.
+
+TARGET LANGUAGE
+    Language used for target representation.
+
+COMPILER
+    Translates source program into a target representation.
+
+INTERPRETER
+    Executes by interpreting source/intermediate representation.
+
+ASSEMBLER
+    Translates assembly language into machine/object form.
+
+LINKER
+    Combines object files/libraries and resolves references.
+
+LOADER
+    Loads executable program into memory.
+
+FRONT END
+    Source-oriented analysis and IR generation.
+
+BACK END
+    Target-oriented optimization/code generation.
+
+PASS
+    A major traversal/processing stage.
+
+CROSS COMPILER
+    Compiler runs on one platform and generates code for
+    another target platform.
+
+BOOTSTRAPPING
+    Process/technique for developing or bringing up a compiler.
+
+SELF-HOSTING
+    Compiler is implemented in the language it compiles.
+
+
+============================================================
+1.35 EXAM-ORIENTED IMPORTANT POINTS
+============================================================
+
+1. What is a compiler?
+
+    A system software that translates a source program into
+    an equivalent target representation.
+
+2. What is the difference between compiler and interpreter?
+
+    Compiler:
+        Translation is performed to produce a target form.
+
+    Interpreter:
+        Program/representation is processed for execution
+        by an interpreter.
+
+3. What is the difference between compiler and assembler?
+
+    Compiler:
+        High-level language → lower-level target.
+
+    Assembler:
+        Assembly language → machine/object representation.
+
+4. What does a linker do?
+
+    It combines object files/libraries and resolves required
+    references to produce linked output.
+
+5. What does a loader do?
+
+    It loads an executable into memory for execution.
+
+6. What is a source program?
+
+    The original program given to the compiler.
+
+7. What is a target program?
+
+    The translated output intended for the target system.
+
+8. What is a cross compiler?
+
+    A compiler whose host platform differs from its target
+    platform.
+
+9. What is a self-hosting compiler?
+
+    A compiler implemented in the same language that it
+    compiles.
+
+10. What is the difference between phase and pass?
+
+    Phase → logical compiler activity.
+
+    Pass  → traversal/processing stage.
+
+
+============================================================
+1.36 CHAPTER 1 — CONCEPTUAL SUMMARY
+============================================================
+
+The central idea is:
+
+    PROGRAMMER
+        ↓
+    SOURCE PROGRAM
+        ↓
+    COMPILER
+        ↓
+    ANALYSIS
+        ↓
+    INTERMEDIATE REPRESENTATION
+        ↓
+    OPTIMIZATION
+        ↓
+    CODE GENERATION
+        ↓
+    TARGET CODE
+        ↓
+    ASSEMBLER / LINKER
+        ↓
+    EXECUTABLE
+        ↓
+    LOADER
+        ↓
+    MEMORY
+        ↓
+    EXECUTION
+
+
+Compiler organization:
+
+    FRONT END
+        ↓
+    Understand source
+        ↓
+    IR
+        ↓
+    MIDDLE END
+        ↓
+    Optimize
+        ↓
+    BACK END
+        ↓
+    Target code
+
+
+============================================================
+CHAPTER 1 — MASTER CONNECTION
+============================================================
+
+CHAPTER 0
+Prerequisites
+      ↓
+CHAPTER 1
+Introduction to Compilers
+      ↓
+CHAPTER 2
+Structure of a Compiler
+      ↓
+CHAPTER 3
+Language Processing System
+      ↓
+CHAPTER 4+
+Lexical Analysis
+      ↓
+Syntax Analysis
+      ↓
+Semantic Analysis
+      ↓
+Intermediate Representation
+      ↓
+Runtime Environment
+      ↓
+Code Generation
+      ↓
+Code Optimization
+      ↓
+Advanced Compiler Concepts
+      ↓
+Mini Compiler
+      ↓
+GATE / EXAM
+      ↓
+INTERVIEW
+      ↓
+MASTERY
+============================================================

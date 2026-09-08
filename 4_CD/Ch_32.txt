@@ -1,0 +1,2350 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                     COMPILER DESIGN                                ║
+║                     CHAPTER 32                                     ║
+║                     DATA-FLOW ANALYSIS                             ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+PHASE 8 — OPTIMIZATION
+
+CHAPTER 32 — DATA-FLOW ANALYSIS
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Data-flow analysis is one of the most important foundations of
+compiler optimization.
+
+It determines information about how values and definitions move
+through a program.
+
+Examples of questions a compiler may ask:
+
+• Is variable x definitely initialized here?
+• Is x still needed after this statement?
+• Which definition of x reaches this point?
+• Has expression a+b already been computed?
+• Is a variable constant at this point?
+• Which variables are live?
+
+Data-flow analysis provides this information to optimization passes.
+
+
+MAIN TOPICS:
+
+1. What is data-flow analysis?
+2. Basic blocks
+3. Control Flow Graph (CFG)
+4. Data-flow facts
+5. GEN and KILL
+6. IN and OUT sets
+7. Forward analysis
+8. Backward analysis
+9. Reaching definitions
+10. Live variable analysis
+11. Available expressions
+12. Very busy expressions
+13. Transfer functions
+14. Meet operators
+15. Fixed-point iteration
+16. Worklist algorithm
+17. Data-flow equations
+18. Applications in optimization
+19. GATE concepts and traps
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHY DATA-FLOW ANALYSIS IS NEEDED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    x = 10;
+    y = x + 5;
+    x = 20;
+    z = x + 5;
+
+At the second statement:
+
+    x = 10
+
+is the current definition.
+
+At the fourth statement:
+
+    x = 20
+
+is the current definition.
+
+A compiler needs to understand how definitions and values move through
+the program.
+
+Without program-flow information, many optimizations would be unsafe.
+
+Therefore:
+
+    PROGRAM
+       ↓
+    CONTROL FLOW
+       ↓
+    DATA-FLOW INFORMATION
+       ↓
+    OPTIMIZATION
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. SIMPLE REAL-WORLD ANALOGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Imagine a college where a student can take different routes:
+
+       Classroom A
+        /       \
+       /         \
+    Lab B       Lab C
+       \         /
+        \       /
+        Classroom D
+
+You want to know:
+
+"Which information can reach Classroom D?"
+
+Similarly, a compiler analyzes:
+
+       Basic Block A
+          /     \
+         /       \
+    Block B     Block C
+         \       /
+          \     /
+          Block D
+
+and asks:
+
+"Which definitions/values can reach Block D?"
+
+
+This is the basic idea of DATA-FLOW ANALYSIS.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. FORMAL IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A data-flow analysis associates information with program points,
+usually basic blocks.
+
+For each basic block B, we may compute:
+
+    IN[B]
+
+and
+
+    OUT[B]
+
+IN[B]:
+    Information available when entering B.
+
+OUT[B]:
+    Information available when leaving B.
+
+
+General form:
+
+    IN[B]  = information entering B
+
+    OUT[B] = information leaving B
+
+
+The exact meaning depends on the particular analysis.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. BASIC BLOCK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A basic block is a maximal straight-line sequence of instructions.
+
+Properties:
+
+• One entry point
+• One exit point
+• No branch into the middle
+• Control flow enters at the beginning
+• Control flow leaves at the end
+
+Example:
+
+    B1:
+        a = 10
+        b = 20
+        c = a + b
+        d = c * 2
+
+This can be treated as one basic block.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. CONTROL FLOW GRAPH — CFG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CFG = Control Flow Graph.
+
+It represents possible control-flow paths.
+
+Nodes:
+
+    Basic blocks
+
+Edges:
+
+    Possible transfers of control
+
+
+Example:
+
+             B1
+            /  \
+           ↓    ↓
+          B2    B3
+           \    /
+            ↓  ↓
+             B4
+
+
+CFG helps data-flow analysis determine how information moves.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. PREDECESSOR AND SUCCESSOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For a basic block B:
+
+PREDECESSOR:
+
+A block that can transfer control INTO B.
+
+SUCCESSOR:
+
+A block that B can transfer control TO.
+
+Example:
+
+        B1
+       /  \
+      B2  B3
+       \  /
+        B4
+
+For B4:
+
+    predecessors = {B2, B3}
+
+For B1:
+
+    successors = {B2, B3}
+
+
+These relationships are essential for data-flow equations.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. DATA-FLOW FACT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A data-flow fact is a piece of information maintained by an analysis.
+
+Examples:
+
+Reaching Definitions:
+
+    "Definition d of x can reach here."
+
+Live Variables:
+
+    "Variable x may be used later."
+
+Available Expressions:
+
+    "Expression a+b has already been computed and remains valid."
+
+The meaning of a data-flow fact depends on the analysis being performed.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. GEN AND KILL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Two extremely important terms:
+
+    GEN
+    KILL
+
+
+GEN:
+
+Facts generated by a basic block.
+
+KILL:
+
+Facts invalidated/eliminated by a basic block.
+
+
+Example:
+
+    B:
+        x = 10
+        y = x + 5
+
+
+The assignment:
+
+    x = 10
+
+generates a definition of x.
+
+An assignment to x can kill older definitions of x.
+
+
+Memory trick:
+
+    GEN  → CREATE
+    KILL → DESTROY/INVALIDATE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. IN AND OUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For each basic block B:
+
+    IN[B]
+       ↓
+    ┌───────────────┐
+    │  BASIC BLOCK  │
+    └───────────────┘
+       ↓
+    OUT[B]
+
+
+IN:
+
+    Facts before executing the block.
+
+OUT:
+
+    Facts after executing the block.
+
+
+A common equation form is:
+
+    OUT[B] = GEN[B] ∪ (IN[B] - KILL[B])
+
+This is commonly used for forward "may" analyses such as
+reaching definitions.
+
+IMPORTANT:
+
+The exact equation depends on the data-flow problem.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. FORWARD DATA-FLOW ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Information flows in the same general direction as program execution.
+
+Example:
+
+    B1 → B2 → B3
+
+Data-flow information moves:
+
+    B1 → B2 → B3
+
+
+Examples:
+
+• Reaching definitions
+• Available expressions
+• Some constant propagation analyses
+
+
+Concept:
+
+    ENTRY
+      ↓
+     B1
+      ↓
+     B2
+      ↓
+     B3
+      ↓
+    EXIT
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. BACKWARD DATA-FLOW ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Information flows opposite the normal execution direction.
+
+Example:
+
+    B1 → B2 → B3
+
+Backward analysis reasons:
+
+    B3 → B2 → B1
+
+
+Major example:
+
+    LIVE VARIABLE ANALYSIS
+
+
+Why?
+
+To know whether a variable is needed in the future, we naturally look
+toward future uses.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. FORWARD VS BACKWARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌────────────────────┬───────────────────────────────────────────────┐
+│ Type               │ Direction                                     │
+├────────────────────┼───────────────────────────────────────────────┤
+│ Forward            │ Entry → Exit                                  │
+│ Backward           │ Exit → Entry                                 │
+└────────────────────┴───────────────────────────────────────────────┘
+
+
+Examples:
+
+FORWARD:
+
+    Reaching Definitions
+    Available Expressions
+
+BACKWARD:
+
+    Live Variables
+    Very Busy Expressions
+
+
+GATE TIP:
+
+    Ask: "Does the analysis care about the past or future?"
+
+Past/reaching information:
+    usually forward.
+
+Future/use information:
+    usually backward.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. MAY ANALYSIS VS MUST ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Another very important classification.
+
+MAY analysis:
+
+    Something may be true along at least one path.
+
+MUST analysis:
+
+    Something must be true along every relevant path.
+
+
+Examples:
+
+Reaching Definitions:
+
+    MAY analysis
+
+A definition reaches a point if there exists a path along which it
+reaches without being killed.
+
+Available Expressions:
+
+    MUST analysis
+
+An expression is available only if it has been computed and remains
+valid on all paths reaching the point.
+
+
+Memory trick:
+
+    MAY  → possibility
+    MUST → guarantee
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. UNION VS INTERSECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For common classical bit-vector data-flow analyses:
+
+MAY analysis often uses:
+
+    UNION
+
+MUST analysis often uses:
+
+    INTERSECTION
+
+
+Examples:
+
+Reaching Definitions:
+
+    UNION
+
+Live Variables:
+
+    UNION
+
+Available Expressions:
+
+    INTERSECTION
+
+Very Busy Expressions:
+
+    INTERSECTION
+
+
+BUT:
+
+The exact meet operation depends on the lattice formulation and
+analysis definition. Do not memorize blindly without understanding the
+underlying "may/must" meaning.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. REACHING DEFINITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reaching Definitions determines which assignments may reach a program
+point without being overwritten.
+
+Example:
+
+    B1:
+        x = 10
+        goto B3
+
+    B2:
+        x = 20
+        goto B3
+
+    B3:
+        y = x + 5
+
+
+At B3:
+
+    x = 10
+
+may reach B3.
+
+    x = 20
+
+may also reach B3.
+
+Therefore both definitions can reach B3.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. DEFINITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A definition is an assignment that gives a value to a variable.
+
+Examples:
+
+    x = 10
+    y = x + 5
+    z = a * b
+
+Each assignment creates a definition for the assigned variable.
+
+
+For example:
+
+    d1: x = 10
+    d2: x = 20
+
+There are two definitions of x.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. KILL IN REACHING DEFINITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    d1: x = 10
+    d2: x = 20
+
+When d2 executes:
+
+    d1
+
+is killed because d1 is no longer the current reaching definition
+along that path.
+
+Therefore:
+
+    GEN[B] = definitions generated by B
+
+    KILL[B] = older definitions invalidated by B
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. REACHING DEFINITIONS EQUATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For a basic block B:
+
+    IN[B] = union of OUT[P]
+            for all predecessors P
+
+That is:
+
+    IN[B] = ⋃ OUT[P]
+
+Then:
+
+    OUT[B] =
+        GEN[B] ∪ (IN[B] - KILL[B])
+
+
+This is a classic forward MAY analysis.
+
+
+VERY IMPORTANT:
+
+    Reaching Definitions
+        ↓
+    Forward
+        ↓
+    MAY
+        ↓
+    UNION
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. REACHING DEFINITIONS EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CFG:
+
+         B1
+        /  \
+       B2  B3
+        \  /
+         B4
+
+
+Suppose:
+
+B1:
+    x = 10
+
+B2:
+    y = 20
+
+B3:
+    x = 30
+
+B4:
+    z = x
+
+
+At B4, possible definitions of x include:
+
+    B1: x = 10
+    B3: x = 30
+
+depending on the path taken.
+
+The compiler can therefore know that multiple definitions may reach B4.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. LIVE VARIABLE ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Live variable analysis asks:
+
+"Will the current value of variable x be used later before x is
+redefined?"
+
+If yes:
+
+    x is LIVE.
+
+If no:
+
+    x is DEAD.
+
+
+Example:
+
+    x = 10;
+    y = x + 5;
+
+Before the second statement, x is live because its value is needed.
+
+After its last use, x may become dead.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. WHY LIVE VARIABLE ANALYSIS MATTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Live variable analysis is very important for:
+
+• Dead code elimination
+• Register allocation
+• Register reuse
+• Interference graph construction
+
+Recall Chapter 29:
+
+    Register Allocation
+           ↑
+    Live Variable Analysis
+
+If a variable is no longer live, its register can potentially be reused.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. LIVE VARIABLE EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    1. x = 10
+    2. y = x + 5
+    3. z = y + 2
+    4. print(z)
+
+At statement 1:
+
+    x becomes live because statement 2 uses x.
+
+At statement 2:
+
+    x is used.
+
+After statement 2, x may be dead if there are no later uses.
+
+Similarly:
+
+    y
+
+is live between statements 2 and 3.
+
+    z
+
+is live between statements 3 and 4.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. USE AND DEF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For liveness, two important concepts are:
+
+    USE
+    DEF
+
+
+USE[B]:
+
+Variables whose values are used by B before being defined in B.
+
+DEF[B]:
+
+Variables defined by B.
+
+
+Example:
+
+    B:
+        x = y + z
+        w = x + 1
+
+
+USE[B]:
+
+    {y, z}
+
+DEF[B]:
+
+    {x, w}
+
+
+Because x is defined before it is used within the block, x is not
+included in the block's initial USE set.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. LIVE VARIABLE EQUATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Liveness is a BACKWARD analysis.
+
+For block B:
+
+    OUT[B] = union of IN[S]
+             for all successors S
+
+Therefore:
+
+    OUT[B] = ⋃ IN[S]
+
+
+Then:
+
+    IN[B] =
+        USE[B] ∪ (OUT[B] - DEF[B])
+
+
+This means:
+
+A variable is live at entry if:
+
+1. It is used in the block before being defined, OR
+2. It is live after the block and is not redefined in the block.
+
+
+VERY IMPORTANT:
+
+    Live Variables
+        ↓
+    Backward
+        ↓
+    MAY
+        ↓
+    UNION
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. LIVE VARIABLE EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    B:
+        x = y + z
+        w = x + 1
+
+USE[B]:
+
+    {y, z}
+
+DEF[B]:
+
+    {x, w}
+
+
+Suppose:
+
+    OUT[B] = {w, p}
+
+Then:
+
+    IN[B]
+    = USE[B] ∪ (OUT[B] - DEF[B])
+
+    = {y,z} ∪ ({w,p} - {x,w})
+
+    = {y,z} ∪ {p}
+
+    = {y,z,p}
+
+
+Therefore:
+
+    IN[B] = {y,z,p}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. AVAILABLE EXPRESSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Available Expressions analysis determines whether an expression has
+already been computed and its operands have not changed since that
+computation.
+
+Example:
+
+    x = a + b;
+    y = a + b;
+
+At the second statement:
+
+    a + b
+
+may be available.
+
+The compiler can potentially reuse the previous result.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. AVAILABLE EXPRESSIONS — MUST PROPERTY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An expression is considered available at a point when it has been
+computed along every relevant path to that point and has not been
+invalidated.
+
+Therefore classical Available Expressions is:
+
+    FORWARD
+    MUST
+    INTERSECTION
+
+
+Memory:
+
+    Available = "available on ALL paths"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. AVAILABLE EXPRESSIONS EQUATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A common formulation is:
+
+    IN[B] = intersection of OUT[P]
+            for all predecessors P
+
+Therefore:
+
+    IN[B] = ⋂ OUT[P]
+
+
+Transfer:
+
+    OUT[B] =
+        GEN[B] ∪ (IN[B] - KILL[B])
+
+
+Conceptually:
+
+    Expression generated
+          +
+    Expression already available
+          -
+    Expression invalidated
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. VERY BUSY EXPRESSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A very busy expression is an expression that will be evaluated on
+every path from the current point before any operand changes.
+
+This analysis is useful for identifying computations that can
+potentially be moved earlier.
+
+Classically:
+
+    BACKWARD
+    MUST
+    INTERSECTION
+
+
+Memory:
+
+    Very Busy
+        ↓
+    "Definitely used in the future"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. CLASSICAL DATA-FLOW ANALYSIS TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────┬──────────┬─────────┬──────────────┐
+│ Analysis                │ Direction│ Property│ Meet         │
+├─────────────────────────┼──────────┼─────────┼──────────────┤
+│ Reaching Definitions    │ Forward  │ MAY     │ Union        │
+│ Available Expressions   │ Forward  │ MUST    │ Intersection │
+│ Live Variables          │ Backward │ MAY     │ Union        │
+│ Very Busy Expressions   │ Backward │ MUST    │ Intersection │
+└─────────────────────────┴──────────┴─────────┴──────────────┘
+
+
+THIS TABLE IS EXTREMELY IMPORTANT FOR GATE.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. TRANSFER FUNCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A transfer function describes how a basic block transforms incoming
+data-flow information into outgoing information.
+
+General form:
+
+    OUT[B] = f_B(IN[B])
+
+
+where:
+
+    f_B
+
+is the transfer function for block B.
+
+
+For a common GEN/KILL formulation:
+
+    f_B(X) = GEN[B] ∪ (X - KILL[B])
+
+
+So:
+
+    incoming information
+           ↓
+    TRANSFER FUNCTION
+           ↓
+    outgoing information
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. MEET OPERATOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When multiple control-flow paths merge, their information must be
+combined.
+
+The operation used to combine incoming information is called the:
+
+    MEET OPERATOR
+
+
+Examples:
+
+    UNION
+
+or
+
+    INTERSECTION
+
+
+For a MAY analysis:
+
+    information from any path may matter
+    → UNION
+
+
+For a MUST analysis:
+
+    information must hold on all paths
+    → INTERSECTION
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. INITIALIZATION OF DATA-FLOW ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Data-flow equations are often solved iteratively.
+
+We start with initial assumptions.
+
+For a MAY analysis, a common approach is:
+
+    start with empty sets
+
+and propagate information until the solution stabilizes.
+
+For a MUST analysis, a common approach is:
+
+    start with a universal/top set
+
+for relevant non-entry blocks, then remove facts as constraints are
+discovered.
+
+Exact initialization depends on the chosen formulation and boundary
+conditions.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. FIXED POINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The equations may need multiple iterations.
+
+Example:
+
+    Iteration 1:
+        IN/OUT sets change
+
+    Iteration 2:
+        IN/OUT sets change
+
+    Iteration 3:
+        smaller changes
+
+    Iteration 4:
+        no changes
+
+When no further change occurs:
+
+    FIXED POINT
+
+The analysis has reached a stable solution.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. WHY ITERATION IS REQUIRED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider a loop:
+
+          B1
+          ↓
+          B2
+         ↙  ↘
+        B3  B4
+         ↘  ↙
+          B2
+
+Information may travel around the loop.
+
+Therefore one pass may not be enough.
+
+The compiler repeatedly applies data-flow equations until:
+
+    IN and OUT sets stop changing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. SIMPLE ITERATION EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    B1 → B2 → B3
+
+Initially:
+
+    OUT[B1] = ∅
+    OUT[B2] = ∅
+    OUT[B3] = ∅
+
+Process B1:
+
+    OUT[B1] changes.
+
+Then B2 receives new information.
+
+Process B2:
+
+    OUT[B2] changes.
+
+Then B3 receives new information.
+
+Continue until:
+
+    no set changes.
+
+That stable result is the fixed point.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. WORKLIST ALGORITHM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A worklist algorithm efficiently solves many data-flow problems.
+
+Basic idea:
+
+    Put blocks that need processing into a WORKLIST.
+
+Algorithm concept:
+
+    1. Initialize data-flow sets.
+    2. Put relevant blocks into worklist.
+    3. Remove one block.
+    4. Compute new IN/OUT information.
+    5. If information changes:
+           add affected neighboring blocks.
+    6. Continue until worklist becomes empty.
+
+
+Conceptually:
+
+    WORKLIST
+       ↓
+    Process B
+       ↓
+    Information changed?
+       ↓ YES
+    Add affected blocks
+       ↓
+    Continue
+       ↓
+    Empty worklist
+       ↓
+    FIXED POINT
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. WHY WORKLIST IS USEFUL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Naively, a compiler could repeatedly scan every block.
+
+But many blocks may not change.
+
+Worklist processing focuses on blocks whose information may have
+changed.
+
+Therefore it can avoid unnecessary repeated computation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. DATA-FLOW ANALYSIS ON A CFG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+              B1
+             /  \
+            B2  B3
+             \  /
+              B4
+
+
+For FORWARD analysis:
+
+    B1
+     ↓
+    B2/B3
+     ↓
+    B4
+
+Information moves toward successors.
+
+For BACKWARD analysis:
+
+    B4
+     ↓
+    B2/B3
+     ↓
+    B1
+
+Information moves toward predecessors.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. REACHING DEFINITIONS — COMPLETE EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CFG:
+
+          B1
+         /  \
+        B2  B3
+         \  /
+          B4
+
+
+Statements:
+
+B1:
+    d1: x = 10
+
+B2:
+    d2: y = x + 1
+
+B3:
+    d3: x = 20
+
+B4:
+    d4: z = x + y
+
+
+At B4:
+
+Possible reaching definitions:
+
+    d1: x = 10
+    d3: x = 20
+
+For y:
+
+    d2: y = x + 1
+
+may reach B4.
+
+Therefore reaching definitions can identify which assignments could
+provide values used at B4.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. LIVE VARIABLE ANALYSIS — COMPLETE EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CFG:
+
+          B1
+         /  \
+        B2  B3
+         \  /
+          B4
+
+
+Suppose:
+
+B1:
+    x = 10
+
+B2:
+    y = x + 1
+
+B3:
+    z = x + 2
+
+B4:
+    print(y)
+    print(z)
+
+
+At B1:
+
+    x
+
+is live after B1 because both branches use x.
+
+This is why liveness must reason backward from future uses.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. DATA-FLOW ANALYSIS AND DEAD CODE ELIMINATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+    x = 10;
+    y = 20;
+    z = x + 5;
+    print(z);
+
+If y is never used and has no side effect:
+
+    y = 20;
+
+is dead.
+
+How does the compiler know?
+
+Through liveness/data-flow information.
+
+If y is not live after its definition:
+
+    definition of y
+
+may be eliminated.
+
+
+Therefore:
+
+    Data-flow analysis
+          ↓
+    Determine liveness
+          ↓
+    Identify dead code
+          ↓
+    Dead Code Elimination
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. DATA-FLOW ANALYSIS AND REGISTER ALLOCATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Recall Chapter 29.
+
+Register allocation needs to know when variables are simultaneously
+live.
+
+Example:
+
+    a = ...
+    b = ...
+    c = a + b
+
+Before the addition:
+
+    a and b
+
+may both be live.
+
+The compiler can construct an interference graph.
+
+Therefore:
+
+    Liveness
+       ↓
+    Live ranges
+       ↓
+    Interference
+       ↓
+    Register allocation
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. DATA-FLOW ANALYSIS AND CONSTANT PROPAGATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    x = 10;
+
+    if (...) {
+        y = x + 5;
+    }
+
+A compiler needs to reason about the value of x at the use.
+
+If x remains constant along the relevant paths, its value may be
+propagated.
+
+Thus:
+
+    Data-flow information
+           ↓
+    Constant knowledge
+           ↓
+    Constant propagation
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. DATA-FLOW ANALYSIS AND CSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    x = a + b;
+
+    ...
+
+    y = a + b;
+
+Can the second computation reuse the first?
+
+The compiler needs to know:
+
+• Was a changed?
+• Was b changed?
+• Could memory affecting the expression change?
+• Did a function call invalidate assumptions?
+
+Available-expression analysis can provide relevant information.
+
+Therefore:
+
+    Data-flow analysis
+          ↓
+    Available expressions
+          ↓
+    Common subexpression elimination
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. DATA-FLOW ANALYSIS AND LOOP OPTIMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Loops require understanding of:
+
+• Values
+• Definitions
+• Uses
+• Dependencies
+• Control flow
+
+Data-flow analysis helps identify information that remains stable or
+changes across iterations.
+
+This supports:
+
+• Loop invariant code motion
+• Strength reduction
+• Dead code elimination
+• Induction-variable optimization
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. INDUCTION VARIABLE — INTRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An induction variable changes by a predictable amount on each loop
+iteration.
+
+Example:
+
+    for (i = 0; i < n; i++) {
+        x = i * 4;
+    }
+
+Here:
+
+    i
+
+is an induction variable.
+
+The value changes:
+
+    0
+    1
+    2
+    3
+    ...
+
+This concept becomes important in loop optimization.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. DATA-FLOW ANALYSIS AS A BIT-VECTOR PROBLEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Many classical data-flow problems can be represented using sets.
+
+For example:
+
+    Definitions:
+        d1, d2, d3, d4
+
+A set such as:
+
+    {d1, d3}
+
+can be represented as a bit vector:
+
+    d1 d2 d3 d4
+     1  0  1  0
+
+Similarly, an empty set:
+
+    0 0 0 0
+
+and full set:
+
+    1 1 1 1
+
+
+This can make data-flow computations efficient.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. BITWISE OPERATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Set operations can often be implemented using bit operations.
+
+UNION:
+
+    bitwise OR
+
+INTERSECTION:
+
+    bitwise AND
+
+Difference can be implemented using:
+
+    A AND NOT B
+
+
+Example:
+
+    A = 1010
+    B = 0110
+
+Union:
+
+    1010 OR 0110
+    = 1110
+
+Intersection:
+
+    1010 AND 0110
+    = 0010
+
+
+This is important for efficient compiler implementations.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. DATA-FLOW FRAMEWORK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A classical data-flow framework can be described using:
+
+1. CFG
+2. Domain of data-flow facts
+3. Direction
+4. Transfer functions
+5. Meet operator
+6. Boundary conditions
+7. Initial values
+8. Iterative solution method
+
+
+Conceptual structure:
+
+             PROGRAM
+                ↓
+               CFG
+                ↓
+       ┌───────────────────┐
+       │ DATA-FLOW ANALYSIS│
+       ├───────────────────┤
+       │ Direction         │
+       │ Facts             │
+       │ GEN/KILL          │
+       │ Transfer          │
+       │ Meet              │
+       │ Boundary          │
+       └─────────┬─────────┘
+                 ↓
+          IN / OUT SETS
+                 ↓
+             OPTIMIZATION
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. MONOTONE DATA-FLOW ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A data-flow framework is often designed so that repeated application
+of transfer/meet operations moves toward a stable solution.
+
+A monotone framework has properties that help ensure the iterative
+process behaves predictably over the chosen lattice.
+
+For introductory compiler study, remember:
+
+    Monotonicity
+        +
+    Finite-height lattice
+        ↓
+    Iterative solution can converge
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+53. DATA-FLOW LATTICE — BASIC IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A lattice provides an ordered structure for data-flow facts.
+
+You may encounter:
+
+    TOP
+     ↑
+   facts
+     ↓
+   BOTTOM
+
+The exact interpretation of TOP and BOTTOM depends on the analysis.
+
+For example, a MUST analysis may start from a very optimistic
+assumption and progressively remove facts.
+
+A MAY analysis may start from little/no information and progressively
+add facts.
+
+Do not assume TOP always means "true" or BOTTOM always means "false."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+54. BOUNDARY CONDITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Boundary conditions describe data-flow information at program entry
+or exit.
+
+For example:
+
+Forward analysis:
+
+    ENTRY → first block
+
+Backward analysis:
+
+    EXIT → last block
+
+The initial information at these boundaries depends on the analysis.
+
+Example:
+
+Live variables at program exit may be:
+
+    ∅
+
+if no variables are needed after program termination.
+
+But the exact boundary condition depends on the problem.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+55. COMMON DATA-FLOW EQUATION PATTERNS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REACHING DEFINITIONS:
+
+    IN[B] = UNION of OUT[P]
+
+    OUT[B] = GEN[B] ∪ (IN[B] - KILL[B])
+
+
+LIVE VARIABLES:
+
+    OUT[B] = UNION of IN[S]
+
+    IN[B] = USE[B] ∪ (OUT[B] - DEF[B])
+
+
+AVAILABLE EXPRESSIONS:
+
+    IN[B] = INTERSECTION of OUT[P]
+
+    OUT[B] = GEN[B] ∪ (IN[B] - KILL[B])
+
+These equations are extremely important for exam preparation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+56. MASTER CLASSIFICATION TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    DATA-FLOW ANALYSES
+
+                           │
+            ┌──────────────┴──────────────┐
+            ↓                             ↓
+        FORWARD                       BACKWARD
+            │                             │
+      ┌─────┴─────┐                 ┌─────┴─────┐
+      ↓           ↓                 ↓           ↓
+   Reaching    Available          Live        Very Busy
+   Definitions Expressions        Variables   Expressions
+      │           │                 │           │
+     MAY         MUST              MAY         MUST
+      │           │                 │           │
+    UNION    INTERSECTION          UNION   INTERSECTION
+
+
+MEMORIZE THIS STRUCTURE.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+57. COMMON MISTAKES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MISTAKE 1:
+
+Thinking data-flow analysis means only tracking variables.
+
+FALSE.
+
+It can track:
+
+• definitions
+• expressions
+• constants
+• liveness
+• other program properties
+
+
+MISTAKE 2:
+
+Thinking all analyses are forward.
+
+FALSE.
+
+Live variables and very busy expressions are classical backward
+analyses.
+
+
+MISTAKE 3:
+
+Thinking all analyses use UNION.
+
+FALSE.
+
+MUST analyses commonly use INTERSECTION.
+
+
+MISTAKE 4:
+
+Thinking IN always comes before OUT in program execution.
+
+Not necessarily.
+
+The equations depend on analysis direction.
+
+
+MISTAKE 5:
+
+Thinking one iteration is always enough.
+
+FALSE.
+
+Loops can require repeated iteration until a fixed point.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+58. GATE TRAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRAP 1:
+
+    Reaching definitions is backward.
+
+FALSE.
+
+    Reaching definitions = FORWARD
+
+
+------------------------------------------------------------
+
+TRAP 2:
+
+    Live variable analysis is forward.
+
+FALSE.
+
+    Live variables = BACKWARD
+
+
+------------------------------------------------------------
+
+TRAP 3:
+
+    Reaching definitions is a MUST analysis.
+
+FALSE.
+
+    Reaching definitions = MAY
+
+
+------------------------------------------------------------
+
+TRAP 4:
+
+    Available expressions use UNION.
+
+Classical formulation:
+
+    Available expressions = MUST + INTERSECTION
+
+
+------------------------------------------------------------
+
+TRAP 5:
+
+    Live variables use INTERSECTION.
+
+Classical formulation:
+
+    Live variables = MAY + UNION
+
+
+------------------------------------------------------------
+
+TRAP 6:
+
+    GEN means definitions killed by a block.
+
+FALSE.
+
+    GEN = generated facts
+
+    KILL = invalidated facts
+
+
+------------------------------------------------------------
+
+TRAP 7:
+
+    Data-flow equations never require iteration.
+
+FALSE.
+
+Loops can require repeated computation until a fixed point.
+
+
+------------------------------------------------------------
+
+TRAP 8:
+
+    IN[B] always equals OUT[B]'s successor/predecessor in the same
+    direction.
+
+FALSE.
+
+The relationship depends on whether the analysis is forward or
+backward.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+59. GATE MEMORY TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Remember:
+
+    R A L V
+
+R = Reaching Definitions
+A = Available Expressions
+L = Live Variables
+V = Very Busy Expressions
+
+
+Now remember:
+
+    R → Forward → MAY → UNION
+
+    A → Forward → MUST → INTERSECTION
+
+    L → Backward → MAY → UNION
+
+    V → Backward → MUST → INTERSECTION
+
+
+SHORT MEMORY:
+
+    REACHING = FORWARD MAY
+    AVAILABLE = FORWARD MUST
+    LIVE = BACKWARD MAY
+    VERY BUSY = BACKWARD MUST
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+60. INTERVIEW QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1. What is data-flow analysis?
+
+Answer:
+
+Data-flow analysis is a compiler technique for computing information
+about how program values, definitions, and expressions behave across
+control-flow paths.
+
+
+------------------------------------------------------------
+
+Q2. What is a CFG?
+
+Answer:
+
+A Control Flow Graph represents basic blocks as nodes and possible
+control-flow transfers as edges.
+
+
+------------------------------------------------------------
+
+Q3. What is GEN?
+
+Answer:
+
+GEN represents information/facts generated by a block.
+
+
+------------------------------------------------------------
+
+Q4. What is KILL?
+
+Answer:
+
+KILL represents information/facts invalidated by a block.
+
+
+------------------------------------------------------------
+
+Q5. What is IN[B]?
+
+Answer:
+
+Data-flow information available at the entry of block B.
+
+
+------------------------------------------------------------
+
+Q6. What is OUT[B]?
+
+Answer:
+
+Data-flow information available after processing block B.
+
+
+------------------------------------------------------------
+
+Q7. What is reaching-definition analysis?
+
+Answer:
+
+It determines which definitions may reach a program point without
+being killed.
+
+
+------------------------------------------------------------
+
+Q8. What is liveness analysis?
+
+Answer:
+
+It determines whether a variable's current value may be used later
+before being redefined.
+
+
+------------------------------------------------------------
+
+Q9. Why is liveness important for register allocation?
+
+Answer:
+
+It identifies overlapping live ranges, which helps determine when
+variables interfere and therefore cannot share the same register.
+
+
+------------------------------------------------------------
+
+Q10. Why is fixed-point iteration used?
+
+Answer:
+
+Because control-flow cycles such as loops can cause information to
+propagate through multiple iterations before a stable solution is
+reached.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+61. PRACTICAL EXAMPLE — FROM SOURCE TO DATA FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SOURCE:
+
+    x = 10;
+
+    if (condition) {
+        y = x + 1;
+    } else {
+        y = x + 2;
+    }
+
+    z = y + 5;
+
+
+CFG:
+
+             B1
+              |
+          condition
+           /       \
+         B2         B3
+          \         /
+           \       /
+             B4
+
+
+B1:
+    x = 10
+
+B2:
+    y = x + 1
+
+B3:
+    y = x + 2
+
+B4:
+    z = y + 5
+
+
+LIVENESS:
+
+At B1, x becomes live because both B2 and B3 use x.
+
+At B4, y is used.
+
+Therefore the compiler can reason about:
+
+    x
+    y
+    z
+
+across the CFG.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+62. COMPLETE CONNECTION WITH PREVIOUS CHAPTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chapter 19:
+
+    Intermediate Representation
+             ↓
+Chapter 20:
+
+    Three-Address Code
+             ↓
+Chapter 21:
+
+    Control Flow / Backpatching
+             ↓
+Chapter 27:
+
+    Basic Blocks + CFG
+             ↓
+Chapter 30:
+
+    Optimization Fundamentals
+             ↓
+Chapter 31:
+
+    Basic Optimizations
+             ↓
+Chapter 32:
+
+    DATA-FLOW ANALYSIS
+             ↓
+    Information about program flow
+             ↓
+    Better optimization decisions
+             ↓
+Chapter 33:
+
+    LOOP OPTIMIZATION
+
+
+And:
+
+    Data-flow analysis
+            ↓
+    Liveness
+            ↓
+    Register allocation
+            ↓
+Chapter 29
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+63. COMPLETE MASTER FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                 SOURCE PROGRAM
+                       ↓
+                 FRONT END
+                       ↓
+                      IR
+                       ↓
+                 BASIC BLOCKS
+                       ↓
+                     CFG
+                       ↓
+              DATA-FLOW ANALYSIS
+                       ↓
+       ┌───────────────┼────────────────┐
+       ↓               ↓                ↓
+   Reaching        Live Variables   Available
+   Definitions                      Expressions
+       │               │                │
+       └───────────────┼────────────────┘
+                       ↓
+                  OPTIMIZATION
+                       ↓
+                Optimized IR
+                       ↓
+               CODE GENERATION
+                       ↓
+              REGISTER ALLOCATION
+                       ↓
+                 TARGET CODE
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+64. ONE-PAGE REVISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DATA-FLOW ANALYSIS:
+
+    Purpose:
+        Determine program information across CFG paths.
+
+
+    Basic concepts:
+
+        CFG
+        IN
+        OUT
+        GEN
+        KILL
+        USE
+        DEF
+        Transfer Function
+        Meet Operator
+        Fixed Point
+        Worklist
+
+
+CLASSICAL ANALYSES:
+
+    1. Reaching Definitions
+       Forward
+       MAY
+       UNION
+
+    2. Available Expressions
+       Forward
+       MUST
+       INTERSECTION
+
+    3. Live Variables
+       Backward
+       MAY
+       UNION
+
+    4. Very Busy Expressions
+       Backward
+       MUST
+       INTERSECTION
+
+
+KEY EQUATIONS:
+
+    Reaching Definitions:
+
+    IN[B] = ⋃ OUT[P]
+
+    OUT[B] = GEN[B] ∪ (IN[B] - KILL[B])
+
+
+    Live Variables:
+
+    OUT[B] = ⋃ IN[S]
+
+    IN[B] = USE[B] ∪ (OUT[B] - DEF[B])
+
+
+    Available Expressions:
+
+    IN[B] = ⋂ OUT[P]
+
+    OUT[B] = GEN[B] ∪ (IN[B] - KILL[B])
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+65. FINAL MEMORY TRICK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    DATA FLOW
+
+       ┌───────────────────────────────────┐
+       │                                   │
+       ↓                                   ↓
+    FORWARD                             BACKWARD
+       │                                   │
+       ↓                                   ↓
+   REACHING                            LIVE
+   AVAILABLE                           VERY BUSY
+       │                                   │
+       ↓                                   ↓
+     MAY/MUST                           MAY/MUST
+
+
+Remember:
+
+    "RA-LV"
+
+    R = Reaching → Forward May → Union
+
+    A = Available → Forward Must → Intersection
+
+    L = Live → Backward May → Union
+
+    V = Very Busy → Backward Must → Intersection
+
+
+GEN/KILL:
+
+    GEN  = generate
+    KILL = invalidate
+
+
+IN/OUT:
+
+    IN  = before block
+    OUT = after block
+
+
+FIXED POINT:
+
+    Repeat until nothing changes.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+66. FINAL CHAPTER CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[✓] What is data-flow analysis?
+[✓] Why data-flow analysis is needed
+[✓] Basic blocks
+[✓] CFG
+[✓] Predecessors
+[✓] Successors
+[✓] Data-flow facts
+[✓] GEN
+[✓] KILL
+[✓] IN
+[✓] OUT
+[✓] Forward analysis
+[✓] Backward analysis
+[✓] MAY analysis
+[✓] MUST analysis
+[✓] UNION
+[✓] INTERSECTION
+[✓] Reaching Definitions
+[✓] Reaching Definitions equations
+[✓] Live Variable Analysis
+[✓] USE
+[✓] DEF
+[✓] Liveness equations
+[✓] Available Expressions
+[✓] Very Busy Expressions
+[✓] Transfer functions
+[✓] Meet operator
+[✓] Boundary conditions
+[✓] Fixed point
+[✓] Worklist algorithm
+[✓] Bit-vector representation
+[✓] Data-flow lattice basics
+[✓] DCE connection
+[✓] Register allocation connection
+[✓] CSE connection
+[✓] Constant propagation connection
+[✓] Loop optimization connection
+[✓] GATE traps
+[✓] Interview questions
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                    CHAPTER 32 COMPLETE                              ║
+║                                                                      ║
+║ NEXT: CHAPTER 33 — LOOP OPTIMIZATION                                ║
+║                                                                      ║
+║ Type "NEXT" to continue.                                             ║
+╚══════════════════════════════════════════════════════════════════════╝

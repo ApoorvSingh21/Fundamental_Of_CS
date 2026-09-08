@@ -1,0 +1,2276 @@
+i# CHAPTER 7 — REGULAR EXPRESSION ↔ AUTOMATA
+# Compiler Design — Lexical Analysis
+# Level: Beginner → Core CS → GATE → Interview
+
+============================================================
+1. INTRODUCTION
+============================================================
+
+In Chapter 5, we studied:
+
+    REGULAR EXPRESSIONS
+
+In Chapter 6, we studied:
+
+    FINITE AUTOMATA
+        ↓
+    DFA
+    NFA
+    ε-NFA
+
+Now we connect both concepts.
+
+The most important relationship is:
+
+    REGULAR EXPRESSION
+            ⇅
+    FINITE AUTOMATON
+
+Both can describe/recognize exactly the class of:
+
+    REGULAR LANGUAGES
+
+
+In compiler design, this relationship is important because
+lexical analyzers can be designed from regular-expression
+token specifications and implemented using finite automata.
+
+Main conversions:
+
+    RE → ε-NFA
+    ε-NFA → DFA
+    DFA → Minimal DFA
+
+And theoretically:
+
+    DFA → RE
+
+
+============================================================
+2. COMPLETE LEXICAL ANALYSIS PIPELINE
+============================================================
+
+A typical theoretical pipeline is:
+
+    TOKEN PATTERN
+          ↓
+    REGULAR EXPRESSION
+          ↓
+    ε-NFA
+          ↓
+    DFA
+          ↓
+    DFA MINIMIZATION
+          ↓
+    LEXICAL ANALYZER
+
+
+For example:
+
+    Identifier
+
+can be described by a regular expression:
+
+    letter(letter|digit)*
+
+Then the expression can be converted into an automaton
+that recognizes identifiers.
+
+
+============================================================
+3. WHY CONVERT RE TO AUTOMATA?
+============================================================
+
+Regular expressions are excellent for:
+
+    • Specifying patterns
+    • Describing tokens
+    • Writing lexer specifications
+
+Finite automata are useful for:
+
+    • Actually recognizing strings
+    • Implementing efficient scanning
+    • Building lexical analyzers
+
+Therefore:
+
+    RE
+     ↓
+    Automaton
+     ↓
+    Recognition
+
+
+============================================================
+4. THOMPSON'S CONSTRUCTION
+============================================================
+
+A standard method for converting a regular expression into
+an ε-NFA is:
+
+    THOMPSON'S CONSTRUCTION
+
+It constructs an ε-NFA using small building blocks.
+
+The major cases are:
+
+    1. Symbol
+    2. Empty string
+    3. Union
+    4. Concatenation
+    5. Kleene star
+
+
+We combine these small automata to construct an automaton
+for the complete regular expression.
+
+
+============================================================
+5. BASIC RULE — SINGLE SYMBOL
+============================================================
+
+For a regular expression:
+
+    a
+
+construct:
+
+        a
+    q0 -----> q1
+
+where:
+
+    q0 = start state
+    q1 = accepting state
+
+
+This automaton accepts:
+
+    {a}
+
+
+Similarly:
+
+    b
+
+becomes:
+
+    q0 --b--> q1
+
+
+============================================================
+6. BASIC RULE — EMPTY STRING
+============================================================
+
+For:
+
+    ε
+
+we construct an automaton that accepts the empty string.
+
+Conceptually:
+
+    q0 ----ε----> q1
+
+Because ε consumes no input.
+
+Therefore:
+
+    L(ε) = {ε}
+
+
+============================================================
+7. BASIC RULE — EMPTY LANGUAGE
+============================================================
+
+For:
+
+    ∅
+
+the automaton must accept no string.
+
+Conceptually, there is no path from the start state to
+an accepting state that consumes a valid input.
+
+Therefore:
+
+    L(∅) = ∅
+
+
+============================================================
+8. UNION CONSTRUCTION
+============================================================
+
+Suppose:
+
+    R = A|B
+
+We need an automaton that accepts:
+
+    strings accepted by A
+    OR
+    strings accepted by B
+
+
+Thompson construction:
+
+             ε
+          +------>
+        new start     A
+          |             |
+          | ε           ↓
+          +----------> new final
+          |
+          | ε
+          ↓
+          B
+          |
+          +----ε------>
+
+
+Conceptually:
+
+             ε → [A] → ε
+            /
+    Start -
+            \
+             ε → [B] → ε
+                         \
+                         Final
+
+
+The new start state has ε-transitions to the start states
+of A and B.
+
+The accepting states of A and B connect by ε-transitions
+to the new final state.
+
+
+============================================================
+9. UNION EXAMPLE
+============================================================
+
+Regular expression:
+
+    a|b
+
+Construct separate NFAs:
+
+    a:
+
+        q1 --a--> q2
+
+    b:
+
+        q3 --b--> q4
+
+
+Then connect them using ε-transitions:
+
+             ε        a        ε
+        Start → q1 --------> q2 → Final
+           |
+           | ε
+           ↓
+           q3 ----b----> q4
+                         |
+                         ε
+                         ↓
+                        Final
+
+
+The resulting NFA accepts:
+
+    a
+    b
+
+
+Therefore:
+
+    L(a|b) = {a,b}
+
+
+============================================================
+10. CONCATENATION CONSTRUCTION
+============================================================
+
+Suppose:
+
+    R = AB
+
+We need:
+
+    first recognize A
+    then recognize B
+
+
+If:
+
+    A automaton:
+
+        Start → [A] → FinalA
+
+and:
+
+    B automaton:
+
+        StartB → [B] → Final
+
+
+Connect:
+
+    FinalA → StartB
+
+
+Conceptually:
+
+    Start → [ A ] → [ B ] → Final
+
+
+No choice is needed.
+
+The input must satisfy A followed by B.
+
+
+============================================================
+11. CONCATENATION EXAMPLE
+============================================================
+
+Regular expression:
+
+    ab
+
+Construct:
+
+    q0 --a--> q1 --b--> q2
+
+
+Start:
+
+    q0
+
+Final:
+
+    q2
+
+
+Accepted string:
+
+    ab
+
+
+Not accepted:
+
+    a
+    b
+    ba
+    abb
+
+
+Therefore:
+
+    L(ab) = {ab}
+
+
+============================================================
+12. KLEENE STAR CONSTRUCTION
+============================================================
+
+Suppose:
+
+    R = A*
+
+Kleene star means:
+
+    zero or more repetitions of A.
+
+
+Thompson construction creates:
+
+    New start state
+    New final state
+
+with ε-transitions that allow:
+
+    1. Skip A completely
+    2. Enter A
+    3. Repeat A
+    4. Exit A
+
+
+Conceptually:
+
+                 ε
+              +----→ Final
+              |
+    Start ----+
+      |
+      | ε
+      ↓
+     [ A ]
+      |
+      | ε
+      +----→ Final
+      |
+      +----ε----> back to A
+
+
+More accurately, the standard construction has:
+
+    NewStart --ε--> A_start
+    NewStart --ε--> NewFinal
+    A_final  --ε--> A_start
+    A_final  --ε--> NewFinal
+
+
+============================================================
+13. WHY DOES A* ACCEPT ε?
+============================================================
+
+Because the star construction provides a direct ε-path
+from the new start to the new final state.
+
+Therefore:
+
+    zero repetitions
+
+are allowed.
+
+Hence:
+
+    ε ∈ L(A*)
+
+
+This is one of the most important properties of Kleene star.
+
+
+============================================================
+14. KLEENE STAR EXAMPLE
+============================================================
+
+Expression:
+
+    a*
+
+Accepted strings:
+
+    ε
+    a
+    aa
+    aaa
+    aaaa
+    ...
+
+
+The NFA must therefore allow:
+
+    zero a's
+    one a
+    two a's
+    three a's
+    ...
+
+
+The ε-transitions create the:
+
+    skip
+
+and:
+
+    repeat
+
+possibilities.
+
+
+============================================================
+15. COMPLETE THOMPSON RULES
+============================================================
+
+For regular expression R:
+
+    SYMBOL:
+
+        a
+
+        q0 --a--> q1
+
+
+    EMPTY STRING:
+
+        ε
+
+        q0 --ε--> q1
+
+
+    UNION:
+
+        R|S
+
+        NewStart
+          |
+         ε|ε
+        /   \
+      [R]   [S]
+        \   /
+         ε|ε
+          |
+       NewFinal
+
+
+    CONCATENATION:
+
+        RS
+
+        [R] → [S]
+
+
+    STAR:
+
+        R*
+
+        NewStart
+           |
+          ε
+           ↓
+          [R]
+           |
+          ε
+           ↓
+       NewFinal
+
+        plus ε path from NewStart to NewFinal
+        and ε path from R's final back to R's start.
+
+
+============================================================
+16. RE → ε-NFA EXAMPLE
+============================================================
+
+Consider:
+
+    a|b
+
+
+Step 1:
+
+    Build NFA for a:
+
+        q1 --a--> q2
+
+
+Step 2:
+
+    Build NFA for b:
+
+        q3 --b--> q4
+
+
+Step 3:
+
+    Add new start and final states.
+
+    NewStart
+       |
+      ε
+     / \
+    ↓   ↓
+   [a] [b]
+    |   |
+   ε     ε
+    \   /
+     ↓ ↓
+    NewFinal
+
+
+The resulting ε-NFA recognizes:
+
+    {a,b}
+
+
+============================================================
+17. RE → ε-NFA FOR ab
+============================================================
+
+Expression:
+
+    ab
+
+
+Build:
+
+    [a]
+
+then:
+
+    [b]
+
+
+Connect:
+
+    Start --a--> q1 --b--> Final
+
+
+Result:
+
+    q0 --a--> q1 --b--> q2
+
+
+Language:
+
+    {ab}
+
+
+============================================================
+18. RE → ε-NFA FOR (a|b)*
+============================================================
+
+Expression:
+
+    (a|b)*
+
+
+First construct:
+
+    a|b
+
+Then apply:
+
+    *
+
+
+The resulting automaton can accept:
+
+    ε
+    a
+    b
+    aa
+    ab
+    ba
+    bb
+    aaa
+    aab
+    ...
+
+
+In fact:
+
+    L((a|b)*) = {a,b}*
+
+
+which is the set of all finite strings over:
+
+    {a,b}
+
+
+============================================================
+19. IMPORTANT PROPERTY OF THOMPSON CONSTRUCTION
+============================================================
+
+For every regular expression, Thompson's construction
+produces an equivalent ε-NFA.
+
+Therefore:
+
+    RE → ε-NFA
+
+preserves the language.
+
+If:
+
+    L(R)
+
+is the language represented by regular expression R,
+
+then the constructed ε-NFA accepts exactly:
+
+    L(R)
+
+
+============================================================
+20. ε-NFA → DFA
+============================================================
+
+After obtaining an ε-NFA, we can convert it to a DFA.
+
+The standard method is:
+
+    SUBSET CONSTRUCTION
+
+
+This was introduced in Chapter 6.
+
+For an ε-NFA, we use:
+
+    ε-closure
+
+
+The key formula is:
+
+    DFA transition(T,a)
+       =
+    ε-closure(move(T,a))
+
+
+where:
+
+    T = current set of NFA states
+
+    move(T,a) = states reachable by consuming a
+
+    ε-closure(...) = all states reachable using
+                     zero or more ε-transitions
+
+
+============================================================
+21. SUBSET CONSTRUCTION — STEPS
+============================================================
+
+Given an ε-NFA:
+
+STEP 1:
+
+    Find:
+
+        ε-closure(start state)
+
+
+This becomes the DFA start state.
+
+
+STEP 2:
+
+    For every DFA state T
+    and every input symbol a:
+
+        move(T,a)
+
+
+STEP 3:
+
+    Compute:
+
+        ε-closure(move(T,a))
+
+
+STEP 4:
+
+    Treat the resulting set as a new DFA state.
+
+
+STEP 5:
+
+    Continue until no new DFA states are produced.
+
+
+STEP 6:
+
+    A DFA state is accepting if its set contains at least
+    one accepting state of the ε-NFA.
+
+
+============================================================
+22. SIMPLE ε-CLOSURE EXAMPLE
+============================================================
+
+Suppose:
+
+    q0 --ε--> q1
+    q1 --ε--> q2
+    q2 --a--> q3
+
+
+Then:
+
+    ε-closure(q0)
+       =
+    {q0,q1,q2}
+
+
+If we consume:
+
+    a
+
+from this set:
+
+    q2 --a--> q3
+
+
+Therefore:
+
+    move({q0,q1,q2},a)
+       =
+    {q3}
+
+
+If q3 has no ε-transition:
+
+    ε-closure({q3})
+       =
+    {q3}
+
+
+Thus the DFA transition is:
+
+    {q0,q1,q2} --a--> {q3}
+
+
+============================================================
+23. DFA STATE REPRESENTATION
+============================================================
+
+In subset construction, a DFA state represents a SET of
+NFA states.
+
+Example:
+
+    DFA state A:
+
+        {q0,q1,q3}
+
+
+This is one DFA state.
+
+It does NOT mean the DFA is simultaneously nondeterministic.
+
+The DFA has exactly one transition from A for each input
+symbol.
+
+
+============================================================
+24. DFA FINAL STATES AFTER CONVERSION
+============================================================
+
+Suppose the ε-NFA final state is:
+
+    q5
+
+
+Then any DFA subset containing q5 is accepting.
+
+Examples:
+
+    {q0,q5}
+    {q1,q3,q5}
+    {q5}
+
+
+All are accepting DFA states.
+
+
+============================================================
+25. COMPLETE RE → DFA PIPELINE
+============================================================
+
+Suppose:
+
+    R = a|b
+
+
+Step 1:
+
+    Regular Expression
+
+        a|b
+
+        ↓
+
+Step 2:
+
+    Thompson construction
+
+        ε-NFA
+
+        ↓
+
+Step 3:
+
+    Subset construction
+
+        DFA
+
+        ↓
+
+Step 4:
+
+    DFA minimization
+
+        Minimal DFA
+
+
+Therefore:
+
+    RE
+     ↓
+    ε-NFA
+     ↓
+    DFA
+     ↓
+    Minimal DFA
+
+
+============================================================
+26. DFA MINIMIZATION
+============================================================
+
+The DFA obtained from subset construction may contain
+unnecessary states.
+
+Therefore:
+
+    DFA → Minimal DFA
+
+
+The goals are:
+
+    • Remove unreachable states
+    • Merge equivalent states
+
+
+The minimized DFA accepts exactly the same language.
+
+
+============================================================
+27. WHY MINIMIZE DFA?
+============================================================
+
+Suppose a DFA contains:
+
+    20 states
+
+but several states are equivalent.
+
+After minimization it might contain:
+
+    10 states
+
+
+Advantages:
+
+    • Less memory
+    • Fewer states
+    • Potentially simpler implementation
+    • Efficient lexical analysis
+
+
+============================================================
+28. DFA → REGULAR EXPRESSION
+============================================================
+
+The reverse direction is also possible:
+
+    DFA → Regular Expression
+
+
+Two important theoretical techniques are:
+
+    1. State elimination
+    2. Arden's theorem
+
+
+These can be used to derive a regular expression equivalent
+to a finite automaton.
+
+
+============================================================
+29. STATE ELIMINATION METHOD
+============================================================
+
+Basic idea:
+
+    Start with an automaton.
+
+    Remove intermediate states one by one.
+
+    Replace paths through removed states with equivalent
+    regular-expression labels.
+
+
+Eventually:
+
+    Start state
+         ↓
+    Regular-expression path
+         ↓
+    Final state
+
+
+The resulting expression represents the same language.
+
+
+============================================================
+30. STATE ELIMINATION EXAMPLE — IDEA
+============================================================
+
+Suppose:
+
+    q0 --a--> q1
+    q1 --b--> q2
+
+where:
+
+    q0 = start
+    q2 = final
+
+
+The path is:
+
+    a followed by b
+
+
+Therefore the regular expression is:
+
+    ab
+
+
+State q1 can be eliminated.
+
+
+============================================================
+31. STATE ELIMINATION WITH ALTERNATIVES
+============================================================
+
+Suppose two paths exist:
+
+    q0 --a--> q1
+    q0 --b--> q1
+
+
+Then:
+
+    a OR b
+
+can be represented as:
+
+    a|b
+
+
+If both paths eventually reach the final state,
+the regular expression captures the alternatives.
+
+
+============================================================
+32. STATE ELIMINATION WITH LOOPS
+============================================================
+
+Suppose:
+
+    q0 --a--> q1
+    q1 --b--> q1
+    q1 --c--> q2
+
+
+There is:
+
+    a
+
+to enter q1,
+
+then:
+
+    zero or more b's,
+
+then:
+
+    c
+
+to reach q2.
+
+Therefore the equivalent regular expression is:
+
+    ab*c
+
+
+This is a very important way to understand state
+elimination.
+
+
+============================================================
+33. ARDEN'S THEOREM
+============================================================
+
+Arden's theorem is another method for converting a finite
+automaton into a regular expression.
+
+The commonly used form is:
+
+    If:
+
+        X = AX + B
+
+    and ε is not in A,
+
+    then:
+
+        X = A*B
+
+
+Similarly, for:
+
+    X = XA + B
+
+with the appropriate condition:
+
+    X = BA*
+
+
+For standard applications, carefully match the form before
+applying the theorem.
+
+
+============================================================
+34. SIMPLE ARDEN'S THEOREM EXAMPLE
+============================================================
+
+Suppose:
+
+    X = aX + b
+
+
+This matches:
+
+    X = AX + B
+
+where:
+
+    A = a
+    B = b
+
+
+Therefore:
+
+    X = a*b
+
+
+This means:
+
+    b
+    ab
+    aab
+    aaab
+    ...
+
+
+============================================================
+35. WHY THE CONDITION MATTERS
+============================================================
+
+The usual Arden theorem condition is:
+
+    ε ∉ L(A)
+
+for:
+
+    X = AX + B
+
+
+This condition is important for the uniqueness result.
+
+Do not blindly apply:
+
+    X = A*B
+
+without checking the required condition.
+
+
+============================================================
+36. DFA → RE USING EQUATIONS
+============================================================
+
+For each state, we can write an equation representing the
+strings that take the start state to that state.
+
+Then solve the equations using Arden's theorem.
+
+Example concept:
+
+    X0 = ε + X0a
+
+could represent paths that remain in a state using a loop
+on a.
+
+Such equations can then be solved algebraically.
+
+
+============================================================
+37. REGULAR EXPRESSION EQUIVALENCE
+============================================================
+
+Two regular expressions are equivalent if they represent
+the same language.
+
+Example:
+
+    a*
+
+and:
+
+    ε|aa*
+
+are equivalent.
+
+
+Why?
+
+    a*
+
+means zero or more a's.
+
+    ε|aa*
+
+means either:
+
+        zero a's
+
+    OR:
+
+        one or more a's.
+
+
+Together:
+
+    zero or more a's.
+
+
+============================================================
+38. ANOTHER EQUIVALENCE
+============================================================
+
+Consider:
+
+    a+
+
+and:
+
+    aa*
+
+
+They are equivalent.
+
+Both represent:
+
+    one or more a's.
+
+
+Similarly:
+
+    a*
+
+and:
+
+    ε|a+
+
+
+are equivalent.
+
+
+============================================================
+39. RE EQUIVALENCE IS ABOUT LANGUAGE
+============================================================
+
+Two expressions can look different but represent the same
+language.
+
+Example:
+
+    (a|b)*
+
+and:
+
+    (a*b*)*
+
+represent the same language?
+
+For standard regular languages, yes:
+
+    Both describe all strings over {a,b}.
+
+But for exam questions, prove equivalence by reasoning
+about the generated language rather than by visual similarity.
+
+
+============================================================
+40. IMPORTANT DISTINCTION
+============================================================
+
+These three things are different:
+
+    Regular Expression
+        ↓
+    Describes language
+
+
+    NFA
+        ↓
+    Recognizes language
+
+
+    DFA
+        ↓
+    Recognizes language
+
+
+But:
+
+    RE, NFA, DFA
+
+have equivalent expressive power for regular languages.
+
+
+============================================================
+41. REGULAR EXPRESSION → NFA → DFA
+============================================================
+
+A very common GATE workflow:
+
+    Given RE
+       ↓
+    Construct ε-NFA
+       ↓
+    Find ε-closures
+       ↓
+    Perform subset construction
+       ↓
+    Obtain DFA
+       ↓
+    Remove unreachable states
+       ↓
+    Minimize DFA if required
+
+
+============================================================
+42. IMPORTANT EXAMPLE
+============================================================
+
+Expression:
+
+    (a|b)*ab
+
+
+Meaning:
+
+    Any number of a's or b's
+    followed by
+    a
+    followed by
+    b.
+
+
+Examples accepted:
+
+    ab
+    aab
+    bab
+    aaab
+    bbab
+    abab
+
+
+Examples rejected:
+
+    ε
+    a
+    b
+    ba
+    abb? → IMPORTANT:
+             abb ends with "ab", so it IS accepted.
+
+Therefore:
+
+    (a|b)*ab
+
+describes binary-like strings over {a,b} ending in:
+
+    ab
+
+
+============================================================
+43. AUTOMATON INTERPRETATION
+============================================================
+
+For:
+
+    (a|b)*ab
+
+the automaton must:
+
+    • Read any number of a/b symbols
+    • Eventually identify an a
+    • Then identify b
+    • Accept when the complete input ends there
+
+
+This is a good example of why automata are useful for
+lexical pattern recognition.
+
+
+============================================================
+44. ANOTHER EXAMPLE
+============================================================
+
+Regular expression:
+
+    0*10*
+
+
+Meaning:
+
+    Zero or more 0s
+    followed by exactly one 1
+    followed by zero or more 0s.
+
+
+Accepted:
+
+    1
+    01
+    10
+    00100
+    0001000
+
+
+Rejected:
+
+    11
+    101
+    1100
+
+
+This can be converted:
+
+    RE
+     ↓
+    ε-NFA
+     ↓
+    DFA
+
+
+============================================================
+45. THOMPSON'S CONSTRUCTION — STRUCTURAL RULE
+============================================================
+
+If:
+
+    R = R1 | R2
+
+use:
+
+    Union construction.
+
+
+If:
+
+    R = R1R2
+
+use:
+
+    Concatenation construction.
+
+
+If:
+
+    R = R1*
+
+use:
+
+    Star construction.
+
+
+This recursive approach follows the structure of the
+regular expression itself.
+
+
+============================================================
+46. OPERATOR PRECEDENCE DURING CONSTRUCTION
+============================================================
+
+Suppose:
+
+    ab|c
+
+
+Standard precedence:
+
+    * highest
+    concatenation next
+    | lowest
+
+
+Therefore:
+
+    ab|c
+
+means:
+
+    (ab)|c
+
+
+not:
+
+    a(b|c)
+
+
+Similarly:
+
+    ab*
+
+means:
+
+    a(b*)
+
+
+Therefore, correctly parsing the RE before construction is
+important.
+
+
+============================================================
+47. RE → NFA: COMMON EXAM TRAP
+============================================================
+
+Do not confuse:
+
+    a|bc
+
+with:
+
+    (a|b)c
+
+
+Because:
+
+    a|bc
+
+means:
+
+    a OR (bc)
+
+
+while:
+
+    (a|b)c
+
+means:
+
+    ac OR bc
+
+
+Different languages.
+
+
+============================================================
+48. NUMBER OF STATES IN THOMPSON NFA
+============================================================
+
+Thompson construction creates an ε-NFA whose size is
+linear in the size of the regular expression.
+
+The exact number of states depends on the representation
+and counting convention.
+
+For a common construction using two states per symbol
+occurrence, the number of states is proportional to the
+number of RE symbols.
+
+Important exam idea:
+
+    RE size → NFA size is O(|R|)
+
+while:
+
+    NFA → DFA
+
+can have an exponential worst-case blow-up:
+
+    up to 2^n states.
+
+
+============================================================
+49. STATE COMPLEXITY
+============================================================
+
+Typical theoretical behavior:
+
+    RE
+     ↓
+    ε-NFA
+        approximately linear size
+     ↓
+    DFA
+        potentially exponential size
+     ↓
+    Minimized DFA
+        may become much smaller
+
+
+Therefore:
+
+    NFA is often compact.
+
+    DFA may be larger but deterministic.
+
+
+============================================================
+50. GATE-LEVEL QUESTION 1
+============================================================
+
+Given:
+
+    R = a*
+
+Which language is represented?
+
+A.
+
+    {a}
+
+B.
+
+    {ε,a,aa,aaa,...}
+
+C.
+
+    {ε,b,bb,...}
+
+D.
+
+    ∅
+
+
+Correct:
+
+    B
+
+
+============================================================
+51. GATE-LEVEL QUESTION 2
+============================================================
+
+Maximum number of DFA states obtained from an NFA having
+n states is:
+
+A.
+
+    n
+
+B.
+
+    n²
+
+C.
+
+    2n
+
+D.
+
+    2^n
+
+
+Correct:
+
+    D
+
+
+============================================================
+52. GATE-LEVEL QUESTION 3
+============================================================
+
+For an ε-NFA, the DFA transition is computed using:
+
+A.
+
+    move(T,a)
+
+B.
+
+    ε-closure(T)
+
+C.
+
+    ε-closure(move(T,a))
+
+D.
+
+    move(T,ε)
+
+
+Correct:
+
+    C
+
+
+============================================================
+53. GATE-LEVEL QUESTION 4
+============================================================
+
+What does an ε-transition consume?
+
+A. One symbol
+
+B. Two symbols
+
+C. No input symbol
+
+D. Only zero
+
+Correct:
+
+    C
+
+
+============================================================
+54. GATE-LEVEL QUESTION 5
+============================================================
+
+If a DFA subset is:
+
+    {q0,q2,q4}
+
+and q4 is an NFA accepting state, then the DFA subset is:
+
+A. Non-accepting
+
+B. Accepting
+
+C. Dead
+
+D. Invalid
+
+Correct:
+
+    B
+
+
+============================================================
+55. GATE-LEVEL QUESTION 6
+============================================================
+
+What is the regular expression for binary strings ending
+in 1?
+
+A.
+
+    1(0|1)*
+
+B.
+
+    (0|1)*1
+
+C.
+
+    0*1*
+
+D.
+
+    (01)*
+
+Correct:
+
+    B
+
+
+============================================================
+56. GATE-LEVEL QUESTION 7
+============================================================
+
+What is:
+
+    ∅*
+
+A.
+
+    ∅
+
+B.
+
+    {ε}
+
+C.
+
+    {∅}
+
+D.
+
+    undefined
+
+Correct:
+
+    B
+
+
+============================================================
+57. GATE-LEVEL QUESTION 8
+============================================================
+
+Which conversion can cause exponential growth in the number
+of states?
+
+A.
+
+    DFA → NFA
+
+B.
+
+    NFA → DFA
+
+C.
+
+    DFA → RE only
+
+D.
+
+    DFA minimization
+
+Correct:
+
+    B
+
+
+Worst case:
+
+    n-state NFA
+        ↓
+    2^n-state DFA
+
+
+============================================================
+58. INTERVIEW QUESTION
+============================================================
+
+Q: Why is Thompson's construction useful?
+
+Answer:
+
+    It provides a systematic method for converting a regular
+    expression into an equivalent ε-NFA.
+
+
+Q: Why convert NFA to DFA?
+
+Answer:
+
+    A DFA provides deterministic recognition with exactly
+    one next state for each state-input pair.
+
+
+Q: Why minimize the DFA?
+
+Answer:
+
+    To obtain an equivalent DFA with the minimum number of
+    states.
+
+
+============================================================
+59. INTERVIEW QUESTION
+============================================================
+
+Q: Are RE, NFA, and DFA equally powerful?
+
+Answer:
+
+    For regular languages, yes.
+
+    They represent/recognize the same class of languages.
+
+
+Q: Is NFA always smaller than DFA?
+
+Answer:
+
+    No.
+
+    An NFA can be smaller, equal, or in some cases have
+    similar size. But there are families where the
+    equivalent DFA requires exponentially more states.
+
+
+============================================================
+60. INTERVIEW QUESTION
+============================================================
+
+Q: What is the difference between ε-NFA and NFA?
+
+Answer:
+
+    An ε-NFA permits transitions on ε, while an ordinary
+    NFA does not.
+
+    ε consumes no input.
+
+
+============================================================
+61. INTERVIEW QUESTION
+============================================================
+
+Q: What is subset construction?
+
+Answer:
+
+    It converts an NFA into a DFA by representing each DFA
+    state as a subset of NFA states.
+
+
+============================================================
+62. INTERVIEW QUESTION
+============================================================
+
+Q: What are the main methods for DFA → RE?
+
+Answer:
+
+    • State elimination
+    • Arden's theorem
+
+
+============================================================
+63. COMPILER APPLICATION
+============================================================
+
+Suppose a lexer needs to recognize:
+
+    Integer:
+
+        digit+
+
+
+The compiler designer can specify:
+
+    digit+
+
+
+Then:
+
+    Regular Expression
+          ↓
+       ε-NFA
+          ↓
+         DFA
+          ↓
+    Lexer implementation
+
+
+The DFA reads source characters and determines whether a
+sequence forms a valid integer token.
+
+
+============================================================
+64. EXAMPLE: IDENTIFIER TOKEN
+============================================================
+
+Simplified identifier:
+
+    letter(letter|digit)*
+
+
+Conceptually:
+
+    Start
+      |
+    letter
+      ↓
+    Identifier State
+      ↑       |
+      |       |
+      +-------+
+    letter/digit
+
+
+The corresponding DFA keeps accepting as long as valid
+identifier characters continue.
+
+
+Examples:
+
+    x
+    total
+    total1
+    student123
+
+
+============================================================
+65. COMPLETE COMPILER CONNECTION
+============================================================
+
+Source Code
+     ↓
+Character Stream
+     ↓
+Lexical Analyzer
+     ↓
+Token Patterns
+     ↓
+Regular Expressions
+     ↓
+Finite Automata
+     ↓
+Pattern Recognition
+     ↓
+Tokens
+     ↓
+Syntax Analyzer
+     ↓
+Semantic Analysis
+     ↓
+IR
+     ↓
+Optimization
+     ↓
+Code Generation
+
+
+Therefore Chapter 7 connects the theory of:
+
+    Formal Languages
+
+with practical:
+
+    Compiler Lexical Analysis.
+
+
+============================================================
+66. MOST IMPORTANT FORMULAS
+============================================================
+
+Regular expression:
+
+    R
+
+
+Union:
+
+    R|S
+
+
+Concatenation:
+
+    RS
+
+
+Kleene star:
+
+    R*
+
+
+Positive closure:
+
+    R+ = RR*
+
+
+NFA → DFA:
+
+    DFA state = subset of NFA states
+
+
+ε-NFA transition:
+
+    ε-closure(move(T,a))
+
+
+Maximum DFA states:
+
+    2^n
+
+
+Arden:
+
+    X = AX + B
+    ⇒ X = A*B
+
+under the standard condition:
+
+    ε ∉ L(A)
+
+
+============================================================
+67. MOST IMPORTANT CONVERSIONS
+============================================================
+
+    RE
+     ↓
+    Thompson
+     ↓
+    ε-NFA
+
+
+    ε-NFA
+     ↓
+    Subset Construction
+     ↓
+    DFA
+
+
+    DFA
+     ↓
+    Minimization
+     ↓
+    Minimal DFA
+
+
+    DFA
+     ↓
+    State Elimination / Arden
+     ↓
+    RE
+
+
+============================================================
+68. COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    Thinking NFA is more powerful than DFA.
+
+CORRECT:
+
+    Same expressive power for regular languages.
+
+
+MISTAKE 2:
+
+    Thinking ε consumes an input character.
+
+CORRECT:
+
+    ε consumes nothing.
+
+
+MISTAKE 3:
+
+    Thinking every DFA state corresponds to one NFA state.
+
+CORRECT:
+
+    In subset construction, one DFA state represents a
+    SET of NFA states.
+
+
+MISTAKE 4:
+
+    Thinking 2^n is always the number of DFA states.
+
+CORRECT:
+
+    It is the maximum possible number.
+
+
+MISTAKE 5:
+
+    Forgetting ε-closure in ε-NFA → DFA conversion.
+
+CORRECT:
+
+    Use:
+
+        ε-closure(move(T,a))
+
+
+MISTAKE 6:
+
+    Forgetting that a DFA subset is final when it contains
+    ANY NFA final state.
+
+
+============================================================
+69. CHAPTER 7 MASTER CONCEPT MAP
+============================================================
+
+                 REGULAR EXPRESSION
+                         |
+             +-----------+-----------+
+             |                       |
+          RE → FA                 FA → RE
+             |                       |
+             ↓                       ↓
+       Thompson's               State Elimination
+       Construction             / Arden's Theorem
+             |
+             ↓
+           ε-NFA
+             |
+             ↓
+       ε-closure +
+       Subset Construction
+             |
+             ↓
+            DFA
+             |
+             ↓
+       DFA Minimization
+             |
+             ↓
+       Minimal DFA
+             |
+             ↓
+       Lexical Analyzer
+
+
+============================================================
+70. CHAPTER 7 FINAL REVISION
+============================================================
+
+1. Regular expressions describe regular languages.
+
+2. Finite automata recognize regular languages.
+
+3. RE and FA are equivalent in expressive power.
+
+4. Thompson's construction converts RE → ε-NFA.
+
+5. Union uses ε-branches.
+
+6. Concatenation connects the first automaton to the second.
+
+7. Star adds zero-or-more repetition using ε-transitions.
+
+8. ε consumes no input.
+
+9. ε-closure includes the original state.
+
+10. ε-NFA → DFA uses subset construction.
+
+11. For ε-NFA:
+
+       DFA transition =
+       ε-closure(move(T,a))
+
+12. A DFA state is a set of NFA states.
+
+13. A DFA subset is final if it contains an NFA final state.
+
+14. An n-state NFA can produce at most 2^n DFA states.
+
+15. DFA minimization removes unreachable and equivalent
+    states.
+
+16. DFA → RE can use state elimination or Arden's theorem.
+
+17. RE → automata → lexer is a central lexical-analysis
+    pipeline.
+
+
+============================================================
+CHAPTER 7 COMPLETE
+============================================================
+
+NEXT:
+
+    CHAPTER 8 — LEXICAL ANALYZER CONSTRUCTION
+
+Main topics:
+
+    • Input buffering
+    • LexemeBegin and Forward pointers
+    • Lookahead
+    • Sentinel
+    • Two-buffer scheme
+    • Lexical error handling
+    • Error recovery
+    • Symbol-table interaction
+    • Lex/Flex
+    • Practical lexer construction
+    • Token specifications
+    • DFA-based lexical scanning
+    • GATE-level lexical analyzer problems
+    • Complete practical lexer workflow
+============================================================

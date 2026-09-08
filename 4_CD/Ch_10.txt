@@ -1,0 +1,2274 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║ CHAPTER 10 — GRAMMAR TRANSFORMATIONS                               ║
+║ Compiler Design                                                     ║
+║ Level: Beginner → University → GATE → Interview → Practical       ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHAPTER OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In Chapter 9, we studied:
+
+    Context-Free Grammar (CFG)
+    ↓
+    Derivation
+    ↓
+    Parse Tree
+    ↓
+    Ambiguity
+
+
+Now we learn how to TRANSFORM a grammar into a more useful form
+without changing the language we want to recognize.
+
+Grammar transformation is especially important before constructing
+top-down parsers such as:
+
+    Recursive Descent Parser
+    Predictive Parser
+    LL(1) Parser
+
+
+Main topics:
+
+    1. Why grammar transformation is needed
+    2. Left recursion
+    3. Immediate left recursion
+    4. Removing immediate left recursion
+    5. Indirect left recursion
+    6. Removing indirect left recursion
+    7. Left factoring
+    8. Grammar simplification
+    9. Useless symbols
+   10. Nullable productions
+   11. Unit productions
+   12. ε-productions
+   13. Equivalent transformed grammars
+   14. GATE-level problems
+   15. Common traps
+   16. Interview questions
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WHY DO WE TRANSFORM A GRAMMAR?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A grammar may be correct in terms of the language it describes but
+still be inconvenient or unsuitable for a particular parser.
+
+For example:
+
+    E → E + T | T
+
+
+This grammar is commonly used to describe expressions.
+
+But notice:
+
+    E → E + T
+
+The right side begins with E itself.
+
+This is:
+
+    LEFT RECURSION
+
+
+A naive recursive-descent parser can get stuck in an infinite recursion.
+
+Therefore we transform the grammar.
+
+
+Basic idea:
+
+    Original CFG
+        ↓
+    Grammar Transformation
+        ↓
+    Parser-friendly grammar
+        ↓
+    Predictive / LL parser
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. IMPORTANT NOTE — LANGUAGE PRESERVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A grammar transformation is normally performed so that the transformed
+grammar generates the same intended language.
+
+Conceptually:
+
+    Original Grammar G
+           ↓
+      Transformation
+           ↓
+    New Grammar G'
+
+
+Ideally:
+
+    L(G) = L(G')
+
+
+However, some transformations may alter parse-tree structure or
+associativity while preserving the terminal language.
+
+Therefore always distinguish:
+
+    Language equivalence
+
+from:
+
+    Parse-tree equivalence.
+
+
+This distinction becomes important when removing left recursion from
+expression grammars.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. LEFT RECURSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A grammar is left-recursive if a non-terminal can derive a string whose
+leftmost symbol is itself.
+
+The simplest form is:
+
+    A → Aα | β
+
+
+Here:
+
+    A
+
+appears at the beginning of one of its own productions.
+
+
+Example:
+
+    E → E + T | T
+
+
+The production:
+
+    E → E + T
+
+is immediately left-recursive.
+
+
+Memory:
+
+    A → A...
+
+means:
+
+    LEFT RECURSION
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. WHY LEFT RECURSION IS A PROBLEM FOR TOP-DOWN PARSERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    E → E + T | T
+
+
+Suppose a recursive-descent parser has a function:
+
+    parseE()
+
+
+It may try:
+
+    parseE()
+       ↓
+    E → E + T
+       ↓
+    parseE()
+       ↓
+    E → E + T
+       ↓
+    parseE()
+       ↓
+       ...
+
+
+This can continue indefinitely.
+
+Therefore:
+
+    Left recursion is problematic for naive top-down recursive parsing.
+
+
+Important:
+
+    Left recursion is not inherently bad for ALL parsers.
+
+Bottom-up parsers such as LR parsers can handle left-recursive grammars
+very naturally.
+
+This is a major exam/interview point.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. IMMEDIATE LEFT RECURSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Immediate left recursion occurs when a production has the form:
+
+    A → Aα
+
+
+The same non-terminal A appears directly at the beginning of its
+right-hand side.
+
+General grammar:
+
+    A → Aα₁ | Aα₂ | ... | β₁ | β₂ | ...
+
+
+where:
+
+    βᵢ does NOT begin with A.
+
+
+This is called:
+
+    IMMEDIATE LEFT RECURSION
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. SIMPLE EXAMPLE OF IMMEDIATE LEFT RECURSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+    A → Aα | β
+
+
+Here:
+
+    A → Aα
+
+is immediately left-recursive.
+
+
+The non-left-recursive alternative is:
+
+    A → β
+
+
+We want to transform the grammar.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. STANDARD LEFT-RECURSION REMOVAL FORMULA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+
+    A → Aα₁ | Aα₂ | ... | β₁ | β₂ | ...
+
+
+Transform into:
+
+    A  → β₁A' | β₂A' | ...
+
+
+    A' → α₁A' | α₂A' | ... | ε
+
+
+This removes immediate left recursion.
+
+
+This formula is extremely important for GATE.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. SIMPLE LEFT-RECURSION REMOVAL EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    A → Aα | β
+
+
+Apply the formula.
+
+New grammar:
+
+    A  → βA'
+
+    A' → αA' | ε
+
+
+The left recursion is removed.
+
+
+Original:
+
+    A → Aα | β
+
+
+Transformed:
+
+    A  → βA'
+    A' → αA' | ε
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. WHY THE TRANSFORMATION WORKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original grammar:
+
+    A → Aα | β
+
+
+Possible derivations:
+
+    A
+    ⇒ β
+
+or:
+
+    A
+    ⇒ Aα
+    ⇒ Aαα
+    ⇒ Aααα
+    ⇒ ...
+    ⇒ βα
+    ⇒ βαα
+    ⇒ βααα
+    ...
+
+
+Therefore the language has the form:
+
+    βαⁿ
+
+for n ≥ 0.
+
+The transformed grammar:
+
+    A  → βA'
+    A' → αA' | ε
+
+
+can generate:
+
+    β
+    βα
+    βαα
+    βααα
+    ...
+
+
+So the same pattern is generated without left recursion.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. EXAMPLE — EXPRESSION GRAMMAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    E → E + T | T
+
+
+Identify:
+
+    α = +T
+
+    β = T
+
+
+Apply formula:
+
+    E  → T E'
+
+    E' → + T E' | ε
+
+
+Therefore:
+
+    Original:
+
+        E → E + T | T
+
+
+    Transformed:
+
+        E  → T E'
+        E' → + T E' | ε
+
+
+Now E is not left-recursive.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. ANOTHER EXAMPLE — MULTIPLICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    T → T * F | F
+
+
+Here:
+
+    α = *F
+
+    β = F
+
+
+Transform:
+
+    T  → F T'
+
+    T' → * F T' | ε
+
+
+Therefore:
+
+    T → F T'
+    T' → *FT' | ε
+
+
+This is suitable for top-down parsing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. COMPLETE EXPRESSION GRAMMAR TRANSFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    E → E + T | T
+
+    T → T * F | F
+
+    F → (E) | id
+
+
+The grammar contains left recursion in:
+
+    E
+    T
+
+
+Remove it.
+
+For E:
+
+    E  → T E'
+    E' → + T E' | ε
+
+
+For T:
+
+    T  → F T'
+    T' → * F T' | ε
+
+
+F remains:
+
+    F → (E) | id
+
+
+Final grammar:
+
+    E  → T E'
+    E' → + T E' | ε
+
+    T  → F T'
+    T' → * F T' | ε
+
+    F  → (E) | id
+
+
+This is a very important grammar transformation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. WHAT CHANGED?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    E → E + T | T
+
+The structure naturally represented repeated addition as:
+
+    ((id + id) + id)
+
+
+The transformed grammar:
+
+    E → T E'
+    E' → + T E' | ε
+
+
+represents the repeated additions through E'.
+
+The terminal language is preserved.
+
+But the parse-tree structure is different.
+
+This is why:
+
+    Language equivalence
+
+does not necessarily mean:
+
+    identical parse trees.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. MULTIPLE LEFT-RECURSIVE ALTERNATIVES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    A → Aα | Aβ | γ | δ
+
+
+Here:
+
+    Aα
+    Aβ
+
+are left-recursive alternatives.
+
+Non-left-recursive alternatives:
+
+    γ
+    δ
+
+
+Transformation:
+
+    A  → γA' | δA'
+
+    A' → αA' | βA' | ε
+
+
+General pattern:
+
+    A → Aα₁ | Aα₂ | β₁ | β₂
+
+becomes:
+
+    A  → β₁A' | β₂A'
+
+    A' → α₁A' | α₂A' | ε
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. IMPORTANT REQUIREMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For the standard immediate-left-recursion formula:
+
+    A → Aα₁ | ... | β₁ | ...
+
+the β alternatives should not begin with A.
+
+If every alternative begins with A, the simple formula cannot directly
+use a β as the terminating/base alternative.
+
+You must first analyze whether the grammar can actually generate a
+terminal string and whether another transformation is required.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. INDIRECT LEFT RECURSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Left recursion can also occur through another non-terminal.
+
+Example:
+
+    A → Bα
+    B → Aβ | γ
+
+
+A does not immediately begin with A.
+
+B does not immediately begin with B.
+
+But:
+
+    A ⇒ Bα
+      ⇒ Aβα
+
+
+Therefore A can derive a string beginning with A.
+
+This is:
+
+    INDIRECT LEFT RECURSION
+
+
+Also called:
+
+    INDIRECT / MUTUAL LEFT RECURSION
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. IMMEDIATE VS INDIRECT LEFT RECURSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IMMEDIATE:
+
+    A → Aα
+
+
+A directly calls itself.
+
+
+INDIRECT:
+
+    A → Bα
+
+    B → Aβ
+
+
+A reaches A through B.
+
+
+Memory:
+
+    A → Aα
+
+        ↓
+
+    Immediate
+
+
+    A → B...
+    B → A...
+
+        ↓
+
+    Indirect
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. EXAMPLE OF INDIRECT LEFT RECURSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+    A → B a | c
+    B → A b | d
+
+
+Start from A:
+
+    A ⇒ Ba
+      ⇒ Aba
+      ⇒ ...
+
+
+A derives something beginning with A.
+
+Therefore there is indirect left recursion.
+
+
+The grammar must be transformed before using a top-down parser that
+cannot handle left recursion.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. GENERAL METHOD FOR REMOVING INDIRECT LEFT RECURSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose non-terminals are ordered:
+
+    A₁, A₂, ..., Aₙ
+
+
+For each Ai:
+
+    1. Replace productions of the form
+
+           Ai → Aj γ
+
+       where j < i
+
+       by substituting the productions of Aj.
+
+
+    2. After substitution, remove any immediate left recursion
+       from Ai.
+
+
+Conceptually:
+
+    ORDER NON-TERMINALS
+          ↓
+    SUBSTITUTE EARLIER NON-TERMINALS
+          ↓
+    REMOVE IMMEDIATE LEFT RECURSION
+          ↓
+    Repeat
+
+
+This is the standard algorithmic approach.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. STEP-BY-STEP INDIRECT LEFT RECURSION IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    A → Bx | y
+
+    B → Az | w
+
+
+Choose ordering:
+
+    A, B
+
+
+A has no earlier non-terminal, so process A.
+
+For B:
+
+    B → Az | w
+
+
+Since A is earlier, substitute A:
+
+    A → Bx | y
+
+Therefore:
+
+    B → (Bx | y)z | w
+
+
+which becomes:
+
+    B → Bxz | yz | w
+
+
+Now B has immediate left recursion:
+
+    B → Bxz | yz | w
+
+
+Remove it using the standard formula.
+
+
+The important idea is:
+
+    INDIRECT → substitution → IMMEDIATE → remove.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. LEFT FACTORING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Another important grammar transformation is:
+
+    LEFT FACTORING
+
+
+It is useful when two or more productions have a common prefix.
+
+Example:
+
+    A → αβ₁ | αβ₂
+
+
+Both alternatives begin with:
+
+    α
+
+
+A predictive parser may not know which alternative to choose by looking
+at the available input prefix.
+
+We factor the common prefix.
+
+
+Transformation:
+
+    A  → αA'
+
+    A' → β₁ | β₂
+
+
+This is called:
+
+    LEFT FACTORING.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. SIMPLE LEFT-FACTORING EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    S → if E then S else S
+      | if E then S
+
+
+Both alternatives begin with:
+
+    if E then S
+
+
+Factor it:
+
+    S  → if E then S S'
+
+    S' → else S | ε
+
+
+Now the common prefix appears only once.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. ANOTHER LEFT-FACTORING EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    A → abc | abd
+
+
+Common prefix:
+
+    ab
+
+
+Factor:
+
+    A  → abA'
+
+    A' → c | d
+
+
+This makes the choice easier for a predictive parser.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. WHY LEFT FACTORING IS NEEDED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    A → αβ | αγ
+
+
+A top-down parser sees:
+
+    α
+
+
+But it cannot immediately determine whether it should choose:
+
+    αβ
+
+or:
+
+    αγ
+
+
+Left factoring delays the decision until the distinguishing symbol is
+visible.
+
+Original:
+
+    A → αβ | αγ
+
+
+Transformed:
+
+    A  → αA'
+    A' → β | γ
+
+
+Therefore:
+
+    Common prefix → factor once
+    Choice → postpone to A'
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. LEFT RECURSION VS LEFT FACTORING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+These are DIFFERENT transformations.
+
+LEFT RECURSION:
+
+    Problem:
+
+        A → Aα | β
+
+
+Purpose:
+
+    Remove recursive expansion from the left side.
+
+
+Transformation:
+
+    A  → βA'
+    A' → αA' | ε
+
+
+LEFT FACTORING:
+
+    Problem:
+
+        A → αβ | αγ
+
+
+Purpose:
+
+    Remove common prefixes.
+
+
+Transformation:
+
+    A  → αA'
+    A' → β | γ
+
+
+Memory:
+
+    LEFT RECURSION
+        → removes A from beginning of its own production
+
+
+    LEFT FACTORING
+        → removes common prefix
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. GRAMMAR SIMPLIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar simplification means removing unnecessary productions or
+symbols while preserving the intended language as appropriate.
+
+Common simplification targets:
+
+    1. Useless symbols
+    2. ε-productions
+    3. Unit productions
+
+
+These concepts are important in formal-language theory and grammar
+processing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. USELESS SYMBOLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A grammar symbol may be useless if it contributes nothing to the
+generation of terminal strings from the start symbol.
+
+There are two important ideas:
+
+    1. Non-generating symbols
+    2. Unreachable symbols
+
+
+A symbol is useful only if it is:
+
+    • reachable from the start symbol
+    AND
+    • capable of deriving a terminal string.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. GENERATING SYMBOL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A non-terminal is generating if it can derive a string containing only
+terminals.
+
+Example:
+
+    A → aA | b
+
+
+A is generating because:
+
+    A ⇒ b
+
+
+Therefore:
+
+    A
+
+can eventually produce a terminal-only string.
+
+
+Another example:
+
+    B → C
+    C → c
+
+
+B is also generating:
+
+    B ⇒ C ⇒ c
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. NON-GENERATING SYMBOL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+    A → B
+    B → A
+
+
+Neither A nor B can derive a terminal string.
+
+Therefore:
+
+    A and B are non-generating.
+
+
+If such symbols cannot contribute to any valid terminal derivation,
+they are useless.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. REACHABLE SYMBOL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A symbol is reachable if it can occur in a derivation starting from
+the start symbol.
+
+Example:
+
+    S → aA
+    A → b
+
+
+Both:
+
+    S
+    A
+
+are reachable.
+
+
+Suppose we also have:
+
+    B → c
+
+
+but no production from S or any reachable symbol can reach B.
+
+Then:
+
+    B
+
+is unreachable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. USELESS SYMBOL = NON-GENERATING OR UNREACHABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A symbol can be useless if it is:
+
+    • Non-generating
+    OR
+    • Unreachable
+
+
+A standard simplification strategy is:
+
+    Step 1:
+        Remove non-generating symbols/productions.
+
+    Step 2:
+        Remove unreachable symbols/productions.
+
+
+The exact order and implementation details matter in formal
+algorithms, but this is the core idea.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. EXAMPLE — USELESS SYMBOL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+    S → aA
+    A → b
+    B → c
+    C → D
+    D → C
+
+
+Here:
+
+    A generates b.
+
+    B generates c but is unreachable from S.
+
+    C and D cannot derive terminals.
+
+
+Therefore:
+
+    B → c
+
+is unreachable.
+
+    C, D
+
+are non-generating.
+
+
+After simplification, the useful grammar can be:
+
+    S → aA
+    A → b
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. ε-PRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An ε-production is a production of the form:
+
+    A → ε
+
+
+It allows A to disappear from the sentential form.
+
+
+Example:
+
+    S → aA
+    A → ε
+
+
+Then:
+
+    S ⇒ aA
+      ⇒ a
+
+
+Therefore:
+
+    A can generate the empty string.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. NULLABLE NON-TERMINAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A non-terminal is NULLABLE if it can derive ε.
+
+Example:
+
+    A → ε
+
+
+Therefore:
+
+    A is nullable.
+
+
+More complex example:
+
+    A → BC
+    B → ε
+    C → ε
+
+
+Then:
+
+    A ⇒ BC
+      ⇒ εε
+      ⇒ ε
+
+
+Therefore:
+
+    A is also nullable.
+
+
+Important:
+
+    Nullability can propagate through productions.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. FINDING NULLABLE SYMBOLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+    S → AB
+    A → a | ε
+    B → b | ε
+
+
+Initially:
+
+    A is nullable.
+    B is nullable.
+
+
+Since:
+
+    S → AB
+
+and both A and B can disappear:
+
+    S is nullable.
+
+
+Therefore:
+
+    Nullable = {A, B, S}
+
+
+This type of reasoning appears frequently in GATE questions.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. UNIT PRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A unit production has the form:
+
+    A → B
+
+
+where both A and B are non-terminals.
+
+
+Example:
+
+    S → A
+    A → B
+    B → b
+
+
+The first two are unit productions:
+
+    S → A
+
+    A → B
+
+
+The final:
+
+    B → b
+
+is not a unit production because b is a terminal.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. REMOVING UNIT PRODUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose:
+
+    A → B
+
+and:
+
+    B → b | c
+
+
+Then instead of:
+
+    A → B
+    B → b | c
+
+
+we can replace the unit production by:
+
+    A → b | c
+
+
+while retaining B's own productions as needed.
+
+
+More generally, unit-production elimination propagates the
+non-unit productions reachable through chains of unit productions.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. UNIT-PRODUCTION CHAIN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+    A → B
+    B → C
+    C → d | e
+
+
+There is a unit chain:
+
+    A ⇒ B ⇒ C
+
+
+Therefore A can derive:
+
+    d
+    e
+
+
+After removing the unit chain:
+
+    A → d | e
+
+can represent those direct possibilities.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. ε-PRODUCTION VS UNIT PRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ε-production:
+
+    A → ε
+
+
+Unit production:
+
+    A → B
+
+
+where B is a non-terminal.
+
+
+Remember:
+
+    ε-production → produces empty string
+
+    Unit production → maps one non-terminal to another
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. SIMPLIFICATION OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Common grammar simplification operations:
+
+    ┌─────────────────────────────┐
+    │ Grammar Simplification      │
+    └──────────────┬──────────────┘
+                   │
+       ┌───────────┼───────────┐
+       ↓           ↓           ↓
+   Useless       ε-rules     Unit-rules
+   symbols     A → ε         A → B
+
+
+The objective is to obtain a cleaner grammar while preserving the
+relevant language.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. ORDER OF GRAMMAR TRANSFORMATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+There is no single universal "one order" for every compiler task.
+
+For designing a predictive parser, a common workflow is:
+
+    Start with CFG
+          ↓
+    Remove ambiguity if necessary
+          ↓
+    Remove left recursion
+          ↓
+    Apply left factoring if necessary
+          ↓
+    Compute FIRST/FOLLOW
+          ↓
+    Check LL(1)
+          ↓
+    Construct parsing table
+
+
+For formal grammar simplification, the workflow may instead involve:
+
+    Remove ε-productions
+          ↓
+    Remove unit productions
+          ↓
+    Remove useless symbols
+
+
+The exact sequence can depend on the transformation algorithm and
+the goal.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. IMPORTANT: AMBIGUITY IS NOT THE SAME AS LEFT RECURSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is a very common mistake.
+
+LEFT RECURSION:
+
+    A → Aα | β
+
+
+AMBIGUITY:
+
+    Some string has multiple distinct parse trees.
+
+
+A grammar can be:
+
+    • Left-recursive but unambiguous.
+    • Ambiguous but not left-recursive.
+    • Both.
+    • Neither.
+
+
+Therefore:
+
+    Left recursion ≠ ambiguity.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. IMPORTANT: LEFT FACTORING DOES NOT REMOVE LEFT RECURSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Left factoring handles:
+
+    A → αβ | αγ
+
+
+It does NOT automatically solve:
+
+    A → Aα | β
+
+
+Similarly, removing left recursion does not automatically perform
+left factoring.
+
+
+They solve different problems.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. EXAMPLE — BOTH TRANSFORMATIONS MAY BE NEEDED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Suppose grammar contains:
+
+    A → Aα | βγ | βδ
+
+
+There are two problems:
+
+    1. Left recursion:
+        A → Aα
+
+    2. Common prefix:
+        βγ | βδ
+
+
+Possible strategy:
+
+    First remove left recursion:
+
+        A  → βγA' | βδA'
+        A' → αA' | ε
+
+
+Then left-factor:
+
+        A  → βA'A''
+
+or use carefully chosen new non-terminals to preserve the structure.
+
+The exact resulting grammar depends on the desired factoring and
+naming of auxiliary symbols.
+
+Important principle:
+
+    Identify each problem separately.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. GRAMMAR TRANSFORMATION AND LL(1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LL(1) means approximately:
+
+    First L:
+        input scanned from Left to right.
+
+    Second L:
+        construct a Leftmost derivation.
+
+    1:
+        use one lookahead symbol.
+
+
+A grammar suitable for predictive parsing generally should not have
+problematic left recursion.
+
+It may also need left factoring when alternatives have common prefixes.
+
+
+Therefore:
+
+    Grammar Transformation
+             ↓
+       Parser Friendly
+             ↓
+          LL(1) analysis
+
+
+Chapter 11 will study:
+
+    FIRST
+    FOLLOW
+    LL(1)
+    Predictive Parsing
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. EXAMPLE — FROM LEFT RECURSIVE TO PREDICTIVE FORM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Original:
+
+    E → E + T | T
+
+
+Problem:
+
+    Left recursion.
+
+
+Transform:
+
+    E  → T E'
+    E' → + T E' | ε
+
+
+Now a parser can begin by parsing:
+
+    T
+
+and then repeatedly handle:
+
+    + T
+
+
+Conceptually:
+
+    E
+    ↓
+    T
+    ↓
+    E'
+    ├── + T E'
+    └── ε
+
+
+This structure is much more suitable for predictive parsing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. REPEATED OPERATOR PATTERN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The transformation:
+
+    A → Aα | β
+
+
+becomes:
+
+    A  → βA'
+    A' → αA' | ε
+
+
+This is equivalent to:
+
+    A → βα*
+
+
+at the language-pattern level.
+
+
+This is an important conceptual connection.
+
+Left recursion often represents:
+
+    one base element + zero or more repetitions.
+
+
+For example:
+
+    E → E + T | T
+
+corresponds conceptually to:
+
+    T (+T)*
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. GATE-LEVEL EXAMPLE — REMOVE LEFT RECURSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+
+    A → Aa | Ab | c | d
+
+
+Identify:
+
+    α₁ = a
+    α₂ = b
+
+    β₁ = c
+    β₂ = d
+
+
+Apply:
+
+    A  → cA' | dA'
+
+    A' → aA' | bA' | ε
+
+
+Answer:
+
+    A  → cA' | dA'
+    A' → aA' | bA' | ε
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. GATE-LEVEL EXAMPLE — LEFT FACTORING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+
+    S → abc | abd | aef
+
+
+Common prefix:
+
+    a
+
+
+Factor:
+
+    S → aS'
+
+Then:
+
+    S' → bc | bd | ef
+
+
+Can factor further because:
+
+    bc | bd
+
+share:
+
+    b
+
+
+So:
+
+    S' → bS'' | ef
+
+    S'' → c | d
+
+
+This demonstrates that left factoring may need to be applied
+REPEATEDLY.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. GATE TRAP — LONGEST COMMON PREFIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given:
+
+    A → abc | abd | aef
+
+
+Do not stop after finding:
+
+    a
+
+
+if a longer common prefix exists among a subset of alternatives.
+
+For:
+
+    abc
+    abd
+
+the common prefix is:
+
+    ab
+
+
+A careful left-factoring transformation may be:
+
+    A → abA' | aef
+
+    A' → c | d
+
+
+Then:
+
+    A → aA''
+
+    A'' → bA' | ef
+
+
+with:
+
+    A' → c | d
+
+
+The exact form may vary, but the objective is to remove common
+decision prefixes.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. GATE TRAP — LEFT RECURSION DETECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consider:
+
+    A → BA
+    B → A | b
+
+
+At first glance, A does not directly start with A.
+
+But:
+
+    A ⇒ BA
+      ⇒ AA
+
+
+Therefore recursion can occur through B.
+
+This is indirect left recursion.
+
+
+Do not check only the first production symbol literally.
+
+You may need to analyze derivations.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+53. GATE TRAP — UNIT PRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Which is a unit production?
+
+    A → B
+
+
+Yes.
+
+Which is NOT?
+
+    A → aB
+
+
+Not unit.
+
+Which is NOT?
+
+    A → ε
+
+
+Not unit.
+
+
+Definition:
+
+    Unit production = one non-terminal on each side:
+
+        A → B
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+54. GATE TRAP — NULLABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grammar:
+
+    A → BC
+    B → ε
+    C → c
+
+
+Is A nullable?
+
+No.
+
+Why?
+
+    B can disappear.
+
+    C cannot disappear.
+
+Therefore:
+
+    BC ⇒ C
+
+not:
+
+    ε
+
+
+For:
+
+    A → BC
+    B → ε
+    C → ε
+
+
+A is nullable.
+
+
+Very important:
+
+    All symbols on the relevant right-hand side must be able to
+    disappear for that production to derive ε.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+55. GATE TRAP — REACHABLE VS GENERATING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A symbol can be:
+
+    Generating but unreachable.
+
+Example:
+
+    S → a
+    B → b
+
+
+B can generate:
+
+    b
+
+but cannot be reached from S.
+
+Therefore:
+
+    B = generating
+    B = unreachable
+
+Hence B is useless for the language generated from S.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+56. GATE TRAP — LANGUAGE VS GRAMMAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Two grammars can generate the same language but have different:
+
+    • Productions
+    • Parse trees
+    • Derivation sequences
+    • Suitability for parsers
+
+
+Therefore:
+
+    Same language ≠ same grammar.
+
+
+Grammar transformations often exploit this fact.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+57. PRACTICAL COMPILER CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Compiler parser construction:
+
+    Programming-language specification
+                 ↓
+                CFG
+                 ↓
+       Grammar analysis
+                 ↓
+    ┌────────────┴─────────────┐
+    ↓                          ↓
+Remove left recursion     Left factoring
+    ↓                          ↓
+    └────────────┬─────────────┘
+                 ↓
+           FIRST / FOLLOW
+                 ↓
+             LL(1) test
+                 ↓
+        Predictive parser
+
+
+Therefore Chapter 10 is a bridge between:
+
+    CFG theory
+
+and:
+
+    Practical parser construction.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+58. COMMON GRAMMAR TRANSFORMATIONS — SUMMARY TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    Problem                  Transformation
+    ─────────────────────────────────────────────────────────
+    Immediate left recursion A → Aα | β
+                             ↓
+                             A → βA'
+                             A' → αA' | ε
+
+    Common prefix             A → αβ | αγ
+                             ↓
+                             A → αA'
+                             A' → β | γ
+
+    ε-production              A → ε
+                             → eliminate carefully when
+                               simplifying grammar
+
+    Unit production           A → B
+                             → substitute B's non-unit
+                               alternatives as appropriate
+
+    Useless symbol            non-generating/unreachable
+                             → remove
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+59. CHAPTER 10 — COMPLETE CONCEPT MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                       CFG
+                        │
+                        ▼
+               Grammar Analysis
+                        │
+          ┌─────────────┼─────────────┐
+          ↓             ↓             ↓
+   Left Recursion   Common Prefix   Simplification
+          │             │             │
+     ┌────┴────┐        │       ┌─────┼─────┐
+     ↓         ↓        ↓       ↓     ↓     ↓
+ Immediate  Indirect  Left     ε     Unit  Useless
+                       Factoring       │
+                                      │
+                                      ↓
+                                Parser-Friendly
+                                      │
+                                      ↓
+                                   LL(1)
+                                      │
+                                      ↓
+                              Predictive Parser
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+60. INTERVIEW QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1. What is left recursion?
+
+Answer:
+
+    A grammar is left-recursive when a non-terminal can derive a string
+    whose leftmost symbol is that same non-terminal. Immediate
+    left recursion has the direct form A → Aα.
+
+
+Q2. Why is left recursion a problem for recursive descent parsing?
+
+Answer:
+
+    A naive recursive-descent parser may repeatedly call the same
+    non-terminal without consuming input, causing infinite recursion.
+
+
+Q3. Can LR parsers handle left recursion?
+
+Answer:
+
+    Yes. Left-recursive grammars are commonly suitable for bottom-up
+    LR-family parsing.
+
+
+Q4. How do you remove immediate left recursion?
+
+Answer:
+
+    For:
+
+        A → Aα₁ | ... | Aαₘ | β₁ | ... | βₙ
+
+    use:
+
+        A  → β₁A' | ... | βₙA'
+
+        A' → α₁A' | ... | αₘA' | ε
+
+
+Q5. What is left factoring?
+
+Answer:
+
+    Left factoring extracts a common prefix from alternatives so that
+    a predictive parser can delay the choice until enough input has
+    been seen.
+
+
+Q6. What is indirect left recursion?
+
+Answer:
+
+    Left recursion that occurs through one or more other non-terminals.
+
+
+Q7. What is a unit production?
+
+Answer:
+
+    A production of the form A → B, where A and B are non-terminals.
+
+
+Q8. What is an ε-production?
+
+Answer:
+
+    A production of the form A → ε.
+
+
+Q9. What is a nullable non-terminal?
+
+Answer:
+
+    A non-terminal that can derive ε.
+
+
+Q10. What is a useless symbol?
+
+Answer:
+
+    A symbol that is not useful for deriving terminal strings from the
+    start symbol, typically because it is non-generating or unreachable.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+61. EXAM-READY FORMULAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FORMULA 1 — IMMEDIATE LEFT RECURSION
+
+    A → Aα₁ | Aα₂ | β₁ | β₂
+
+becomes:
+
+    A  → β₁A' | β₂A'
+
+    A' → α₁A' | α₂A' | ε
+
+
+FORMULA 2 — LEFT FACTORING
+
+    A → αβ₁ | αβ₂
+
+becomes:
+
+    A  → αA'
+
+    A' → β₁ | β₂
+
+
+FORMULA 3 — CFG
+
+    G = (V, T, P, S)
+
+
+FORMULA 4 — LANGUAGE GENERATED BY CFG
+
+    L(G) = { w ∈ T* | S ⇒* w }
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+62. CHAPTER 10 — ONE-PAGE REVISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LEFT RECURSION:
+
+    A → Aα | β
+
+
+REMOVE:
+
+    A  → βA'
+    A' → αA' | ε
+
+
+INDIRECT LEFT RECURSION:
+
+    A → B...
+    B → A...
+
+Remove using:
+
+    substitution
+        ↓
+    immediate left recursion removal
+
+
+LEFT FACTORING:
+
+    A → αβ | αγ
+
+becomes:
+
+    A  → αA'
+    A' → β | γ
+
+
+NULLABLE:
+
+    A ⇒* ε
+
+
+ε-PRODUCTION:
+
+    A → ε
+
+
+UNIT PRODUCTION:
+
+    A → B
+
+
+GENERATING:
+
+    Can derive terminal-only string.
+
+
+REACHABLE:
+
+    Can be reached from start symbol.
+
+
+USELESS:
+
+    Non-generating or unreachable.
+
+
+IMPORTANT:
+
+    Left recursion ≠ ambiguity
+
+    Left factoring ≠ left-recursion removal
+
+    ε ≠ ∅
+
+    Unit production ≠ ε-production
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+63. FINAL UNDERSTANDING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The key reason for grammar transformation is:
+
+    Make the grammar more suitable for the parser we want to build.
+
+
+The most important transformation for top-down parsing is:
+
+    LEFT-RECURSION REMOVAL
+
+
+The most important transformation for predictive choice is:
+
+    LEFT FACTORING
+
+
+The most important simplification concepts are:
+
+    ε-productions
+    Unit productions
+    Useless symbols
+
+
+The complete relationship is:
+
+    CFG
+     ↓
+    Analyze grammar
+     ↓
+    Remove problematic left recursion
+     ↓
+    Left-factor when required
+     ↓
+    Simplify where appropriate
+     ↓
+    FIRST / FOLLOW
+     ↓
+    LL(1) analysis
+     ↓
+    Predictive parser
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+END OF CHAPTER 10
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NEXT CHAPTER:
+
+    CHAPTER 11 — TOP-DOWN PARSING
+
+Topics:
+
+    • Top-down parsing
+    • Recursive descent parsing
+    • Predictive parsing
+    • FIRST
+    • FOLLOW
+    • LL(1)
+    • LL(1) parsing table
+    • Construction of predictive parser
+    • FIRST/FOLLOW-based grammar analysis
+    • LL(k) concept
+    • GATE-level problems

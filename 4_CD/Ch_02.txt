@@ -1,0 +1,1193 @@
+Chapter 2 in your master syllabus is Structure of a Compiler. It covers the major compiler phases/components and how they interact. 
+
+============================================================
+CHAPTER 2 — STRUCTURE OF A COMPILER
+============================================================
+
+OBJECTIVE
+------------------------------------------------------------
+
+Understand the internal structure of a compiler:
+
+    • Lexical Analysis
+    • Syntax Analysis
+    • Semantic Analysis
+    • Intermediate Code Generation
+    • Code Optimization
+    • Code Generation
+    • Symbol Table
+    • Error Handling
+    • Interaction between compiler phases
+
+
+============================================================
+2.1 BASIC STRUCTURE OF A COMPILER
+============================================================
+
+A compiler is not a single operation.
+
+It consists of several logically connected phases.
+
+Basic structure:
+
+                    SOURCE PROGRAM
+                           |
+                           ↓
+                 ┌──────────────────┐
+                 │ Lexical Analysis │
+                 └──────────────────┘
+                           |
+                           ↓
+                        TOKENS
+                           |
+                           ↓
+                 ┌──────────────────┐
+                 │ Syntax Analysis  │
+                 └──────────────────┘
+                           |
+                           ↓
+                      PARSE TREE
+                           |
+                           ↓
+                ┌────────────────────┐
+                │ Semantic Analysis  │
+                └────────────────────┘
+                           |
+                           ↓
+                   ANNOTATED TREE
+                           |
+                           ↓
+              ┌─────────────────────────┐
+              │ Intermediate Code Gen.  │
+              └─────────────────────────┘
+                           |
+                           ↓
+                            IR
+                           |
+                           ↓
+                 ┌──────────────────┐
+                 │ Code Optimization│
+                 └──────────────────┘
+                           |
+                           ↓
+                      OPTIMIZED IR
+                           |
+                           ↓
+                 ┌──────────────────┐
+                 │ Code Generation  │
+                 └──────────────────┘
+                           |
+                           ↓
+                      TARGET CODE
+
+
+Supporting components:
+
+             ┌─────────────────┐
+             │   SYMBOL TABLE  │
+             └─────────────────┘
+                    ↕
+             Compiler Phases
+
+
+             ┌─────────────────┐
+             │ ERROR HANDLING  │
+             └─────────────────┘
+                    ↕
+             Compiler Phases
+
+
+============================================================
+2.2 LEXICAL ANALYSIS
+============================================================
+
+Lexical Analysis is responsible for converting the source
+program's character sequence into tokens.
+
+Input:
+
+    Characters of source program
+
+Output:
+
+    Tokens
+
+
+Structure:
+
+    SOURCE CODE
+         ↓
+    Lexical Analyzer
+         ↓
+       TOKENS
+
+
+Example:
+
+    int sum = a + b;
+
+
+Possible token sequence:
+
+    int
+    sum
+    =
+    a
+    +
+    b
+    ;
+
+
+The lexical analyzer identifies categories such as:
+
+    • Keywords
+    • Identifiers
+    • Operators
+    • Literals
+    • Separators
+
+
+Important terms:
+
+    TOKEN
+        A category/classification of a lexical unit.
+
+    LEXEME
+        The actual character sequence in the source.
+
+    PATTERN
+        A rule describing the form of lexemes belonging
+        to a token category.
+
+
+Compiler flow:
+
+    Characters
+         ↓
+    Lexical Analysis
+         ↓
+    Tokens
+         ↓
+    Syntax Analysis
+
+
+Detailed study:
+
+    PHASE 2 — LEXICAL ANALYSIS
+    Chapters 4–8
+
+
+============================================================
+2.3 SYNTAX ANALYSIS
+============================================================
+
+Syntax Analysis is responsible for determining whether the
+token sequence follows the grammar of the programming
+language.
+
+The component performing syntax analysis is generally called
+a:
+
+    PARSER
+
+
+Input:
+
+    Tokens
+
+Output:
+
+    Parse Tree / Syntax Tree / AST
+
+
+Basic flow:
+
+    TOKENS
+       ↓
+     PARSER
+       ↓
+    PARSE TREE
+       ↓
+      AST
+
+
+Example expression:
+
+    a + b * c
+
+
+The parser identifies the structural relationship:
+
+             +
+            / \
+           a   *
+              / \
+             b   c
+
+
+This structure represents:
+
+    a + (b * c)
+
+
+rather than:
+
+    (a + b) * c
+
+
+because the grammar and operator precedence determine the
+structure.
+
+
+Syntax analysis deals with concepts such as:
+
+    • Grammar
+    • Productions
+    • Derivation
+    • Parse tree
+    • Ambiguity
+    • Parsing algorithms
+
+
+Detailed study:
+
+    PHASE 3 — SYNTAX ANALYSIS / PARSING
+    Chapters 9–14
+
+
+============================================================
+2.4 SEMANTIC ANALYSIS
+============================================================
+
+Semantic Analysis checks whether the syntactically valid
+program satisfies the semantic rules of the language.
+
+
+Input:
+
+    Syntax structure / AST
+
+Output:
+
+    Semantically validated or annotated representation
+
+
+Example:
+
+    int x;
+
+    x = "hello";
+
+
+The statement may have a structurally valid form, but the
+assignment may violate type compatibility rules.
+
+
+Semantic analysis can perform checks involving:
+
+    • Type checking
+    • Scope
+    • Binding
+    • Declaration
+    • Type compatibility
+    • Symbol information
+
+
+Basic flow:
+
+    AST
+     ↓
+    Semantic Analyzer
+     ↓
+    Checked / Annotated AST
+
+
+Example:
+
+    int x;
+    x = 10;
+
+
+The compiler can determine:
+
+    x → int
+    10 → integer
+
+and verify that the assignment is valid under the language's
+type rules.
+
+
+Detailed study:
+
+    PHASE 4 — SEMANTIC ANALYSIS
+    Chapters 15–18
+
+
+============================================================
+2.5 INTERMEDIATE CODE GENERATION
+============================================================
+
+After analysis, the compiler can produce an Intermediate
+Representation (IR).
+
+
+Why IR?
+
+    It provides an intermediate form between:
+
+        Source Language
+             ↓
+             IR
+             ↓
+        Target Language
+
+
+Basic flow:
+
+    Semantic Representation
+             ↓
+    Intermediate Code Generator
+             ↓
+             IR
+
+
+Example:
+
+    x = a + b * c;
+
+
+Possible three-address representation:
+
+    t1 = b * c
+    t2 = a + t1
+    x = t2
+
+
+Here:
+
+    t1
+    t2
+
+are temporary values.
+
+
+Advantages of an intermediate representation include:
+
+    • Separating source-language analysis from target-code
+      generation
+    • Providing a representation on which optimization can
+      operate
+    • Supporting multiple target architectures in compiler
+      designs
+
+
+Detailed study:
+
+    PHASE 5 — INTERMEDIATE REPRESENTATION
+    Chapters 19–21
+
+
+============================================================
+2.6 CODE OPTIMIZATION
+============================================================
+
+Code Optimization transforms the intermediate representation
+to improve desirable properties such as efficiency while
+preserving program behavior.
+
+
+Basic flow:
+
+    IR
+     ↓
+    Optimizer
+     ↓
+    Optimized IR
+
+
+Common optimization concepts:
+
+    • Constant folding
+    • Constant propagation
+    • Copy propagation
+    • Dead-code elimination
+    • Common subexpression elimination
+    • Algebraic simplification
+    • Loop optimization
+    • Data-flow analysis
+
+
+Example:
+
+    x = 10 * 20;
+
+
+The compiler can evaluate:
+
+    10 * 20 = 200
+
+and use:
+
+    x = 200;
+
+
+The exact optimizations applied depend on the compiler,
+language semantics, target machine, and optimization settings.
+
+
+Detailed study:
+
+    PHASE 8 — CODE OPTIMIZATION
+    Chapters 30–34
+
+
+============================================================
+2.7 CODE GENERATION
+============================================================
+
+Code Generation converts the final intermediate
+representation into target-machine code.
+
+
+Basic flow:
+
+    OPTIMIZED IR
+          ↓
+    Code Generator
+          ↓
+      TARGET CODE
+
+
+Important code-generation tasks include:
+
+    • Instruction selection
+    • Register allocation
+    • Register assignment
+    • Addressing modes
+    • Instruction ordering
+
+
+Example conceptual transformation:
+
+    IR:
+
+        t1 = a + b
+
+    ↓
+
+    Target instructions:
+
+        LOAD a
+        ADD b
+        STORE t1
+
+
+The exact instructions depend on the target architecture.
+
+
+Detailed study:
+
+    PHASE 7 — CODE GENERATION
+    Chapters 26–29
+
+
+============================================================
+2.8 SYMBOL TABLE
+============================================================
+
+The Symbol Table is a central compiler data structure.
+
+It stores information about identifiers and their properties.
+
+
+Example source:
+
+    int x;
+    float y;
+
+
+Possible symbol-table information:
+
+    Identifier       Type
+    ----------------------
+    x                int
+    y                float
+
+
+Information may include:
+
+    • Identifier name
+    • Type
+    • Scope
+    • Storage-related information
+    • Other compiler-relevant attributes
+
+
+Basic operations:
+
+    INSERT
+       ↓
+    Add symbol information
+
+    LOOKUP
+       ↓
+    Find symbol information
+
+    DELETE
+       ↓
+    Remove symbol information when appropriate
+
+
+Possible implementation:
+
+    • Hash table
+    • Tree-based structure
+    • Other suitable data structures
+
+
+The symbol table interacts with multiple compiler phases.
+
+
+Conceptually:
+
+                 ┌───────────────┐
+                 │ SYMBOL TABLE  │
+                 └───────────────┘
+                    ↕  ↕  ↕  ↕
+                    ↕  ↕  ↕  ↕
+             Lexical / Syntax /
+             Semantic / Code Gen.
+
+
+Detailed study:
+
+    Chapter 16 — Symbol Tables
+
+
+============================================================
+2.9 ERROR HANDLING
+============================================================
+
+Errors can occur throughout compilation.
+
+The compiler must:
+
+    • Detect errors
+    • Report errors
+    • Recover when possible
+    • Continue processing when practical
+
+
+Major error categories:
+
+    1. Lexical errors
+    2. Syntax errors
+    3. Semantic errors
+
+
+------------------------------------------------------------
+2.9.1 LEXICAL ERROR
+------------------------------------------------------------
+
+Occurs during lexical analysis when the input cannot be
+properly recognized as valid lexical units.
+
+Conceptual example:
+
+    Invalid character sequence
+
+
+Flow:
+
+    Source
+      ↓
+    Lexer
+      ↓
+    Lexical Error
+
+
+------------------------------------------------------------
+2.9.2 SYNTAX ERROR
+------------------------------------------------------------
+
+Occurs when tokens do not satisfy the grammar.
+
+
+Conceptual example:
+
+    x = + ;
+
+
+Flow:
+
+    Tokens
+      ↓
+    Parser
+      ↓
+    Syntax Error
+
+
+------------------------------------------------------------
+2.9.3 SEMANTIC ERROR
+------------------------------------------------------------
+
+Occurs when the program violates semantic rules.
+
+
+Example:
+
+    int x;
+
+    x = "hello";
+
+
+Flow:
+
+    Syntax Structure
+          ↓
+    Semantic Analyzer
+          ↓
+    Semantic Error
+
+
+Detailed error handling:
+
+    PHASE 10
+    Chapters 39–40
+
+
+============================================================
+2.10 INTERACTION BETWEEN COMPILER PHASES
+============================================================
+
+Compiler phases do not operate as completely independent
+components.
+
+They exchange information.
+
+
+Example:
+
+    SOURCE PROGRAM
+          ↓
+    Lexical Analysis
+          ↓
+       TOKENS
+          ↓
+    Syntax Analysis
+          ↓
+      PARSE TREE
+          ↓
+    Semantic Analysis
+          ↓
+    ANNOTATED REPRESENTATION
+          ↓
+    IR GENERATION
+          ↓
+          IR
+          ↓
+    OPTIMIZATION
+          ↓
+    OPTIMIZED IR
+          ↓
+    CODE GENERATION
+          ↓
+      TARGET CODE
+
+
+At the same time:
+
+    Symbol Table
+          ↕
+    Multiple phases
+
+
+and:
+
+    Error Handler
+          ↕
+    Multiple phases
+
+
+============================================================
+2.11 COMPLETE COMPILER STRUCTURE
+============================================================
+
+                         SOURCE PROGRAM
+                                |
+                                ↓
+                    ┌─────────────────────┐
+                    │  LEXICAL ANALYSIS  │
+                    └─────────────────────┘
+                                |
+                                ↓
+                              TOKENS
+                                |
+                                ↓
+                    ┌─────────────────────┐
+                    │   SYNTAX ANALYSIS  │
+                    └─────────────────────┘
+                                |
+                                ↓
+                         PARSE TREE / AST
+                                |
+                                ↓
+                    ┌─────────────────────┐
+                    │  SEMANTIC ANALYSIS │
+                    └─────────────────────┘
+                                |
+                                ↓
+                         CHECKED / ANNOTATED
+                                |
+                                ↓
+                    ┌─────────────────────┐
+                    │ INTERMEDIATE CODE  │
+                    │     GENERATION     │
+                    └─────────────────────┘
+                                |
+                                ↓
+                               IR
+                                |
+                                ↓
+                    ┌─────────────────────┐
+                    │ CODE OPTIMIZATION  │
+                    └─────────────────────┘
+                                |
+                                ↓
+                          OPTIMIZED IR
+                                |
+                                ↓
+                    ┌─────────────────────┐
+                    │   CODE GENERATION  │
+                    └─────────────────────┘
+                                |
+                                ↓
+                          TARGET CODE
+
+
+             ┌──────────────────────────────┐
+             │          SYMBOL TABLE        │
+             │                              │
+             │  Used by multiple phases    │
+             └──────────────────────────────┘
+
+
+             ┌──────────────────────────────┐
+             │        ERROR HANDLING        │
+             │                              │
+             │  Supports multiple phases   │
+             └──────────────────────────────┘
+
+
+============================================================
+2.12 FRONT END AND BACK END CONNECTION
+============================================================
+
+The compiler structure can also be divided conceptually into
+front end and back end.
+
+
+                         SOURCE
+                           |
+                           ↓
+                 ┌─────────────────┐
+                 │    FRONT END    │
+                 │                 │
+                 │ Lexical         │
+                 │ Syntax          │
+                 │ Semantic        │
+                 │ IR generation   │
+                 └─────────────────┘
+                           |
+                           ↓
+                          IR
+                           |
+                           ↓
+                 ┌─────────────────┐
+                 │     BACK END    │
+                 │                 │
+                 │ Optimization    │
+                 │ Code Generation │
+                 │ Register Alloc. │
+                 └─────────────────┘
+                           |
+                           ↓
+                     TARGET CODE
+
+
+General idea:
+
+    Front End
+        ↓
+    Understand source program
+        ↓
+    IR
+        ↓
+    Back End
+        ↓
+    Produce target code
+
+
+============================================================
+2.13 IMPORTANT RELATIONSHIPS
+============================================================
+
+LEXICAL ANALYSIS
+
+    Characters → Tokens
+
+
+SYNTAX ANALYSIS
+
+    Tokens → Parse Tree / AST
+
+
+SEMANTIC ANALYSIS
+
+    AST → Semantically Validated / Annotated Representation
+
+
+INTERMEDIATE CODE GENERATION
+
+    Program Representation → IR
+
+
+OPTIMIZATION
+
+    IR → Optimized IR
+
+
+CODE GENERATION
+
+    Optimized IR → Target Code
+
+
+SYMBOL TABLE
+
+    Identifier → Compiler Information
+
+
+ERROR HANDLING
+
+    Error Detection → Reporting / Recovery
+
+
+============================================================
+2.14 ONE COMPLETE EXAMPLE
+============================================================
+
+SOURCE:
+
+    int x;
+    x = 10 + 20;
+
+
+------------------------------------------------------------
+STEP 1 — LEXICAL ANALYSIS
+------------------------------------------------------------
+
+Input:
+
+    int x;
+    x = 10 + 20;
+
+
+Tokens:
+
+    int
+    x
+    ;
+    x
+    =
+    10
+    +
+    20
+    ;
+
+
+------------------------------------------------------------
+STEP 2 — SYNTAX ANALYSIS
+------------------------------------------------------------
+
+The parser determines the grammatical structure.
+
+Conceptually:
+
+       assignment
+          /    \
+         x      +
+               / \
+             10  20
+
+
+------------------------------------------------------------
+STEP 3 — SEMANTIC ANALYSIS
+------------------------------------------------------------
+
+Symbol table:
+
+    Identifier       Type
+    ----------------------
+    x                int
+
+
+The compiler verifies the assignment is compatible with
+the declared type.
+
+
+------------------------------------------------------------
+STEP 4 — INTERMEDIATE CODE
+------------------------------------------------------------
+
+Possible representation:
+
+    t1 = 10 + 20
+    x = t1
+
+
+------------------------------------------------------------
+STEP 5 — OPTIMIZATION
+------------------------------------------------------------
+
+Constant folding:
+
+    10 + 20 = 30
+
+
+Therefore:
+
+    x = 30
+
+
+------------------------------------------------------------
+STEP 6 — CODE GENERATION
+------------------------------------------------------------
+
+Conceptually:
+
+    LOAD/IMMEDIATE 30
+    STORE x
+
+
+The actual target instructions depend on the target machine.
+
+
+FINAL:
+
+    SOURCE
+      ↓
+    TOKENS
+      ↓
+    PARSE STRUCTURE
+      ↓
+    SEMANTIC INFORMATION
+      ↓
+    IR
+      ↓
+    OPTIMIZED IR
+      ↓
+    TARGET CODE
+
+
+============================================================
+2.15 IMPORTANT EXAM DIFFERENCES
+============================================================
+
+------------------------------------------------------------
+LEXICAL vs SYNTAX ANALYSIS
+------------------------------------------------------------
+
+LEXICAL ANALYSIS:
+
+    Input  → Characters
+    Output → Tokens
+
+SYNTAX ANALYSIS:
+
+    Input  → Tokens
+    Output → Parse Tree / AST
+
+
+------------------------------------------------------------
+SYNTAX vs SEMANTIC ANALYSIS
+------------------------------------------------------------
+
+SYNTAX:
+
+    Checks grammatical structure.
+
+SEMANTIC:
+
+    Checks meaning according to language rules.
+
+
+Example:
+
+    x = a + b;
+
+
+Syntax asks:
+
+    "Is this structure grammatically valid?"
+
+Semantic analysis asks:
+
+    "Is this operation meaningful and valid according to
+     the language's semantic/type rules?"
+
+
+------------------------------------------------------------
+IR GENERATION vs CODE GENERATION
+------------------------------------------------------------
+
+IR GENERATION:
+
+    Program representation → Intermediate Representation
+
+
+CODE GENERATION:
+
+    IR → Target-machine code
+
+
+------------------------------------------------------------
+OPTIMIZATION vs CODE GENERATION
+------------------------------------------------------------
+
+OPTIMIZATION:
+
+    Improves the intermediate representation while preserving
+    required behavior.
+
+
+CODE GENERATION:
+
+    Converts the final representation into target code.
+
+
+============================================================
+2.16 GATE-LEVEL CONCEPTS TO REMEMBER
+============================================================
+
+1. The compiler is organized into multiple logical phases.
+
+2. Lexical analysis converts characters into tokens.
+
+3. Syntax analysis processes tokens according to grammar.
+
+4. Semantic analysis checks semantic constraints.
+
+5. Intermediate representation provides a bridge between
+   source-oriented processing and target-oriented processing.
+
+6. Optimization transforms the representation while
+   preserving required program behavior.
+
+7. Code generation produces target code.
+
+8. Symbol tables are shared by multiple compiler phases.
+
+9. Error handling is required throughout compilation.
+
+10. Front end is primarily source-oriented.
+
+11. Back end is primarily target-oriented.
+
+12. Compiler phase and compiler pass are different concepts.
+
+13. Multiple logical phases may be organized into fewer
+    physical passes.
+
+14. The exact internal architecture of a modern compiler can
+    vary.
+
+
+============================================================
+2.17 CHAPTER 2 — MASTER SUMMARY
+============================================================
+
+                  COMPILER STRUCTURE
+
+                         SOURCE
+                           ↓
+                   LEXICAL ANALYSIS
+                           ↓
+                        TOKENS
+                           ↓
+                   SYNTAX ANALYSIS
+                           ↓
+                     PARSE TREE / AST
+                           ↓
+                   SEMANTIC ANALYSIS
+                           ↓
+                   ANNOTATED STRUCTURE
+                           ↓
+              INTERMEDIATE CODE GENERATION
+                           ↓
+                           IR
+                           ↓
+                    OPTIMIZATION
+                           ↓
+                      OPTIMIZED IR
+                           ↓
+                    CODE GENERATION
+                           ↓
+                      TARGET CODE
+
+
+Supporting all/various phases:
+
+    ┌─────────────────┐
+    │   SYMBOL TABLE  │
+    └─────────────────┘
+
+    ┌─────────────────┐
+    │ ERROR HANDLING  │
+    └─────────────────┘
+
+
+============================================================
+CHAPTER 2 — FINAL MEMORY MAP
+============================================================
+
+CHARACTERS
+    ↓
+LEXER
+    ↓
+TOKENS
+    ↓
+PARSER
+    ↓
+PARSE TREE / AST
+    ↓
+SEMANTIC ANALYZER
+    ↓
+ANNOTATED REPRESENTATION
+    ↓
+IR GENERATOR
+    ↓
+IR
+    ↓
+OPTIMIZER
+    ↓
+OPTIMIZED IR
+    ↓
+CODE GENERATOR
+    ↓
+TARGET CODE
+
+
+Remember:
+
+    Lexer      → Tokens
+    Parser     → Structure
+    Semantic   → Meaning / Constraints
+    IR         → Intermediate form
+    Optimizer  → Improve representation
+    Generator  → Target code
+    Symbol Table → Identifier information
+    Error Handler → Detect/report/recover from errors
+
+============================================================
+END OF CHAPTER 2
+============================================================

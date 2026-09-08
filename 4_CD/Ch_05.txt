@@ -1,0 +1,2460 @@
+# CHAPTER 5 — REGULAR EXPRESSIONS
+# Compiler Design — Lexical Analysis
+# Level: Beginner → Core CS → GATE → Interview
+
+============================================================
+1. INTRODUCTION
+============================================================
+
+In Chapter 4, we learned that a lexical analyzer converts:
+
+    SOURCE CHARACTERS
+           ↓
+        LEXEMES
+           ↓
+         TOKENS
+
+But an important question is:
+
+    How do we describe the valid form of a token?
+
+For example, how can we describe all valid identifiers?
+
+    x
+    count
+    total1
+    student123
+
+We need a formal notation for describing patterns.
+
+That notation is:
+
+                REGULAR EXPRESSION
+                       (RE)
+
+Regular expressions are widely used to describe patterns
+of strings belonging to regular languages.
+
+In compiler design, regular expressions are especially
+important for specifying lexical tokens.
+
+
+============================================================
+2. WHY REGULAR EXPRESSIONS ARE IMPORTANT
+============================================================
+
+A lexical analyzer must recognize patterns such as:
+
+    Identifier
+    Integer
+    Floating-point number
+    Keyword
+    Operator
+    Whitespace
+    Comments
+
+Many of these lexical structures can be represented using
+regular expressions.
+
+General relationship:
+
+    Regular Expression
+           ↓
+    Describes a pattern
+           ↓
+    Regular Language
+           ↓
+    Finite Automaton
+           ↓
+    Lexical Analyzer
+
+
+Very important compiler connection:
+
+    REGEX → AUTOMATA → LEXER
+
+
+============================================================
+3. ALPHABET
+============================================================
+
+Before understanding regular expressions, we need to
+understand:
+
+    Alphabet
+
+An alphabet is a finite, non-empty set of symbols.
+
+It is commonly represented by:
+
+    Σ
+
+Example:
+
+    Σ = {0, 1}
+
+This is a binary alphabet.
+
+Another example:
+
+    Σ = {a, b}
+
+Another:
+
+    Σ = {a, b, c}
+
+
+Important:
+
+    Alphabet contains SYMBOLS.
+
+It does not directly represent complete strings.
+
+
+============================================================
+4. EXAMPLES OF ALPHABETS
+============================================================
+
+Example 1:
+
+    Σ = {0,1}
+
+Symbols are:
+
+    0
+    1
+
+
+Example 2:
+
+    Σ = {a,b,c}
+
+Symbols are:
+
+    a
+    b
+    c
+
+
+Example 3:
+
+    Σ = {A,B,C,...,Z}
+
+Symbols are uppercase English letters.
+
+
+Example 4:
+
+    ASCII character set
+
+can be treated as an alphabet for many theoretical
+purposes.
+
+
+============================================================
+5. STRING
+============================================================
+
+A STRING is a finite sequence of symbols from an alphabet.
+
+Suppose:
+
+    Σ = {0,1}
+
+Then:
+
+    0
+    1
+    01
+    10
+    101
+    11001
+
+are strings over Σ.
+
+
+Example:
+
+    Σ = {a,b}
+
+Then:
+
+    a
+    b
+    ab
+    ba
+    aab
+    bab
+
+are strings over Σ.
+
+
+============================================================
+6. LENGTH OF A STRING
+============================================================
+
+The length of a string is the number of symbols in it.
+
+The length is represented by:
+
+    |w|
+
+where w is the string.
+
+Example:
+
+    w = 1011
+
+Then:
+
+    |w| = 4
+
+
+Example:
+
+    w = abc
+
+Then:
+
+    |w| = 3
+
+
+Example:
+
+    w = aabb
+
+Then:
+
+    |w| = 4
+
+
+============================================================
+7. EMPTY STRING
+============================================================
+
+The EMPTY STRING is a string containing zero symbols.
+
+It is represented by:
+
+    ε
+
+Therefore:
+
+    |ε| = 0
+
+
+Important:
+
+    ε is NOT the same as an empty set.
+
+    ε = empty string
+
+    ∅ = empty language / empty set
+
+
+This distinction is extremely important in GATE questions.
+
+
+============================================================
+8. EMPTY SET / EMPTY LANGUAGE
+============================================================
+
+The empty set is:
+
+    ∅
+
+It contains no elements.
+
+In formal language theory:
+
+    ∅
+
+represents a language containing no strings.
+
+Therefore:
+
+    L = ∅
+
+means:
+
+    L contains no strings.
+
+
+Compare:
+
+    {ε}
+
+This language contains exactly one string:
+
+    ε
+
+
+Therefore:
+
+    ∅ ≠ {ε}
+
+
+This is a very important exam concept.
+
+
+============================================================
+9. STRING VS LANGUAGE
+============================================================
+
+A string is one sequence of symbols.
+
+A language is a SET of strings.
+
+Example:
+
+    Σ = {0,1}
+
+String:
+
+    101
+
+Language:
+
+    L = {0, 1, 10, 11, 101}
+
+
+Therefore:
+
+    String → one sequence
+
+    Language → set of strings
+
+
+============================================================
+10. LANGUAGE
+============================================================
+
+A language over alphabet Σ is a set of strings over Σ.
+
+Formally:
+
+    L ⊆ Σ*
+
+where:
+
+    Σ* = set of all finite strings over Σ.
+
+
+Example:
+
+    Σ = {0,1}
+
+Consider:
+
+    L = {0, 1, 01, 10}
+
+Then L is a language over Σ.
+
+
+============================================================
+11. Σ* — KLEENE STAR OF AN ALPHABET
+============================================================
+
+Σ* represents all finite-length strings that can be formed
+using symbols from Σ, including the empty string.
+
+If:
+
+    Σ = {a,b}
+
+then:
+
+    Σ* = {
+        ε,
+        a,
+        b,
+        aa,
+        ab,
+        ba,
+        bb,
+        aaa,
+        aab,
+        aba,
+        abb,
+        ...
+    }
+
+
+Important:
+
+    ε ∈ Σ*
+
+
+============================================================
+12. Σ+ — POSITIVE CLOSURE
+============================================================
+
+Σ+ represents all NON-EMPTY finite strings over Σ.
+
+Therefore:
+
+    Σ+ = Σ* - {ε}
+
+or:
+
+    Σ+ = all strings of length ≥ 1.
+
+
+Example:
+
+    Σ = {a,b}
+
+Then:
+
+    Σ+ = {
+        a,
+        b,
+        aa,
+        ab,
+        ba,
+        bb,
+        aaa,
+        ...
+    }
+
+
+Important:
+
+    ε ∉ Σ+
+
+but:
+
+    ε ∈ Σ*
+
+
+============================================================
+13. Σ* vs Σ+
+============================================================
+
+For any non-empty alphabet Σ:
+
+    Σ* = {ε} ∪ Σ+
+
+Therefore:
+
+    Σ+ = ΣΣ*
+
+and:
+
+    Σ* = ε ∪ ΣΣ*
+
+
+Very important:
+
+    STAR     → zero or more occurrences
+
+    PLUS     → one or more occurrences
+
+
+============================================================
+14. REGULAR LANGUAGE
+============================================================
+
+A regular language is a language that can be described by
+a regular expression.
+
+Equivalently, a regular language can be recognized by a
+finite automaton.
+
+Important relationship:
+
+    Regular Expression
+            ⇅
+    Regular Language
+            ⇅
+    Finite Automaton
+
+
+This relationship is one of the foundations of lexical
+analysis.
+
+
+============================================================
+15. WHAT IS A REGULAR EXPRESSION?
+============================================================
+
+A regular expression is a formal notation used to describe
+a regular language.
+
+For example:
+
+    a*
+
+represents:
+
+    ε
+    a
+    aa
+    aaa
+    aaaa
+    ...
+
+
+So:
+
+    L(a*) = {ε, a, aa, aaa, ...}
+
+
+Another example:
+
+    (a|b)*
+
+represents all strings over:
+
+    {a,b}
+
+including:
+
+    ε
+    a
+    b
+    aa
+    ab
+    ba
+    bb
+    aaa
+    ...
+
+
+============================================================
+16. BASIC REGULAR EXPRESSION OPERATORS
+============================================================
+
+The fundamental operators are:
+
+    1. Union
+    2. Concatenation
+    3. Kleene Star
+
+Additional notation commonly used:
+
+    Positive closure (+)
+
+Depending on the formal definition, some operators may be
+defined as abbreviations using the basic operators.
+
+
+============================================================
+17. UNION OPERATOR
+============================================================
+
+Union is commonly represented by:
+
+    |
+
+It means:
+
+    OR
+
+
+Example:
+
+    a | b
+
+means:
+
+    a OR b
+
+
+Language:
+
+    L(a|b) = {a,b}
+
+
+Therefore:
+
+    a|b
+
+accepts:
+
+    a
+    b
+
+but not:
+
+    ab
+
+
+============================================================
+18. UNION EXAMPLE
+============================================================
+
+Expression:
+
+    0|1
+
+means:
+
+    0 OR 1
+
+Language:
+
+    {0,1}
+
+
+Expression:
+
+    a|b|c
+
+means:
+
+    a OR b OR c
+
+Language:
+
+    {a,b,c}
+
+
+============================================================
+19. CONCATENATION
+============================================================
+
+Concatenation means placing strings one after another.
+
+If:
+
+    R = a
+
+and:
+
+    S = b
+
+then:
+
+    RS = ab
+
+
+So:
+
+    a followed by b
+
+gives:
+
+    ab
+
+
+============================================================
+20. CONCATENATION LANGUAGE DEFINITION
+============================================================
+
+If:
+
+    L1
+
+and:
+
+    L2
+
+are languages, then:
+
+    L1L2
+
+contains strings formed by concatenating a string from L1
+with a string from L2.
+
+Formally:
+
+    L1L2 = {xy | x ∈ L1 and y ∈ L2}
+
+
+Example:
+
+    L1 = {a,b}
+    L2 = {c,d}
+
+Then:
+
+    L1L2 = {ac, ad, bc, bd}
+
+
+============================================================
+21. CONCATENATION EXAMPLE
+============================================================
+
+Expression:
+
+    ab
+
+means:
+
+    a followed by b.
+
+It represents:
+
+    {ab}
+
+
+It does NOT mean:
+
+    {a,b}
+
+because:
+
+    a|b
+
+means OR.
+
+
+Therefore:
+
+    ab ≠ a|b
+
+
+============================================================
+22. KLEENE STAR
+============================================================
+
+Kleene star is represented by:
+
+    *
+
+It means:
+
+    ZERO or MORE repetitions.
+
+
+Example:
+
+    a*
+
+means:
+
+    ε
+    a
+    aa
+    aaa
+    aaaa
+    ...
+
+
+Therefore:
+
+    L(a*) = {ε, a, aa, aaa, ...}
+
+
+Very important:
+
+    a* ALWAYS includes ε.
+
+
+============================================================
+23. KLEENE STAR EXAMPLE
+============================================================
+
+Expression:
+
+    (ab)*
+
+means zero or more repetitions of:
+
+    ab
+
+
+Therefore:
+
+    L((ab)*) = {
+        ε,
+        ab,
+        abab,
+        ababab,
+        ...
+    }
+
+
+Notice:
+
+    a
+    b
+    aba
+    abb
+
+are NOT generated by (ab)*.
+
+
+============================================================
+24. POSITIVE CLOSURE
+============================================================
+
+Positive closure is represented by:
+
+    +
+
+It means:
+
+    ONE or MORE repetitions.
+
+
+Example:
+
+    a+
+
+represents:
+
+    a
+    aa
+    aaa
+    aaaa
+    ...
+
+
+Unlike:
+
+    a*
+
+which includes:
+
+    ε
+
+
+Therefore:
+
+    a+ = aa*
+
+and:
+
+    a* = ε | a+
+
+
+============================================================
+25. STAR vs PLUS
+============================================================
+
+Expression:
+
+    a*
+
+means:
+
+    zero or more a's.
+
+Language:
+
+    {ε, a, aa, aaa, ...}
+
+
+Expression:
+
+    a+
+
+means:
+
+    one or more a's.
+
+Language:
+
+    {a, aa, aaa, ...}
+
+
+Therefore:
+
+    a* contains ε
+
+    a+ does not contain ε.
+
+
+============================================================
+26. BASIC REGULAR EXPRESSION EXAMPLES
+============================================================
+
+Expression:
+
+    a
+
+Language:
+
+    {a}
+
+
+Expression:
+
+    a|b
+
+Language:
+
+    {a,b}
+
+
+Expression:
+
+    ab
+
+Language:
+
+    {ab}
+
+
+Expression:
+
+    a*
+
+Language:
+
+    {ε,a,aa,aaa,...}
+
+
+Expression:
+
+    a+
+
+Language:
+
+    {a,aa,aaa,...}
+
+
+Expression:
+
+    (a|b)*
+
+Language:
+
+    all strings over {a,b}.
+
+
+============================================================
+27. PARENTHESES
+============================================================
+
+Parentheses are used to group expressions.
+
+Example:
+
+    (a|b)*
+
+means:
+
+    zero or more repetitions of either a or b.
+
+
+Without parentheses:
+
+    a|b*
+
+means:
+
+    a OR (zero or more b's)
+
+assuming the standard precedence rules.
+
+
+Therefore:
+
+    (a|b)*
+
+and:
+
+    a|b*
+
+are NOT equivalent.
+
+
+============================================================
+28. OPERATOR PRECEDENCE
+============================================================
+
+Regular-expression operators generally follow a precedence
+order.
+
+A common order is:
+
+    1. Kleene star *
+    2. Concatenation
+    3. Union |
+
+
+So:
+
+    a|bc*
+
+is interpreted as:
+
+    a | (b(c*))
+
+
+not:
+
+    (a|b)(c*)
+
+
+and not:
+
+    ((a|b)c)*
+
+
+Parentheses should be used when clarity is needed.
+
+
+============================================================
+29. PRECEDENCE EXAMPLE
+============================================================
+
+Expression:
+
+    ab*
+
+Interpretation:
+
+    a(b*)
+
+NOT:
+
+    (ab)*
+
+
+Therefore the language contains:
+
+    a
+    ab
+    abb
+    abbb
+    ...
+
+
+But:
+
+    (ab)*
+
+contains:
+
+    ε
+    ab
+    abab
+    ababab
+    ...
+
+
+These are different languages.
+
+
+============================================================
+30. UNION ASSOCIATIVITY
+============================================================
+
+Union is associative.
+
+Therefore:
+
+    (a|b)|c
+
+and:
+
+    a|(b|c)
+
+represent the same language:
+
+    {a,b,c}
+
+
+============================================================
+31. CONCATENATION ASSOCIATIVITY
+============================================================
+
+Concatenation is associative.
+
+Therefore:
+
+    (ab)c
+
+and:
+
+    a(bc)
+
+both represent:
+
+    abc
+
+
+However, concatenation is NOT generally commutative.
+
+In general:
+
+    ab ≠ ba
+
+
+============================================================
+32. UNION IS NOT CONCATENATION
+============================================================
+
+Compare:
+
+    a|b
+
+and:
+
+    ab
+
+
+a|b:
+
+    a OR b
+
+Language:
+
+    {a,b}
+
+
+ab:
+
+    a followed by b
+
+Language:
+
+    {ab}
+
+
+This is a very common beginner mistake.
+
+
+============================================================
+33. REGULAR EXPRESSION FOR IDENTIFIERS
+============================================================
+
+Consider a simplified identifier rule:
+
+    First character = letter
+
+    Remaining characters = letter or digit
+
+We can describe it as:
+
+    letter(letter|digit)*
+
+
+Suppose:
+
+    letter = {a,b,...,z,A,B,...,Z}
+
+    digit = {0,1,...,9}
+
+Then:
+
+    letter(letter|digit)*
+
+describes strings such as:
+
+    x
+    count
+    count1
+    student123
+
+
+============================================================
+34. REGULAR EXPRESSION FOR BINARY STRINGS
+============================================================
+
+Alphabet:
+
+    Σ = {0,1}
+
+Expression:
+
+    (0|1)*
+
+represents:
+
+    all binary strings, including ε.
+
+
+Examples:
+
+    ε
+    0
+    1
+    00
+    01
+    10
+    11
+    101
+    11001
+
+
+============================================================
+35. STRINGS ENDING IN 1
+============================================================
+
+Over:
+
+    Σ = {0,1}
+
+A regular expression for all strings ending in 1 is:
+
+    (0|1)*1
+
+
+Examples:
+
+    1
+    01
+    11
+    001
+    101
+    111
+
+
+Non-examples:
+
+    0
+    10? → actually ends in 0, so not accepted
+    110? → ends in 0, so not accepted
+
+
+============================================================
+36. STRINGS STARTING WITH 1
+============================================================
+
+Over:
+
+    {0,1}
+
+Regular expression:
+
+    1(0|1)*
+
+
+Examples:
+
+    1
+    10
+    11
+    101
+    1001
+
+
+============================================================
+37. STRINGS CONTAINING AT LEAST ONE 1
+============================================================
+
+Over:
+
+    {0,1}
+
+Regular expression:
+
+    (0|1)*1(0|1)*
+
+
+Meaning:
+
+    Anything
+    followed by 1
+    followed by anything.
+
+
+Examples:
+
+    1
+    01
+    10
+    101
+    1100
+
+
+The only strings not accepted are strings containing no 1,
+such as:
+
+    ε
+    0
+    00
+    000
+
+
+============================================================
+38. STRINGS CONTAINING EXACTLY ONE 1
+============================================================
+
+Over:
+
+    {0,1}
+
+Regular expression:
+
+    0*10*
+
+
+Explanation:
+
+    0*
+       → zero or more zeros
+
+    1
+       → exactly one 1
+
+    0*
+       → zero or more zeros
+
+
+Examples:
+
+    1
+    01
+    10
+    00100
+    0001000
+
+
+But:
+
+    11
+    101
+    110
+
+are not accepted.
+
+
+============================================================
+39. STRINGS WITH AT LEAST TWO 1s
+============================================================
+
+A regular expression is:
+
+    (0|1)*1(0|1)*1(0|1)*
+
+
+Explanation:
+
+    anything
+       +
+    first 1
+       +
+    anything
+       +
+    second 1
+       +
+    anything
+
+
+This guarantees at least two occurrences of 1.
+
+
+============================================================
+40. STRINGS WITH NO 1
+============================================================
+
+Over:
+
+    {0,1}
+
+Regular expression:
+
+    0*
+
+
+Accepted:
+
+    ε
+    0
+    00
+    000
+    ...
+
+
+Not accepted:
+
+    1
+    01
+    101
+
+
+============================================================
+41. EVEN NUMBER OF 1s
+============================================================
+
+A commonly used regular expression for binary strings with
+an even number of 1s is:
+
+    0*(10*10*)*
+
+
+Explanation:
+
+Each repetition:
+
+    10*10*
+
+contains two 1s, with any number of zeros around them.
+
+Therefore the total number of 1s is even.
+
+
+Examples:
+
+    ε
+    0
+    00
+    11
+    101
+    1001
+    1100
+
+
+============================================================
+42. ODD NUMBER OF 1s
+============================================================
+
+A corresponding expression is:
+
+    0*10*(10*10*)*
+
+
+This represents:
+
+    one 1
+    +
+    zero or more pairs of 1s.
+
+
+Therefore total number of 1s is odd.
+
+
+============================================================
+43. REGULAR EXPRESSION FOR DECIMAL INTEGER
+============================================================
+
+A simplified decimal integer can be represented as:
+
+    digit+
+
+where:
+
+    digit = 0|1|2|...|9
+
+
+Therefore conceptually:
+
+    (0|1|2|3|4|5|6|7|8|9)+
+
+
+Examples:
+
+    0
+    10
+    123
+    9999
+
+
+Actual programming languages may impose additional rules.
+
+
+============================================================
+44. REGULAR EXPRESSION AND LEXICAL TOKENS
+============================================================
+
+Typical lexer specification:
+
+    TOKEN             PATTERN
+
+    Identifier        letter(letter|digit)*
+
+    Integer            digit+
+
+    Whitespace         (space|tab|newline)+
+
+    Operator           + | - | * | /
+
+
+The lexer uses these patterns to identify lexemes.
+
+
+============================================================
+45. FORMAL DEFINITION OF REGULAR EXPRESSIONS
+============================================================
+
+Over an alphabet Σ, basic regular expressions can be defined
+recursively.
+
+1. ∅ is a regular expression.
+
+2. ε is a regular expression.
+
+3. For every symbol a ∈ Σ:
+
+       a
+
+   is a regular expression.
+
+4. If R and S are regular expressions, then:
+
+       (R|S)
+
+       (RS)
+
+       (R*)
+
+   are regular expressions.
+
+
+The languages represented are:
+
+    L(∅) = ∅
+
+    L(ε) = {ε}
+
+    L(a) = {a}
+
+    L(R|S) = L(R) ∪ L(S)
+
+    L(RS) = L(R)L(S)
+
+    L(R*) = (L(R))*
+
+
+============================================================
+46. MEANING OF ∅ AS A REGULAR EXPRESSION
+============================================================
+
+If:
+
+    R = ∅
+
+then:
+
+    L(R) = ∅
+
+
+It accepts NO strings.
+
+
+Compare:
+
+    R = ε
+
+Then:
+
+    L(R) = {ε}
+
+
+So:
+
+    ∅ → accepts nothing
+
+    ε → accepts empty string
+
+
+============================================================
+47. IMPORTANT IDENTITIES
+============================================================
+
+Some useful regular-expression identities:
+
+    R | ∅ = R
+
+    Rε = R
+
+    εR = R
+
+    R∅ = ∅
+
+    ∅R = ∅
+
+    R | R = R
+
+    R* = ε | RR*
+
+    R+ = RR*
+
+    R* = ε | R+
+
+
+These identities are useful in GATE-level questions.
+
+
+============================================================
+48. STAR OF EMPTY SET
+============================================================
+
+Very important:
+
+    ∅* = {ε}
+
+Why?
+
+Kleene star means zero or more repetitions.
+
+Zero repetitions are allowed.
+
+Zero repetitions produce:
+
+    ε
+
+
+Therefore:
+
+    L(∅*) = {ε}
+
+
+This is a classic exam question.
+
+
+============================================================
+49. STAR OF EMPTY STRING
+============================================================
+
+Consider:
+
+    ε*
+
+Zero or more repetitions of ε still produce only:
+
+    ε
+
+
+Therefore:
+
+    ε* = ε
+
+in terms of the language represented.
+
+
+Hence:
+
+    L(ε*) = {ε}
+
+
+============================================================
+50. CONCATENATION WITH EMPTY SET
+============================================================
+
+Consider:
+
+    R∅
+
+Since ∅ contains no strings, there is nothing to
+concatenate.
+
+Therefore:
+
+    R∅ = ∅
+
+
+Similarly:
+
+    ∅R = ∅
+
+
+============================================================
+51. CONCATENATION WITH ε
+============================================================
+
+Consider:
+
+    Rε
+
+Since ε contributes no symbols:
+
+    Rε = R
+
+
+Similarly:
+
+    εR = R
+
+
+This is analogous to multiplication:
+
+    x × 1 = x
+
+
+Conceptually:
+
+    ε behaves like the identity element for concatenation.
+
+
+============================================================
+52. UNION WITH EMPTY SET
+============================================================
+
+Consider:
+
+    R | ∅
+
+Since ∅ contributes no strings:
+
+    R | ∅ = R
+
+
+Therefore:
+
+    R ∪ ∅ = R
+
+
+This is analogous to:
+
+    A ∪ ∅ = A
+
+
+============================================================
+53. KLEENE STAR PROPERTIES
+============================================================
+
+Important facts:
+
+    ε ∈ L(R*)
+
+for every regular expression R.
+
+Also:
+
+    L(R*) contains zero or more repetitions of strings
+    from L(R).
+
+
+Example:
+
+    R = ab
+
+Then:
+
+    R* = (ab)*
+
+Language:
+
+    {ε, ab, abab, ababab, ...}
+
+
+============================================================
+54. REGULAR EXPRESSION vs REGULAR LANGUAGE
+============================================================
+
+Regular expression:
+
+    A DESCRIPTION / REPRESENTATION
+
+Regular language:
+
+    The SET OF STRINGS represented by the expression.
+
+
+Example:
+
+    RE:
+
+        a*
+
+    Language:
+
+        {ε,a,aa,aaa,...}
+
+
+So do not confuse:
+
+    expression
+
+with:
+
+    language.
+
+
+============================================================
+55. REGULAR EXPRESSION vs FINITE AUTOMATON
+============================================================
+
+Regular expression:
+
+    describes a regular language.
+
+
+Finite automaton:
+
+    recognizes a regular language.
+
+
+They have equivalent expressive power for regular languages.
+
+Conceptually:
+
+    RE
+     ⇅
+    Regular Language
+     ⇅
+    FA
+
+
+Later:
+
+    RE → NFA
+    NFA → DFA
+    DFA → RE
+
+
+============================================================
+56. LIMITATION OF REGULAR EXPRESSIONS
+============================================================
+
+Regular expressions describe REGULAR LANGUAGES.
+
+They cannot describe every possible formal language.
+
+For example, the language:
+
+    L = {a^n b^n | n ≥ 0}
+
+requires equal numbers of a's followed by b's:
+
+    ε
+    ab
+    aabb
+    aaabbb
+    aaaabbbb
+    ...
+
+
+This language is NOT regular.
+
+Therefore it cannot be represented by a classical regular
+expression.
+
+This is an important connection with Theory of Computation.
+
+
+============================================================
+57. WHY a^n b^n IS NOT REGULAR
+============================================================
+
+The language:
+
+    {a^n b^n | n ≥ 0}
+
+requires remembering how many a's occurred so that the same
+number of b's can be matched.
+
+A finite automaton has only finite memory.
+
+Therefore it cannot generally maintain an arbitrary count.
+
+This language requires a stronger computational model,
+such as a pushdown automaton.
+
+For this reason:
+
+    {a^n b^n | n ≥ 0}
+
+is not regular.
+
+
+============================================================
+58. REGULAR LANGUAGES AND COMPILER DESIGN
+============================================================
+
+Lexical structures are generally designed so that they can
+be recognized efficiently using finite automata.
+
+For example:
+
+    Identifier
+    Integer
+    Keyword
+    Operator
+    Whitespace
+
+can commonly be handled using regular-language techniques.
+
+
+Compiler relationship:
+
+    Token specification
+          ↓
+    Regular Expression
+          ↓
+    NFA
+          ↓
+    DFA
+          ↓
+    Lexer
+
+
+============================================================
+59. COMMON MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    Thinking:
+
+        a|b
+
+    means:
+
+        ab
+
+CORRECT:
+
+    a|b means a OR b.
+
+
+MISTAKE 2:
+
+    Thinking:
+
+        a*
+
+    means one or more a's.
+
+CORRECT:
+
+    a* means zero or more.
+
+
+MISTAKE 3:
+
+    Thinking:
+
+        a+
+
+    includes ε.
+
+CORRECT:
+
+    a+ means one or more, so ε is not included.
+
+
+MISTAKE 4:
+
+    Confusing:
+
+        ε
+
+    with:
+
+        ∅
+
+CORRECT:
+
+    ε = empty string
+
+    ∅ = empty language/set
+
+
+MISTAKE 5:
+
+    Thinking:
+
+        ab*
+
+    means:
+
+        (ab)*
+
+CORRECT:
+
+    ab* = a(b*)
+
+    unless parentheses explicitly change grouping.
+
+
+============================================================
+60. GATE-LEVEL QUICK QUESTIONS
+============================================================
+
+Q1. What language does a* represent?
+
+Answer:
+
+    {ε, a, aa, aaa, ...}
+
+
+Q2. Does a+ contain ε?
+
+Answer:
+
+    NO.
+
+
+Q3. Does a* contain ε?
+
+Answer:
+
+    YES.
+
+
+Q4. What is ∅*?
+
+Answer:
+
+    {ε}
+
+
+Q5. What is ε*?
+
+Answer:
+
+    {ε}
+
+
+Q6. What is Rε?
+
+Answer:
+
+    R
+
+
+Q7. What is R∅?
+
+Answer:
+
+    ∅
+
+
+Q8. What is R|∅?
+
+Answer:
+
+    R
+
+
+Q9. What does (0|1)* represent?
+
+Answer:
+
+    All finite binary strings, including ε.
+
+
+Q10. What does (0|1)*1 represent?
+
+Answer:
+
+    Binary strings ending in 1.
+
+
+============================================================
+61. GATE-LEVEL QUESTION: a*
+============================================================
+
+Which strings belong to:
+
+    L(a*)?
+
+A:
+
+    a
+
+B:
+
+    aa
+
+C:
+
+    ε
+
+D:
+
+    All of the above
+
+
+Answer:
+
+    D
+
+
+Because:
+
+    L(a*) = {ε, a, aa, aaa, ...}
+
+
+============================================================
+62. GATE-LEVEL QUESTION: a+
+============================================================
+
+Which statement is correct?
+
+A. a+ contains only ε
+
+B. a+ contains ε and a
+
+C. a+ contains one or more a's
+
+D. a+ contains zero or more b's
+
+
+Correct:
+
+    C
+
+
+============================================================
+63. GATE-LEVEL QUESTION: EMPTY SET
+============================================================
+
+Which is correct?
+
+    ∅* = ?
+
+A. ∅
+
+B. {ε}
+
+C. {∅}
+
+D. ε only as a symbol
+
+
+Correct:
+
+    B
+
+
+Reason:
+
+    Star allows zero repetitions.
+
+Zero repetitions produce ε.
+
+
+============================================================
+64. GATE-LEVEL QUESTION: STRING ENDING IN 1
+============================================================
+
+Which regular expression represents all binary strings
+ending in 1?
+
+A.
+
+    1(0|1)*
+
+B.
+
+    (0|1)*1
+
+C.
+
+    0*1*
+
+D.
+
+    (01)*
+
+
+Correct:
+
+    B
+
+
+============================================================
+65. GATE-LEVEL QUESTION: EXACTLY ONE 1
+============================================================
+
+Which expression represents binary strings containing
+exactly one 1?
+
+A.
+
+    0*10*
+
+B.
+
+    1*
+
+C.
+
+    (0|1)*1(0|1)*
+
+D.
+
+    0*
+
+
+Correct:
+
+    A
+
+
+Because:
+
+    0* + 1 + 0*
+
+allows exactly one 1.
+
+
+============================================================
+66. INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is a regular expression?
+
+Answer:
+
+    A formal notation used to describe regular languages.
+
+
+Q2. Why are regular expressions important in compilers?
+
+Answer:
+
+    They are commonly used to specify lexical token
+    patterns.
+
+
+Q3. What is Kleene star?
+
+Answer:
+
+    It represents zero or more repetitions.
+
+
+Q4. Difference between * and +?
+
+Answer:
+
+    * → zero or more
+
+    + → one or more
+
+
+Q5. What is ε?
+
+Answer:
+
+    Empty string.
+
+
+Q6. What is ∅?
+
+Answer:
+
+    Empty language/set.
+
+
+Q7. What is the relation between RE and DFA?
+
+Answer:
+
+    They characterize the same class of languages:
+    regular languages.
+
+
+Q8. Can every programming language construct be described
+   by regular expressions?
+
+Answer:
+
+    No. Regular expressions describe regular languages only.
+
+
+============================================================
+67. CHAPTER 5 MASTER FORMULA SHEET
+============================================================
+
+Alphabet:
+
+    Σ = finite non-empty set of symbols
+
+
+Empty string:
+
+    ε
+
+    |ε| = 0
+
+
+All strings:
+
+    Σ*
+
+
+Non-empty strings:
+
+    Σ+ = Σ* - {ε}
+
+
+Union:
+
+    R|S
+
+
+Concatenation:
+
+    RS
+
+
+Kleene star:
+
+    R*
+
+    zero or more repetitions
+
+
+Positive closure:
+
+    R+
+
+    one or more repetitions
+
+
+Important:
+
+    R+ = RR*
+
+    R* = ε | R+
+
+
+Identities:
+
+    R|∅ = R
+
+    Rε = R
+
+    εR = R
+
+    R∅ = ∅
+
+    ∅R = ∅
+
+    ∅* = {ε}
+
+    ε* = {ε}
+
+
+============================================================
+68. CHAPTER 5 COMPLETE CONCEPT MAP
+============================================================
+
+                    ALPHABET Σ
+                         |
+                         ↓
+                      STRINGS
+                         |
+                         ↓
+                      LANGUAGE
+                         |
+                         ↓
+               REGULAR LANGUAGE
+                         |
+                         ↓
+              REGULAR EXPRESSION
+                         |
+        +----------------+----------------+
+        |                |                |
+      UNION         CONCATENATION      STAR
+        |                |                |
+        |                |                |
+       R|S               RS              R*
+        |                |                |
+       OR             FOLLOW          0 or more
+                                          |
+                                          ↓
+                                      Includes ε
+
+Additional:
+
+    R+
+       ↓
+    1 or more
+       ↓
+    Does NOT necessarily include ε
+
+
+============================================================
+69. CONNECTION TO PREVIOUS AND NEXT CHAPTERS
+============================================================
+
+CHAPTER 4:
+
+    Lexical Analyzer Fundamentals
+
+        ↓
+
+CHAPTER 5:
+
+    Regular Expressions
+
+        ↓
+
+CHAPTER 6:
+
+    Finite Automata
+
+        ↓
+
+CHAPTER 7:
+
+    Regular Expression ↔ Automata
+
+        ↓
+
+CHAPTER 8:
+
+    Lexical Analyzer Construction
+
+
+The complete theoretical pipeline is:
+
+    Token Pattern
+         ↓
+    Regular Expression
+         ↓
+    NFA
+         ↓
+    DFA
+         ↓
+    DFA Minimization
+         ↓
+    Lexical Analyzer
+
+
+============================================================
+70. FINAL REVISION
+============================================================
+
+Remember these 10 points:
+
+1. Alphabet = finite set of symbols.
+
+2. String = finite sequence of symbols.
+
+3. ε = empty string.
+
+4. ∅ = empty language.
+
+5. Language = set of strings.
+
+6. R|S = union / OR.
+
+7. RS = concatenation.
+
+8. R* = zero or more repetitions.
+
+9. R+ = one or more repetitions.
+
+10. Regular expressions describe regular languages.
+
+
+MOST IMPORTANT COMPILER CONNECTION:
+
+    Regular Expression
+            ↓
+       Token Pattern
+            ↓
+      Finite Automaton
+            ↓
+       Lexical Analyzer
+            ↓
+          Tokens
+
+
+============================================================
+CHAPTER 5 COMPLETE
+============================================================
+
+NEXT CHAPTER:
+
+    CHAPTER 6 — FINITE AUTOMATA
+
+Topics will include:
+
+    • Finite Automata introduction
+    • DFA
+    • NFA
+    • ε-NFA
+    • DFA vs NFA
+    • Transition functions
+    • Accepting states
+    • NFA construction
+    • ε-closure
+    • Subset construction
+    • NFA → DFA
+    • DFA minimization
+    • GATE-level problems
+============================================================

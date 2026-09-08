@@ -1,0 +1,2688 @@
+============================================================
+CHAPTER 23 — ACTIVATION RECORDS
+============================================================
+
+PHASE 6 — RUNTIME ENVIRONMENT
+
+LEVEL:
+BEGINNER → CORE → ADVANCED → GATE → INTERVIEW → PRACTICAL
+
+
+MASTER SYLLABUS TOPICS
+----------------------
+1. Activation record
+2. Function/procedure call frame
+3. Parameters
+4. Return address
+5. Return value
+6. Local variables
+7. Temporaries
+8. Saved registers
+9. Control link
+10. Access link
+11. Stack-frame organization
+12. Caller and callee
+13. Activation tree
+14. Nested calls
+15. Recursion
+16. GATE problems
+17. Interview questions
+18. Practical compiler connection
+
+
+============================================================
+1. PREREQUISITE
+============================================================
+
+Chapter 22 taught:
+
+    Runtime Storage Organization
+
+We learned:
+
+    Code
+    Static/Global
+    Stack
+    Heap
+
+
+Chapter 23 goes one level deeper.
+
+Chapter 22 asks:
+
+    "Where is runtime data stored?"
+
+Chapter 23 asks:
+
+    "What exactly is stored for ONE function invocation?"
+
+
+The answer is:
+
+    ACTIVATION RECORD
+
+
+Also called:
+
+    STACK FRAME
+
+
+IMPORTANT:
+
+    Activation Record ≈ Stack Frame
+
+The exact layout depends on the language, compiler,
+architecture, ABI, optimization level, and calling convention.
+
+
+============================================================
+2. WHAT IS AN ACTIVATION RECORD?
+============================================================
+
+Definition:
+
+    An activation record is the runtime data structure
+    associated with one invocation of a procedure or
+    function.
+
+
+Simple meaning:
+
+    Whenever a function is called, the runtime needs a
+    place to keep information required for that particular
+    call.
+
+
+Example:
+
+    int add(int a, int b) {
+        int result;
+
+        result = a + b;
+
+        return result;
+    }
+
+
+When:
+
+    add(10, 20)
+
+is called, the runtime needs information such as:
+
+    a
+    b
+    result
+    return information
+    control information
+    possibly saved registers
+    temporary values
+
+
+This collection is called the:
+
+    ACTIVATION RECORD
+
+
+============================================================
+3. WHY DO WE NEED ACTIVATION RECORDS?
+============================================================
+
+Consider:
+
+    main()
+       ↓
+      f()
+       ↓
+      g()
+
+
+When g() is running, the system must remember:
+
+    Where should g() return?
+    What arguments did g() receive?
+    What local variables does g() have?
+    What state must be restored?
+    Where should the result go?
+
+
+Similarly, f() must retain its own information while g()
+executes.
+
+Therefore:
+
+    Each active function invocation needs its own runtime
+    information.
+
+
+============================================================
+4. FUNCTION CALL EXAMPLE
+============================================================
+
+Consider:
+
+    int square(int x) {
+        int y;
+        y = x * x;
+        return y;
+    }
+
+
+Call:
+
+    square(5);
+
+
+One activation of square() may conceptually contain:
+
+    +-------------------------+
+    | Parameters              |
+    | x = 5                   |
+    +-------------------------+
+    | Return information      |
+    +-------------------------+
+    | Local variables         |
+    | y                       |
+    +-------------------------+
+    | Temporaries             |
+    +-------------------------+
+    | Saved registers         |
+    +-------------------------+
+    | Control information     |
+    +-------------------------+
+
+
+This is the activation record.
+
+
+============================================================
+5. ACTIVATION RECORD vs FUNCTION
+============================================================
+
+Very important distinction:
+
+FUNCTION:
+
+    The program/code definition.
+
+
+ACTIVATION:
+
+    One execution/invocation of that function.
+
+
+Example:
+
+    int f() { ... }
+
+
+There is one function definition:
+
+    f
+
+
+But:
+
+    f()
+    f()
+    f()
+
+
+can create three separate activations over time.
+
+
+If calls are nested or recursive, multiple activations may
+exist simultaneously.
+
+
+============================================================
+6. ACTIVATION RECORD vs ACTIVATION
+============================================================
+
+Activation:
+
+    The execution of a function invocation.
+
+
+Activation record:
+
+    Runtime storage containing information for that
+    invocation.
+
+
+Think:
+
+    Function call
+        ↓
+    Activation
+        ↓
+    Activation Record
+
+
+============================================================
+7. BASIC ACTIVATION RECORD COMPONENTS
+============================================================
+
+A typical activation record may contain:
+
+    1. Parameters
+    2. Return value
+    3. Return address
+    4. Local variables
+    5. Temporaries
+    6. Saved registers
+    7. Control link
+    8. Access link
+    9. Other compiler/runtime-specific information
+
+
+Not every activation record has exactly this layout.
+
+Actual layout depends on:
+
+    programming language
+    compiler
+    machine architecture
+    calling convention
+    optimization
+
+
+============================================================
+8. PARAMETERS
+============================================================
+
+Parameters contain information passed to a function.
+
+Example:
+
+    int add(int a, int b) {
+        return a + b;
+    }
+
+
+Call:
+
+    add(10, 20);
+
+
+Parameters:
+
+    a = 10
+    b = 20
+
+
+Parameter storage may be:
+
+    registers
+    stack
+    memory
+
+depending on the calling convention and compiler.
+
+
+Conceptually, parameters are part of the function's
+activation information.
+
+
+============================================================
+9. RETURN ADDRESS
+============================================================
+
+The return address tells the program:
+
+    "Where should execution continue after this function
+     returns?"
+
+
+Example:
+
+    main()
+    {
+        x = add(10,20);
+        y = 30;
+    }
+
+
+When add() finishes:
+
+    execution must return to the point after the call.
+
+
+Conceptually:
+
+    main:
+        call add
+             ↓
+           add()
+             ↓
+        return address
+             ↓
+        continue main
+
+
+The return address is therefore essential to function calls.
+
+
+============================================================
+10. RETURN VALUE
+============================================================
+
+A function can produce a result.
+
+Example:
+
+    int add(int a, int b) {
+        return a + b;
+    }
+
+
+Call:
+
+    x = add(10,20);
+
+
+Result:
+
+    30
+
+
+The calling convention determines how the return value is
+communicated.
+
+It may be returned through:
+
+    a register
+    memory
+    another agreed mechanism
+
+
+The activation record/calling mechanism must support this
+return process.
+
+
+============================================================
+11. LOCAL VARIABLES
+============================================================
+
+Example:
+
+    int add(int a, int b) {
+        int result;
+
+        result = a + b;
+
+        return result;
+    }
+
+
+Local variable:
+
+    result
+
+
+It belongs to that function invocation.
+
+For an ordinary automatic local variable, its lifetime is
+typically associated with the invocation.
+
+
+Therefore:
+
+    Call add()
+        ↓
+    create/use storage for result
+        ↓
+    add() returns
+        ↓
+    storage can be released/reused
+
+
+============================================================
+12. TEMPORARIES
+============================================================
+
+Compilers often need temporary storage for intermediate
+results.
+
+
+Example:
+
+    x = (a + b) * (c + d);
+
+
+Compiler may generate:
+
+    t1 = a + b
+    t2 = c + d
+    t3 = t1 * t2
+    x = t3
+
+
+Some temporary values may need runtime storage.
+
+
+They may be held in:
+
+    registers
+    stack frame
+    compiler/runtime-managed locations
+
+
+depending on optimization and target architecture.
+
+
+============================================================
+13. SAVED REGISTERS
+============================================================
+
+Registers contain important machine state.
+
+When one function calls another, some register values may
+need to be preserved.
+
+
+Depending on the calling convention:
+
+    caller may save some registers
+
+or:
+
+    callee may save some registers
+
+
+The activation/calling mechanism can therefore include
+saved register information.
+
+
+IMPORTANT:
+
+    Exact caller-saved and callee-saved registers are
+    architecture/ABI dependent.
+
+
+============================================================
+14. CONTROL LINK
+============================================================
+
+The control link is also called:
+
+    dynamic link
+
+
+It points to or identifies the activation record of the
+caller in the dynamic call chain.
+
+
+Example:
+
+    main()
+       ↓
+      f()
+       ↓
+      g()
+
+
+g()'s control link conceptually points to:
+
+    f()'s activation record
+
+
+f()'s control link points to:
+
+    main()'s activation record
+
+
+Conceptually:
+
+    g AR
+      |
+      ↓
+    f AR
+      |
+      ↓
+    main AR
+
+
+This represents the:
+
+    CALLING / DYNAMIC CHAIN
+
+
+============================================================
+15. WHY IS IT CALLED DYNAMIC LINK?
+============================================================
+
+Because it follows the actual runtime call sequence.
+
+
+Suppose:
+
+    main calls A
+    A calls B
+    B calls C
+
+
+Dynamic chain:
+
+    C → B → A → main
+
+
+This is determined by:
+
+    what called what during execution.
+
+
+Therefore:
+
+    Control link = dynamic relationship
+
+
+============================================================
+16. ACCESS LINK
+============================================================
+
+The access link is associated with access to non-local
+variables in languages that support nested procedures/
+lexically nested scopes.
+
+
+Example concept:
+
+    procedure Outer()
+    {
+        int x;
+
+        procedure Inner()
+        {
+            print(x);
+        }
+    }
+
+
+Inner() needs access to:
+
+    x
+
+which belongs to Outer().
+
+
+An access link can help connect Inner's activation to the
+appropriate enclosing lexical environment.
+
+
+Conceptually:
+
+    Inner AR
+       |
+       | access link
+       ↓
+    Outer AR
+
+
+============================================================
+17. CONTROL LINK vs ACCESS LINK
+============================================================
+
+This is VERY IMPORTANT for GATE.
+
+
+CONTROL LINK:
+
+    Points toward the caller's activation.
+
+    Based on:
+        dynamic call sequence.
+
+
+ACCESS LINK:
+
+    Connects to the appropriate lexically enclosing
+    activation/environment.
+
+    Based on:
+        static/lexical nesting relationship.
+
+
+MEMORY TRICK:
+
+    CONTROL → Caller
+
+    ACCESS → Lexical parent
+
+
+============================================================
+18. EXAMPLE — DIFFERENCE
+============================================================
+
+Suppose:
+
+    main()
+      |
+      +--- A()
+      |      |
+      |      +--- C()
+      |
+      +--- B()
+
+
+Suppose C() was lexically nested inside A().
+
+If runtime call is:
+
+    main → A → C
+
+
+Then C's:
+
+    control link → A
+
+and its:
+
+    access link → A
+
+may happen to point to the same activation.
+
+
+But they represent DIFFERENT concepts.
+
+
+Control link:
+
+    Who called me?
+
+
+Access link:
+
+    Which lexically enclosing activation contains my
+    non-local environment?
+
+
+============================================================
+19. ACTIVATION RECORD CONCEPTUAL LAYOUT
+============================================================
+
+One possible conceptual layout:
+
+    +----------------------------+
+    | Actual parameters          |
+    +----------------------------+
+    | Return value               |
+    +----------------------------+
+    | Return address             |
+    +----------------------------+
+    | Control link / Dynamic link|
+    +----------------------------+
+    | Access link                |
+    +----------------------------+
+    | Saved registers            |
+    +----------------------------+
+    | Local variables            |
+    +----------------------------+
+    | Temporaries                |
+    +----------------------------+
+
+
+IMPORTANT:
+
+This is a conceptual layout.
+
+Do NOT memorize the exact physical order as universal.
+
+
+============================================================
+20. ACTIVATION RECORD AND STACK
+============================================================
+
+Activation records are commonly allocated on the runtime
+stack for procedures/functions whose lifetimes follow nested
+calls.
+
+
+Example:
+
+    main()
+      ↓
+      A()
+        ↓
+        B()
+
+
+Stack conceptually:
+
+    +----------------+
+    | B activation   |
+    +----------------+
+    | A activation   |
+    +----------------+
+    | main activation|
+    +----------------+
+
+
+When B returns:
+
+    B activation is removed/reclaimed.
+
+
+When A returns:
+
+    A activation is removed/reclaimed.
+
+
+============================================================
+21. ACTIVATION TREE
+============================================================
+
+An activation tree represents the nesting of procedure
+activations during execution.
+
+
+Example:
+
+    main
+     |
+     +--- A
+     |    |
+     |    +--- C
+     |
+     +--- B
+
+
+Meaning:
+
+    main called A
+    A called C
+    main later called B
+
+
+The tree represents execution relationships.
+
+
+============================================================
+22. ACTIVATION TREE vs CALL GRAPH
+============================================================
+
+Do not confuse:
+
+    Activation tree
+
+with:
+
+    Call graph
+
+
+ACTIVATION TREE:
+
+    Represents actual runtime invocation structure.
+
+
+CALL GRAPH:
+
+    Represents possible calling relationships between
+    functions/procedures.
+
+
+A recursive function may appear multiple times in an
+activation tree.
+
+
+============================================================
+23. RECURSION
+============================================================
+
+Recursion means:
+
+    A function directly or indirectly calls itself.
+
+
+Example:
+
+    int fact(int n)
+    {
+        if (n <= 1)
+            return 1;
+
+        return n * fact(n-1);
+    }
+
+
+Call:
+
+    fact(3)
+
+
+Creates:
+
+    fact(3)
+       ↓
+    fact(2)
+       ↓
+    fact(1)
+
+
+Three activations exist simultaneously before returns occur.
+
+
+============================================================
+24. RECURSION AND ACTIVATION RECORDS
+============================================================
+
+Each recursive call requires its own activation information.
+
+
+Conceptually:
+
+    +------------------+
+    | fact(1)          |
+    | n = 1            |
+    +------------------+
+    | fact(2)          |
+    | n = 2            |
+    +------------------+
+    | fact(3)          |
+    | n = 3            |
+    +------------------+
+
+
+Important:
+
+    Same function
+
+but:
+
+    different activation records.
+
+
+This is one of the most important runtime concepts.
+
+
+============================================================
+25. WHY ONE ACTIVATION RECORD CANNOT BE SHARED
+============================================================
+
+Suppose:
+
+    fact(3)
+    fact(2)
+    fact(1)
+
+
+If all calls used the same storage for:
+
+    n
+
+then:
+
+    n = 3
+    n = 2
+    n = 1
+
+
+would overwrite each other.
+
+
+Each invocation needs independent state.
+
+Therefore:
+
+    Each active invocation → separate activation record.
+
+
+============================================================
+26. ACTIVATION RECORD LIFETIME
+============================================================
+
+Typical sequence:
+
+    Function called
+         ↓
+    Activation record created/allocated
+         ↓
+    Function executes
+         ↓
+    Nested calls may create more records
+         ↓
+    Function returns
+         ↓
+    Activation record becomes inactive
+         ↓
+    Storage can be reclaimed/reused
+
+
+============================================================
+27. CALLER AND CALLEE
+============================================================
+
+Two important terms:
+
+
+CALLER:
+
+    The function that makes the call.
+
+
+CALLEE:
+
+    The function being called.
+
+
+Example:
+
+    main() calls add()
+
+
+Then:
+
+    main() = caller
+
+    add() = callee
+
+
+This terminology is essential for understanding calling
+sequences and register preservation.
+
+
+============================================================
+28. CALLER RESPONSIBILITIES
+============================================================
+
+Depending on the calling convention, caller responsibilities
+may include:
+
+    preparing arguments
+    preserving caller-saved registers
+    issuing the call
+    receiving the return value
+
+
+Exact responsibilities vary by ABI/calling convention.
+
+
+============================================================
+29. CALLEE RESPONSIBILITIES
+============================================================
+
+Depending on the calling convention, callee responsibilities
+may include:
+
+    creating its frame
+    saving callee-saved registers
+    executing function body
+    placing return value appropriately
+    restoring required state
+    returning to caller
+
+
+Again:
+
+    Exact details depend on the architecture and ABI.
+
+
+============================================================
+30. CALLING SEQUENCE
+============================================================
+
+A calling sequence is the set of steps used to call and
+return from a procedure/function.
+
+
+Conceptually:
+
+
+CALLER:
+
+    1. Evaluate arguments
+    2. Place arguments where required
+    3. Preserve required caller state
+    4. Transfer control to callee
+
+
+CALLEE:
+
+    5. Establish its activation record/frame
+    6. Save required registers
+    7. Execute function
+
+
+RETURN:
+
+    8. Place return value
+    9. Restore state
+   10. Transfer control to return address
+
+
+Chapter 24 will study procedure calls and parameter passing
+in greater detail.
+
+
+============================================================
+31. FRAME POINTER
+============================================================
+
+A frame pointer is a register that can be used to provide a
+stable reference point for the current activation record.
+
+
+Conceptually:
+
+              Current Frame
+                   |
+                   ↓
+              +---------+
+              | locals  |
+              |---------|
+    FP ------>|         |
+              |---------|
+              | params  |
+              +---------+
+
+
+Local variables and parameters can be accessed using offsets
+from the frame pointer.
+
+
+Example concept:
+
+    FP + 8
+    FP + 12
+    FP - 4
+    FP - 8
+
+
+Exact offsets and direction vary.
+
+
+============================================================
+32. STACK POINTER
+============================================================
+
+The stack pointer points to the current top/current boundary
+of stack storage according to the architecture and calling
+convention.
+
+
+Common conceptual registers:
+
+    SP → Stack Pointer
+    FP → Frame Pointer
+
+
+SP:
+
+    Tracks current stack position.
+
+
+FP:
+
+    Provides a stable reference to the current frame when
+    used by the calling convention/compiler.
+
+
+Modern optimized code may omit a dedicated frame pointer.
+
+
+============================================================
+33. FP vs SP
+============================================================
+
++----------------+--------------------------------+
+| FP             | Stable reference to frame      |
+| SP             | Current stack position         |
++----------------+--------------------------------+
+
+
+Important:
+
+    Not every function must use a frame pointer.
+
+Optimizing compilers may use the register for another purpose
+when frame-pointer omission is permitted.
+
+
+============================================================
+34. ACTIVATION RECORD AND TAC
+============================================================
+
+Chapter 20 introduced:
+
+    Three-Address Code
+
+
+Example:
+
+    t1 = a + b
+    t2 = t1 * c
+
+
+When this code executes, variables and temporaries need
+runtime storage or registers.
+
+
+Therefore:
+
+    TAC
+      ↓
+    Runtime storage
+      ↓
+    Activation record
+      ↓
+    Machine code
+
+
+The compiler's runtime model determines how values are
+accessed.
+
+
+============================================================
+35. ACTIVATION RECORD AND SYMBOL TABLE
+============================================================
+
+Symbol table:
+
+    Compile-time structure
+
+
+Activation record:
+
+    Runtime structure
+
+
+Symbol table may contain:
+
+    variable name
+    type
+    scope
+    size
+    storage information
+
+
+Activation record contains runtime information such as:
+
+    actual parameter values
+    local values
+    return address
+    links
+    saved registers
+
+
+Important:
+
+    Symbol table ≠ activation record.
+
+
+============================================================
+36. SYMBOL TABLE vs ACTIVATION RECORD
+============================================================
+
++----------------------+------------------------------+
+| Symbol Table         | Activation Record            |
++----------------------+------------------------------+
+| Compile-time         | Runtime                      |
+| Names/types/scope    | Actual invocation state      |
+| Compiler data        | Execution data               |
+| Static information   | Dynamic information           |
++----------------------+------------------------------+
+
+
+============================================================
+37. STATIC vs DYNAMIC INFORMATION
+============================================================
+
+Symbol table may say:
+
+    x:
+        type = int
+        scope = local
+        size = 4
+
+
+At runtime, an activation record may contain:
+
+    x = 42
+
+
+Therefore:
+
+    Symbol table:
+        information ABOUT x
+
+
+    Activation record:
+        runtime state OF this invocation
+
+
+============================================================
+38. NESTED FUNCTIONS
+============================================================
+
+Consider:
+
+    Outer()
+    {
+        int x;
+
+        Inner()
+        {
+            print(x);
+        }
+    }
+
+
+When Inner executes:
+
+    x
+
+is not local to Inner.
+
+It is:
+
+    non-local variable
+
+
+The runtime needs a way for Inner to reach the appropriate
+Outer environment.
+
+
+One traditional approach:
+
+    access link
+
+
+Conceptually:
+
+    Inner AR
+       |
+       ↓ access link
+    Outer AR
+       |
+       ↓
+       x
+
+
+============================================================
+39. STATIC / LEXICAL SCOPE
+============================================================
+
+Static scope means:
+
+    The meaning of a name is determined by the lexical
+    structure of the program.
+
+
+Example:
+
+    int x = 10;
+
+    function A() {
+        int x = 20;
+
+        function B() {
+            print(x);
+        }
+    }
+
+
+Under lexical scoping:
+
+    B's x
+
+refers to the nearest lexically enclosing declaration,
+subject to the language rules.
+
+
+Access links can help implement such non-local access in
+nested procedures.
+
+
+============================================================
+40. DYNAMIC SCOPE
+============================================================
+
+Dynamic scope determines name resolution based on the
+runtime call chain.
+
+
+Example concept:
+
+    A calls B
+    B calls C
+
+
+A variable referenced in C may be searched through the
+dynamic chain.
+
+This is different from lexical nesting.
+
+
+Important:
+
+    Control link → dynamic call chain
+
+
+    Access link → lexical/static nesting
+
+
+This distinction is highly important in compiler theory.
+
+
+============================================================
+41. STATIC LINK / ACCESS LINK
+============================================================
+
+In many compiler texts:
+
+    access link
+    static link
+
+are used for the link to the lexically enclosing activation.
+
+
+Example:
+
+    Level 1: Outer
+       ↓
+    Level 2: Middle
+       ↓
+    Level 3: Inner
+
+
+Inner may need access to a variable in Outer.
+
+It may follow:
+
+    Inner
+      ↓
+    Middle
+      ↓
+    Outer
+
+
+or use another mechanism such as a display.
+
+
+============================================================
+42. DISPLAY
+============================================================
+
+A display is an alternative technique for accessing
+non-local variables in statically nested procedures.
+
+
+Conceptually:
+
+    Display[1] → current activation at nesting level 1
+    Display[2] → current activation at nesting level 2
+    Display[3] → current activation at nesting level 3
+
+
+Instead of following multiple static/access links, a display
+can provide direct access to the relevant enclosing
+activation.
+
+
+Detailed access mechanisms are implementation-dependent.
+
+
+============================================================
+43. CONTROL LINK vs ACCESS LINK vs DISPLAY
+============================================================
+
+CONTROL LINK:
+
+    Dynamic/call relationship.
+
+
+ACCESS LINK:
+
+    Static/lexical nesting relationship.
+
+
+DISPLAY:
+
+    Table/array of references to active lexical nesting
+    levels.
+
+
+MEMORY TRICK:
+
+    Control = Call
+
+    Access = Ancestor
+
+    Display = Direct lookup by nesting level
+
+
+============================================================
+44. COMPLETE RECURSION EXAMPLE
+============================================================
+
+Source:
+
+    int sum(int n)
+    {
+        if (n == 0)
+            return 0;
+
+        return n + sum(n-1);
+    }
+
+
+Call:
+
+    sum(3)
+
+
+Activations:
+
+    sum(3)
+      ↓
+    sum(2)
+      ↓
+    sum(1)
+      ↓
+    sum(0)
+
+
+Conceptual activation records:
+
+    +---------------------+
+    | sum(0)              |
+    | n = 0               |
+    | return information  |
+    +---------------------+
+    | sum(1)              |
+    | n = 1               |
+    | return information  |
+    +---------------------+
+    | sum(2)              |
+    | n = 2               |
+    | return information  |
+    +---------------------+
+    | sum(3)              |
+    | n = 3               |
+    | return information  |
+    +---------------------+
+
+
+Then returns happen in reverse:
+
+    sum(0)
+       ↓
+    sum(1)
+       ↓
+    sum(2)
+       ↓
+    sum(3)
+
+
+This is LIFO behavior.
+
+
+============================================================
+45. ACTIVATION TREE FOR RECURSION
+============================================================
+
+For:
+
+    sum(3)
+
+
+Activation tree:
+
+             sum(3)
+                |
+             sum(2)
+                |
+             sum(1)
+                |
+             sum(0)
+
+
+If a function makes multiple recursive calls:
+
+    f(n)
+      |
+      +--- f(n-1)
+      |
+      +--- f(n-2)
+
+
+the activation tree branches.
+
+
+For example:
+
+    fib(3)
+
+may conceptually produce:
+
+             fib(3)
+             /    \
+         fib(2)  fib(1)
+         /   \
+     fib(1) fib(0)
+
+
+This shows multiple active invocation relationships.
+
+
+============================================================
+46. GATE NUMERICAL IDEA — NUMBER OF ACTIVATIONS
+============================================================
+
+For simple recursion:
+
+    f(n) {
+        if (...)
+            return;
+        f(n-1);
+    }
+
+
+If the recursion reaches the base case, the maximum number
+of simultaneously active calls is determined by the recursion
+depth.
+
+
+Example:
+
+    f(3)
+      ↓
+    f(2)
+      ↓
+    f(1)
+      ↓
+    f(0)
+
+
+Maximum simultaneous activations:
+
+    4
+
+
+This is useful for questions about maximum stack usage.
+
+
+============================================================
+47. GATE EXAMPLE — RECURSION DEPTH
+============================================================
+
+Suppose:
+
+    f(n):
+        if n == 0
+            return
+        f(n-1)
+
+
+Call:
+
+    f(5)
+
+
+Active calls before returning:
+
+    f(5)
+    f(4)
+    f(3)
+    f(2)
+    f(1)
+    f(0)
+
+
+Maximum simultaneous activation records:
+
+    6
+
+
+GENERAL RULE:
+
+    If calls are:
+
+    f(n), f(n-1), ..., f(0)
+
+    then maximum active invocations = n + 1.
+
+
+Assuming each invocation needs one activation record and
+there are no unusual optimization transformations.
+
+
+============================================================
+48. GATE EXAMPLE — NESTED CALLS
+============================================================
+
+Suppose:
+
+    main → A → B → C
+
+
+At the moment C is executing:
+
+    Active activation records:
+
+    main
+    A
+    B
+    C
+
+
+Maximum number:
+
+    4
+
+
+When C returns:
+
+    C's activation becomes inactive/reclaimed.
+
+
+Then:
+
+    main
+    A
+    B
+
+
+============================================================
+49. GATE TRAPS
+============================================================
+
+TRAP 1:
+
+"One function has exactly one activation record."
+
+Not necessarily.
+
+A function can have multiple simultaneous activations due
+to recursion or reentrant/nested execution.
+
+
+TRAP 2:
+
+"Activation record and function are the same."
+
+Wrong.
+
+Function = code definition.
+
+Activation record = runtime state for one invocation.
+
+
+TRAP 3:
+
+"Control link points to lexical parent."
+
+Not generally.
+
+Control/dynamic link represents the caller.
+
+
+Access/static link is associated with lexical nesting.
+
+
+TRAP 4:
+
+"Access link points to caller."
+
+Wrong.
+
+Access link is associated with lexically enclosing
+activation/environment.
+
+
+TRAP 5:
+
+"Every activation record must have the same exact physical
+layout."
+
+Wrong.
+
+Layout depends on implementation.
+
+
+TRAP 6:
+
+"Every function must use a frame pointer."
+
+Wrong.
+
+Optimizing compilers may omit it.
+
+
+TRAP 7:
+
+"Return address is the same as return value."
+
+Wrong.
+
+Return address:
+    where execution resumes.
+
+Return value:
+    result produced by function.
+
+
+TRAP 8:
+
+"Local variables must always be in memory."
+
+Not necessarily.
+
+Optimizing compilers can keep values in registers or
+eliminate them entirely.
+
+
+============================================================
+50. ACTIVATION RECORD — COMPLETE CONCEPTUAL MODEL
+============================================================
+
+A function invocation:
+
+        CALL
+         ↓
+    +-----------------------+
+    | Parameters            |
+    +-----------------------+
+    | Return value/info     |
+    +-----------------------+
+    | Return address        |
+    +-----------------------+
+    | Control link          |
+    +-----------------------+
+    | Access link           |
+    +-----------------------+
+    | Saved registers       |
+    +-----------------------+
+    | Local variables       |
+    +-----------------------+
+    | Temporaries           |
+    +-----------------------+
+         ↓
+      EXECUTE
+         ↓
+       RETURN
+         ↓
+    Frame becomes inactive
+    and its storage may be reused
+
+
+============================================================
+51. FUNCTION CALL LIFECYCLE
+============================================================
+
+STEP 1:
+
+    Caller evaluates arguments.
+
+
+STEP 2:
+
+    Arguments are passed according to the calling convention.
+
+
+STEP 3:
+
+    Return information is established.
+
+
+STEP 4:
+
+    Control transfers to callee.
+
+
+STEP 5:
+
+    Callee establishes its activation record/frame.
+
+
+STEP 6:
+
+    Local variables and temporaries are managed.
+
+
+STEP 7:
+
+    Function executes.
+
+
+STEP 8:
+
+    Return value is prepared.
+
+
+STEP 9:
+
+    Saved state is restored as required.
+
+
+STEP 10:
+
+    Control returns to caller.
+
+
+STEP 11:
+
+    Activation record storage is reclaimed/reused when
+    appropriate.
+
+
+============================================================
+52. ACTIVATION RECORD AND ABI
+============================================================
+
+ABI means:
+
+    Application Binary Interface
+
+
+It specifies conventions that allow separately compiled
+code to interact correctly.
+
+
+Calling convention can define things such as:
+
+    argument locations
+    return-value locations
+    caller/callee-saved registers
+    stack alignment
+    stack-frame conventions
+
+
+Therefore, activation-record details are influenced by the
+ABI.
+
+
+============================================================
+53. WHY CALLING CONVENTIONS MATTER
+============================================================
+
+Suppose:
+
+    Function A
+    calls
+    Function B
+
+
+Both must agree on:
+
+    Where arguments are placed
+    Where return value appears
+    Which registers must be preserved
+    How stack is organized
+    How control returns
+
+
+Without common conventions:
+
+    separately compiled functions could not reliably interact.
+
+
+============================================================
+54. ACTIVATION RECORD AND OPTIMIZATION
+============================================================
+
+An unoptimized compiler may create a straightforward frame:
+
+    locals
+    temporaries
+    saved registers
+    frame pointer
+
+
+An optimized compiler may:
+
+    keep variables in registers
+    eliminate unused variables
+    inline functions
+    eliminate some calls
+    reuse stack slots
+
+
+Therefore:
+
+    The conceptual activation record is more important than
+    assuming a fixed physical layout.
+
+
+============================================================
+55. FUNCTION INLINING
+============================================================
+
+Inlining replaces a function call with the function body when
+the optimizer chooses to do so.
+
+
+Example:
+
+    int square(int x) {
+        return x*x;
+    }
+
+
+Instead of:
+
+    call square
+
+
+the compiler may directly place equivalent computation at
+the call site.
+
+
+Then:
+
+    a separate runtime call activation may not be created
+    for that inlined call.
+
+
+This demonstrates why runtime implementation can differ from
+the simple conceptual model.
+
+
+============================================================
+56. ACTIVATION RECORD vs HEAP OBJECT
+============================================================
+
+Do not confuse:
+
+    Activation record
+
+with:
+
+    Heap object
+
+
+Activation record:
+
+    Represents a function invocation.
+
+
+Heap object:
+
+    Dynamically allocated data.
+
+
+Example:
+
+    void f() {
+        Node *p = malloc(...);
+    }
+
+
+Conceptually:
+
+    f's activation record
+        ↓
+    contains p
+
+    p
+        ↓
+    points to heap object
+
+
+============================================================
+57. MASTER COMPARISON TABLE
+============================================================
+
++------------------+--------------------------------------+
+| Component        | Purpose                              |
++------------------+--------------------------------------+
+| Parameters       | Inputs to function                  |
+| Return address   | Where execution resumes             |
+| Return value     | Result of function                  |
+| Locals           | Invocation-specific local state     |
+| Temporaries      | Intermediate computation values     |
+| Saved registers  | Preserve required machine state     |
+| Control link     | Caller/dynamic chain                |
+| Access link      | Lexical enclosing environment       |
++------------------+--------------------------------------+
+
+
+============================================================
+58. HIGH-YIELD GATE TABLE
+============================================================
+
++----------------------+------------------------------+
+| Term                 | Meaning                      |
++----------------------+------------------------------+
+| Activation           | One function invocation      |
+| Activation record    | Runtime data for invocation  |
+| Stack frame          | Common name for AR           |
+| Caller               | Makes the call               |
+| Callee               | Receives the call            |
+| Return address       | Resume execution location   |
+| Return value         | Function result              |
+| Control link         | Dynamic caller relationship  |
+| Access link          | Static lexical relationship  |
+| Frame pointer        | Reference to current frame   |
+| Stack pointer        | Current stack position       |
++----------------------+------------------------------+
+
+
+============================================================
+59. MOST IMPORTANT DIFFERENCES
+============================================================
+
+ACTIVATION RECORD vs STACK:
+
+    Activation record:
+        One function invocation's runtime data.
+
+    Stack:
+        Runtime storage structure commonly used to hold
+        multiple active activation records.
+
+
+CONTROL LINK vs ACCESS LINK:
+
+    Control:
+        caller
+
+    Access:
+        lexical parent
+
+
+RETURN ADDRESS vs RETURN VALUE:
+
+    Return address:
+        where to continue
+
+    Return value:
+        what the function returns
+
+
+SYMBOL TABLE vs ACTIVATION RECORD:
+
+    Symbol table:
+        compile-time information
+
+    Activation record:
+        runtime information
+
+
+============================================================
+60. INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is an activation record?
+
+Answer:
+
+An activation record is a runtime data structure associated
+with one invocation of a function or procedure. It contains
+information needed to execute and return from that invocation.
+
+
+Q2. Is activation record the same as stack frame?
+
+Answer:
+
+They are commonly used as equivalent terms, although exact
+implementation details vary.
+
+
+Q3. Why does recursion require multiple activation records?
+
+Answer:
+
+Each recursive invocation needs independent parameters,
+local state, return information, and other invocation-specific
+data.
+
+
+Q4. What is a return address?
+
+Answer:
+
+It identifies where execution should continue after the
+callee returns.
+
+
+Q5. What is a control link?
+
+Answer:
+
+It represents the dynamic relationship to the caller's
+activation record.
+
+
+Q6. What is an access link?
+
+Answer:
+
+It can connect an activation record to the appropriate
+lexically enclosing activation for accessing non-local
+variables.
+
+
+Q7. What is the difference between caller and callee?
+
+Answer:
+
+The caller makes the function call; the callee is the
+function being called.
+
+
+Q8. What is a frame pointer?
+
+Answer:
+
+A frame pointer can provide a stable reference to the current
+activation record so that parameters and locals can be
+accessed using offsets.
+
+
+Q9. Can a compiler eliminate an activation record?
+
+Answer:
+
+Compiler optimizations can change or eliminate some
+conventional call-frame requirements, for example through
+inlining, register allocation, tail-call optimization, or
+other transformations, when allowed by language semantics and
+calling conventions.
+
+
+Q10. Why are calling conventions important?
+
+Answer:
+
+They establish rules for argument passing, return values,
+register preservation, stack organization, and related
+caller/callee behavior.
+
+
+============================================================
+61. PRACTICAL EXAMPLE
+============================================================
+
+Consider:
+
+    int multiply(int a, int b)
+    {
+        int result;
+
+        result = a * b;
+
+        return result;
+    }
+
+    int main()
+    {
+        int x;
+
+        x = multiply(5, 4);
+    }
+
+
+When main calls multiply:
+
+
+MAIN ACTIVATION:
+
+    x
+
+
+MULTIPLY ACTIVATION:
+
+    a = 5
+    b = 4
+    result
+    return address
+    control information
+    other implementation-specific state
+
+
+Execution:
+
+    main
+      ↓
+    multiply
+      ↓
+    result = 20
+      ↓
+    return 20
+      ↓
+    main receives 20
+      ↓
+    x = 20
+
+
+============================================================
+62. PRACTICAL RECURSION EXAMPLE
+============================================================
+
+Source:
+
+    int fact(int n)
+    {
+        if (n <= 1)
+            return 1;
+
+        return n * fact(n-1);
+    }
+
+
+Call:
+
+    fact(3)
+
+
+Stack conceptually:
+
+    +---------------------+
+    | fact(1)             |
+    | n = 1               |
+    | return information  |
+    +---------------------+
+    | fact(2)             |
+    | n = 2               |
+    | return information  |
+    +---------------------+
+    | fact(3)             |
+    | n = 3               |
+    | return information  |
+    +---------------------+
+
+
+Return:
+
+    fact(1) = 1
+    fact(2) = 2
+    fact(3) = 6
+
+
+Frames become inactive in reverse order.
+
+
+============================================================
+63. PRACTICAL NESTED FUNCTION EXAMPLE
+============================================================
+
+Conceptually:
+
+    Outer()
+    {
+        int x = 10;
+
+        Inner()
+        {
+            print(x);
+        }
+
+        Inner();
+    }
+
+
+When Inner() executes:
+
+    Inner's local environment
+         |
+         | access/static link
+         ↓
+    Outer activation
+         |
+         ↓
+        x = 10
+
+
+The access relationship is about lexical nesting.
+
+
+============================================================
+64. GATE PROBLEM-SOLVING STRATEGY
+============================================================
+
+When you see a question about activation records:
+
+STEP 1:
+
+    Count active function invocations.
+
+
+STEP 2:
+
+    For recursion, count recursion depth.
+
+
+STEP 3:
+
+    Remember:
+
+        one invocation → one activation record
+
+
+STEP 4:
+
+    Identify whether question asks about:
+
+        caller
+        callee
+        return address
+        return value
+        control link
+        access link
+        locals
+        parameters
+
+
+STEP 5:
+
+    Do not assume a fixed physical layout unless the question
+    explicitly provides one.
+
+
+============================================================
+65. MEMORY TRICKS
+============================================================
+
+ACTIVATION RECORD:
+
+    "Everything one function call needs."
+
+
+CONTROL LINK:
+
+    "Who called me?"
+
+
+ACCESS LINK:
+
+    "Where is my lexical parent?"
+
+
+RETURN ADDRESS:
+
+    "Where do I go back?"
+
+
+RETURN VALUE:
+
+    "What result do I return?"
+
+
+CALLER:
+
+    "I call."
+
+
+CALLEE:
+
+    "I am called."
+
+
+FP:
+
+    "Frame reference."
+
+
+SP:
+
+    "Stack position."
+
+
+============================================================
+66. CHAPTER CONNECTION MAP
+============================================================
+
+Chapter 22
+Runtime Storage
+        ↓
+    Stack
+        ↓
+Chapter 23
+Activation Records
+        ↓
+    Function invocation
+        ↓
+Chapter 24
+Procedure Calls
+        ↓
+    Parameter passing
+        ↓
+Chapter 25
+Recursion & Scope
+        ↓
+    Static/Dynamic scope
+        ↓
+Chapter 26
+Code Generation
+
+
+The dependency is:
+
+    Runtime Memory
+         ↓
+    Activation Record
+         ↓
+    Function Calls
+         ↓
+    Recursion + Scope
+         ↓
+    Machine Code
+
+
+============================================================
+67. ULTRA-SHORT REVISION
+============================================================
+
+ACTIVATION RECORD:
+
+    Runtime data for one function invocation.
+
+
+COMMON COMPONENTS:
+
+    Parameters
+    Return value
+    Return address
+    Local variables
+    Temporaries
+    Saved registers
+    Control link
+    Access link
+
+
+CONTROL LINK:
+
+    Caller / dynamic chain
+
+
+ACCESS LINK:
+
+    Lexical parent / static nesting
+
+
+CALLER:
+
+    Makes call
+
+
+CALLEE:
+
+    Receives call
+
+
+STACK FRAME:
+
+    Common term for activation record
+
+
+RECURSION:
+
+    Multiple activations of same function
+
+
+FP:
+
+    Frame reference
+
+
+SP:
+
+    Stack position
+
+
+============================================================
+68. FINAL EXAM CHECKLIST
+============================================================
+
+You should now be able to explain:
+
+[ ] Activation record
+[ ] Stack frame
+[ ] Activation
+[ ] Function invocation
+[ ] Parameters
+[ ] Return address
+[ ] Return value
+[ ] Local variables
+[ ] Temporaries
+[ ] Saved registers
+[ ] Control link
+[ ] Dynamic link
+[ ] Access link
+[ ] Static link
+[ ] Caller
+[ ] Callee
+[ ] Calling sequence
+[ ] Frame pointer
+[ ] Stack pointer
+[ ] Activation tree
+[ ] Recursion
+[ ] Nested procedures
+[ ] Static/lexical scope
+[ ] Dynamic scope
+[ ] Display
+[ ] Symbol table vs activation record
+[ ] Stack vs activation record
+[ ] Activation record vs heap object
+[ ] Calling conventions
+[ ] GATE activation-record problems
+
+
+============================================================
+69. FINAL SUMMARY
+============================================================
+
+Chapter 22 asked:
+
+    WHERE is runtime information stored?
+
+Answer:
+
+    Code
+    Static/Global
+    Stack
+    Heap
+
+
+Chapter 23 asks:
+
+    WHAT information does one function invocation need?
+
+
+Answer:
+
+    ACTIVATION RECORD
+
+
+Conceptually:
+
+    Function Call
+         ↓
+    Activation
+         ↓
+    Activation Record
+         ↓
+    +--------------------+
+    | Parameters         |
+    | Return information |
+    | Return address     |
+    | Control link       |
+    | Access link        |
+    | Saved registers    |
+    | Local variables    |
+    | Temporaries        |
+    +--------------------+
+         ↓
+      Execute
+         ↓
+       Return
+         ↓
+    Frame can be reclaimed/reused
+
+
+For recursion:
+
+    f(3)
+      ↓
+    f(2)
+      ↓
+    f(1)
+
+Each invocation gets its own activation record.
+
+
+MOST IMPORTANT GATE MEMORY:
+
+    Activation Record
+        =
+    Runtime information for ONE invocation
+
+
+    Control Link
+        =
+    Dynamic caller relationship
+
+
+    Access Link
+        =
+    Lexical/static parent relationship
+
+
+    Return Address
+        =
+    Where execution resumes
+
+
+    Return Value
+        =
+    Function result
+
+
+============================================================
+CHAPTER 23 COMPLETE
+============================================================
+
+NEXT MASTER-SYLLABUS CHAPTER:
+
+CHAPTER 24 — PROCEDURE CALLS
+
+Topics:
+
+    • Procedure/function calls
+    • Calling sequence
+    • Caller
+    • Callee
+    • Parameter passing
+    • Call-by-value
+    • Call-by-reference
+    • Call-by-name
+    • Return values
+    • Caller responsibilities
+    • Callee responsibilities
+    • Stack-frame setup
+    • Stack-frame teardown
+    • Register conventions
+    • Calling conventions
+    • Nested procedure calls
+    • GATE problems
+    • Interview questions
+    • Practical examples
+
+Type:
+
+    NEXT
+
+to move to Chapter 24.
+============================================================

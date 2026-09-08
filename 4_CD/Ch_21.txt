@@ -1,0 +1,2834 @@
+============================================================
+CHAPTER 21 — BOOLEAN EXPRESSIONS & CONTROL FLOW
+============================================================
+
+PHASE 5 — INTERMEDIATE REPRESENTATION
+LEVEL: BEGINNER → INTERMEDIATE → GATE → INTERVIEW → PRACTICAL
+
+MASTER SYLLABUS TOPICS
+----------------------
+1. Boolean representation
+2. Relational operators
+3. Logical operators
+4. Short-circuit evaluation
+5. Conditional jumps
+6. Unconditional jumps
+7. Labels
+8. Backpatching
+9. Truelist
+10. Falselist
+11. Nextlist
+12. Translation of if
+13. Translation of if-else
+14. Translation of while
+15. Translation of do-while
+16. Translation of for
+17. Translation of switch
+18. Jump tables
+19. Control-flow translation
+20. GATE numerical problems
+21. Common GATE traps
+22. Interview questions
+23. Practical compiler connection
+
+
+============================================================
+1. PREREQUISITE
+============================================================
+
+Before learning Chapter 21, you should know:
+
+Chapter 19 → Intermediate Representation
+Chapter 20 → Three-Address Code (TAC)
+
+Especially understand:
+
+    x = y + z
+    t1 = a + b
+    if x < y goto L1
+    goto L2
+    L1:
+    L2:
+
+Chapter 21 uses these TAC instructions to represent
+Boolean expressions and control flow.
+
+
+============================================================
+2. WHAT IS CONTROL FLOW?
+============================================================
+
+Control flow means:
+
+    The order in which program instructions execute.
+
+Normally, statements execute from top to bottom.
+
+Example:
+
+    a = 10;
+    b = 20;
+    c = a + b;
+
+Execution:
+
+    a = 10
+       ↓
+    b = 20
+       ↓
+    c = a + b
+
+
+But programming languages contain:
+
+    if
+    if-else
+    while
+    do-while
+    for
+    switch
+
+These constructs change the normal execution order.
+
+Example:
+
+    if (x > 10)
+        y = 20;
+
+The program must decide whether:
+
+    y = 20
+
+should execute or not.
+
+Therefore, the compiler converts high-level control flow
+into jumps and labels.
+
+
+============================================================
+3. BASIC IDEA — JUMP
+============================================================
+
+A jump changes the normal sequence of execution.
+
+There are two important types:
+
+1. Conditional jump
+2. Unconditional jump
+
+
+-------------------------
+3.1 Conditional Jump
+-------------------------
+
+A conditional jump happens only when a condition is true.
+
+Example:
+
+    if x < y goto L1
+
+Meaning:
+
+    IF x < y is TRUE
+        jump to L1
+
+Otherwise:
+
+    continue with the next instruction.
+
+
+-------------------------
+3.2 Unconditional Jump
+-------------------------
+
+An unconditional jump always happens.
+
+Example:
+
+    goto L2
+
+Meaning:
+
+    Always jump to L2.
+
+
+============================================================
+4. LABEL
+============================================================
+
+A label identifies a particular location in the code.
+
+Example:
+
+    L1:
+        x = x + 1;
+
+Here:
+
+    L1
+
+is a label.
+
+A jump can target that label:
+
+    goto L1
+
+
+Think of a label like an address/signboard:
+
+    L1 → "Go to this location"
+
+
+============================================================
+5. BOOLEAN EXPRESSIONS
+============================================================
+
+A Boolean expression produces one of two logical values:
+
+    TRUE
+    FALSE
+
+Examples:
+
+    x > 10
+    x == y
+    a != b
+    p <= q
+
+
+Common relational operators:
+
+    <     less than
+    >     greater than
+    <=    less than or equal
+    >=    greater than or equal
+    ==    equal to
+    !=    not equal to
+
+
+Example:
+
+    x = 10
+    y = 20
+
+    x < y
+
+Result:
+
+    TRUE
+
+
+============================================================
+6. LOGICAL OPERATORS
+============================================================
+
+The most common logical operators are:
+
+    AND     &&
+    OR      ||
+    NOT     !
+
+
+------------------------------------------------------------
+6.1 AND
+------------------------------------------------------------
+
+Expression:
+
+    A && B
+
+Truth table:
+
+    A    B    A && B
+    -----------------
+    F    F      F
+    F    T      F
+    T    F      F
+    T    T      T
+
+
+AND is TRUE only when BOTH conditions are TRUE.
+
+
+Example:
+
+    age >= 18 && citizen == true
+
+
+------------------------------------------------------------
+6.2 OR
+------------------------------------------------------------
+
+Expression:
+
+    A || B
+
+Truth table:
+
+    A    B    A || B
+    -----------------
+    F    F      F
+    F    T      T
+    T    F      T
+    T    T      T
+
+
+OR is FALSE only when BOTH conditions are FALSE.
+
+
+------------------------------------------------------------
+6.3 NOT
+------------------------------------------------------------
+
+Expression:
+
+    !A
+
+Truth table:
+
+    A    !A
+    -------
+    F     T
+    T     F
+
+
+NOT reverses the Boolean value.
+
+
+============================================================
+7. BOOLEAN REPRESENTATION IN COMPILERS
+============================================================
+
+There are multiple ways to represent Boolean values.
+
+One simple representation is:
+
+    TRUE  = 1
+    FALSE = 0
+
+
+Example:
+
+    x = 10
+    y = 20
+
+    x < y
+
+could conceptually produce:
+
+    1
+
+
+But compilers often do NOT need to explicitly calculate
+Boolean values.
+
+Instead, they can directly use control flow.
+
+For example:
+
+    if (x < y)
+        A;
+    else
+        B;
+
+
+Can be represented as:
+
+    if x < y goto L1
+    goto L2
+
+L1:
+    A
+    goto L3
+
+L2:
+    B
+
+L3:
+
+
+This is extremely important.
+
+Boolean expressions can often be represented using
+CONTROL FLOW instead of storing TRUE/FALSE values.
+
+
+============================================================
+8. VALUE REPRESENTATION vs CONTROL-FLOW REPRESENTATION
+============================================================
+
+Two important approaches exist.
+
+
+------------------------------------------------------------
+8.1 Boolean as a Value
+------------------------------------------------------------
+
+Example:
+
+    t1 = x < y
+
+Then:
+
+    if t1 goto L1
+
+
+Here the Boolean result is stored in t1.
+
+
+------------------------------------------------------------
+8.2 Boolean as Control Flow
+------------------------------------------------------------
+
+Instead of:
+
+    t1 = x < y
+
+we can directly generate:
+
+    if x < y goto L1
+    goto L2
+
+
+Here:
+
+    L1 = TRUE destination
+    L2 = FALSE destination
+
+
+This approach is very important for compiler control-flow
+translation and backpatching.
+
+
+============================================================
+9. SHORT-CIRCUIT EVALUATION
+============================================================
+
+Short-circuit evaluation means:
+
+    Stop evaluating a Boolean expression as soon as its
+    final result is already known.
+
+
+There are two major cases:
+
+    A && B
+    A || B
+
+
+------------------------------------------------------------
+9.1 Short-Circuit AND
+------------------------------------------------------------
+
+Expression:
+
+    A && B
+
+
+If A is FALSE:
+
+    A && B = FALSE
+
+Therefore B does not need to be evaluated.
+
+
+Example:
+
+    false && expensiveFunction()
+
+
+The second expression may never execute.
+
+
+General idea:
+
+    Evaluate A
+       |
+       +---- FALSE → FALSE
+       |
+       +---- TRUE → evaluate B
+
+
+------------------------------------------------------------
+9.2 Short-Circuit OR
+------------------------------------------------------------
+
+Expression:
+
+    A || B
+
+
+If A is TRUE:
+
+    A || B = TRUE
+
+Therefore B does not need to be evaluated.
+
+
+Example:
+
+    true || expensiveFunction()
+
+
+The second expression may never execute.
+
+
+General idea:
+
+    Evaluate A
+       |
+       +---- TRUE → TRUE
+       |
+       +---- FALSE → evaluate B
+
+
+============================================================
+10. WHY SHORT-CIRCUIT EVALUATION MATTERS
+============================================================
+
+Consider:
+
+    if (x != 0 && y/x > 5)
+
+If:
+
+    x == 0
+
+then the first condition is FALSE.
+
+Therefore:
+
+    y/x > 5
+
+must not be evaluated.
+
+Otherwise division by zero could occur.
+
+
+This is an important practical reason for short-circuit
+evaluation.
+
+
+============================================================
+11. TAC FOR SIMPLE RELATIONAL EXPRESSIONS
+============================================================
+
+Suppose:
+
+    if (a < b)
+        x = 10;
+
+
+Possible TAC:
+
+    if a < b goto L1
+    goto L2
+
+L1:
+    x = 10
+
+L2:
+
+
+Meaning:
+
+    a < b TRUE
+        → L1
+
+    a < b FALSE
+        → L2
+
+
+============================================================
+12. TAC FOR IF
+============================================================
+
+Source:
+
+    if (x < y)
+        z = 10;
+
+
+TAC:
+
+    if x < y goto L1
+    goto L2
+
+L1:
+    z = 10
+
+L2:
+
+
+Control flow:
+
+             x < y?
+            /      \
+         TRUE      FALSE
+          ↓          ↓
+         L1          L2
+          ↓
+        z = 10
+
+
+============================================================
+13. TAC FOR IF-ELSE
+============================================================
+
+Source:
+
+    if (x < y)
+        z = 10;
+    else
+        z = 20;
+
+
+TAC:
+
+    if x < y goto L1
+    goto L2
+
+L1:
+    z = 10
+    goto L3
+
+L2:
+    z = 20
+
+L3:
+
+
+Why is:
+
+    goto L3
+
+needed?
+
+Because after executing the TRUE branch:
+
+    z = 10
+
+we do not want to execute the ELSE branch.
+
+Therefore we jump over it.
+
+
+Control flow:
+
+                  x < y?
+                 /      \
+              TRUE      FALSE
+               ↓          ↓
+              L1          L2
+               ↓          ↓
+           z = 10      z = 20
+               \          /
+                \        /
+                   L3
+
+
+============================================================
+14. NESTED IF
+============================================================
+
+Source:
+
+    if (a > 10) {
+        if (b > 20)
+            x = 1;
+    }
+
+
+Conceptually:
+
+    if a > 10 goto L1
+    goto L4
+
+L1:
+    if b > 20 goto L2
+    goto L4
+
+L2:
+    x = 1
+
+L4:
+
+
+Nested control structures create multiple labels
+and jumps.
+
+
+============================================================
+15. BOOLEAN AND — CONTROL-FLOW TRANSLATION
+============================================================
+
+Consider:
+
+    if (A && B)
+        S;
+
+
+Because of short-circuit evaluation:
+
+    A
+
+must be evaluated first.
+
+If A is TRUE:
+
+    evaluate B
+
+If A is FALSE:
+
+    entire expression is FALSE.
+
+
+Conceptually:
+
+    if A goto L1
+    goto FALSE
+
+L1:
+    if B goto TRUE
+    goto FALSE
+
+
+If used in an if statement:
+
+    if A goto L1
+    goto Lfalse
+
+L1:
+    if B goto Ltrue
+    goto Lfalse
+
+
+Important:
+
+    TRUE of A → continue to B
+    FALSE of A → final FALSE
+
+
+============================================================
+16. BOOLEAN OR — CONTROL-FLOW TRANSLATION
+============================================================
+
+Consider:
+
+    if (A || B)
+        S;
+
+
+Because of short-circuit evaluation:
+
+    A
+
+is evaluated first.
+
+If A is TRUE:
+
+    entire expression is TRUE
+
+If A is FALSE:
+
+    evaluate B.
+
+
+Conceptually:
+
+    if A goto TRUE
+    goto L1
+
+L1:
+    if B goto TRUE
+    goto FALSE
+
+
+Important:
+
+    TRUE of A → final TRUE
+    FALSE of A → continue to B
+
+
+============================================================
+17. BOOLEAN NOT
+============================================================
+
+For:
+
+    !(A < B)
+
+
+TRUE and FALSE destinations are exchanged.
+
+
+Normally:
+
+    if A < B goto TRUE
+    goto FALSE
+
+
+After NOT:
+
+    if A < B goto FALSE
+    goto TRUE
+
+
+This is a common exam concept.
+
+
+============================================================
+18. NESTED BOOLEAN EXPRESSIONS
+============================================================
+
+Consider:
+
+    A && B || C
+
+
+Operator precedence:
+
+    &&
+
+has higher precedence than:
+
+    ||
+
+
+Therefore:
+
+    (A && B) || C
+
+
+Control flow:
+
+    Evaluate A
+
+    A TRUE
+       ↓
+    evaluate B
+
+    A FALSE
+       ↓
+    evaluate C
+
+    B TRUE
+       ↓
+    TRUE
+
+    B FALSE
+       ↓
+    evaluate C
+
+
+This is why compiler control-flow generation must respect
+operator precedence.
+
+
+============================================================
+19. BACKPATCHING — CORE CONCEPT
+============================================================
+
+Backpatching is one of the most important topics in this
+chapter.
+
+Definition:
+
+    Backpatching is the technique of temporarily leaving
+    jump targets unspecified and filling them later when
+    the target label/address becomes known.
+
+
+Why is it necessary?
+
+When generating code, the compiler may encounter a jump
+before it knows the final destination.
+
+
+Example:
+
+    if x < y goto ???
+
+Later the compiler discovers:
+
+    L5:
+
+Therefore:
+
+    if x < y goto L5
+
+
+The process of filling the missing destination is called:
+
+    BACKPATCHING
+
+
+============================================================
+20. SIMPLE BACKPATCHING EXAMPLE
+============================================================
+
+Suppose generated code initially contains:
+
+    100: if a < b goto _
+    101: goto _
+
+
+At this point, target labels are unknown.
+
+
+Later:
+
+    TRUE target = 105
+    FALSE target = 110
+
+
+Backpatch:
+
+    100: if a < b goto 105
+    101: goto 110
+
+
+The underscores were placeholders.
+
+
+============================================================
+21. WHY BACKPATCHING IS USED
+============================================================
+
+During one-pass code generation, the compiler may not yet
+know:
+
+    destination labels
+    instruction numbers
+    future basic blocks
+
+
+Instead of stopping:
+
+    generate incomplete jump
+
+and later:
+
+    patch the destination.
+
+
+This makes Boolean/control-flow translation convenient.
+
+
+============================================================
+22. THREE IMPORTANT LISTS
+============================================================
+
+Backpatching commonly uses:
+
+    1. truelist
+    2. falselist
+    3. nextlist
+
+
+These are extremely important for GATE.
+
+
+------------------------------------------------------------
+22.1 truelist
+------------------------------------------------------------
+
+truelist contains jumps whose destination should be the
+TRUE destination of a Boolean expression.
+
+
+Example:
+
+    if a < b goto _
+
+
+The instruction number of this incomplete jump may belong
+to:
+
+    truelist
+
+
+------------------------------------------------------------
+22.2 falselist
+------------------------------------------------------------
+
+falselist contains jumps whose destination should be the
+FALSE destination.
+
+
+Example:
+
+    goto _
+
+
+Its instruction number may belong to:
+
+    falselist
+
+
+------------------------------------------------------------
+22.3 nextlist
+------------------------------------------------------------
+
+nextlist contains jumps whose target should be the
+instruction immediately following a statement or block.
+
+
+This is especially useful for:
+
+    if
+    if-else
+    loops
+    statement sequences
+
+
+============================================================
+23. BASIC BACKPATCHING OPERATIONS
+============================================================
+
+Three standard conceptual operations are:
+
+    makelist(i)
+    merge(p1, p2)
+    backpatch(p, i)
+
+
+------------------------------------------------------------
+23.1 makelist(i)
+------------------------------------------------------------
+
+Creates a list containing instruction i.
+
+
+Example:
+
+    makelist(100)
+
+Result:
+
+    [100]
+
+
+------------------------------------------------------------
+23.2 merge(p1, p2)
+------------------------------------------------------------
+
+Combines two lists.
+
+
+Example:
+
+    p1 = [100, 102]
+    p2 = [105]
+
+    merge(p1,p2)
+
+Result:
+
+    [100,102,105]
+
+
+------------------------------------------------------------
+23.3 backpatch(p, i)
+------------------------------------------------------------
+
+Sets the target of every incomplete jump in list p to i.
+
+
+Example:
+
+    p = [100,102]
+
+    backpatch(p,105)
+
+
+Then:
+
+    instruction 100 → target 105
+    instruction 102 → target 105
+
+
+============================================================
+24. BOOLEAN EXPRESSION ATTRIBUTES
+============================================================
+
+For a Boolean expression E, compilers often maintain:
+
+    E.truelist
+    E.falselist
+
+
+For example:
+
+    E = a < b
+
+
+Generated conceptual code:
+
+    if a < b goto _
+    goto _
+
+
+Then:
+
+    E.truelist  = [first jump]
+    E.falselist = [second jump]
+
+
+Later the compiler decides where TRUE and FALSE should go.
+
+
+============================================================
+25. BACKPATCHING AND AND
+============================================================
+
+For:
+
+    E = E1 && E2
+
+
+Short-circuit rule:
+
+    E1 TRUE → evaluate E2
+    E1 FALSE → final FALSE
+
+
+Therefore:
+
+    backpatch(E1.truelist, beginning_of_E2)
+
+and:
+
+    E.truelist = E2.truelist
+
+    E.falselist = merge(E1.falselist, E2.falselist)
+
+
+Very important GATE formula:
+
+    E1 && E2
+
+    backpatch(E1.truelist, E2.begin)
+
+    E.truelist  = E2.truelist
+    E.falselist = merge(E1.falselist, E2.falselist)
+
+
+============================================================
+26. BACKPATCHING AND OR
+============================================================
+
+For:
+
+    E = E1 || E2
+
+
+Short-circuit rule:
+
+    E1 TRUE → final TRUE
+    E1 FALSE → evaluate E2
+
+
+Therefore:
+
+    backpatch(E1.falselist, beginning_of_E2)
+
+
+and:
+
+    E.truelist = merge(E1.truelist, E2.truelist)
+
+    E.falselist = E2.falselist
+
+
+Very important:
+
+    E1 && E2
+
+    patch TRUE of E1 to E2
+
+
+while:
+
+    E1 || E2
+
+    patch FALSE of E1 to E2
+
+
+MEMORIZE THIS DIFFERENCE.
+
+
+============================================================
+27. BACKPATCHING AND NOT
+============================================================
+
+For:
+
+    E = !E1
+
+
+TRUE and FALSE are exchanged.
+
+
+Therefore:
+
+    E.truelist  = E1.falselist
+    E.falselist = E1.truelist
+
+
+No actual code needs to be generated merely because of NOT.
+
+
+============================================================
+28. IF STATEMENT WITH BACKPATCHING
+============================================================
+
+Source:
+
+    if (E)
+        S;
+
+
+Typical conceptual structure:
+
+    E
+    |
+    +--- TRUE → S
+    |
+    +--- FALSE → next statement
+
+
+Therefore:
+
+    backpatch(E.truelist, S.begin)
+
+    nextlist = E.falselist
+
+
+The FALSE path continues after S.
+
+
+============================================================
+29. IF-ELSE WITH BACKPATCHING
+============================================================
+
+Source:
+
+    if (E)
+        S1;
+    else
+        S2;
+
+
+Control:
+
+              E
+             / \
+          TRUE FALSE
+           ↓     ↓
+          S1     S2
+           ↓     ↓
+            \   /
+             NEXT
+
+
+Conceptually:
+
+    backpatch(E.truelist, S1.begin)
+
+    backpatch(E.falselist, S2.begin)
+
+    S1.nextlist and S2.nextlist
+    eventually point to the code after the if-else.
+
+
+An additional unconditional jump is commonly needed after
+S1 to skip S2.
+
+
+============================================================
+30. WHILE LOOP
+============================================================
+
+Source:
+
+    while (E)
+        S;
+
+
+Conceptually:
+
+             ┌───────────────┐
+             │               │
+             ↓               │
+            E?               │
+           /  \              │
+        TRUE  FALSE           │
+         ↓      ↓             │
+         S      EXIT          │
+         │                    │
+         └────────────────────┘
+
+
+Typical TAC:
+
+    Lbegin:
+        evaluate E
+
+        if E goto Lbody
+        goto Lexit
+
+    Lbody:
+        S
+        goto Lbegin
+
+    Lexit:
+
+
+Important:
+
+    while condition is checked BEFORE body execution.
+
+
+============================================================
+31. DO-WHILE LOOP
+============================================================
+
+Source:
+
+    do
+        S;
+    while (E);
+
+
+Control:
+
+        S
+        ↓
+        E?
+       /  \
+    TRUE  FALSE
+      ↓      ↓
+      └──→  EXIT
+
+
+Typical TAC:
+
+    Lbegin:
+        S
+        if E goto Lbegin
+        goto Lexit
+
+    Lexit:
+
+
+Important difference:
+
+    while:
+        condition → body
+
+    do-while:
+        body → condition
+
+
+Therefore:
+
+    while may execute body zero times.
+
+    do-while executes body at least once.
+
+
+============================================================
+32. FOR LOOP
+============================================================
+
+Source:
+
+    for (initialization; condition; update)
+        S;
+
+
+Conceptually:
+
+    initialization
+
+    Lbegin:
+        if condition goto Lbody
+        goto Lexit
+
+    Lbody:
+        S
+
+    Lupdate:
+        update
+        goto Lbegin
+
+    Lexit:
+
+
+Example:
+
+    for (i = 0; i < 10; i++)
+        sum = sum + i;
+
+
+TAC:
+
+    i = 0
+
+Lbegin:
+    if i < 10 goto Lbody
+    goto Lexit
+
+Lbody:
+    sum = sum + i
+
+Lupdate:
+    i = i + 1
+    goto Lbegin
+
+Lexit:
+
+
+Important:
+
+    for loop can be viewed conceptually as:
+
+    initialization;
+    while (condition) {
+        body;
+        update;
+    }
+
+
+============================================================
+33. BREAK
+============================================================
+
+Consider:
+
+    while (x < 10) {
+        if (x == 5)
+            break;
+
+        x = x + 1;
+    }
+
+
+break means:
+
+    Immediately leave the loop.
+
+
+Therefore:
+
+    break → loop exit label
+
+
+Conceptually:
+
+    if x == 5 goto Lexit
+
+
+The compiler must know the current loop's exit target.
+
+
+============================================================
+34. CONTINUE
+============================================================
+
+continue means:
+
+    Skip the remaining body and start the next iteration.
+
+
+For a while loop:
+
+    continue → condition-check location
+
+
+For a for loop:
+
+    continue → update section
+
+
+This distinction is important.
+
+
+Example:
+
+    for (...) {
+        if (condition)
+            continue;
+
+        statement;
+    }
+
+
+The continue target is generally the update/check portion,
+not the loop exit.
+
+
+============================================================
+35. SWITCH STATEMENT
+============================================================
+
+Example:
+
+    switch(x) {
+        case 1: A;
+                break;
+
+        case 2: B;
+                break;
+
+        default: C;
+    }
+
+
+Conceptually:
+
+    if x == 1 goto L1
+    if x == 2 goto L2
+    goto Ldefault
+
+L1:
+    A
+    goto Lexit
+
+L2:
+    B
+    goto Lexit
+
+Ldefault:
+    C
+
+Lexit:
+
+
+This is one simple way to translate switch.
+
+
+============================================================
+36. JUMP TABLE
+============================================================
+
+For many case values, repeatedly testing:
+
+    x == 1
+    x == 2
+    x == 3
+    x == 4
+    ...
+
+can be inefficient.
+
+
+A compiler may use a:
+
+    JUMP TABLE
+
+
+A jump table is a table containing target addresses/labels
+for case values.
+
+
+Conceptually:
+
+    case value → target
+
+       0 → L0
+       1 → L1
+       2 → L2
+       3 → L3
+
+
+Then:
+
+    jump_table[x]
+
+
+can directly determine the destination.
+
+
+============================================================
+37. DENSE vs SPARSE SWITCH CASES
+============================================================
+
+Jump tables are especially useful when case values are
+dense.
+
+
+Example:
+
+    1, 2, 3, 4, 5, 6
+
+
+These values are close together.
+
+
+Sparse values:
+
+    1, 100, 10000, 500000
+
+
+A jump table may waste considerable space.
+
+
+For sparse cases, compilers may use:
+
+    comparison chains
+    binary search
+    other decision structures
+
+
+Actual compiler strategy depends on implementation and
+optimization.
+
+
+============================================================
+38. CONTROL-FLOW GRAPH (CFG)
+============================================================
+
+A Control-Flow Graph represents possible execution paths.
+
+
+It consists of:
+
+    Nodes  → basic blocks
+    Edges  → possible control transfers
+
+
+Example:
+
+    if x < y
+        A
+    else
+        B
+
+
+CFG:
+
+             [condition]
+              /       \
+             /         \
+           [A]         [B]
+             \         /
+              \       /
+               [next]
+
+
+This connects Chapter 21 to:
+
+    Chapter 20 → TAC
+    Chapter 27 → Basic Blocks & CFG
+    Chapter 30+ → Optimization
+
+
+============================================================
+39. BASIC BLOCK
+============================================================
+
+A basic block is a sequence of instructions with:
+
+    one entry point
+    one exit point
+
+There is no branching into the middle of the block.
+
+
+Example:
+
+    a = 10
+    b = 20
+    c = a + b
+
+
+These can form one basic block.
+
+
+But:
+
+    a = 10
+    if a < b goto L1
+    c = 20
+
+contains control flow and therefore requires block
+boundaries.
+
+
+Chapter 27 will study basic blocks and CFG in much greater
+detail.
+
+
+============================================================
+40. CONTROL-FLOW TRANSLATION PIPELINE
+============================================================
+
+High-level source:
+
+    if (a < b && c != d)
+        x = 10;
+    else
+        x = 20;
+
+
+Compiler conceptually performs:
+
+    Source program
+          ↓
+    Parse tree / AST
+          ↓
+    Semantic analysis
+          ↓
+    Boolean/control-flow translation
+          ↓
+    TAC
+          ↓
+    Backpatching
+          ↓
+    Basic blocks
+          ↓
+    CFG
+          ↓
+    Optimization
+          ↓
+    Machine code
+
+
+============================================================
+41. COMPLETE EXAMPLE — IF WITH AND
+============================================================
+
+Source:
+
+    if (a < b && c < d)
+        x = 10;
+    else
+        x = 20;
+
+
+Because AND uses short-circuit evaluation:
+
+First evaluate:
+
+    a < b
+
+
+If FALSE:
+
+    go directly to ELSE.
+
+
+If TRUE:
+
+    evaluate c < d.
+
+
+Conceptual TAC:
+
+    if a < b goto L1
+    goto L2
+
+L1:
+    if c < d goto L3
+    goto L2
+
+L3:
+    x = 10
+    goto L4
+
+L2:
+    x = 20
+
+L4:
+
+
+Execution:
+
+    a < b = FALSE
+        ↓
+       L2
+        ↓
+      x = 20
+
+
+OR:
+
+    a < b = TRUE
+        ↓
+      L1
+        ↓
+    c < d
+      / \
+   TRUE FALSE
+    ↓     ↓
+   L3     L2
+
+
+============================================================
+42. COMPLETE EXAMPLE — IF WITH OR
+============================================================
+
+Source:
+
+    if (a < b || c < d)
+        x = 10;
+    else
+        x = 20;
+
+
+Short-circuit OR:
+
+    If a < b is TRUE,
+    do NOT evaluate c < d.
+
+
+TAC:
+
+    if a < b goto L1
+    goto L2
+
+L2:
+    if c < d goto L1
+    goto L3
+
+L1:
+    x = 10
+    goto L4
+
+L3:
+    x = 20
+
+L4:
+
+
+Important:
+
+    TRUE of first OR operand
+        → TRUE branch
+
+    FALSE of first OR operand
+        → evaluate second operand
+
+
+============================================================
+43. COMPLETE EXAMPLE — WHILE
+============================================================
+
+Source:
+
+    while (i < 10) {
+        sum = sum + i;
+        i = i + 1;
+    }
+
+
+TAC:
+
+L1:
+    if i < 10 goto L2
+    goto L3
+
+L2:
+    sum = sum + i
+    i = i + 1
+    goto L1
+
+L3:
+
+
+Control:
+
+          ┌─────────────┐
+          │             │
+          ↓             │
+        i < 10?         │
+        /    \          │
+      YES     NO        │
+       ↓       ↓        │
+      body    EXIT      │
+       │                │
+       └────────────────┘
+
+
+============================================================
+44. COMPLETE EXAMPLE — DO-WHILE
+============================================================
+
+Source:
+
+    do {
+        i = i + 1;
+    } while (i < 10);
+
+
+TAC:
+
+L1:
+    i = i + 1
+    if i < 10 goto L1
+    goto L2
+
+L2:
+
+
+The body executes first.
+
+
+============================================================
+45. COMPLETE EXAMPLE — FOR
+============================================================
+
+Source:
+
+    for (i = 0; i < 5; i = i + 1)
+        sum = sum + i;
+
+
+TAC:
+
+    i = 0
+
+L1:
+    if i < 5 goto L2
+    goto L4
+
+L2:
+    sum = sum + i
+
+L3:
+    i = i + 1
+    goto L1
+
+L4:
+
+
+The important order is:
+
+    initialization
+         ↓
+    condition
+         ↓
+       body
+         ↓
+      update
+         ↓
+    condition again
+
+
+============================================================
+46. BACKPATCHING DATA STRUCTURE
+============================================================
+
+Suppose:
+
+    100: if a < b goto _
+    101: goto _
+
+
+We can store:
+
+    truelist  = [100]
+    falselist = [101]
+
+
+Later:
+
+    TRUE destination = 105
+    FALSE destination = 120
+
+
+Apply:
+
+    backpatch([100], 105)
+    backpatch([101], 120)
+
+
+Final:
+
+    100: if a < b goto 105
+    101: goto 120
+
+
+============================================================
+47. NEXTLIST
+============================================================
+
+Consider:
+
+    S1;
+    S2;
+
+
+After S1, control normally goes to S2.
+
+If S1 contains incomplete jumps, those jumps may belong
+to:
+
+    S1.nextlist
+
+
+They can later be patched to:
+
+    beginning(S2)
+
+
+Thus:
+
+    backpatch(S1.nextlist, S2.begin)
+
+
+This is especially useful when generating code before all
+future instruction addresses are known.
+
+
+============================================================
+48. BACKPATCHING ALGORITHM — HIGH LEVEL
+============================================================
+
+General process:
+
+STEP 1:
+    Generate TAC.
+
+STEP 2:
+    When destination is unknown:
+        emit incomplete jump.
+
+STEP 3:
+    Store instruction number in:
+        truelist
+        falselist
+        nextlist
+
+STEP 4:
+    Continue generating code.
+
+STEP 5:
+    When destination becomes known:
+        backpatch the corresponding list.
+
+STEP 6:
+    Continue until all jumps are resolved.
+
+
+============================================================
+49. THREE-ADDRESS CODE FOR BOOLEAN EXPRESSIONS
+============================================================
+
+There are two broad forms.
+
+
+FORM 1 — VALUE FORM
+
+    t1 = a < b
+    t2 = c < d
+    t3 = t1 && t2
+
+
+FORM 2 — CONTROL-FLOW FORM
+
+    if a < b goto L1
+    goto Lfalse
+
+L1:
+    if c < d goto Ltrue
+    goto Lfalse
+
+
+Control-flow form is particularly useful for:
+
+    if
+    while
+    short-circuit evaluation
+    backpatching
+
+
+============================================================
+50. BOOLEAN EXPRESSION AND SIDE EFFECTS
+============================================================
+
+Short-circuit evaluation can affect program behavior when
+expressions have side effects.
+
+Example:
+
+    if (x != 0 && f())
+
+If:
+
+    x == 0
+
+then:
+
+    f()
+
+is not called.
+
+
+Therefore, compiler transformations must preserve the
+language's defined evaluation semantics.
+
+
+This is an important practical compiler principle:
+
+    Optimization must preserve program behavior.
+
+
+============================================================
+51. GATE HIGH-YIELD RULES
+============================================================
+
+RULE 1:
+    AND short-circuit:
+
+    A && B
+
+    If A = FALSE:
+        B is NOT evaluated.
+
+
+RULE 2:
+    OR short-circuit:
+
+    A || B
+
+    If A = TRUE:
+        B is NOT evaluated.
+
+
+RULE 3:
+
+    A && B
+
+    FALSE of A → final FALSE
+    TRUE of A  → evaluate B
+
+
+RULE 4:
+
+    A || B
+
+    TRUE of A  → final TRUE
+    FALSE of A → evaluate B
+
+
+RULE 5:
+
+    NOT swaps:
+
+    truelist ↔ falselist
+
+
+RULE 6:
+
+    AND backpatches:
+
+    E1.truelist → beginning of E2
+
+
+RULE 7:
+
+    OR backpatches:
+
+    E1.falselist → beginning of E2
+
+
+RULE 8:
+
+    truelist contains TRUE-directed unresolved jumps.
+
+
+RULE 9:
+
+    falselist contains FALSE-directed unresolved jumps.
+
+
+RULE 10:
+
+    nextlist contains unresolved jumps to the next statement
+    or continuation point.
+
+
+RULE 11:
+
+    while checks condition BEFORE body.
+
+
+RULE 12:
+
+    do-while checks condition AFTER body.
+
+
+RULE 13:
+
+    for:
+
+        initialization
+        condition
+        body
+        update
+        condition ...
+
+
+RULE 14:
+
+    break → loop exit.
+
+
+RULE 15:
+
+    continue → next iteration point.
+
+
+============================================================
+52. VERY IMPORTANT GATE COMPARISON
+============================================================
+
++----------------+-----------------------------+
+| Construct      | Important destination       |
++----------------+-----------------------------+
+| A && B         | TRUE(A) → B                 |
+| A || B         | FALSE(A) → B                |
+| !A             | Swap TRUE/FALSE             |
+| if(E)           | TRUE → body, FALSE → next  |
+| if-else(E)      | TRUE → S1, FALSE → S2      |
+| while(E)        | TRUE → body, FALSE → exit  |
+| do-while(E)     | body → condition            |
+| break           | loop exit                   |
+| continue        | next iteration point        |
++----------------+-----------------------------+
+
+
+============================================================
+53. GATE TRAPS
+============================================================
+
+TRAP 1:
+    Thinking AND evaluates both operands always.
+
+WRONG.
+
+Short-circuit AND may skip the second operand.
+
+
+TRAP 2:
+    Thinking OR always evaluates both operands.
+
+WRONG.
+
+Short-circuit OR may skip the second operand.
+
+
+TRAP 3:
+    Confusing AND and OR backpatching.
+
+Remember:
+
+    AND → patch TRUE of first expression to second.
+
+    OR  → patch FALSE of first expression to second.
+
+
+TRAP 4:
+    Confusing truelist and falselist.
+
+truelist:
+    TRUE destination
+
+falselist:
+    FALSE destination
+
+
+TRAP 5:
+    Thinking nextlist means FALSE list.
+
+WRONG.
+
+nextlist represents unresolved jumps to the next/continuation
+point.
+
+
+TRAP 6:
+    Forgetting the extra goto after the TRUE branch of
+    if-else.
+
+Without it, TRUE branch may fall into ELSE branch.
+
+
+TRAP 7:
+    Thinking do-while can execute zero times.
+
+WRONG.
+
+do-while executes its body at least once.
+
+
+TRAP 8:
+    Treating break and continue as the same.
+
+break:
+    exits loop.
+
+continue:
+    starts next iteration.
+
+
+TRAP 9:
+    Assuming jump tables are always used for switch.
+
+WRONG.
+
+Compiler implementation can choose different strategies.
+
+
+============================================================
+54. GATE-STYLE CONCEPTUAL QUESTIONS
+============================================================
+
+Q1.
+For:
+
+    A && B
+
+If A is FALSE, what happens?
+
+ANSWER:
+    B is not evaluated under short-circuit semantics.
+
+
+Q2.
+For:
+
+    A || B
+
+If A is TRUE, what happens?
+
+ANSWER:
+    B is not evaluated.
+
+
+Q3.
+For:
+
+    E = !E1
+
+What happens to lists?
+
+ANSWER:
+
+    E.truelist  = E1.falselist
+    E.falselist = E1.truelist
+
+
+Q4.
+For:
+
+    E1 && E2
+
+Which list is backpatched?
+
+ANSWER:
+
+    E1.truelist
+
+
+Q5.
+Where is it patched?
+
+ANSWER:
+
+    Beginning of E2.
+
+
+Q6.
+For:
+
+    E1 || E2
+
+Which list is backpatched?
+
+ANSWER:
+
+    E1.falselist
+
+
+Q7.
+Where is it patched?
+
+ANSWER:
+
+    Beginning of E2.
+
+
+============================================================
+55. INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is short-circuit evaluation?
+
+Answer:
+Short-circuit evaluation stops evaluating a Boolean
+expression when its final result is already known.
+
+For example:
+
+    A && B
+
+does not evaluate B if A is false.
+
+
+Q2. Why do compilers use control-flow representation
+for Boolean expressions?
+
+Answer:
+Because conditions in if/while/etc. naturally determine
+control flow, so the compiler can directly generate
+conditional jumps without necessarily materializing a
+Boolean value.
+
+
+Q3. What is backpatching?
+
+Answer:
+Backpatching fills unresolved jump destinations after the
+required target becomes known.
+
+
+Q4. What is truelist?
+
+Answer:
+A list of unresolved jumps that should go to the TRUE
+destination.
+
+
+Q5. What is falselist?
+
+Answer:
+A list of unresolved jumps that should go to the FALSE
+destination.
+
+
+Q6. What is nextlist?
+
+Answer:
+A list of unresolved jumps that should go to the next
+continuation point.
+
+
+Q7. Why are labels required?
+
+Answer:
+Labels provide named destinations for jumps.
+
+
+Q8. What is the difference between break and continue?
+
+Answer:
+
+    break:
+        exits the loop.
+
+    continue:
+        skips to the next iteration point.
+
+
+Q9. Why is a jump needed after the TRUE branch of if-else?
+
+Answer:
+To skip the ELSE branch after the TRUE branch finishes.
+
+
+Q10. What is a jump table?
+
+Answer:
+A data structure containing targets for switch cases,
+allowing efficient dispatch for suitable case distributions.
+
+
+============================================================
+56. PRACTICAL COMPILER CONNECTION
+============================================================
+
+A real compiler performs roughly:
+
+    Source Code
+        ↓
+    Lexer
+        ↓
+    Parser
+        ↓
+    AST
+        ↓
+    Semantic Analysis
+        ↓
+    IR Generation
+        ↓
+    Boolean / Control Flow Translation
+        ↓
+    Basic Blocks
+        ↓
+    CFG
+        ↓
+    Optimization
+        ↓
+    Machine Code
+
+
+Example source:
+
+    if (x > 0)
+        y = x;
+    else
+        y = -x;
+
+
+The compiler may create control flow resembling:
+
+    if x > 0 goto L1
+    goto L2
+
+L1:
+    y = x
+    goto L3
+
+L2:
+    y = -x
+
+L3:
+
+
+Later:
+
+    TAC
+      ↓
+    Basic Blocks
+      ↓
+    CFG
+      ↓
+    Optimization
+      ↓
+    Machine instructions
+
+
+============================================================
+57. CHAPTER CONNECTION MAP
+============================================================
+
+Chapter 18
+Attribute Grammars
+        ↓
+Chapter 19
+Intermediate Representation
+        ↓
+Chapter 20
+Three-Address Code
+        ↓
+Chapter 21
+Boolean Expressions & Control Flow
+        ↓
+Chapter 22
+Runtime Storage
+        ↓
+Chapter 23
+Activation Records
+        ↓
+Chapter 26
+Code Generation
+        ↓
+Chapter 27
+Basic Blocks & CFG
+        ↓
+Chapter 30+
+Optimization
+
+
+Chapter 21 is therefore a bridge between:
+
+    IR generation
+
+and:
+
+    CFG / optimization / code generation.
+
+
+============================================================
+58. ULTRA-SHORT REVISION
+============================================================
+
+BOOLEAN:
+
+    TRUE / FALSE
+
+RELATIONAL:
+
+    < > <= >= == !=
+
+LOGICAL:
+
+    && || !
+
+SHORT-CIRCUIT:
+
+    A && B:
+        FALSE A → stop
+
+    A || B:
+        TRUE A → stop
+
+
+JUMPS:
+
+    conditional jump
+    unconditional goto
+
+
+LABEL:
+
+    destination of a jump
+
+
+BACKPATCHING:
+
+    fill unknown jump targets later
+
+
+LISTS:
+
+    truelist
+    falselist
+    nextlist
+
+
+AND:
+
+    E1 TRUE → E2
+
+
+OR:
+
+    E1 FALSE → E2
+
+
+NOT:
+
+    swap truelist and falselist
+
+
+WHILE:
+
+    condition → body → condition
+
+
+DO-WHILE:
+
+    body → condition → body
+
+
+FOR:
+
+    init → condition → body → update → condition
+
+
+BREAK:
+
+    exit loop
+
+
+CONTINUE:
+
+    next iteration
+
+
+SWITCH:
+
+    comparisons or jump table
+
+
+CFG:
+
+    nodes = basic blocks
+    edges = control-flow paths
+
+
+============================================================
+59. ONE-MINUTE MEMORY TRICK
+============================================================
+
+Remember:
+
+    AND → TRUE continues
+    OR  → FALSE continues
+
+Therefore:
+
+    AND:
+        TRUE → next operand
+
+    OR:
+        FALSE → next operand
+
+
+Backpatch:
+
+    AND → TRUE list
+    OR  → FALSE list
+
+
+NOT:
+
+    swap lists
+
+
+Loop:
+
+    while:
+        CHECK → BODY
+
+    do-while:
+        BODY → CHECK
+
+    for:
+        INIT → CHECK → BODY → UPDATE
+
+
+============================================================
+60. FINAL EXAM CHECKLIST
+============================================================
+
+Before considering Chapter 21 mastered, you should be able
+to explain:
+
+[ ] Boolean expressions
+[ ] Relational operators
+[ ] AND
+[ ] OR
+[ ] NOT
+[ ] Short-circuit evaluation
+[ ] Conditional jump
+[ ] Unconditional jump
+[ ] Labels
+[ ] Boolean value representation
+[ ] Control-flow representation
+[ ] Backpatching
+[ ] truelist
+[ ] falselist
+[ ] nextlist
+[ ] makelist()
+[ ] merge()
+[ ] backpatch()
+[ ] AND translation
+[ ] OR translation
+[ ] NOT translation
+[ ] if translation
+[ ] if-else translation
+[ ] while translation
+[ ] do-while translation
+[ ] for translation
+[ ] break
+[ ] continue
+[ ] switch
+[ ] jump table
+[ ] control-flow graph concept
+[ ] relationship between TAC and control flow
+[ ] GATE backpatching problems
+[ ] common control-flow traps
+
+
+============================================================
+61. FINAL SUMMARY
+============================================================
+
+Chapter 21 teaches the compiler how to convert high-level
+Boolean conditions and control structures into low-level
+control-flow instructions.
+
+The most important ideas are:
+
+    Boolean expressions
+            ↓
+    TRUE/FALSE decisions
+            ↓
+    conditional jumps
+            ↓
+    labels
+            ↓
+    backpatching
+            ↓
+    truelist / falselist / nextlist
+            ↓
+    TAC
+            ↓
+    basic blocks
+            ↓
+    CFG
+            ↓
+    optimization
+            ↓
+    machine code
+
+
+MOST IMPORTANT GATE FORMULAS:
+
+    E1 && E2
+
+    backpatch(E1.truelist, E2.begin)
+
+    E.truelist  = E2.truelist
+    E.falselist = merge(E1.falselist, E2.falselist)
+
+
+    E1 || E2
+
+    backpatch(E1.falselist, E2.begin)
+
+    E.truelist  = merge(E1.truelist, E2.truelist)
+    E.falselist = E2.falselist
+
+
+    !E1
+
+    E.truelist  = E1.falselist
+    E.falselist = E1.truelist
+
+
+MEMORIZE:
+
+    AND → patch TRUE
+    OR  → patch FALSE
+    NOT → swap
+
+
+============================================================
+CHAPTER 21 COMPLETE
+============================================================
+
+NEXT MASTER-SYLLABUS CHAPTER:
+
+CHAPTER 22 — RUNTIME STORAGE ORGANIZATION
+
+Topics:
+
+    • Runtime environment
+    • Runtime storage organization
+    • Memory layout
+    • Code/Text segment
+    • Static/Global area
+    • Stack
+    • Heap
+    • Static allocation
+    • Stack allocation
+    • Heap allocation
+    • Memory management
+    • Compiler/runtime relationship
+    • GATE numerical/conceptual questions
+    • Interview questions
+    • Practical examples
+
+Type:
+
+    NEXT
+
+to move to Chapter 22.
+============================================================

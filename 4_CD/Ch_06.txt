@@ -1,0 +1,2214 @@
+# CHAPTER 6 — FINITE AUTOMATA
+# Compiler Design — Lexical Analysis
+# Level: Beginner → Core CS → GATE → Interview
+
+============================================================
+1. INTRODUCTION
+============================================================
+
+In Chapter 5, we learned Regular Expressions.
+
+A regular expression describes a pattern.
+
+But a compiler needs an actual mechanism to recognize
+whether an input string follows that pattern.
+
+That mechanism can be:
+
+                    FINITE AUTOMATON
+                         (FA)
+
+The main types we study are:
+
+    1. DFA
+       Deterministic Finite Automaton
+
+    2. NFA
+       Nondeterministic Finite Automaton
+
+    3. ε-NFA
+       NFA with epsilon transitions
+
+
+Important relationship:
+
+    Regular Expression
+            ↓
+        NFA / ε-NFA
+            ↓
+           DFA
+            ↓
+    Lexical Analyzer
+
+
+============================================================
+2. WHAT IS A FINITE AUTOMATON?
+============================================================
+
+A Finite Automaton is a mathematical model used to
+recognize patterns in strings.
+
+"Finite" means that the machine has a finite number of
+states.
+
+It reads an input string symbol by symbol and changes
+its state according to transition rules.
+
+At the end:
+
+    If machine is in an accepting state:
+        ACCEPT
+
+    Otherwise:
+        REJECT
+
+
+Basic structure:
+
+             input symbols
+                  ↓
+        +-------------------+
+        |   Finite          |
+        |   Automaton       |
+        +-------------------+
+             ↓
+        ACCEPT / REJECT
+
+
+============================================================
+3. REAL-WORLD ANALOGY
+============================================================
+
+Imagine a security door.
+
+States:
+
+    Locked
+    Unlocked
+
+Input:
+
+    correct key
+    wrong key
+
+The current state changes depending on the input.
+
+Similarly, a finite automaton:
+
+    Current State
+          +
+    Input Symbol
+          ↓
+    Next State
+
+
+============================================================
+4. BASIC COMPONENTS
+============================================================
+
+A finite automaton contains:
+
+    1. Set of states
+    2. Input alphabet
+    3. Transition function
+    4. Start state
+    5. Set of accepting/final states
+
+
+These are formally represented as:
+
+    Q = set of states
+
+    Σ = input alphabet
+
+    δ = transition function
+
+    q0 = initial state
+
+    F = set of final states
+
+
+============================================================
+5. FORMAL DEFINITION
+============================================================
+
+A finite automaton can be represented as:
+
+    M = (Q, Σ, δ, q0, F)
+
+where:
+
+    Q  = finite set of states
+
+    Σ  = input alphabet
+
+    δ  = transition function
+
+    q0 = initial state
+
+    F  = set of accepting states
+
+
+This five-tuple definition is VERY IMPORTANT for GATE.
+
+
+============================================================
+6. EXAMPLE OF A FINITE AUTOMATON
+============================================================
+
+Suppose:
+
+    Σ = {0,1}
+
+We want to recognize binary strings ending in 1.
+
+States:
+
+    q0
+    q1
+
+Interpretation:
+
+    q0 = last symbol is not 1 / start
+    q1 = last symbol is 1
+
+Start:
+
+    q0
+
+Final:
+
+    q1
+
+
+Conceptually:
+
+                1
+          +------------+
+          |            ↓
+        (q0) ----1---> ((q1))
+          ↑              |
+          |              |
+          +------0-------+
+                 
+
+Here:
+
+    q0 = start state
+    q1 = accepting state
+
+
+============================================================
+7. STATE
+============================================================
+
+A STATE represents the current condition or situation of
+the automaton.
+
+Example:
+
+    q0
+    q1
+    q2
+
+These names are arbitrary.
+
+We could instead use:
+
+    A
+    B
+    C
+
+The names themselves do not matter.
+
+
+============================================================
+8. INITIAL STATE
+============================================================
+
+The initial state is where the automaton begins before
+reading any input.
+
+It is represented by:
+
+    q0
+
+Graphically, an incoming arrow without a source is commonly
+used:
+
+                 →
+                 q0
+
+
+============================================================
+9. ACCEPTING / FINAL STATE
+============================================================
+
+An accepting state is a state that indicates successful
+recognition when the entire input has been consumed.
+
+It is usually represented using a double circle.
+
+Example:
+
+                 ((q1))
+
+means:
+
+    q1 is an accepting state.
+
+
+Important:
+
+    Reaching an accepting state before the input ends does
+    NOT automatically mean the entire string is accepted.
+
+The complete input must be processed.
+
+
+============================================================
+10. TRANSITION
+============================================================
+
+A transition describes how the automaton moves from one
+state to another after reading an input symbol.
+
+Example:
+
+    δ(q0, 1) = q1
+
+Meaning:
+
+    If current state is q0
+    and input symbol is 1,
+    move to q1.
+
+
+============================================================
+11. TRANSITION FUNCTION
+============================================================
+
+The transition function is usually represented by:
+
+    δ
+
+For a DFA:
+
+    δ : Q × Σ → Q
+
+
+Meaning:
+
+    Current state + one input symbol
+                ↓
+             exactly one
+             next state
+
+
+For an NFA, the output can be a SET of states:
+
+    δ : Q × Σ → 2^Q
+
+For an ε-NFA:
+
+    δ : Q × (Σ ∪ {ε}) → 2^Q
+
+
+These distinctions are very important.
+
+
+============================================================
+12. DFA
+============================================================
+
+DFA stands for:
+
+    Deterministic Finite Automaton
+
+"Deterministic" means that for every:
+
+    current state
+    +
+    input symbol
+
+there is exactly ONE next state.
+
+
+Formally:
+
+    δ : Q × Σ → Q
+
+
+Therefore:
+
+    One state + one input symbol
+             ↓
+       exactly one state
+
+
+============================================================
+13. SIMPLE DFA EXAMPLE
+============================================================
+
+Alphabet:
+
+    Σ = {0,1}
+
+Suppose the DFA accepts strings ending in 1.
+
+States:
+
+    q0 = start
+    q1 = accepting
+
+
+Transitions:
+
+    δ(q0,0) = q0
+    δ(q0,1) = q1
+
+    δ(q1,0) = q0
+    δ(q1,1) = q1
+
+
+Transition table:
+
+    State | 0  | 1
+    ----------------
+    q0    | q0 | q1
+    q1    | q0 | q1
+
+
+============================================================
+14. PROCESSING A STRING IN DFA
+============================================================
+
+Input:
+
+    101
+
+Start:
+
+    q0
+
+Read 1:
+
+    q0 --1--> q1
+
+Read 0:
+
+    q1 --0--> q0
+
+Read 1:
+
+    q0 --1--> q1
+
+
+End:
+
+    q1
+
+q1 is accepting.
+
+Therefore:
+
+    101 ACCEPTED.
+
+
+============================================================
+15. ANOTHER DFA EXAMPLE
+============================================================
+
+Suppose we want:
+
+    Binary strings containing an even number of 1s.
+
+Use two states:
+
+    q_even
+    q_odd
+
+Start:
+
+    q_even
+
+Accepting:
+
+    q_even
+
+
+Transitions:
+
+    q_even --0--> q_even
+    q_even --1--> q_odd
+
+    q_odd  --0--> q_odd
+    q_odd  --1--> q_even
+
+
+Why?
+
+Reading 1 changes parity:
+
+    even → odd
+    odd  → even
+
+Reading 0 does not change the number of 1s.
+
+
+============================================================
+16. DFA CHARACTERISTICS
+============================================================
+
+A DFA has:
+
+    ✓ Exactly one transition for every state-symbol pair.
+
+    ✓ No ε-transition.
+
+    ✓ One computation path for an input string.
+
+    ✓ Easy deterministic execution.
+
+    ✓ Transition function:
+          δ : Q × Σ → Q
+
+
+If there are:
+
+    |Q| states
+
+and:
+
+    |Σ| symbols
+
+a complete DFA has:
+
+    |Q| × |Σ|
+
+transition entries.
+
+
+============================================================
+17. NFA
+============================================================
+
+NFA stands for:
+
+    Nondeterministic Finite Automaton
+
+Unlike a DFA, an NFA may have:
+
+    • Multiple possible next states
+    • No transition for a state-symbol pair
+    • In ε-NFA, transitions on ε
+
+
+For an ordinary NFA:
+
+    δ : Q × Σ → 2^Q
+
+
+The result is a SET of possible states.
+
+
+============================================================
+18. WHY "NONDETERMINISTIC"?
+============================================================
+
+Suppose:
+
+    δ(q0,a) = {q1,q2}
+
+This means that after reading:
+
+    a
+
+from q0, the machine may move to:
+
+    q1
+
+or:
+
+    q2
+
+
+Therefore there can be multiple possible computation paths.
+
+
+============================================================
+19. NFA EXAMPLE
+============================================================
+
+Suppose:
+
+    δ(q0,a) = {q1,q2}
+
+Graphically:
+
+             a
+          +------>
+        (q0)       q1
+          |
+          | a
+          +------> q2
+
+
+The NFA can consider both possibilities.
+
+
+============================================================
+20. NFA ACCEPTANCE
+============================================================
+
+An NFA accepts an input string if:
+
+    AT LEAST ONE possible computation path
+    ends in an accepting state after the
+    entire input is consumed.
+
+
+This is extremely important.
+
+DFA:
+
+    One path
+
+NFA:
+
+    Potentially many paths
+
+NFA accepts if:
+
+    At least one path accepts.
+
+
+============================================================
+21. NFA DOES NOT MEAN "RANDOM"
+============================================================
+
+Nondeterministic does not mean the machine randomly
+chooses one path and forgets the others.
+
+Conceptually, all possible paths are considered.
+
+If any valid path reaches a final state after consuming
+the complete input:
+
+    ACCEPT
+
+
+============================================================
+22. ε-NFA
+============================================================
+
+An ε-NFA is an NFA that allows transitions labeled:
+
+    ε
+
+The symbol ε represents:
+
+    empty string
+
+An ε-transition consumes NO input symbol.
+
+
+Example:
+
+    q0 --ε--> q1
+
+
+The machine can move:
+
+    q0 → q1
+
+without reading a character from the input.
+
+
+============================================================
+23. WHY ε-TRANSITIONS ARE USEFUL
+============================================================
+
+ε-transitions make it easier to construct automata from
+regular expressions.
+
+For example, when converting:
+
+    R | S
+
+to an NFA, we can conceptually create a new start state
+with ε-transitions to the automata for R and S.
+
+
+Similarly, for:
+
+    R*
+
+ε-transitions are useful for creating the zero-or-more
+structure.
+
+
+============================================================
+24. DFA vs NFA
+============================================================
+
++----------------------+-----------------------+-----------------------+
+| Feature              | DFA                   | NFA                   |
++----------------------+-----------------------+-----------------------+
+| Full name            | Deterministic FA      | Nondeterministic FA   |
+| Next states          | Exactly one          | Zero, one, or many    |
+| ε-transition         | Not allowed           | Not in ordinary NFA   |
+| ε-NFA                | No                    | Yes, if extended      |
+| Transition output    | One state             | Set of states         |
+| Computation paths    | One                   | Potentially many      |
+| Transition function  | Q×Σ → Q               | Q×Σ → 2^Q             |
++----------------------+-----------------------+-----------------------+
+
+
+============================================================
+25. IMPORTANT FACT
+============================================================
+
+DFA and NFA have the SAME EXPRESSIVE POWER.
+
+That means:
+
+    Every language accepted by a DFA
+    can also be accepted by an NFA.
+
+And:
+
+    Every language accepted by an NFA
+    can also be accepted by a DFA.
+
+
+Therefore:
+
+    DFA = NFA
+
+in terms of the class of languages they recognize.
+
+That class is:
+
+    REGULAR LANGUAGES
+
+
+============================================================
+26. BUT DFA AND NFA ARE NOT IDENTICAL
+============================================================
+
+They differ in representation and operation.
+
+NFA may require fewer states.
+
+DFA can be easier to execute because there is only one
+next state for each input symbol.
+
+Therefore:
+
+    NFA → often easier to construct
+
+    DFA → often easier to execute directly
+
+
+============================================================
+27. DFA COMPLETENESS
+============================================================
+
+A DFA generally requires a transition for every pair:
+
+    state + input symbol
+
+
+Suppose:
+
+    Q = {q0,q1}
+
+    Σ = {0,1}
+
+Then a complete DFA needs:
+
+    2 × 2 = 4
+
+transition entries.
+
+
+If a transition is logically missing in a diagram, a
+dead/trap state can be introduced.
+
+
+============================================================
+28. DEAD / TRAP STATE
+============================================================
+
+A dead state is a non-accepting state from which the
+automaton cannot reach an accepting state.
+
+Example:
+
+    q_dead
+
+with:
+
+    q_dead --0--> q_dead
+    q_dead --1--> q_dead
+
+
+Once entered:
+
+    input remains rejected.
+
+
+This state is often used to make a DFA complete.
+
+
+============================================================
+29. DFA TRANSITION TABLE
+============================================================
+
+Example:
+
+    State | 0    | 1
+    --------------------
+    →q0   | q0   | q1
+     q1   | q0   | q1
+
+
+Notation:
+
+    → = initial state
+
+    double circle = final state
+
+
+A transition table provides a convenient representation
+of a DFA.
+
+
+============================================================
+30. NFA TRANSITION TABLE
+============================================================
+
+Example:
+
+    State | a
+    ------------
+    q0    | {q1,q2}
+    q1    | {q1}
+    q2    | ∅
+
+
+Notice:
+
+    q0 on a
+
+can go to:
+
+    q1 OR q2
+
+
+This is allowed in NFA.
+
+
+============================================================
+31. ε-CLOSURE
+============================================================
+
+ε-closure is extremely important when working with
+ε-NFAs.
+
+The ε-closure of a state is the set of states reachable
+from that state using ZERO OR MORE ε-transitions.
+
+It always contains the original state.
+
+Example:
+
+    q0 --ε--> q1
+    q1 --ε--> q2
+
+
+Then:
+
+    ε-closure(q0) = {q0,q1,q2}
+
+    ε-closure(q1) = {q1,q2}
+
+    ε-closure(q2) = {q2}
+
+
+============================================================
+32. WHY DOES ε-CLOSURE INCLUDE THE ORIGINAL STATE?
+============================================================
+
+Because:
+
+    ZERO ε-transitions
+
+are allowed.
+
+Starting at:
+
+    q0
+
+we can remain at:
+
+    q0
+
+without taking any transition.
+
+Therefore:
+
+    q0 ∈ ε-closure(q0)
+
+
+============================================================
+33. ε-CLOSURE EXAMPLE
+============================================================
+
+Suppose:
+
+    q0 --ε--> q1
+    q1 --ε--> q2
+    q1 --ε--> q3
+
+Then:
+
+    ε-closure(q0)
+        =
+    {q0,q1,q2,q3}
+
+
+because:
+
+    q0 →ε q1
+    q1 →ε q2
+    q1 →ε q3
+
+
+============================================================
+34. ε-CLOSURE DOES NOT FOLLOW NORMAL INPUT TRANSITIONS
+============================================================
+
+Suppose:
+
+    q0 --a--> q1
+    q1 --ε--> q2
+
+Then:
+
+    ε-closure(q0)
+
+is:
+
+    {q0}
+
+NOT:
+
+    {q0,q1,q2}
+
+
+Why?
+
+Because ε-closure only follows:
+
+    ε-transitions
+
+It does not consume:
+
+    a
+
+
+============================================================
+35. MOVE OPERATION
+============================================================
+
+For an ε-NFA, we often use:
+
+    move(T,a)
+
+This means:
+
+    Set of states reachable from states in T
+    by consuming input symbol a.
+
+
+Then, in subset construction:
+
+    DFA transition
+    =
+    ε-closure(move(T,a))
+
+
+This formula is extremely important.
+
+
+============================================================
+36. NFA → DFA
+============================================================
+
+One of the most important concepts in this chapter is:
+
+    NFA → DFA conversion
+
+The standard technique is called:
+
+    SUBSET CONSTRUCTION
+
+or:
+
+    POWESET CONSTRUCTION
+
+
+Main idea:
+
+    Each DFA state represents a SET of NFA states.
+
+
+============================================================
+37. WHY SUBSET CONSTRUCTION?
+============================================================
+
+An NFA can be in several possible states after reading
+some input.
+
+A DFA must have exactly one current state.
+
+Therefore, we combine the set of possible NFA states into
+ONE DFA state.
+
+Example:
+
+    NFA possible states:
+
+        {q0,q1}
+
+This entire set becomes one DFA state:
+
+        [q0,q1]
+
+
+============================================================
+38. SUBSET CONSTRUCTION — BASIC IDEA
+============================================================
+
+Suppose NFA states are:
+
+    {q0,q1,q2}
+
+Possible DFA states are subsets such as:
+
+    {q0}
+    {q1}
+    {q2}
+    {q0,q1}
+    {q0,q2}
+    {q1,q2}
+    {q0,q1,q2}
+    ∅
+
+
+The total number of possible subsets is:
+
+    2^n
+
+where:
+
+    n = number of NFA states.
+
+
+============================================================
+39. MAXIMUM DFA STATES
+============================================================
+
+If an NFA has:
+
+    n states
+
+the equivalent DFA can have at most:
+
+    2^n states.
+
+
+Example:
+
+    NFA = 3 states
+
+Maximum DFA states:
+
+    2^3 = 8
+
+
+NFA = 4 states:
+
+    2^4 = 16
+
+
+NFA = 10 states:
+
+    2^10 = 1024
+
+
+IMPORTANT:
+
+    2^n is the maximum possible number,
+    not necessarily the actual number.
+
+
+============================================================
+40. SUBSET CONSTRUCTION WITH NO ε
+============================================================
+
+For an NFA without ε-transitions:
+
+1. Start with:
+
+       {q0}
+
+2. For each input symbol, calculate all possible next states.
+
+3. Each resulting set becomes a DFA state.
+
+4. Repeat until no new sets are generated.
+
+5. A DFA state is accepting if its set contains at least
+   one accepting NFA state.
+
+
+============================================================
+41. SIMPLE NFA → DFA EXAMPLE
+============================================================
+
+Consider an NFA:
+
+    States:
+
+        q0, q1
+
+    Alphabet:
+
+        {0,1}
+
+Transitions:
+
+    q0 --0--> {q0,q1}
+    q0 --1--> {q0}
+
+    q1 --0--> ∅
+    q1 --1--> ∅
+
+
+Suppose:
+
+    q1 = final state
+
+Start:
+
+    q0
+
+
+DFA start state:
+
+    {q0}
+
+
+============================================================
+42. FIRST DFA TRANSITION
+============================================================
+
+From:
+
+    {q0}
+
+on:
+
+    0
+
+NFA transition:
+
+    q0 --0--> {q0,q1}
+
+Therefore:
+
+    {q0} --0--> {q0,q1}
+
+
+Now:
+
+    {q0,q1}
+
+becomes a DFA state.
+
+
+============================================================
+43. NEXT DFA TRANSITION
+============================================================
+
+From:
+
+    {q0}
+
+on:
+
+    1
+
+we have:
+
+    q0 --1--> {q0}
+
+Therefore:
+
+    {q0} --1--> {q0}
+
+
+Now process:
+
+    {q0,q1}
+
+
+On 0:
+
+    q0 → {q0,q1}
+
+    q1 → ∅
+
+Union:
+
+    {q0,q1}
+
+Therefore:
+
+    {q0,q1} --0--> {q0,q1}
+
+
+On 1:
+
+    q0 → {q0}
+
+    q1 → ∅
+
+Therefore:
+
+    {q0,q1} --1--> {q0}
+
+
+============================================================
+44. FINAL DFA OF EXAMPLE
+============================================================
+
+DFA states:
+
+    A = {q0}
+    B = {q0,q1}
+
+Start:
+
+    A
+
+Final:
+
+    B
+
+Transitions:
+
+    A --0--> B
+    A --1--> A
+
+    B --0--> B
+    B --1--> A
+
+
+This DFA recognizes the same language as the original NFA.
+
+
+============================================================
+45. FINAL-STATE RULE IN SUBSET CONSTRUCTION
+============================================================
+
+Suppose NFA final states are:
+
+    F = {q2,q4}
+
+
+A DFA state:
+
+    {q0,q2}
+
+is final because it contains:
+
+    q2
+
+
+Similarly:
+
+    {q1,q3,q4}
+
+is final because it contains:
+
+    q4
+
+
+General rule:
+
+    DFA subset is accepting
+    if and only if
+    it contains at least one NFA accepting state.
+
+
+============================================================
+46. ε-NFA → DFA
+============================================================
+
+When ε-transitions exist, we use ε-closure.
+
+The main formula is:
+
+    DFA transition(T,a)
+      =
+    ε-closure(move(T,a))
+
+
+Starting DFA state:
+
+    ε-closure({q0})
+
+
+Then repeatedly calculate:
+
+    ε-closure(move(T,a))
+
+
+for each input symbol.
+
+
+============================================================
+47. ε-NFA CONVERSION PROCEDURE
+============================================================
+
+Steps:
+
+    STEP 1:
+        Find ε-closure(q0).
+
+    STEP 2:
+        Treat it as the initial DFA state.
+
+    STEP 3:
+        For each DFA state T and input symbol a:
+
+            move(T,a)
+
+        then:
+
+            ε-closure(move(T,a))
+
+    STEP 4:
+        Add the resulting set as a DFA state.
+
+    STEP 5:
+        Repeat until no new states appear.
+
+    STEP 6:
+        Mark any subset containing an NFA final state
+        as a DFA final state.
+
+
+============================================================
+48. DFA MINIMIZATION
+============================================================
+
+After constructing a DFA, it may contain unnecessary states.
+
+DFA minimization attempts to construct an equivalent DFA
+with the minimum possible number of states.
+
+Goals:
+
+    • Remove unreachable states
+    • Merge equivalent states
+    • Produce a smaller equivalent DFA
+
+
+Important:
+
+    Minimized DFA recognizes the SAME language.
+
+
+============================================================
+49. UNREACHABLE STATES
+============================================================
+
+A state is unreachable if no input string can take the
+automaton from the initial state to that state.
+
+Example:
+
+    q0 → q1
+
+but:
+
+    q2
+
+has no path from q0.
+
+Then:
+
+    q2
+
+is unreachable.
+
+It can be removed without changing the recognized language.
+
+
+============================================================
+50. EQUIVALENT STATES
+============================================================
+
+Two states are equivalent if no possible remaining input
+string can distinguish their acceptance behavior.
+
+Informally:
+
+    For every possible future input,
+    both states either accept or both reject.
+
+
+Equivalent states can be merged.
+
+
+============================================================
+51. DISTINGUISHABLE STATES
+============================================================
+
+Two states are distinguishable if there exists some string
+that causes one state to accept and the other to reject.
+
+Such states CANNOT be merged.
+
+
+Example concept:
+
+    From q1, input w → accepting
+
+    From q2, input w → rejecting
+
+Then:
+
+    q1 and q2 are distinguishable.
+
+
+============================================================
+52. PARTITION REFINEMENT IDEA
+============================================================
+
+A classical DFA minimization method starts with two groups:
+
+    P0:
+
+    {all final states}
+    {all non-final states}
+
+
+Then repeatedly split groups whenever states have different
+transitions into different groups.
+
+Continue until:
+
+    no more splitting is possible.
+
+
+The final groups correspond to equivalent states.
+
+
+============================================================
+53. TABLE-FILLING METHOD
+============================================================
+
+Another common DFA minimization method is the
+TABLE-FILLING METHOD.
+
+Basic procedure:
+
+    1. List pairs of states.
+
+    2. Mark pairs where one state is final and the other
+       is non-final.
+
+    3. For each unmarked pair, check transitions for every
+       input symbol.
+
+    4. If a transition leads to a marked pair, mark the
+       current pair.
+
+    5. Repeat until no new pairs can be marked.
+
+    6. Unmarked pairs are equivalent.
+
+
+============================================================
+54. IMPORTANT MINIMIZATION FACT
+============================================================
+
+If:
+
+    q1 and q2
+
+are equivalent, they can be merged.
+
+If:
+
+    q1 and q2
+
+are distinguishable, they cannot be merged.
+
+
+The resulting minimized DFA is language-equivalent to the
+original DFA.
+
+
+============================================================
+55. DFA MINIMIZATION EXAMPLE — CONCEPT
+============================================================
+
+Suppose:
+
+    Final states:
+
+        {q2,q3}
+
+    Non-final states:
+
+        {q0,q1,q4}
+
+
+Initial partition:
+
+    P0 = {
+        {q2,q3},
+        {q0,q1,q4}
+    }
+
+
+Now examine transitions.
+
+If q0 and q1 always transition to equivalent groups,
+they may remain together.
+
+If q4 transitions differently, it must be separated.
+
+
+Eventually:
+
+    Pfinal
+
+contains equivalence classes.
+
+Each class becomes one state of the minimized DFA.
+
+
+============================================================
+56. DFA vs MINIMIZED DFA
+============================================================
+
+Original DFA:
+
+    May contain unnecessary states.
+
+Minimized DFA:
+
+    No two distinct reachable states are equivalent.
+
+Both recognize:
+
+    SAME LANGUAGE.
+
+
+Therefore:
+
+    Minimization changes representation,
+    not the language.
+
+
+============================================================
+57. DFA vs NFA vs ε-NFA
+============================================================
+
++------------------+----------+----------+-------------+
+| Feature          | DFA      | NFA      | ε-NFA       |
++------------------+----------+----------+-------------+
+| One next state?  | Yes      | No       | No          |
+| Multiple states? | No       | Yes      | Yes         |
+| No transition?  | Not in   | Allowed  | Allowed     |
+|                  | complete |          |             |
+| ε-transition?   | No       | No       | Yes         |
+| Output of δ      | State    | Set      | Set         |
+| Recognizes       | Regular  | Regular  | Regular     |
+| languages        | langs    | langs    | langs       |
++------------------+----------+----------+-------------+
+
+
+============================================================
+58. IMPORTANT TRANSITION FUNCTIONS
+============================================================
+
+DFA:
+
+    δ : Q × Σ → Q
+
+
+NFA:
+
+    δ : Q × Σ → 2^Q
+
+
+ε-NFA:
+
+    δ : Q × (Σ ∪ {ε}) → 2^Q
+
+
+Remember:
+
+    DFA → one state
+
+    NFA → set of states
+
+    ε-NFA → set of states + ε input possibility
+
+
+============================================================
+59. POWER SET
+============================================================
+
+For a set:
+
+    Q
+
+the power set:
+
+    2^Q
+
+means:
+
+    the set of ALL subsets of Q.
+
+
+If:
+
+    Q = {q0,q1}
+
+then:
+
+    2^Q =
+    {
+        ∅,
+        {q0},
+        {q1},
+        {q0,q1}
+    }
+
+
+Number of subsets:
+
+    2^2 = 4
+
+
+For:
+
+    |Q| = n
+
+number of subsets:
+
+    2^n
+
+
+This is why subset construction can produce up to:
+
+    2^n
+
+DFA states.
+
+
+============================================================
+60. IMPORTANT GATE OBSERVATIONS
+============================================================
+
+1. DFA is a special case of NFA.
+
+2. DFA and NFA recognize exactly the regular languages.
+
+3. NFA can have fewer states than an equivalent DFA.
+
+4. Equivalent DFA may have up to 2^n states from an n-state
+   NFA.
+
+5. The actual number can be much smaller.
+
+6. ε-transitions consume no input.
+
+7. ε-closure always contains the original state.
+
+8. DFA has no ε-transition.
+
+9. NFA accepts if at least one path accepts.
+
+10. A DFA has exactly one computation path for each input.
+
+11. A DFA state created by subset construction is a SET
+    of NFA states.
+
+12. A subset is final if it contains at least one NFA
+    final state.
+
+13. Unreachable states can be removed during minimization.
+
+14. Equivalent states can be merged.
+
+15. Minimized DFA recognizes the same language.
+
+
+============================================================
+61. COMMON BEGINNER MISTAKES
+============================================================
+
+MISTAKE 1:
+
+    "NFA is more powerful than DFA."
+
+CORRECT:
+
+    They have the same expressive power.
+
+
+MISTAKE 2:
+
+    "NFA must have multiple transitions."
+
+CORRECT:
+
+    An NFA MAY have multiple possible transitions,
+    but it does not have to.
+
+
+MISTAKE 3:
+
+    "ε-transition consumes ε as an input character."
+
+CORRECT:
+
+    ε-transition consumes NO input symbol.
+
+
+MISTAKE 4:
+
+    "ε-closure excludes the starting state."
+
+CORRECT:
+
+    It always includes the starting state.
+
+
+MISTAKE 5:
+
+    "2^n is always the exact number of DFA states."
+
+CORRECT:
+
+    It is only the maximum possible number.
+
+
+MISTAKE 6:
+
+    "Every final state reached during scanning means accept."
+
+CORRECT:
+
+    The entire input must be consumed and the final state
+    must be accepting.
+
+
+============================================================
+62. GATE QUESTION 1
+============================================================
+
+An NFA has 4 states.
+
+What is the maximum number of states in an equivalent DFA?
+
+Answer:
+
+    2^4 = 16
+
+
+Important:
+
+    Maximum = 16
+
+Actual DFA may contain fewer.
+
+
+============================================================
+63. GATE QUESTION 2
+============================================================
+
+What is:
+
+    ε-closure(q0)
+
+if:
+
+    q0 --ε--> q1
+    q1 --ε--> q2
+
+Answer:
+
+    {q0,q1,q2}
+
+
+============================================================
+64. GATE QUESTION 3
+============================================================
+
+If:
+
+    R = a*
+
+which strings are accepted?
+
+    ε
+    a
+    aa
+    aaa
+    ...
+
+Answer:
+
+    All of them.
+
+
+============================================================
+65. GATE QUESTION 4
+============================================================
+
+Which transition function corresponds to a DFA?
+
+A.
+
+    δ : Q × Σ → Q
+
+B.
+
+    δ : Q × Σ → 2^Q
+
+C.
+
+    δ : Q × Σ → Σ
+
+D.
+
+    δ : Σ × Σ → Q
+
+
+Correct:
+
+    A
+
+
+============================================================
+66. GATE QUESTION 5
+============================================================
+
+An NFA has final state:
+
+    q2
+
+During subset construction, a DFA state is:
+
+    {q0,q1,q2}
+
+Is it accepting?
+
+Answer:
+
+    YES
+
+Because it contains the NFA final state q2.
+
+
+============================================================
+67. GATE QUESTION 6
+============================================================
+
+An NFA has 5 states.
+
+Maximum number of states in equivalent DFA:
+
+    2^5 = 32
+
+
+Again:
+
+    Maximum = 32
+
+not necessarily exactly 32.
+
+
+============================================================
+68. INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is a finite automaton?
+
+Answer:
+
+    A mathematical model with finitely many states used
+    to recognize patterns/languages.
+
+
+Q2. What is a DFA?
+
+Answer:
+
+    A finite automaton in which every state-input pair has
+    exactly one next state.
+
+
+Q3. What is an NFA?
+
+Answer:
+
+    A finite automaton in which a state-input pair can have
+    zero, one, or multiple possible next states.
+
+
+Q4. Can an NFA recognize a language that a DFA cannot?
+
+Answer:
+
+    No.
+
+    Both recognize exactly the regular languages.
+
+
+Q5. What is ε-transition?
+
+Answer:
+
+    A transition that consumes no input symbol.
+
+
+Q6. What is ε-closure?
+
+Answer:
+
+    The set of states reachable using zero or more
+    ε-transitions.
+
+
+Q7. What is subset construction?
+
+Answer:
+
+    A method for converting an NFA into an equivalent DFA.
+
+
+Q8. Why can DFA have up to 2^n states?
+
+Answer:
+
+    Because each DFA state can represent a subset of the
+    n NFA states.
+
+
+Q9. Why minimize a DFA?
+
+Answer:
+
+    To remove unreachable/redundant states and obtain an
+    equivalent smaller DFA.
+
+
+Q10. What is a dead state?
+
+Answer:
+
+    A non-accepting trap state from which acceptance cannot
+    be reached.
+
+
+============================================================
+69. COMPILER CONNECTION
+============================================================
+
+Why are finite automata important in Compiler Design?
+
+Because lexical analyzers recognize token patterns.
+
+Typical pipeline:
+
+    TOKEN SPECIFICATION
+           ↓
+    REGULAR EXPRESSION
+           ↓
+          NFA
+           ↓
+          DFA
+           ↓
+    DFA MINIMIZATION
+           ↓
+    LEXICAL ANALYZER
+
+
+Example:
+
+    Identifier pattern:
+
+        letter(letter|digit)*
+
+can be converted into an automaton.
+
+That automaton can recognize identifiers in source code.
+
+
+============================================================
+70. COMPLETE COMPILER EXAMPLE
+============================================================
+
+Source:
+
+    int count = 100;
+
+
+Step 1:
+
+    Regular expressions define token patterns.
+
+
+Step 2:
+
+    Automata recognize those patterns.
+
+
+Step 3:
+
+    Lexer scans:
+
+        int
+        count
+        =
+        100
+        ;
+
+
+Step 4:
+
+    Tokens are generated:
+
+        KEYWORD
+        IDENTIFIER
+        ASSIGNMENT
+        INTEGER
+
+
+Step 5:
+
+    Tokens go to syntax analysis.
+
+
+Therefore:
+
+    Regular Expressions
+            ↓
+    Finite Automata
+            ↓
+    Lexical Analyzer
+            ↓
+          Tokens
+            ↓
+         Parser
+
+
+============================================================
+71. CHAPTER 6 MASTER FORMULA SHEET
+============================================================
+
+Finite Automaton:
+
+    M = (Q, Σ, δ, q0, F)
+
+
+DFA:
+
+    δ : Q × Σ → Q
+
+
+NFA:
+
+    δ : Q × Σ → 2^Q
+
+
+ε-NFA:
+
+    δ : Q × (Σ ∪ {ε}) → 2^Q
+
+
+Maximum DFA states from n-state NFA:
+
+    2^n
+
+
+ε-closure:
+
+    Reachable states using zero or more ε-transitions.
+
+
+Subset construction:
+
+    DFA state = subset of NFA states.
+
+
+ε-NFA subset transition:
+
+    ε-closure(move(T,a))
+
+
+DFA final state:
+
+    A subset containing at least one NFA final state.
+
+
+============================================================
+72. MASTER COMPARISON
+============================================================
+
+                FINITE AUTOMATA
+                       |
+          +------------+------------+
+          |            |            |
+         DFA          NFA         ε-NFA
+          |            |            |
+      Deterministic  Non-        NFA +
+                     deterministic ε moves
+          |            |            |
+          +------------+------------+
+                       |
+                Regular Languages
+
+
+Conversion:
+
+    ε-NFA
+       ↓
+    NFA/DFA construction
+       ↓
+      DFA
+       ↓
+    Minimization
+       ↓
+    Minimal DFA
+
+
+============================================================
+73. CHAPTER 6 FINAL MEMORY MAP
+============================================================
+
+FINITE AUTOMATA
+       |
+       +---- DFA
+       |      |
+       |      +---- exactly one next state
+       |      +---- no ε
+       |
+       +---- NFA
+       |      |
+       |      +---- zero/one/many next states
+       |      +---- no ε in ordinary NFA
+       |
+       +---- ε-NFA
+              |
+              +---- NFA behavior
+              +---- ε transitions
+              +---- ε consumes no input
+
+
+NFA → DFA:
+
+    SUBSET CONSTRUCTION
+
+    One DFA state
+          =
+    Set of NFA states
+
+
+ε-NFA → DFA:
+
+    ε-closure(move(T,a))
+
+
+DFA MINIMIZATION:
+
+    Remove unreachable states
+           +
+    Merge equivalent states
+
+
+============================================================
+74. FINAL REVISION — 15 POINTS
+============================================================
+
+1. Finite automaton has a finite number of states.
+
+2. Formal representation:
+
+       M = (Q, Σ, δ, q0, F)
+
+3. DFA has exactly one next state for every state-symbol pair.
+
+4. NFA can have zero, one, or many next states.
+
+5. ε-NFA permits ε-transitions.
+
+6. ε-transition consumes no input.
+
+7. DFA has no ε-transitions.
+
+8. DFA and NFA have equal expressive power.
+
+9. Both recognize regular languages.
+
+10. ε-closure includes the starting state.
+
+11. Subset construction converts NFA to DFA.
+
+12. An n-state NFA can produce at most 2^n DFA states.
+
+13. A DFA subset is final if it contains an NFA final state.
+
+14. Equivalent states can be merged during minimization.
+
+15. Minimized DFA recognizes the same language.
+
+
+============================================================
+CHAPTER 6 COMPLETE
+============================================================
+
+NEXT CHAPTER:
+
+    CHAPTER 7 — REGULAR EXPRESSION ↔ AUTOMATA
+
+Topics:
+
+    • RE → NFA
+    • Thompson's construction
+    • RE → ε-NFA
+    • ε-closure
+    • NFA → DFA
+    • Subset construction
+    • DFA minimization
+    • DFA → Regular Expression
+    • State elimination
+    • Arden's theorem
+    • Automata-based lexical applications
+    • GATE-level conversion problems
+    • Exam shortcuts and common traps
+============================================================

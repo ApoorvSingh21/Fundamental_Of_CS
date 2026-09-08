@@ -1,0 +1,1747 @@
+Chapter 3 in your master syllabus is Language Processing System. It covers the complete toolchain around a compiler: preprocessor, compiler, assembler, linker, loader, libraries, object files, and executable files. 
+
+============================================================
+CHAPTER 3 — LANGUAGE PROCESSING SYSTEM
+============================================================
+
+OBJECTIVE
+------------------------------------------------------------
+
+Understand how a source program moves through the complete
+language-processing system:
+
+    Source Program
+         ↓
+    Preprocessor
+         ↓
+    Compiler
+         ↓
+    Assembler
+         ↓
+    Object File
+         ↓
+    Linker
+         ↓
+    Executable File
+         ↓
+    Loader
+         ↓
+    Memory
+         ↓
+    Execution
+
+
+Topics in this chapter:
+
+    • Preprocessor
+    • Compiler
+    • Assembler
+    • Linker
+    • Loader
+    • Libraries
+    • Object files
+    • Executable files
+
+
+============================================================
+3.1 WHAT IS A LANGUAGE PROCESSING SYSTEM?
+============================================================
+
+A language processing system is the collection of programs
+and tools that transform a programmer's source code into a
+form that can be loaded and executed by a computer.
+
+Basic pipeline:
+
+    SOURCE PROGRAM
+          ↓
+     PREPROCESSOR
+          ↓
+       COMPILER
+          ↓
+      ASSEMBLER
+          ↓
+      OBJECT FILE
+          ↓
+        LINKER
+          ↓
+      EXECUTABLE
+          ↓
+       LOADER
+          ↓
+        MEMORY
+          ↓
+      EXECUTION
+
+
+Important idea:
+
+    A compiler is an important component of the language
+    processing system, but it is not necessarily the only
+    component involved in producing an executable program.
+
+
+============================================================
+3.2 COMPLETE LANGUAGE PROCESSING PIPELINE
+============================================================
+
+Consider a high-level source program:
+
+    SOURCE CODE
+        |
+        ↓
+    ┌───────────────┐
+    │ PREPROCESSOR  │
+    └───────────────┘
+        |
+        ↓
+    Expanded / processed source
+        |
+        ↓
+    ┌───────────────┐
+    │    COMPILER   │
+    └───────────────┘
+        |
+        ↓
+    Assembly / lower-level output
+        |
+        ↓
+    ┌───────────────┐
+    │   ASSEMBLER   │
+    └───────────────┘
+        |
+        ↓
+    OBJECT FILE
+        |
+        ↓
+    ┌───────────────┐
+    │    LINKER     │
+    └───────────────┘
+        ↑
+        │
+    Libraries / Other
+    Object Files
+        |
+        ↓
+    EXECUTABLE FILE
+        |
+        ↓
+    ┌───────────────┐
+    │     LOADER    │
+    └───────────────┘
+        |
+        ↓
+    MAIN MEMORY
+        |
+        ↓
+    EXECUTION
+
+
+============================================================
+3.3 PREPROCESSOR
+============================================================
+
+A preprocessor performs source-level processing before the
+main compilation stage.
+
+It takes source code and produces processed source that is
+then supplied to the compiler.
+
+Basic flow:
+
+    Source Code
+         ↓
+    Preprocessor
+         ↓
+    Processed Source
+         ↓
+    Compiler
+
+
+Common preprocessing concepts include:
+
+    • Macro processing
+    • File inclusion
+    • Conditional compilation
+
+These concepts are especially associated with languages and
+toolchains that provide a preprocessing stage.
+
+
+============================================================
+3.4 MACRO PROCESSING
+============================================================
+
+A macro is a named replacement or source-level construct that
+can be expanded by a preprocessor.
+
+Conceptual example:
+
+    #define PI 3.14
+
+
+Source:
+
+    area = PI * r * r;
+
+
+After preprocessing, conceptually:
+
+    area = 3.14 * r * r;
+
+
+The compiler then receives the processed source.
+
+
+Flow:
+
+    Macro Definition
+          ↓
+    Preprocessor
+          ↓
+    Macro Expansion
+          ↓
+    Compiler
+
+
+Important:
+
+    Macro processing happens before the main compiler
+    translation stage in a preprocessing-based toolchain.
+
+
+============================================================
+3.5 FILE INCLUSION
+============================================================
+
+A preprocessor may process included source/header files.
+
+Example:
+
+    #include <stdio.h>
+
+
+Conceptually:
+
+    Main Source
+         +
+    Included Header
+         ↓
+    Preprocessor
+         ↓
+    Processed Source
+         ↓
+    Compiler
+
+
+Purpose:
+
+    • Reuse declarations
+    • Share definitions
+    • Organize source code
+
+
+The exact behavior depends on the language and toolchain.
+
+
+============================================================
+3.6 CONDITIONAL COMPILATION
+============================================================
+
+Conditional compilation allows portions of source code to be
+included or excluded based on preprocessing conditions.
+
+
+Conceptual example:
+
+    #ifdef DEBUG
+
+        debug_code();
+
+    #endif
+
+
+Depending on the defined preprocessing conditions:
+
+    DEBUG enabled
+        ↓
+    debug_code included
+
+
+    DEBUG not enabled
+        ↓
+    debug_code excluded
+
+
+Basic flow:
+
+    Source
+      ↓
+    Preprocessor
+      ↓
+    Selected Source
+      ↓
+    Compiler
+
+
+============================================================
+3.7 OUTPUT OF PREPROCESSOR
+============================================================
+
+The preprocessor produces processed source code.
+
+Conceptually:
+
+    Original Source
+          ↓
+    Preprocessing
+          ↓
+    Expanded / Processed Source
+          ↓
+    Compiler
+
+
+For example:
+
+    Original:
+
+        #define SIZE 10
+
+        int a[SIZE];
+
+
+After preprocessing, conceptually:
+
+        int a[10];
+
+
+The resulting source is then processed by the compiler.
+
+
+============================================================
+3.8 COMPILER
+============================================================
+
+The compiler is responsible for translating the processed
+high-level source program into a lower-level representation.
+
+Basic flow:
+
+    Processed Source
+          ↓
+       COMPILER
+          ↓
+    Assembly / Object /
+    Intermediate Target Form
+
+
+Internally, the compiler performs major activities such as:
+
+    • Lexical Analysis
+    • Syntax Analysis
+    • Semantic Analysis
+    • Intermediate Representation
+    • Optimization
+    • Code Generation
+
+
+Detailed structure was covered in:
+
+    Chapter 2 — Structure of a Compiler
+
+
+============================================================
+3.9 COMPILER INPUT AND OUTPUT
+============================================================
+
+INPUT:
+
+    Processed source program
+
+
+PROCESSING:
+
+    Lexical Analysis
+          ↓
+    Syntax Analysis
+          ↓
+    Semantic Analysis
+          ↓
+    Intermediate Representation
+          ↓
+    Optimization
+          ↓
+    Code Generation
+
+
+OUTPUT:
+
+    Target-oriented code or an object-oriented output
+    appropriate to the toolchain.
+
+
+Conceptually:
+
+    SOURCE
+      ↓
+    COMPILER
+      ↓
+    LOWER-LEVEL CODE
+
+
+============================================================
+3.10 ASSEMBLER
+============================================================
+
+An assembler translates assembly language into machine code
+or an object representation.
+
+
+Basic flow:
+
+    Assembly Language
+          ↓
+       ASSEMBLER
+          ↓
+    Object / Machine Code
+
+
+Example conceptual assembly:
+
+    MOV R1, R2
+    ADD R1, R3
+
+
+The assembler translates these assembly instructions into
+the corresponding target-machine representation.
+
+
+============================================================
+3.11 ASSEMBLER INPUT
+============================================================
+
+Typical input:
+
+    Assembly language program
+
+
+Example:
+
+    MOV R1, #10
+    ADD R1, R2
+
+
+The assembler processes:
+
+    • Instructions
+    • Symbols
+    • Addresses
+    • Directives
+
+
+and produces an object representation suitable for later
+linking and/or loading.
+
+
+============================================================
+3.12 ASSEMBLER OUTPUT
+============================================================
+
+Output:
+
+    OBJECT FILE
+
+
+Conceptually:
+
+    Assembly
+       ↓
+    Assembler
+       ↓
+    Object File
+
+
+An object file generally contains machine-code-related
+information plus metadata needed by later toolchain stages.
+
+
+============================================================
+3.13 OBJECT FILE
+============================================================
+
+An object file is an intermediate binary file produced by
+the assembler or compiler toolchain before final linking.
+
+
+Conceptual flow:
+
+    Source
+      ↓
+    Compiler / Assembler
+      ↓
+    Object File
+      ↓
+    Linker
+      ↓
+    Executable
+
+
+An object file can contain information such as:
+
+    • Machine code
+    • Data
+    • Symbol information
+    • Relocation information
+    • Section information
+    • Other metadata
+
+
+The exact format depends on the operating system and platform.
+
+
+Examples of object-file formats include:
+
+    • ELF
+    • COFF
+    • Mach-O
+
+
+============================================================
+3.14 WHY OBJECT FILES ARE USED
+============================================================
+
+Object files provide a useful intermediate form.
+
+For example, a large program may contain:
+
+    main.c
+    math.c
+    utility.c
+
+
+Each source file can be processed separately:
+
+    main.c
+       ↓
+    main.o
+
+    math.c
+       ↓
+    math.o
+
+    utility.c
+       ↓
+    utility.o
+
+
+Then:
+
+    main.o
+       +
+    math.o
+       +
+    utility.o
+       ↓
+    LINKER
+       ↓
+    EXECUTABLE
+
+
+Advantages:
+
+    • Separate compilation
+    • Modular development
+    • Reuse of compiled components
+    • Easier incremental rebuilding
+
+
+============================================================
+3.15 LINKER
+============================================================
+
+The linker combines object files and libraries to produce a
+linked executable or another final linked output.
+
+Basic flow:
+
+    Object File 1
+         +
+    Object File 2
+         +
+    Libraries
+         ↓
+       LINKER
+         ↓
+    Executable / Linked Output
+
+
+Important linker responsibilities include:
+
+    • Combining object files
+    • Resolving symbol references
+    • Performing relocation-related processing
+    • Connecting required library components
+
+
+============================================================
+3.16 SYMBOL RESOLUTION
+============================================================
+
+Suppose one source file calls a function defined in another
+source file.
+
+
+File 1:
+
+    main()
+    {
+        result = add(10, 20);
+    }
+
+
+File 2:
+
+    add(a, b)
+    {
+        return a + b;
+    }
+
+
+After separate compilation:
+
+    main.o
+    add.o
+
+
+The call to:
+
+    add()
+
+in one object file must be connected to the definition in
+another object file.
+
+The linker performs this type of symbol resolution.
+
+
+Conceptual flow:
+
+    main.o
+       |
+       | reference to add
+       ↓
+    LINKER
+       ↑
+       | definition of add
+       |
+    add.o
+
+
+Final:
+
+    EXECUTABLE
+
+
+============================================================
+3.17 RELOCATION
+============================================================
+
+Object code may contain addresses or address-dependent
+information that cannot be finalized until the linker knows
+where pieces of the program will be placed.
+
+Relocation adjusts such address-dependent references as
+required by the final layout.
+
+
+Conceptual:
+
+    Object Code
+         ↓
+    Linker determines layout
+         ↓
+    Relocation processing
+         ↓
+    Final linked output
+
+
+Important distinction:
+
+    Symbol Resolution
+        →
+    Determine which symbol/reference corresponds to which
+    definition.
+
+    Relocation
+        →
+    Adjust address-dependent information according to the
+    final placement/layout.
+
+
+============================================================
+3.18 LIBRARIES
+============================================================
+
+A library is a collection of reusable program components.
+
+Libraries can provide:
+
+    • Functions
+    • Classes
+    • Data structures
+    • Runtime support
+    • System interfaces
+    • Other reusable code
+
+
+Conceptual:
+
+    Application
+        +
+    Library
+        ↓
+    Link / Load
+        ↓
+    Executable
+
+
+Example concept:
+
+    printf()
+
+A program may use a library implementation of the function.
+
+
+============================================================
+3.19 STATIC LIBRARY
+============================================================
+
+A static library is linked into the program during the
+linking process.
+
+Conceptually:
+
+    Application Object
+          +
+    Static Library
+          ↓
+        Linker
+          ↓
+      Executable
+
+
+Relevant idea:
+
+    Required library code can become part of the linked
+    executable.
+
+
+Advantages:
+
+    • Self-contained executable can be easier to deploy
+    • Library version can be fixed at link time
+
+
+Potential disadvantage:
+
+    • Executable size may increase
+    • Updating the library may require relinking
+
+
+============================================================
+3.20 DYNAMIC / SHARED LIBRARY
+============================================================
+
+A dynamic/shared library is designed to be loaded or linked
+dynamically rather than completely incorporated into every
+executable at static link time.
+
+
+Conceptual:
+
+    Executable
+        +
+    Shared Library
+        ↓
+    Runtime Linking / Loading
+        ↓
+    Execution
+
+
+Advantages can include:
+
+    • Library code can be shared by multiple programs
+    • Smaller executable files
+    • Libraries can sometimes be updated independently
+
+
+Exact behavior depends on the operating system and runtime
+environment.
+
+
+============================================================
+3.21 STATIC vs DYNAMIC LIBRARIES
+============================================================
+
+STATIC:
+
+    Object Files
+         +
+    Static Library
+         ↓
+       Linker
+         ↓
+     Executable
+
+
+DYNAMIC:
+
+    Object Files
+         +
+    Dynamic/Shared Library
+         ↓
+       Link / Runtime
+         ↓
+     Executable + Shared Library
+
+
+Key conceptual difference:
+
+    Static:
+        Library code is incorporated into the linked program.
+
+    Dynamic:
+        Library code is maintained separately and can be
+        connected/loaded dynamically.
+
+
+============================================================
+3.22 EXECUTABLE FILE
+============================================================
+
+An executable file is a file containing the information
+required by the operating system/runtime environment to
+execute a program.
+
+Conceptual creation:
+
+    Object Files
+        +
+    Libraries
+        ↓
+      Linker
+        ↓
+    EXECUTABLE
+
+
+An executable may contain:
+
+    • Program code
+    • Data
+    • Symbol-related information as appropriate
+    • Relocation-related information as appropriate
+    • Dynamic-linking information as appropriate
+    • Metadata required by the execution environment
+
+
+The exact structure depends on the executable format.
+
+
+============================================================
+3.23 OBJECT FILE vs EXECUTABLE FILE
+============================================================
+
+OBJECT FILE:
+
+    Usually produced before final linking.
+
+    May contain:
+        • Machine code
+        • Symbols
+        • Relocation information
+        • Sections
+        • Unresolved references
+
+
+EXECUTABLE:
+
+    Final linked program representation intended to be
+    loaded/executed.
+
+    It generally has:
+        • Finalized linked structure
+        • Program code/data
+        • Required execution metadata
+
+
+Basic relationship:
+
+    Object File
+         ↓
+       Linker
+         ↓
+    Executable
+
+
+============================================================
+3.24 LOADER
+============================================================
+
+The loader is responsible for preparing an executable for
+execution in memory.
+
+
+Basic flow:
+
+    EXECUTABLE
+        ↓
+      LOADER
+        ↓
+      MEMORY
+        ↓
+     EXECUTION
+
+
+The loader works with the operating system/runtime to:
+
+    • Load program components into memory
+    • Prepare the process address space
+    • Perform required loading-related operations
+    • Transfer control to the program's entry point
+
+
+The exact loading mechanism depends on the operating system
+and executable format.
+
+
+============================================================
+3.25 PROGRAM LOADING
+============================================================
+
+Conceptual process:
+
+    Executable File
+          ↓
+    Operating System
+          ↓
+        Loader
+          ↓
+    Process Address Space
+          ↓
+       Execution
+
+
+A program's memory image may contain areas conceptually such
+as:
+
+    • Code/Text
+    • Static/Global data
+    • Heap
+    • Stack
+
+
+Runtime memory organization is studied in greater detail in:
+
+    PHASE 6 — RUNTIME ENVIRONMENT
+
+
+============================================================
+3.26 LOADER AND MEMORY
+============================================================
+
+Before execution, the executable must be mapped/prepared in
+the process's address space.
+
+
+Conceptual:
+
+                 MEMORY
+    ┌─────────────────────────────┐
+    │       CODE / TEXT           │
+    ├─────────────────────────────┤
+    │       STATIC / GLOBAL       │
+    ├─────────────────────────────┤
+    │            HEAP             │
+    │             ↓               │
+    │                             │
+    │             ↑               │
+    │           STACK             │
+    └─────────────────────────────┘
+
+
+This is a conceptual layout; exact memory organization varies
+by platform and operating system.
+
+
+============================================================
+3.27 COMPLETE C/C++-STYLE TOOLCHAIN EXAMPLE
+============================================================
+
+Suppose we have:
+
+    main.c
+    math.c
+
+
+------------------------------------------------------------
+STEP 1 — PREPROCESSING
+------------------------------------------------------------
+
+    main.c
+      ↓
+    Preprocessor
+      ↓
+    Processed main source
+
+
+    math.c
+      ↓
+    Preprocessor
+      ↓
+    Processed math source
+
+
+------------------------------------------------------------
+STEP 2 — COMPILATION
+------------------------------------------------------------
+
+    Processed main source
+          ↓
+       Compiler
+          ↓
+       Assembly / lower-level output
+
+
+    Processed math source
+          ↓
+       Compiler
+          ↓
+       Assembly / lower-level output
+
+
+------------------------------------------------------------
+STEP 3 — ASSEMBLY
+------------------------------------------------------------
+
+    main assembly
+        ↓
+    Assembler
+        ↓
+    main.o
+
+
+    math assembly
+        ↓
+    Assembler
+        ↓
+    math.o
+
+
+------------------------------------------------------------
+STEP 4 — LINKING
+------------------------------------------------------------
+
+    main.o
+       +
+    math.o
+       +
+    required libraries
+       ↓
+     Linker
+       ↓
+    Executable
+
+
+------------------------------------------------------------
+STEP 5 — LOADING
+------------------------------------------------------------
+
+    Executable
+        ↓
+      Loader
+        ↓
+      Memory
+        ↓
+     Execution
+
+
+COMPLETE:
+
+    main.c + math.c
+          ↓
+    PREPROCESSOR
+          ↓
+    Processed source
+          ↓
+    COMPILER
+          ↓
+    Assembly
+          ↓
+    ASSEMBLER
+          ↓
+    Object files
+          ↓
+    LINKER + LIBRARIES
+          ↓
+    EXECUTABLE
+          ↓
+    LOADER
+          ↓
+    MEMORY
+          ↓
+    EXECUTION
+
+
+============================================================
+3.28 MULTIPLE SOURCE FILES
+============================================================
+
+Large software projects are commonly divided into multiple
+source files.
+
+
+Example:
+
+    main.c
+    input.c
+    output.c
+    math.c
+    utility.c
+
+
+Processing:
+
+    main.c
+       ↓
+    main.o
+
+    input.c
+       ↓
+    input.o
+
+    output.c
+       ↓
+    output.o
+
+    math.c
+       ↓
+    math.o
+
+    utility.c
+       ↓
+    utility.o
+
+
+Then:
+
+    main.o
+       +
+    input.o
+       +
+    output.o
+       +
+    math.o
+       +
+    utility.o
+       +
+    libraries
+       ↓
+    LINKER
+       ↓
+    EXECUTABLE
+
+
+This enables modular development and separate compilation.
+
+
+============================================================
+3.29 STATIC LINKING FLOW
+============================================================
+
+    Source Files
+         ↓
+    Compiler / Assembler
+         ↓
+    Object Files
+         ↓
+    Static Libraries
+         ↓
+       LINKER
+         ↓
+    Executable
+         ↓
+      Loader
+         ↓
+      Memory
+         ↓
+     Execution
+
+
+============================================================
+3.30 DYNAMIC LINKING FLOW
+============================================================
+
+    Source Files
+         ↓
+    Compiler / Assembler
+         ↓
+    Object Files
+         ↓
+       LINKER
+         ↓
+    Executable
+         ↓
+    Runtime Dynamic Linking
+         +
+    Shared Libraries
+         ↓
+      Process
+         ↓
+      Execution
+
+
+============================================================
+3.31 COMPLETE LANGUAGE PROCESSING SYSTEM
+============================================================
+
+                        SOURCE PROGRAM
+                               |
+                               ↓
+                     ┌──────────────────┐
+                     │   PREPROCESSOR   │
+                     └──────────────────┘
+                               |
+                               ↓
+                       PROCESSED SOURCE
+                               |
+                               ↓
+                     ┌──────────────────┐
+                     │     COMPILER     │
+                     └──────────────────┘
+                               |
+                               ↓
+                         ASSEMBLY CODE
+                               |
+                               ↓
+                     ┌──────────────────┐
+                     │    ASSEMBLER     │
+                     └──────────────────┘
+                               |
+                               ↓
+                         OBJECT FILE
+                               |
+                               |
+              ┌────────────────┴────────────────┐
+              │                                 │
+              ↓                                 ↓
+        OTHER OBJECT FILES                  LIBRARIES
+              │                                 │
+              └────────────────┬────────────────┘
+                               ↓
+                     ┌──────────────────┐
+                     │      LINKER      │
+                     └──────────────────┘
+                               |
+                               ↓
+                       EXECUTABLE FILE
+                               |
+                               ↓
+                     ┌──────────────────┐
+                     │      LOADER      │
+                     └──────────────────┘
+                               |
+                               ↓
+                             MEMORY
+                               |
+                               ↓
+                           EXECUTION
+
+
+============================================================
+3.32 ROLE OF EACH COMPONENT
+============================================================
+
+PREPROCESSOR
+
+    Input:
+        Source code
+
+    Output:
+        Processed source
+
+    Main idea:
+        Source-level preprocessing
+
+
+COMPILER
+
+    Input:
+        Processed source
+
+    Output:
+        Lower-level/target-oriented code
+
+    Main idea:
+        Translation and analysis
+
+
+ASSEMBLER
+
+    Input:
+        Assembly language
+
+    Output:
+        Object code/object file
+
+    Main idea:
+        Assembly → object representation
+
+
+LINKER
+
+    Input:
+        Object files + libraries
+
+    Output:
+        Linked executable/linked output
+
+    Main idea:
+        Combine components and resolve references
+
+
+LOADER
+
+    Input:
+        Executable
+
+    Output:
+        Program prepared in memory for execution
+
+    Main idea:
+        Load program into execution environment
+
+
+LIBRARY
+
+    Contains:
+        Reusable program components
+
+
+OBJECT FILE
+
+    Contains:
+        Compiled/assembled program components and associated
+        metadata required for later processing.
+
+
+EXECUTABLE FILE
+
+    Contains:
+        Linked program representation intended for execution.
+
+
+============================================================
+3.33 IMPORTANT DIFFERENCES
+============================================================
+
+------------------------------------------------------------
+COMPILER vs PREPROCESSOR
+------------------------------------------------------------
+
+PREPROCESSOR:
+
+    Performs source-level preprocessing.
+
+COMPILER:
+
+    Performs language translation and analysis.
+
+
+------------------------------------------------------------
+COMPILER vs ASSEMBLER
+------------------------------------------------------------
+
+COMPILER:
+
+    High-level source
+          ↓
+    Lower-level output
+
+
+ASSEMBLER:
+
+    Assembly source
+          ↓
+    Object/machine representation
+
+
+------------------------------------------------------------
+ASSEMBLER vs LINKER
+------------------------------------------------------------
+
+ASSEMBLER:
+
+    Assembly → Object
+
+
+LINKER:
+
+    Object files + libraries → Linked output
+
+
+------------------------------------------------------------
+LINKER vs LOADER
+------------------------------------------------------------
+
+LINKER:
+
+    Combines and resolves program components before execution.
+
+
+LOADER:
+
+    Prepares the executable in memory for execution.
+
+
+------------------------------------------------------------
+OBJECT FILE vs EXECUTABLE
+------------------------------------------------------------
+
+OBJECT:
+
+    Usually an intermediate component before final linking.
+
+
+EXECUTABLE:
+
+    Linked representation intended for execution.
+
+
+============================================================
+3.34 COMMON CONFUSIONS
+============================================================
+
+CONFUSION 1:
+
+    "Compiler directly loads the program into memory."
+
+    NOT GENERALLY CORRECT.
+
+    Compiler performs translation.
+    Loading is handled by the loader/operating system
+    execution environment.
+
+
+CONFUSION 2:
+
+    "Assembler and compiler are the same."
+
+    NO.
+
+    Compiler:
+        High-level language → lower-level representation
+
+    Assembler:
+        Assembly language → object/machine representation
+
+
+CONFUSION 3:
+
+    "Linker executes the program."
+
+    NO.
+
+    Linker creates linked output.
+    Execution occurs after the program is loaded.
+
+
+CONFUSION 4:
+
+    "Object file is always the final executable."
+
+    NO.
+
+    Object files generally participate in linking before
+    producing the final executable.
+
+
+CONFUSION 5:
+
+    "Libraries are always copied completely into the
+     executable."
+
+    NO.
+
+    This depends on static vs dynamic/shared linking.
+
+
+============================================================
+3.35 GATE / COMPETITIVE EXAM FOCUS
+============================================================
+
+Remember this sequence:
+
+    SOURCE
+       ↓
+    PREPROCESSOR
+       ↓
+    COMPILER
+       ↓
+    ASSEMBLER
+       ↓
+    OBJECT FILE
+       ↓
+    LINKER
+       ↓
+    EXECUTABLE
+       ↓
+    LOADER
+       ↓
+    MEMORY
+       ↓
+    EXECUTION
+
+
+Important facts:
+
+    • Preprocessor operates before the compiler's main
+      translation stage in a preprocessing-based toolchain.
+
+    • Compiler translates/analyzes source code.
+
+    • Assembler translates assembly language.
+
+    • Object files are typically produced before final linking.
+
+    • Linker combines object files and libraries.
+
+    • Linker resolves symbols/references.
+
+    • Relocation deals with address-dependent information.
+
+    • Loader prepares an executable for execution in memory.
+
+    • Libraries provide reusable program components.
+
+    • Static and dynamic linking have different integration
+      models.
+
+
+============================================================
+3.36 INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is a language processing system?
+
+Answer concept:
+
+    A collection of tools that transform source code into a
+    form that can be loaded and executed.
+
+
+Q2. What does a preprocessor do?
+
+Answer concept:
+
+    It performs source-level preprocessing such as macro
+    expansion, file inclusion, and conditional compilation
+    where supported.
+
+
+Q3. What does a compiler do?
+
+Answer concept:
+
+    It analyzes and translates the source program into a
+    lower-level/target representation.
+
+
+Q4. What does an assembler do?
+
+Answer concept:
+
+    It converts assembly language into object/machine
+    representation.
+
+
+Q5. What does a linker do?
+
+Answer concept:
+
+    It combines object files and libraries and resolves
+    required symbol references.
+
+
+Q6. What is relocation?
+
+Answer concept:
+
+    It adjusts address-dependent information according to
+    the final placement/layout of program components.
+
+
+Q7. What does a loader do?
+
+Answer concept:
+
+    It prepares an executable in memory and supports transfer
+    to the program's execution environment.
+
+
+Q8. What is an object file?
+
+Answer concept:
+
+    A compiled/assembled program component containing code
+    and associated information used in later linking/loading.
+
+
+Q9. What is an executable file?
+
+Answer concept:
+
+    A linked program representation intended to be loaded and
+    executed.
+
+
+Q10. What is the difference between static and dynamic
+linking?
+
+Answer concept:
+
+    Static linking incorporates library code during linking,
+    while dynamic/shared libraries are maintained separately
+    and connected/loaded dynamically.
+
+
+============================================================
+3.37 MASTER REVISION TABLE
+============================================================
+
+COMPONENT       INPUT                  OUTPUT
+------------------------------------------------------------
+Preprocessor    Source code            Processed source
+Compiler        Processed source       Lower-level output
+Assembler       Assembly code          Object file
+Linker          Object + libraries     Linked executable
+Loader          Executable             Memory/process image
+Library         Reusable components    Used by linker/runtime
+
+
+============================================================
+3.38 ONE-LINE MEMORY TRICK
+============================================================
+
+    PRE → COMPILE → ASSEMBLE → LINK → LOAD
+
+
+Meaning:
+
+    PRE
+        → Preprocessor
+
+    COMPILE
+        → Compiler
+
+    ASSEMBLE
+        → Assembler
+
+    LINK
+        → Linker
+
+    LOAD
+        → Loader
+
+
+============================================================
+3.39 FINAL MASTER PIPELINE
+============================================================
+
+                         PROGRAMMER
+                              ↓
+                       SOURCE PROGRAM
+                              ↓
+                        PREPROCESSOR
+                              ↓
+                       PROCESSED SOURCE
+                              ↓
+                           COMPILER
+                              ↓
+                        LOWER-LEVEL CODE
+                              ↓
+                          ASSEMBLER
+                              ↓
+                         OBJECT FILE
+                              ↓
+                    ┌─────────┴─────────┐
+                    ↓                   ↓
+             OTHER OBJECTS          LIBRARIES
+                    └─────────┬─────────┘
+                              ↓
+                            LINKER
+                              ↓
+                        EXECUTABLE
+                              ↓
+                            LOADER
+                              ↓
+                            MEMORY
+                              ↓
+                          EXECUTION
+
+
+============================================================
+CHAPTER 3 — FINAL SUMMARY
+============================================================
+
+The language processing system connects all major tools:
+
+    Source Code
+        ↓
+    Preprocessor
+        ↓
+    Compiler
+        ↓
+    Assembler
+        ↓
+    Object File
+        ↓
+    Linker + Libraries
+        ↓
+    Executable
+        ↓
+    Loader
+        ↓
+    Memory
+        ↓
+    Execution
+
+
+CORE RESPONSIBILITIES:
+
+    Preprocessor
+        → Prepare/process source code
+
+    Compiler
+        → Analyze and translate source code
+
+    Assembler
+        → Convert assembly to object representation
+
+    Linker
+        → Combine components and resolve references
+
+    Loader
+        → Prepare executable for execution in memory
+
+    Libraries
+        → Provide reusable program components
+
+    Object Files
+        → Store compiled/assembled components
+
+    Executable Files
+        → Store linked program representation
+
+
+============================================================
+END OF CHAPTER 3
+============================================================

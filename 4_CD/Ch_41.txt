@@ -1,0 +1,2497 @@
+============================================================
+CHAPTER 41 — BUILD A MINI COMPILER
+============================================================
+
+LEVEL:
+Beginner → Intermediate → Advanced → Practical → Interview
+
+GOAL:
+Build a small compiler step-by-step and understand how all
+major compiler phases work together.
+
+IMPORTANT:
+This chapter is the PRACTICAL chapter of Compiler Design.
+
+Instead of studying every phase independently, we connect:
+
+    Source Program
+         ↓
+    Lexical Analysis
+         ↓
+    Syntax Analysis
+         ↓
+    AST
+         ↓
+    Symbol Table
+         ↓
+    Semantic Analysis
+         ↓
+    Intermediate Representation
+         ↓
+    Optimization
+         ↓
+    Code Generation
+         ↓
+    Target Code
+
+============================================================
+1. WHAT IS A MINI COMPILER?
+============================================================
+
+A mini compiler is a small compiler implementation designed
+to demonstrate the fundamental concepts of compiler design.
+
+It does not need to support a complete programming language.
+
+We can design a tiny language containing:
+
+    Variables
+    Integer values
+    Arithmetic expressions
+    Assignment
+    print statement
+    Basic control flow
+
+Example program:
+
+    x = 10;
+    y = 20;
+    z = x + y * 2;
+    print(z);
+
+Our mini compiler converts this source program into an
+intermediate or target representation.
+
+============================================================
+2. WHY BUILD A MINI COMPILER?
+============================================================
+
+Building a compiler helps you understand:
+
+    • How source code becomes machine/executable code
+    • How tokens are generated
+    • How grammars are used
+    • How ASTs represent programs
+    • How symbol tables work
+    • How type checking works
+    • How IR is generated
+    • How optimization works
+    • How target code is produced
+    • How errors are detected and recovered
+
+This connects almost the entire Compiler Design syllabus.
+
+============================================================
+3. MINI COMPILER ARCHITECTURE
+============================================================
+
+                SOURCE PROGRAM
+                       |
+                       v
+              +----------------+
+              | LEXICAL        |
+              | ANALYZER       |
+              +----------------+
+                       |
+                     TOKENS
+                       |
+                       v
+              +----------------+
+              | SYNTAX         |
+              | ANALYZER       |
+              +----------------+
+                       |
+                   PARSE TREE
+                       |
+                       v
+              +----------------+
+              | AST            |
+              | CONSTRUCTION   |
+              +----------------+
+                       |
+                       v
+              +----------------+
+              | SYMBOL TABLE   |
+              +----------------+
+                       |
+                       v
+              +----------------+
+              | SEMANTIC       |
+              | ANALYZER       |
+              +----------------+
+                       |
+                       v
+              +----------------+
+              | INTERMEDIATE   |
+              | REPRESENTATION |
+              +----------------+
+                       |
+                       v
+              +----------------+
+              | OPTIMIZER      |
+              +----------------+
+                       |
+                       v
+              +----------------+
+              | CODE GENERATOR |
+              +----------------+
+                       |
+                       v
+                 TARGET CODE
+
+ERROR HANDLING interacts with almost every phase.
+
+============================================================
+4. OUR MINI LANGUAGE
+============================================================
+
+Let us design a tiny language.
+
+We will call it:
+
+    MiniLang
+
+Example:
+
+    x = 10;
+    y = 20;
+    z = x + y * 2;
+    print(z);
+
+Supported features:
+
+    • Integer literals
+    • Variables
+    • Assignment
+    • +, -, *, /
+    • Parentheses
+    • print()
+
+============================================================
+5. MINI LANGUAGE SYNTAX
+============================================================
+
+Example:
+
+    x = 10 + 20;
+    y = x * 5;
+    print(y);
+
+We can define a simplified grammar.
+
+------------------------------------------------------------
+PROGRAM
+------------------------------------------------------------
+
+    program → statement_list
+
+------------------------------------------------------------
+STATEMENT LIST
+------------------------------------------------------------
+
+    statement_list
+        → statement statement_list
+        | ε
+
+------------------------------------------------------------
+STATEMENT
+------------------------------------------------------------
+
+    statement
+        → assignment
+        | print_statement
+
+------------------------------------------------------------
+ASSIGNMENT
+------------------------------------------------------------
+
+    assignment
+        → ID = expression ;
+
+------------------------------------------------------------
+PRINT
+------------------------------------------------------------
+
+    print_statement
+        → print ( expression ) ;
+
+------------------------------------------------------------
+EXPRESSION
+------------------------------------------------------------
+
+    expression
+        → expression + term
+        | expression - term
+        | term
+
+------------------------------------------------------------
+TERM
+------------------------------------------------------------
+
+    term
+        → term * factor
+        | term / factor
+        | factor
+
+------------------------------------------------------------
+FACTOR
+------------------------------------------------------------
+
+    factor
+        → NUMBER
+        | ID
+        | ( expression )
+
+============================================================
+6. WHY THE GRAMMAR HAS expression / term / factor
+============================================================
+
+Consider:
+
+    x + y * z
+
+Multiplication has higher precedence than addition.
+
+Therefore:
+
+    x + (y * z)
+
+not:
+
+    (x + y) * z
+
+The grammar structure:
+
+    expression
+        ↓
+      term
+        ↓
+     factor
+
+helps encode operator precedence.
+
+============================================================
+7. LEXICAL ANALYZER
+============================================================
+
+The lexical analyzer converts characters into tokens.
+
+Input:
+
+    x = 10 + y;
+
+Output:
+
+    ID(x)
+    ASSIGN
+    NUMBER(10)
+    PLUS
+    ID(y)
+    SEMICOLON
+
+------------------------------------------------------------
+8. TOKEN TYPES
+------------------------------------------------------------
+
+Our MiniLang lexer may recognize:
+
+    ID
+    NUMBER
+
+    PLUS       +
+    MINUS      -
+    MULTIPLY   *
+    DIVIDE     /
+    ASSIGN     =
+    LPAREN     (
+    RPAREN     )
+    SEMICOLON  ;
+
+Keywords:
+
+    print
+
+End of input:
+
+    EOF
+
+============================================================
+9. LEXER EXAMPLE
+============================================================
+
+Input:
+
+    x = 10 + 20;
+
+Tokens:
+
+    ID("x")
+    ASSIGN
+    NUMBER(10)
+    PLUS
+    NUMBER(20)
+    SEMICOLON
+    EOF
+
+Notice:
+
+    Characters
+        ↓
+    Tokens
+
+============================================================
+10. LEXER PSEUDOCODE
+============================================================
+
+    function nextToken():
+
+        skip whitespace
+
+        if current character is a letter:
+            read identifier
+            if identifier == "print":
+                return PRINT
+            else:
+                return ID
+
+        if current character is a digit:
+            read number
+            return NUMBER
+
+        if current character == '+':
+            return PLUS
+
+        if current character == '-':
+            return MINUS
+
+        if current character == '*':
+            return MULTIPLY
+
+        if current character == '/':
+            return DIVIDE
+
+        if current character == '=':
+            return ASSIGN
+
+        if current character == '(':
+            return LPAREN
+
+        if current character == ')':
+            return RPAREN
+
+        if current character == ';':
+            return SEMICOLON
+
+        otherwise:
+            report lexical error
+
+============================================================
+11. LEXICAL ERRORS
+============================================================
+
+Example:
+
+    x = 10 @ 20;
+
+If '@' is not supported:
+
+    Lexical Error:
+    Invalid character '@'
+
+Possible recovery:
+
+    Skip '@'
+
+Then continue scanning.
+
+============================================================
+12. PARSER
+============================================================
+
+The parser receives tokens.
+
+Input:
+
+    ID = NUMBER + NUMBER ;
+
+The parser checks whether the sequence follows the grammar.
+
+Example:
+
+    x = 10 + 20;
+
+is valid.
+
+But:
+
+    x = + 20;
+
+is invalid according to our grammar.
+
+============================================================
+13. PARSER RESPONSIBILITY
+============================================================
+
+The parser performs:
+
+    Token validation
+    Grammar checking
+    Structure construction
+    Syntax error detection
+
+Output:
+
+    Parse Tree
+    or
+    AST
+
+============================================================
+14. RECURSIVE-DESCENT PARSER
+============================================================
+
+For a small compiler, recursive descent is easy to understand.
+
+We can create functions:
+
+    parseProgram()
+    parseStatement()
+    parseAssignment()
+    parsePrint()
+    parseExpression()
+    parseTerm()
+    parseFactor()
+
+Each function corresponds approximately to a grammar
+construct.
+
+============================================================
+15. PARSER PSEUDOCODE
+============================================================
+
+    parseExpression():
+
+        node = parseTerm()
+
+        while current token is PLUS
+              or MINUS:
+
+            operator = current token
+            consume(operator)
+
+            right = parseTerm()
+
+            node = BinaryNode(
+                    operator,
+                    node,
+                    right
+                   )
+
+        return node
+
+------------------------------------------------------------
+
+    parseTerm():
+
+        node = parseFactor()
+
+        while current token is MULTIPLY
+              or DIVIDE:
+
+            operator = current token
+            consume(operator)
+
+            right = parseFactor()
+
+            node = BinaryNode(
+                    operator,
+                    node,
+                    right
+                   )
+
+        return node
+
+------------------------------------------------------------
+
+    parseFactor():
+
+        if token == NUMBER:
+            return NumberNode(value)
+
+        if token == ID:
+            return IdentifierNode(name)
+
+        if token == '(':
+            consume('(')
+            node = parseExpression()
+            consume(')')
+            return node
+
+        report syntax error
+
+============================================================
+16. AST — ABSTRACT SYNTAX TREE
+============================================================
+
+AST is a simplified tree representation of the program's
+meaningful structure.
+
+Example:
+
+    x = 10 + 20 * 2;
+
+AST:
+
+              =
+             / \
+            x   +
+               / \
+             10   *
+                 / \
+                20  2
+
+Notice:
+
+    20 * 2
+
+is deeper than:
+
+    +
+
+Therefore multiplication has higher precedence.
+
+============================================================
+17. WHY AST IS BETTER THAN A PARSE TREE
+============================================================
+
+A parse tree contains grammar details.
+
+An AST removes unnecessary syntax details.
+
+For example:
+
+    Parentheses
+    Some grammar helper nodes
+    Redundant nonterminals
+
+AST focuses on:
+
+    Meaningful program structure.
+
+Therefore compilers commonly use ASTs for later phases.
+
+============================================================
+18. AST NODE TYPES
+============================================================
+
+Possible node types:
+
+    NumberNode
+    IdentifierNode
+    BinaryExpressionNode
+    AssignmentNode
+    PrintNode
+    ProgramNode
+
+Example:
+
+    x = 10 + 20;
+
+becomes:
+
+    AssignmentNode
+        |
+        +-- IdentifierNode("x")
+        |
+        +-- BinaryExpressionNode("+")
+                |
+                +-- NumberNode(10)
+                |
+                +-- NumberNode(20)
+
+============================================================
+19. SYMBOL TABLE
+============================================================
+
+The symbol table stores information about identifiers.
+
+Example:
+
+    x = 10;
+    y = 20;
+
+Symbol table:
+
+    +------+--------+
+    | Name | Type   |
+    +------+--------+
+    | x    | int    |
+    | y    | int    |
+    +------+--------+
+
+It may also store:
+
+    Scope
+    Memory location
+    Size
+    Storage class
+    Declaration information
+
+============================================================
+20. SYMBOL TABLE OPERATIONS
+============================================================
+
+Main operations:
+
+    INSERT
+    LOOKUP
+    UPDATE
+    DELETE
+    SCOPE MANAGEMENT
+
+Example:
+
+    x = 10;
+
+If x is new:
+
+    INSERT(x)
+
+Later:
+
+    y = x + 5;
+
+Compiler performs:
+
+    LOOKUP(x)
+
+============================================================
+21. SEMANTIC ANALYSIS
+============================================================
+
+After parsing, the compiler checks meaning.
+
+Example:
+
+    x = 10;
+
+If x is undeclared and the language requires declaration:
+
+    Semantic Error:
+    variable 'x' is not declared
+
+Our MiniLang can either:
+
+    Automatically declare variables
+
+or require:
+
+    int x;
+
+The design choice depends on the language.
+
+============================================================
+22. TYPE CHECKING
+============================================================
+
+Suppose MiniLang supports:
+
+    int
+    bool
+
+Then:
+
+    x = 10;
+
+may be valid.
+
+But:
+
+    x = true;
+
+could be invalid if x is int.
+
+Semantic analyzer checks:
+
+    Type(left) == Type(right)
+
+according to the language's type rules.
+
+============================================================
+23. SEMANTIC CHECKS
+============================================================
+
+Our compiler can perform:
+
+    • Variable declaration checking
+    • Duplicate declaration checking
+    • Type checking
+    • Operator compatibility
+    • Assignment compatibility
+    • Function argument checking
+    • Return-type checking
+    • Scope checking
+
+For a tiny compiler, only a subset may be implemented.
+
+============================================================
+24. INTERMEDIATE REPRESENTATION
+============================================================
+
+IR is an intermediate form between source code and target
+machine code.
+
+Why use IR?
+
+    Source Language
+          ↓
+         IR
+          ↓
+    Target Machine
+
+Advantages:
+
+    • Easier optimization
+    • Easier code generation
+    • Separation of front end and back end
+    • Portability
+
+============================================================
+25. THREE-ADDRESS CODE
+============================================================
+
+For:
+
+    x = 10 + 20 * 2;
+
+TAC:
+
+    t1 = 20 * 2
+    t2 = 10 + t1
+    x = t2
+
+Each instruction typically has at most three operands.
+
+============================================================
+26. TAC FOR A MORE COMPLEX EXPRESSION
+============================================================
+
+Source:
+
+    z = a + b * c - d;
+
+TAC:
+
+    t1 = b * c
+    t2 = a + t1
+    t3 = t2 - d
+    z = t3
+
+============================================================
+27. QUADRUPLE REPRESENTATION
+============================================================
+
+TAC can be represented as quadruples.
+
+For:
+
+    t1 = b * c
+
+Quadruple:
+
+    +-----------+
+    | op   *    |
+    | arg1 b    |
+    | arg2 c    |
+    | result t1 |
+    +-----------+
+
+For:
+
+    z = t3
+
+Conceptually:
+
+    op      =
+    arg1    t3
+    arg2    -
+    result  z
+
+============================================================
+28. CONTROL FLOW
+============================================================
+
+Our first compiler can support simple statements.
+
+Later, we can support:
+
+    if
+    while
+    for
+
+Example:
+
+    if (x > 10)
+        print(x);
+
+IR may contain:
+
+    if x > 10 goto L1
+    goto L2
+
+L1:
+    print x
+
+L2:
+
+This introduces labels and control flow.
+
+============================================================
+29. BASIC BLOCKS
+============================================================
+
+A basic block is a sequence of instructions with:
+
+    One entry point
+    One exit point
+
+Example:
+
+    t1 = a + b
+    t2 = t1 * c
+    x = t2
+
+These can form a basic block.
+
+Multiple basic blocks can form a:
+
+    Control Flow Graph (CFG)
+
+============================================================
+30. OPTIMIZATION
+============================================================
+
+Optimization improves code while preserving program behavior.
+
+Example:
+
+    x = 10 + 20;
+
+Compiler can calculate:
+
+    10 + 20 = 30
+
+So:
+
+    x = 30;
+
+This is:
+
+    Constant folding
+
+============================================================
+31. CONSTANT FOLDING
+============================================================
+
+Input:
+
+    x = 10 + 20 * 2;
+
+Compiler evaluates:
+
+    20 * 2 = 40
+    10 + 40 = 50
+
+Optimized:
+
+    x = 50;
+
+This can happen before final code generation.
+
+============================================================
+32. CONSTANT PROPAGATION
+============================================================
+
+Example:
+
+    x = 10;
+    y = x + 5;
+
+Compiler may replace x with 10:
+
+    y = 10 + 5;
+
+Then constant folding gives:
+
+    y = 15;
+
+============================================================
+33. DEAD CODE ELIMINATION
+============================================================
+
+Example:
+
+    x = 10;
+    x = 20;
+    print(x);
+
+The first assignment:
+
+    x = 10;
+
+may be dead because its value is overwritten before use.
+
+Optimization can remove unnecessary computation where
+semantically safe.
+
+============================================================
+34. COMMON SUBEXPRESSION ELIMINATION
+============================================================
+
+Example:
+
+    a = b + c;
+    d = b + c;
+
+The expression:
+
+    b + c
+
+is computed twice.
+
+Compiler can reuse the first result when safe:
+
+    t1 = b + c
+    a = t1
+    d = t1
+
+============================================================
+35. CODE GENERATION
+============================================================
+
+Code generation converts IR into target instructions.
+
+Suppose TAC:
+
+    t1 = b * c
+    t2 = a + t1
+    x = t2
+
+A simplified register-based target could be:
+
+    LOAD R1, b
+    MUL  R1, c
+    LOAD R2, a
+    ADD  R2, R1
+    STORE x, R2
+
+Actual instructions depend on the target architecture.
+
+============================================================
+36. TARGET MACHINE
+============================================================
+
+Our mini compiler can target:
+
+    • A simple stack machine
+    • A virtual machine
+    • A simple register machine
+    • LLVM IR
+    • JVM bytecode
+    • A real CPU architecture
+
+For learning, a simple virtual machine is often easier.
+
+============================================================
+37. STACK-MACHINE TARGET
+============================================================
+
+For:
+
+    x = 10 + 20;
+
+Stack instructions could conceptually be:
+
+    PUSH 10
+    PUSH 20
+    ADD
+    STORE x
+
+Execution:
+
+    PUSH 10
+        Stack: [10]
+
+    PUSH 20
+        Stack: [10,20]
+
+    ADD
+        Stack: [30]
+
+    STORE x
+        x = 30
+
+============================================================
+38. MINI VIRTUAL MACHINE
+============================================================
+
+A simple VM may have:
+
+    Stack
+    Program Counter
+    Memory
+    Instructions
+
+Example instruction set:
+
+    PUSH value
+    LOAD variable
+    STORE variable
+    ADD
+    SUB
+    MUL
+    DIV
+    PRINT
+    HALT
+
+============================================================
+39. EXECUTION EXAMPLE
+============================================================
+
+Source:
+
+    x = 10;
+    y = 20;
+    z = x + y;
+    print(z);
+
+Possible VM code:
+
+    PUSH 10
+    STORE x
+
+    PUSH 20
+    STORE y
+
+    LOAD x
+    LOAD y
+    ADD
+    STORE z
+
+    LOAD z
+    PRINT
+
+    HALT
+
+Output:
+
+    30
+
+============================================================
+40. COMPLETE MINI COMPILER PIPELINE
+============================================================
+
+SOURCE:
+
+    x = 10 + 20;
+
+        ↓
+
+LEXER:
+
+    ID(x)
+    ASSIGN
+    NUMBER(10)
+    PLUS
+    NUMBER(20)
+    SEMICOLON
+
+        ↓
+
+PARSER:
+
+    Assignment
+       |
+       +--- x
+       |
+       +--- 10 + 20
+
+        ↓
+
+AST:
+
+        =
+       / \
+      x   +
+         / \
+       10  20
+
+        ↓
+
+SEMANTIC ANALYSIS:
+
+    x → valid
+    10 → int
+    20 → int
+    10 + 20 → int
+
+        ↓
+
+TAC:
+
+    t1 = 10 + 20
+    x = t1
+
+        ↓
+
+OPTIMIZATION:
+
+    x = 30
+
+        ↓
+
+TARGET CODE:
+
+    PUSH 30
+    STORE x
+
+============================================================
+41. ERROR HANDLING IN OUR MINI COMPILER
+============================================================
+
+We should implement errors at different levels.
+
+LEXER:
+
+    Invalid character
+
+PARSER:
+
+    Unexpected token
+    Missing ';'
+    Missing ')'
+
+SEMANTIC ANALYZER:
+
+    Undeclared variable
+    Type mismatch
+
+CODE GENERATOR:
+
+    Internal compiler error
+    Unsupported construct
+
+============================================================
+42. LEXICAL ERROR EXAMPLE
+============================================================
+
+Input:
+
+    x = 10 @ 20;
+
+Error:
+
+    lexical error:
+    unexpected character '@'
+
+Recovery:
+
+    Skip '@'
+
+Continue:
+
+    20;
+
+============================================================
+43. SYNTAX ERROR EXAMPLE
+============================================================
+
+Input:
+
+    x = 10 + ;
+
+Parser sees:
+
+    +
+
+and expects:
+
+    NUMBER
+    ID
+    (
+
+It reports:
+
+    syntax error:
+    expected expression after '+'
+
+============================================================
+44. SEMANTIC ERROR EXAMPLE
+============================================================
+
+Suppose:
+
+    x = 10;
+    y = z + 5;
+
+If z is undeclared:
+
+    semantic error:
+    undeclared identifier 'z'
+
+============================================================
+45. ERROR RECOVERY
+============================================================
+
+Our parser can synchronize at:
+
+    ;
+
+For example:
+
+    x = 10 + ;
+    y = 20;
+
+After detecting the first error, the parser can skip until:
+
+    ;
+
+Then continue:
+
+    y = 20;
+
+This is panic-mode recovery.
+
+============================================================
+46. PROJECT STRUCTURE
+============================================================
+
+A simple compiler project can be organized as:
+
+    minilang/
+    |
+    +-- lexer/
+    |     +-- lexer
+    |     +-- token
+    |
+    +-- parser/
+    |     +-- parser
+    |
+    +-- ast/
+    |     +-- nodes
+    |
+    +-- semantic/
+    |     +-- analyzer
+    |
+    +-- symboltable/
+    |     +-- symbol_table
+    |
+    +-- ir/
+    |     +-- tac
+    |
+    +-- optimizer/
+    |     +-- optimizer
+    |
+    +-- codegen/
+    |     +-- code_generator
+    |
+    +-- vm/
+    |     +-- virtual_machine
+    |
+    +-- errors/
+    |     +-- diagnostics
+    |
+    +-- tests/
+    |
+    +-- main
+
+============================================================
+47. COMPILER DRIVER
+============================================================
+
+The main compiler driver coordinates all phases.
+
+Conceptual pseudocode:
+
+    source = readFile()
+
+    tokens = lexer(source)
+
+    ast = parser(tokens)
+
+    symbols = buildSymbolTable(ast)
+
+    semanticCheck(ast, symbols)
+
+    ir = generateIR(ast)
+
+    optimizedIR = optimize(ir)
+
+    target = generateCode(optimizedIR)
+
+    writeOutput(target)
+
+Pipeline:
+
+    Source
+      ↓
+    Lexer
+      ↓
+    Parser
+      ↓
+    AST
+      ↓
+    Semantic Analysis
+      ↓
+    IR
+      ↓
+    Optimization
+      ↓
+    Code Generation
+      ↓
+    Target
+
+============================================================
+48. BUILDING THE COMPILER STEP-BY-STEP
+============================================================
+
+Recommended implementation order:
+
+    STEP 1
+    Design language
+
+    STEP 2
+    Define tokens
+
+    STEP 3
+    Build lexer
+
+    STEP 4
+    Define grammar
+
+    STEP 5
+    Build parser
+
+    STEP 6
+    Build AST
+
+    STEP 7
+    Build symbol table
+
+    STEP 8
+    Add semantic analysis
+
+    STEP 9
+    Generate TAC
+
+    STEP 10
+    Add optimization
+
+    STEP 11
+    Generate target code
+
+    STEP 12
+    Build virtual machine
+
+    STEP 13
+    Add error handling
+
+    STEP 14
+    Test entire pipeline
+
+============================================================
+49. TESTING THE LEXER
+============================================================
+
+Test:
+
+    x = 10;
+
+Expected:
+
+    ID
+    ASSIGN
+    NUMBER
+    SEMICOLON
+
+Test:
+
+    x + y * 10;
+
+Expected:
+
+    ID
+    PLUS
+    ID
+    MULTIPLY
+    NUMBER
+    SEMICOLON
+
+Test:
+
+    x @ 10;
+
+Expected:
+
+    lexical error
+
+============================================================
+50. TESTING THE PARSER
+============================================================
+
+VALID:
+
+    x = 10;
+
+    x = 10 + 20;
+
+    x = (10 + 20) * 3;
+
+INVALID:
+
+    x = ;
+
+    x = 10 +
+
+    x = (10 + 20;
+
+The parser should produce useful diagnostics.
+
+============================================================
+51. TESTING SEMANTIC ANALYSIS
+============================================================
+
+Test:
+
+    x = y + 10;
+
+If y is undeclared:
+
+    semantic error
+
+Test:
+
+    int x;
+    x = "hello";
+
+If strings are supported:
+
+    type mismatch
+
+============================================================
+52. TESTING OPTIMIZATION
+============================================================
+
+Input:
+
+    x = 10 + 20;
+
+Before:
+
+    t1 = 10 + 20
+    x = t1
+
+After:
+
+    x = 30
+
+Test whether:
+
+    Program output remains unchanged.
+
+IMPORTANT:
+
+Optimization must preserve program semantics.
+
+============================================================
+53. END-TO-END TEST
+============================================================
+
+Source:
+
+    x = 10;
+    y = 20;
+    z = x + y * 2;
+    print(z);
+
+Expected calculation:
+
+    y * 2
+      =
+    20 * 2
+      =
+    40
+
+Then:
+
+    x + 40
+      =
+    50
+
+Output:
+
+    50
+
+Pipeline:
+
+    SOURCE
+      ↓
+    TOKENS
+      ↓
+    AST
+      ↓
+    SEMANTIC CHECK
+      ↓
+    TAC
+      ↓
+    OPTIMIZATION
+      ↓
+    TARGET CODE
+      ↓
+    EXECUTION
+      ↓
+    50
+
+============================================================
+54. DEBUGGING A COMPILER
+============================================================
+
+Compiler debugging should inspect every phase.
+
+If output is wrong:
+
+    Check lexer
+       ↓
+    Check tokens
+       ↓
+    Check parser
+       ↓
+    Check AST
+       ↓
+    Check symbol table
+       ↓
+    Check semantic analysis
+       ↓
+    Check IR
+       ↓
+    Check optimization
+       ↓
+    Check generated code
+       ↓
+    Check VM/runtime
+
+This is called:
+
+    Phase-by-phase debugging.
+
+============================================================
+55. COMPILER TESTING STRATEGY
+============================================================
+
+Use:
+
+    1. Unit tests
+    2. Integration tests
+    3. End-to-end tests
+    4. Error tests
+    5. Regression tests
+
+------------------------------------------------------------
+UNIT TEST
+------------------------------------------------------------
+
+Test one component:
+
+    Lexer
+
+------------------------------------------------------------
+INTEGRATION TEST
+------------------------------------------------------------
+
+Test:
+
+    Lexer + Parser
+
+------------------------------------------------------------
+END-TO-END TEST
+------------------------------------------------------------
+
+Test:
+
+    Source → Execution
+
+------------------------------------------------------------
+ERROR TEST
+------------------------------------------------------------
+
+Test invalid programs.
+
+------------------------------------------------------------
+REGRESSION TEST
+------------------------------------------------------------
+
+After fixing a bug, preserve a test to ensure it does not
+return.
+
+============================================================
+56. COMMON MINI COMPILER MISTAKES
+============================================================
+
+Mistake 1:
+
+Trying to implement the complete C/C++ language.
+
+Better:
+
+    Start with a tiny language.
+
+------------------------------------------------------------
+
+Mistake 2:
+
+Writing code before defining grammar.
+
+Better:
+
+    Define tokens + grammar first.
+
+------------------------------------------------------------
+
+Mistake 3:
+
+Skipping AST design.
+
+Better:
+
+    Design clear AST node types.
+
+------------------------------------------------------------
+
+Mistake 4:
+
+Mixing parsing and code generation.
+
+Better:
+
+    Keep phases separate.
+
+------------------------------------------------------------
+
+Mistake 5:
+
+Ignoring error handling.
+
+Better:
+
+    Add diagnostics from the beginning.
+
+------------------------------------------------------------
+
+Mistake 6:
+
+Optimizing before correctness.
+
+Better:
+
+    First make compiler correct.
+    Then optimize.
+
+============================================================
+57. FRONT END, MIDDLE END, BACK END
+============================================================
+
+Our compiler can be divided into:
+
+FRONT END:
+
+    Lexer
+    Parser
+    AST
+    Semantic Analysis
+    Symbol Table
+
+MIDDLE END:
+
+    IR
+    Optimization
+
+BACK END:
+
+    Code Generation
+    Register Allocation
+    Target-specific optimization
+
+Architecture:
+
+    SOURCE
+       |
+       v
+    FRONT END
+       |
+       v
+      IR
+       |
+       v
+    MIDDLE END
+       |
+       v
+    OPTIMIZED IR
+       |
+       v
+    BACK END
+       |
+       v
+    TARGET CODE
+
+============================================================
+58. WHY IR IS POWERFUL
+============================================================
+
+Suppose we support:
+
+    Source Language A
+    Source Language B
+
+and:
+
+    CPU 1
+    CPU 2
+    CPU 3
+
+Without IR, we may need many direct translators.
+
+With IR:
+
+    Language A ──→ IR ──→ CPU 1
+                 └──────→ CPU 2
+                 └──────→ CPU 3
+
+    Language B ──→ IR ──→ CPU 1
+                 └──────→ CPU 2
+                 └──────→ CPU 3
+
+IR reduces coupling between front ends and back ends.
+
+============================================================
+59. MINI COMPILER DATA FLOW
+============================================================
+
+SOURCE CODE
+    ↓
+Characters
+    ↓
+TOKENS
+    ↓
+Parse Structure
+    ↓
+AST
+    ↓
+Symbols + Types
+    ↓
+IR
+    ↓
+Optimized IR
+    ↓
+Target Instructions
+    ↓
+Executable / VM
+    ↓
+Output
+
+============================================================
+60. INTERVIEW QUESTION:
+WHY BUILD A MINI COMPILER?
+============================================================
+
+Strong answer:
+
+"A mini compiler demonstrates the complete compilation
+pipeline. It shows how source code is transformed into tokens,
+parsed into an AST, semantically checked using symbol tables
+and type information, translated into an intermediate
+representation, optimized, and finally converted into target
+code."
+
+============================================================
+61. INTERVIEW QUESTION:
+WHAT ARE THE MAIN COMPONENTS?
+============================================================
+
+Answer:
+
+    Lexical analyzer
+    Parser
+    AST
+    Symbol table
+    Semantic analyzer
+    IR generator
+    Optimizer
+    Code generator
+    Error handling
+
+============================================================
+62. INTERVIEW QUESTION:
+WHY USE AN AST?
+============================================================
+
+Answer:
+
+An AST provides a compact representation of the meaningful
+syntactic structure of a program and removes unnecessary
+grammar details, making later semantic analysis and code
+generation easier.
+
+============================================================
+63. INTERVIEW QUESTION:
+WHY USE IR?
+============================================================
+
+Answer:
+
+IR separates the source-language front end from the
+target-machine back end and provides a convenient form for
+optimization.
+
+============================================================
+64. INTERVIEW QUESTION:
+WHERE DOES THE SYMBOL TABLE FIT?
+============================================================
+
+The symbol table is used across compiler phases, especially:
+
+    Lexical Analysis
+    Syntax/Semantic Analysis
+    Code Generation
+
+It stores information about identifiers.
+
+============================================================
+65. GATE TRAPS
+============================================================
+
+TRAP 1:
+
+"AST and parse tree are exactly the same."
+
+FALSE.
+
+AST is generally a simplified representation.
+
+------------------------------------------------------------
+
+TRAP 2:
+
+"Optimization can change program semantics."
+
+FALSE.
+
+Correct optimization preserves required observable behavior.
+
+------------------------------------------------------------
+
+TRAP 3:
+
+"IR is generated before parsing."
+
+FALSE.
+
+Normally the source must first be analyzed sufficiently to
+construct a meaningful IR.
+
+------------------------------------------------------------
+
+TRAP 4:
+
+"Symbol table is used only during lexical analysis."
+
+FALSE.
+
+It is used across multiple compiler phases.
+
+------------------------------------------------------------
+
+TRAP 5:
+
+"Code generation should always happen before optimization."
+
+Not generally.
+
+A common pipeline is:
+
+    IR
+      ↓
+    Optimization
+      ↓
+    Code Generation
+
+------------------------------------------------------------
+
+TRAP 6:
+
+"Semantic analysis checks only syntax."
+
+FALSE.
+
+Syntax is handled primarily by parsing.
+
+Semantic analysis checks meaning-related constraints.
+
+============================================================
+66. GATE-STYLE QUESTIONS
+============================================================
+
+Q1.
+Which representation is generally more compact and abstract
+than a parse tree?
+
+A. AST
+B. Token stream
+C. Source code
+D. Character stream
+
+ANSWER:
+
+    A
+
+------------------------------------------------------------
+
+Q2.
+Which phase typically converts AST/program structure into
+three-address code?
+
+A. Lexical analysis
+B. IR generation
+C. Linking
+D. Loading
+
+ANSWER:
+
+    B
+
+------------------------------------------------------------
+
+Q3.
+Which structure stores information about identifiers?
+
+A. Parse table
+B. Symbol table
+C. Stack
+D. Register file
+
+ANSWER:
+
+    B
+
+------------------------------------------------------------
+
+Q4.
+Which optimization evaluates constant expressions at compile
+time?
+
+A. Constant folding
+B. Register allocation
+C. Lexical buffering
+D. Parsing
+
+ANSWER:
+
+    A
+
+------------------------------------------------------------
+
+Q5.
+What is the main purpose of IR?
+
+A. Store source comments
+B. Separate front end and back end
+C. Replace lexical analysis
+D. Execute source directly
+
+ANSWER:
+
+    B
+
+============================================================
+67. PROJECT LEVELS
+============================================================
+
+LEVEL 1 — BASIC
+
+Support:
+
+    Numbers
+    + - * /
+    Variables
+    Assignment
+
+Example:
+
+    x = 10 + 20;
+
+------------------------------------------------------------
+
+LEVEL 2 — INTERMEDIATE
+
+Add:
+
+    print
+    Parentheses
+    Comparisons
+    if
+    while
+
+------------------------------------------------------------
+
+LEVEL 3 — ADVANCED
+
+Add:
+
+    Functions
+    Local variables
+    Return
+    Scope
+    Type checking
+
+------------------------------------------------------------
+
+LEVEL 4 — COMPILER ENGINEERING
+
+Add:
+
+    IR
+    CFG
+    SSA
+    Optimization
+    Register allocation
+    Real target code
+
+============================================================
+68. RECOMMENDED MINI COMPILER PROJECT
+============================================================
+
+PROJECT:
+
+    "MiniLang Compiler"
+
+FEATURES:
+
+    ✓ Variables
+    ✓ Integers
+    ✓ Arithmetic
+    ✓ Assignment
+    ✓ print
+    ✓ if
+    ✓ while
+    ✓ Symbol table
+    ✓ Type checking
+    ✓ AST
+    ✓ TAC
+    ✓ Basic optimization
+    ✓ Error handling
+    ✓ Virtual machine
+
+============================================================
+69. COMPLETE MINI COMPILER ROADMAP
+============================================================
+
+PHASE 1:
+
+    Language Design
+
+        ↓
+
+PHASE 2:
+
+    Lexer
+
+        ↓
+
+PHASE 3:
+
+    Parser
+
+        ↓
+
+PHASE 4:
+
+    AST
+
+        ↓
+
+PHASE 5:
+
+    Symbol Table
+
+        ↓
+
+PHASE 6:
+
+    Semantic Analyzer
+
+        ↓
+
+PHASE 7:
+
+    TAC Generator
+
+        ↓
+
+PHASE 8:
+
+    Optimizer
+
+        ↓
+
+PHASE 9:
+
+    Code Generator
+
+        ↓
+
+PHASE 10:
+
+    Virtual Machine
+
+        ↓
+
+PHASE 11:
+
+    Error Recovery
+
+        ↓
+
+PHASE 12:
+
+    Testing
+
+============================================================
+70. WHAT YOU SHOULD IMPLEMENT FIRST
+============================================================
+
+Do NOT begin with:
+
+    Functions
+    Pointers
+    Classes
+    Garbage collection
+    Register allocation
+    JIT
+
+Start with:
+
+    NUMBER
+    ID
+    +
+    -
+    *
+    /
+    =
+    ;
+    print
+
+Then gradually extend the language.
+
+============================================================
+71. COMPLETE EXAMPLE
+============================================================
+
+SOURCE:
+
+    x = 5;
+    y = 10;
+    z = x + y * 2;
+    print(z);
+
+------------------------------------------------------------
+TOKENS
+------------------------------------------------------------
+
+    ID(x)
+    ASSIGN
+    NUMBER(5)
+    SEMICOLON
+
+    ID(y)
+    ASSIGN
+    NUMBER(10)
+    SEMICOLON
+
+    ID(z)
+    ASSIGN
+    ID(x)
+    PLUS
+    ID(y)
+    MULTIPLY
+    NUMBER(2)
+    SEMICOLON
+
+    PRINT
+    LPAREN
+    ID(z)
+    RPAREN
+    SEMICOLON
+
+------------------------------------------------------------
+AST
+------------------------------------------------------------
+
+    Program
+      |
+      +-- Assignment(x, 5)
+      |
+      +-- Assignment(y, 10)
+      |
+      +-- Assignment
+      |     |
+      |     +-- z
+      |     |
+      |     +-- +
+      |        / \
+      |       x   *
+      |          / \
+      |         y   2
+      |
+      +-- Print(z)
+
+------------------------------------------------------------
+TAC
+------------------------------------------------------------
+
+    x = 5
+    y = 10
+    t1 = y * 2
+    t2 = x + t1
+    z = t2
+    print z
+
+------------------------------------------------------------
+EXECUTION
+------------------------------------------------------------
+
+    y * 2 = 20
+
+    x + 20 = 25
+
+    z = 25
+
+Output:
+
+    25
+
+============================================================
+72. BIG PICTURE — ENTIRE COMPILER
+============================================================
+
+              +------------------+
+              |   SOURCE CODE    |
+              +------------------+
+                       |
+                       v
+              +------------------+
+              |      LEXER       |
+              +------------------+
+                       |
+                     TOKENS
+                       |
+                       v
+              +------------------+
+              |      PARSER      |
+              +------------------+
+                       |
+                    PARSE TREE
+                       |
+                       v
+              +------------------+
+              |       AST        |
+              +------------------+
+                       |
+                       v
+              +------------------+
+              | SYMBOL TABLE     |
+              +------------------+
+                       |
+                       v
+              +------------------+
+              | SEMANTIC         |
+              | ANALYSIS         |
+              +------------------+
+                       |
+                       v
+              +------------------+
+              |       IR         |
+              +------------------+
+                       |
+                       v
+              +------------------+
+              |   OPTIMIZATION   |
+              +------------------+
+                       |
+                       v
+              +------------------+
+              | CODE GENERATION  |
+              +------------------+
+                       |
+                       v
+              +------------------+
+              |  TARGET / VM     |
+              +------------------+
+                       |
+                       v
+                    OUTPUT
+
+       ERROR HANDLING + DIAGNOSTICS
+                  ↕
+       Multiple compiler phases
+
+============================================================
+73. CHAPTER 41 — GATE REVISION
+============================================================
+
+Remember this sequence:
+
+    SOURCE
+      ↓
+    LEXER
+      ↓
+    TOKENS
+      ↓
+    PARSER
+      ↓
+    AST
+      ↓
+    SEMANTIC ANALYSIS
+      ↓
+    IR
+      ↓
+    OPTIMIZATION
+      ↓
+    CODE GENERATION
+      ↓
+    TARGET CODE
+
+The most important practical relationships:
+
+    Lexer      → Tokens
+
+    Parser     → Structure
+
+    AST        → Program representation
+
+    Symbol Table → Identifier information
+
+    Semantic Analyzer → Meaning/type checking
+
+    IR Generator → Intermediate code
+
+    Optimizer   → Improve code
+
+    Code Generator → Target instructions
+
+    Error Handler → Diagnostics/recovery
+
+============================================================
+74. FINAL INTERVIEW SUMMARY
+============================================================
+
+If an interviewer asks:
+
+"Explain your mini compiler."
+
+Answer:
+
+    "I designed a small programming language and implemented
+    its compiler as a pipeline. The lexer converts source
+    characters into tokens. A parser validates the grammar
+    and builds an AST. Semantic analysis uses a symbol table
+    to perform checks such as identifier and type validation.
+    The AST is translated into an intermediate representation,
+    such as three-address code. Basic optimizations such as
+    constant folding can then be applied. Finally, a code
+    generator converts the optimized representation into
+    instructions for a simple virtual machine or target
+    architecture. Error detection, diagnostics, and recovery
+    are integrated throughout the front end."
+
+============================================================
+75. CHAPTER 41 MASTER CHECKLIST
+============================================================
+
+[✓] What is a mini compiler?
+[✓] Why build one?
+[✓] Mini language design
+[✓] Tokens
+[✓] Lexer
+[✓] Lexical errors
+[✓] Grammar
+[✓] Parser
+[✓] Recursive descent
+[✓] AST
+[✓] Symbol table
+[✓] Semantic analysis
+[✓] Type checking
+[✓] IR
+[✓] Three-address code
+[✓] Basic blocks
+[✓] Optimization
+[✓] Constant folding
+[✓] Constant propagation
+[✓] Dead code elimination
+[✓] Common subexpression elimination
+[✓] Code generation
+[✓] Stack machine
+[✓] Virtual machine
+[✓] Error handling
+[✓] Error recovery
+[✓] Project structure
+[✓] Testing
+[✓] Debugging
+[✓] Front end / middle end / back end
+[✓] GATE concepts
+[✓] Interview explanation
+
+============================================================
+CHAPTER 41 COMPLETE
+============================================================
+
+COMPILER DESIGN SYLLABUS PROGRESS:
+
+PHASE 0  — Prerequisites              ✓
+PHASE 1  — Compiler Fundamentals      ✓
+PHASE 2  — Lexical Analysis           ✓
+PHASE 3  — Syntax Analysis            ✓
+PHASE 4  — Semantic Analysis          ✓
+PHASE 5  — Intermediate Representation ✓
+PHASE 6  — Runtime Environment        ✓
+PHASE 7  — Code Generation            ✓
+PHASE 8  — Optimization               ✓
+PHASE 9  — Advanced Topics            ✓
+PHASE 10 — Error Handling             ✓
+PHASE 11 — Practical                  ✓
+
+NEXT:
+
+    CHAPTER 42 — GATE / COMPETITIVE EXAM PREPARATION
+
+Topics:
+    • Compiler Design GATE strategy
+    • High-weightage concepts
+    • Important formulas
+    • DFA/NFA/RE questions
+    • FIRST/FOLLOW
+    • LL(1)
+    • LR/SLR/CLR/LALR
+    • Syntax-directed translation
+    • TAC
+    • Runtime environment
+    • Basic blocks and CFG
+    • Data-flow analysis
+    • Optimization
+    • Code generation
+    • Garbage collection
+    • Error recovery
+    • Previous-year-question patterns
+    • GATE traps
+    • Practice MCQs
+    • Numerical questions
+
+Type NEXT to continue to Chapter 42.
+============================================================

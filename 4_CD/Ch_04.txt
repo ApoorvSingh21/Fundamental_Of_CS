@@ -1,0 +1,2210 @@
+# CHAPTER 4 — LEXICAL ANALYZER FUNDAMENTALS
+# Compiler Design — From Beginner to GATE + Interview Level
+
+============================================================
+1. INTRODUCTION TO LEXICAL ANALYSIS
+============================================================
+
+Lexical Analysis is the FIRST major phase of a compiler.
+
+Its main job is:
+
+    SOURCE PROGRAM
+          ↓
+    Lexical Analyzer
+          ↓
+        TOKENS
+          ↓
+    Syntax Analyzer
+
+In simple words:
+
+    Lexical Analyzer = converts characters of source code
+                       into meaningful tokens.
+
+Example:
+
+    int age = 20;
+
+Input characters:
+
+    i n t   a g e   =   2 0 ;
+
+Lexical Analyzer produces:
+
+    KEYWORD      → int
+    IDENTIFIER   → age
+    ASSIGNMENT   → =
+    INTEGER      → 20
+    SEMICOLON    → ;
+
+So:
+
+    "int age = 20;"
+
+becomes approximately:
+
+    <KEYWORD, int>
+    <ID, age>
+    <ASSIGN, =>
+    <NUM, 20>
+    <SEMICOLON, ;>
+
+
+============================================================
+2. WHAT IS A LEXEME?
+============================================================
+
+A LEXEME is the actual sequence of characters in the source
+program that matches a token pattern.
+
+Example:
+
+    int age = 20;
+
+Lexemes are:
+
+    int
+    age
+    =
+    20
+    ;
+
+Here:
+
+    "age" is a lexeme.
+    "20" is a lexeme.
+    "=" is a lexeme.
+
+
+IMPORTANT:
+
+    Lexeme = actual text appearing in source code.
+
+Example:
+
+    int count = 100;
+
+Lexemes:
+
+    int
+    count
+    =
+    100
+
+
+============================================================
+3. WHAT IS A TOKEN?
+============================================================
+
+A TOKEN is a category/class assigned to a lexeme.
+
+For example:
+
+    int
+    count
+    =
+    100
+
+can be classified as:
+
+    KEYWORD
+    IDENTIFIER
+    ASSIGNMENT_OPERATOR
+    NUMBER
+
+Therefore:
+
+    Lexeme → actual character sequence
+    Token  → category of that sequence
+
+
+Example:
+
+    int total = 50;
+
+    Lexeme       Token
+    ----------------------------
+    int          KEYWORD
+    total        IDENTIFIER
+    =            ASSIGNMENT
+    50           NUMBER
+
+
+============================================================
+4. WHAT IS A PATTERN?
+============================================================
+
+A PATTERN is a rule that describes the form of lexemes
+belonging to a token.
+
+Example:
+
+For identifiers, a simplified pattern can be:
+
+    letter(letter | digit)*
+
+Meaning:
+
+    First character → letter
+    Remaining       → zero or more letters/digits
+
+Examples:
+
+    age
+    total
+    count1
+    student123
+
+can match the identifier pattern.
+
+But:
+
+    123student
+
+does not match this particular identifier pattern.
+
+
+Therefore:
+
+    PATTERN
+       ↓
+    describes valid lexemes
+       ↓
+    Lexeme
+       ↓
+    Token
+
+
+============================================================
+5. TOKEN vs LEXEME vs PATTERN
+============================================================
+
+This is extremely important for GATE.
+
+Example:
+
+    int count = 10;
+
+For "count":
+
+    Token:
+        IDENTIFIER
+
+    Lexeme:
+        count
+
+    Pattern:
+        letter(letter | digit)*
+
+
+Simple comparison:
+
+    TOKEN   → category
+    LEXEME  → actual text
+    PATTERN → rule describing valid text
+
+
+Memory trick:
+
+    T = Type/category
+    L = Literal actual sequence
+    P = Pattern/rule
+
+
+============================================================
+6. MAIN RESPONSIBILITIES OF LEXICAL ANALYZER
+============================================================
+
+The lexical analyzer performs several tasks.
+
+1. Read source program
+
+2. Group characters into lexemes
+
+3. Identify tokens
+
+4. Remove unnecessary whitespace
+
+5. Remove comments
+
+6. Recognize keywords
+
+7. Recognize identifiers
+
+8. Recognize operators
+
+9. Recognize literals/constants
+
+10. Detect lexical errors
+
+11. Pass tokens to syntax analyzer
+
+12. May interact with symbol table
+
+
+General flow:
+
+    Source Code
+         ↓
+    Character Stream
+         ↓
+    Lexical Analyzer
+         ↓
+    Lexemes
+         ↓
+    Tokens
+         ↓
+    Syntax Analyzer
+
+
+============================================================
+7. WHAT DOES THE LEXICAL ANALYZER READ?
+============================================================
+
+The lexical analyzer reads the source program as a stream
+of characters.
+
+Example:
+
+    int x = a + 10;
+
+Character stream:
+
+    i
+    n
+    t
+    space
+    x
+    space
+    =
+    space
+    a
+    space
+    +
+    space
+    1
+    0
+    ;
+
+
+It groups these characters into meaningful units.
+
+For example:
+
+    i n t → int → KEYWORD
+
+    a → IDENTIFIER
+
+    1 0 → 10 → NUMBER
+
+
+============================================================
+8. TOKEN CATEGORIES
+============================================================
+
+Common token categories include:
+
+    1. Keywords
+    2. Identifiers
+    3. Operators
+    4. Literals/constants
+    5. Separators/delimiters
+    6. Special symbols
+
+
+------------------------------------------------------------
+8.1 KEYWORDS
+------------------------------------------------------------
+
+Keywords are reserved words having predefined meanings
+in a programming language.
+
+Examples in C:
+
+    int
+    char
+    float
+    if
+    else
+    while
+    for
+    return
+    struct
+
+Example:
+
+    int age;
+
+"int" is a keyword.
+
+A keyword generally cannot be used as an ordinary identifier.
+
+Example:
+
+    int int;
+
+is invalid in C because "int" is reserved.
+
+
+------------------------------------------------------------
+8.2 IDENTIFIERS
+------------------------------------------------------------
+
+Identifiers are names given to programming entities.
+
+Examples:
+
+    age
+    total
+    studentName
+    calculateSum
+    count
+
+Example:
+
+    int age;
+
+Here:
+
+    int  → keyword
+    age  → identifier
+
+
+Typical simplified identifier pattern:
+
+    letter(letter | digit)*
+
+
+Examples:
+
+    x
+    x1
+    total
+    total123
+
+Invalid under this simplified rule:
+
+    123total
+
+
+NOTE:
+
+Actual identifier rules depend on the programming language.
+
+
+------------------------------------------------------------
+8.3 OPERATORS
+------------------------------------------------------------
+
+Operators perform operations.
+
+Examples:
+
+Arithmetic:
+
+    +
+    -
+    *
+    /
+    %
+
+Relational:
+
+    <
+    >
+    <=
+    >=
+    ==
+    !=
+
+Logical:
+
+    &&
+    ||
+    !
+
+Assignment:
+
+    =
+    +=
+    -=
+    *=
+    /=
+
+
+Example:
+
+    a + b
+
+Tokens:
+
+    IDENTIFIER
+    PLUS
+    IDENTIFIER
+
+
+------------------------------------------------------------
+8.4 LITERALS / CONSTANTS
+------------------------------------------------------------
+
+Literals represent fixed values written directly in source
+code.
+
+Examples:
+
+    10
+    3.14
+    'A'
+    "Hello"
+    true
+
+Example:
+
+    int age = 20;
+
+Here:
+
+    20 → integer literal
+
+
+------------------------------------------------------------
+8.5 SEPARATORS / DELIMITERS
+------------------------------------------------------------
+
+Separators help separate program constructs.
+
+Examples:
+
+    ;
+    ,
+    (
+    )
+    {
+    }
+    [
+    ]
+
+
+Example:
+
+    int add(int a, int b) {
+        return a + b;
+    }
+
+Separators include:
+
+    (
+    )
+    ,
+    {
+    }
+    ;
+
+
+============================================================
+9. WHITESPACE
+============================================================
+
+Whitespace includes characters such as:
+
+    space
+    tab
+    newline
+
+Example:
+
+    int x = 10;
+
+and:
+
+    int     x     =     10;
+
+usually produce the same meaningful tokens.
+
+Whitespace is often ignored by the lexical analyzer except
+where the programming language gives it significance.
+
+
+Example:
+
+    int x = 10;
+
+Tokens:
+
+    int
+    x
+    =
+    10
+    ;
+
+
+============================================================
+10. COMMENTS
+============================================================
+
+Comments are generally ignored by the lexical analyzer.
+
+C/C++ examples:
+
+Single-line:
+
+    // This is a comment
+
+Multi-line:
+
+    /*
+       This is a comment
+    */
+
+Example:
+
+    int x = 10; // value of x
+
+The comment:
+
+    // value of x
+
+does not normally become a token passed to the parser.
+
+
+============================================================
+11. TOKEN RECOGNITION
+============================================================
+
+The lexical analyzer must recognize which token a sequence
+of characters represents.
+
+Example:
+
+    total = 100;
+
+It reads:
+
+    total
+
+and determines:
+
+    IDENTIFIER
+
+Then:
+
+    =
+
+and determines:
+
+    ASSIGNMENT_OPERATOR
+
+Then:
+
+    100
+
+and determines:
+
+    INTEGER_LITERAL
+
+
+Therefore:
+
+    total = 100;
+
+becomes:
+
+    <ID, total>
+    <ASSIGN, =>
+    <NUM, 100>
+
+
+============================================================
+12. TOKEN ATTRIBUTES
+============================================================
+
+A token can contain additional information called an
+ATTRIBUTE.
+
+Typical representation:
+
+    <token-name, attribute-value>
+
+
+Example:
+
+    <ID, x>
+
+    <NUM, 100>
+
+The token name tells us the category.
+
+The attribute gives additional information.
+
+Example:
+
+    x
+
+Token:
+
+    ID
+
+Attribute:
+
+    pointer/reference to x's symbol-table entry
+
+Another example:
+
+    100
+
+Token:
+
+    NUM
+
+Attribute:
+
+    numeric value 100
+
+
+============================================================
+13. TOKEN + ATTRIBUTE EXAMPLE
+============================================================
+
+Source:
+
+    int total = 100;
+
+Possible token stream:
+
+    <KEYWORD, int>
+    <ID, total>
+    <ASSIGN, =>
+    <NUM, 100>
+    <SEMICOLON, ;>
+
+
+The parser primarily needs the token categories, while
+attributes provide useful information about the lexemes.
+
+
+============================================================
+14. SYMBOL TABLE INTERACTION
+============================================================
+
+The lexical analyzer may interact with the symbol table.
+
+A SYMBOL TABLE is a compiler data structure that stores
+information about identifiers and other program entities.
+
+Example:
+
+    int age;
+    age = 20;
+
+When the lexical analyzer recognizes:
+
+    age
+
+as an identifier, the compiler may create or look up its
+symbol-table entry.
+
+Conceptually:
+
+    Source
+      ↓
+    Lexer
+      ↓
+    ID "age"
+      ↓
+    Symbol Table
+      ↓
+    Identifier information
+
+
+The exact division of responsibility can vary between
+compiler implementations.
+
+
+============================================================
+15. LEXICAL ANALYSIS EXAMPLE
+============================================================
+
+Consider:
+
+    int sum = a + 10;
+
+Step 1: Read characters
+
+    i n t
+
+Recognize:
+
+    KEYWORD
+
+Step 2:
+
+    sum
+
+Recognize:
+
+    IDENTIFIER
+
+Step 3:
+
+    =
+
+Recognize:
+
+    ASSIGNMENT_OPERATOR
+
+Step 4:
+
+    a
+
+Recognize:
+
+    IDENTIFIER
+
+Step 5:
+
+    +
+
+Recognize:
+
+    PLUS_OPERATOR
+
+Step 6:
+
+    10
+
+Recognize:
+
+    INTEGER_LITERAL
+
+Final token stream:
+
+    <KEYWORD, int>
+    <ID, sum>
+    <ASSIGN, =>
+    <ID, a>
+    <PLUS, +>
+    <NUM, 10>
+
+
+============================================================
+16. LEXICAL ANALYZER OUTPUT
+============================================================
+
+Input:
+
+    float average = total / count;
+
+Output conceptually:
+
+    <FLOAT, float>
+    <ID, average>
+    <ASSIGN, =>
+    <ID, total>
+    <DIV, />
+    <ID, count>
+    <SEMICOLON, ;>
+
+
+The parser does NOT normally process the raw characters
+directly.
+
+Instead:
+
+    Source characters
+          ↓
+    Lexical analyzer
+          ↓
+    Token stream
+          ↓
+    Parser
+
+
+============================================================
+17. WHY DO WE NEED A LEXICAL ANALYZER?
+============================================================
+
+Without lexical analysis, the syntax analyzer would need to
+process every individual character.
+
+Example:
+
+    int total = 100;
+
+Instead of processing:
+
+    i n t t o t a l = 1 0 0 ;
+
+the parser can process:
+
+    KEYWORD ID ASSIGN NUM SEMICOLON
+
+
+This makes the compiler design:
+
+    simpler
+    faster
+    modular
+    easier to maintain
+
+
+============================================================
+18. LEXICAL ANALYZER AND SYNTAX ANALYZER
+============================================================
+
+Lexical analyzer:
+
+    Characters → Tokens
+
+Syntax analyzer:
+
+    Tokens → Syntactic structure
+
+
+Example:
+
+    int x = 10;
+
+Lexer:
+
+    int → KEYWORD
+    x   → ID
+    =   → ASSIGN
+    10  → NUM
+    ;   → SEMICOLON
+
+Parser checks whether the sequence of tokens follows the
+grammar of the programming language.
+
+
+Very important:
+
+    Lexical analysis asks:
+
+        "What is this sequence of characters?"
+
+    Syntax analysis asks:
+
+        "Is this sequence of tokens arranged correctly?"
+
+
+============================================================
+19. LEXICAL ERRORS
+============================================================
+
+A lexical error occurs when the source contains a sequence
+of characters that cannot be recognized as a valid token
+according to the language's lexical rules.
+
+Example:
+
+    int @x;
+
+If @ is not valid in the relevant lexical context, it may
+cause a lexical error.
+
+Another example:
+
+    12abc
+
+If the language does not allow this as a valid token sequence,
+the lexer reports an error or handles it according to its
+lexical rules.
+
+
+============================================================
+20. TYPES OF COMMON LEXICAL PROBLEMS
+============================================================
+
+Examples include:
+
+    1. Invalid character
+
+    2. Malformed number
+
+    3. Unterminated string
+
+    4. Unterminated comment
+
+    5. Invalid identifier form
+
+Example:
+
+    "Hello
+
+If a string literal is not terminated, the lexer may report
+a lexical error.
+
+
+============================================================
+21. LEXICAL ERROR RECOVERY
+============================================================
+
+When an error occurs, the lexer should ideally recover so
+that compilation can continue and more errors can be found.
+
+Possible strategies include:
+
+    • Delete an invalid character
+    • Insert a missing character
+    • Replace a character
+    • Skip characters until a useful point
+
+
+Example:
+
+    int x = 10 @ 20;
+
+If @ is invalid in that context, the lexer may report the
+error and continue processing subsequent input.
+
+
+============================================================
+22. LOOKAHEAD
+============================================================
+
+Sometimes the lexer must look at upcoming characters to
+determine which token is being formed.
+
+This is called LOOKAHEAD.
+
+Example:
+
+    <
+
+could mean:
+
+    <
+
+or, with the next character:
+
+    <=
+
+Similarly:
+
+    =
+
+could be:
+
+    =
+
+while:
+
+    ==
+
+is a different operator in languages such as C/C++/Java.
+
+
+Therefore, the lexer may need to examine the next character.
+
+
+============================================================
+23. EXAMPLE OF LOOKAHEAD
+============================================================
+
+Input:
+
+    a <= b
+
+Lexer reads:
+
+    <
+
+It cannot always finalize the token immediately.
+
+It looks at the next character:
+
+    =
+
+Therefore:
+
+    <=
+
+is recognized as one relational operator.
+
+
+Similarly:
+
+    ==
+
+must be distinguished from:
+
+    =
+
+
+============================================================
+24. LONGEST MATCH / MAXIMAL MUNCH
+============================================================
+
+A common lexical rule is:
+
+    Choose the longest possible lexeme that forms a valid
+    token.
+
+This is often called:
+
+    LONGEST MATCH
+    or
+    MAXIMAL MUNCH
+
+
+Example:
+
+    >=
+
+The lexer should recognize:
+
+    >=
+
+as one token,
+
+rather than:
+
+    >
+    =
+
+
+Similarly:
+
+    ==
+
+should generally be recognized as:
+
+    equality operator
+
+rather than:
+
+    =
+    =
+
+
+============================================================
+25. LONGEST MATCH EXAMPLE
+============================================================
+
+Consider:
+
+    a >= 10
+
+At:
+
+    >
+
+the lexer checks the next character.
+
+Next character:
+
+    =
+
+Therefore:
+
+    >=
+
+is recognized.
+
+Not:
+
+    >
+    =
+
+
+This principle is very important in lexical analyzer design.
+
+
+============================================================
+26. KEYWORD vs IDENTIFIER
+============================================================
+
+Consider:
+
+    int
+
+The character sequence matches the general identifier
+pattern.
+
+But the language defines:
+
+    int = keyword
+
+Therefore, the lexer must classify it as:
+
+    KEYWORD
+
+
+Consider:
+
+    integer
+
+This may be:
+
+    IDENTIFIER
+
+because it is not necessarily a reserved keyword.
+
+
+Example:
+
+    int integer;
+
+Token sequence:
+
+    KEYWORD
+    IDENTIFIER
+    SEMICOLON
+
+
+============================================================
+27. KEYWORD RECOGNITION
+============================================================
+
+Two common conceptual approaches:
+
+1. Direct recognition through lexical rules
+2. Recognize as identifier and then check whether the lexeme
+   is in the keyword table
+
+
+For example:
+
+    if
+    else
+    while
+    return
+
+may be stored in a keyword table.
+
+If the recognized lexeme is:
+
+    while
+
+the lexer returns:
+
+    WHILE
+
+instead of:
+
+    ID
+
+
+============================================================
+28. IDENTIFIER RECOGNITION
+============================================================
+
+Simplified rule:
+
+    letter(letter | digit)*
+
+Suppose:
+
+    letter = {A-Z, a-z}
+
+Then:
+
+    abc
+    A
+    x1
+    student123
+
+are valid examples under this simplified rule.
+
+But:
+
+    123abc
+
+does not match this particular rule.
+
+
+Actual language rules may additionally allow:
+
+    _
+    Unicode characters
+    other language-specific forms
+
+
+============================================================
+29. NUMBER RECOGNITION
+============================================================
+
+Possible integer pattern:
+
+    digit+
+
+where:
+
+    digit = 0 | 1 | 2 | ... | 9
+
+Examples:
+
+    10
+    25
+    1000
+
+
+Possible simplified real-number pattern:
+
+    digit+ . digit+
+
+Examples:
+
+    3.14
+    10.5
+    0.25
+
+
+Actual programming languages may support much more complex
+numeric literal formats.
+
+
+============================================================
+30. STRING LITERALS
+============================================================
+
+Example:
+
+    "Hello World"
+
+The lexer recognizes this as a string literal.
+
+Important issue:
+
+    The string must normally be properly terminated.
+
+Example:
+
+    "Hello World
+
+may produce an unterminated-string lexical error.
+
+
+Escape sequences may also need special handling.
+
+Example:
+
+    "Hello\nWorld"
+
+
+============================================================
+31. CHARACTER LITERALS
+============================================================
+
+Example:
+
+    'A'
+
+This can be recognized as a character literal.
+
+Other examples:
+
+    'x'
+    '\n'
+
+
+Again, exact rules depend on the programming language.
+
+
+============================================================
+32. SEPARATORS AND DELIMITERS
+============================================================
+
+Examples:
+
+    (
+    )
+    {
+    }
+    [
+    ]
+    ,
+    ;
+
+
+Example:
+
+    sum(a, b);
+
+Tokens:
+
+    ID
+    (
+    ID
+    ,
+    ID
+    )
+
+
+These symbols help define program structure.
+
+
+============================================================
+33. INPUT BUFFERING
+============================================================
+
+The lexical analyzer repeatedly reads characters from the
+source program.
+
+Reading one character at a time directly from a file can be
+inefficient.
+
+Therefore, compilers commonly use INPUT BUFFERING.
+
+Concept:
+
+    Source File
+        ↓
+    Input Buffer
+        ↓
+    Lexical Analyzer
+
+
+Input buffering reduces the overhead of frequent input
+operations.
+
+
+============================================================
+34. WHY INPUT BUFFERING IS USED
+============================================================
+
+Suppose the lexer requests one character at a time from
+secondary storage.
+
+That can cause many input operations.
+
+Instead:
+
+    File
+      ↓
+    Large block of characters
+      ↓
+    Buffer
+      ↓
+    Lexer
+
+
+Benefits:
+
+    • Faster input
+    • Fewer I/O operations
+    • Efficient scanning
+
+
+============================================================
+35. LEXEME BEGINNING AND FORWARD POINTERS
+============================================================
+
+A lexical analyzer conceptually uses pointers such as:
+
+    lexemeBegin
+    forward
+
+lexemeBegin:
+
+    marks the beginning of the current lexeme.
+
+forward:
+
+    scans ahead through the input.
+
+
+Example:
+
+    int total = 100;
+
+Conceptually:
+
+    lexemeBegin
+        ↓
+        i n t
+            ↑
+          forward
+
+
+After recognizing "int", the lexer advances to the next
+lexeme.
+
+
+============================================================
+36. SENTINEL
+============================================================
+
+A SENTINEL is a special character placed at the end of a
+buffer to simplify end-of-buffer checking.
+
+Conceptually:
+
+    [characters][sentinel]
+
+Instead of repeatedly checking:
+
+    "Have I reached the end of the buffer?"
+
+the lexer can detect the sentinel.
+
+
+This is an implementation technique for efficient lexical
+analysis.
+
+
+============================================================
+37. TWO-BUFFER SCHEME
+============================================================
+
+A classical lexical analyzer implementation uses two buffers.
+
+Conceptually:
+
+    +-------------------+-------------------+
+    |      Buffer 1     |      Buffer 2     |
+    +-------------------+-------------------+
+                         ↑
+                      sentinel
+
+
+The lexer can move between buffers while scanning the source.
+
+
+Advantages:
+
+    • Efficient input handling
+    • Reduces repeated file access
+    • Supports lookahead
+    • Useful for long source programs
+
+
+============================================================
+38. LEXICAL ANALYZER ARCHITECTURE
+============================================================
+
+A simplified architecture:
+
+             SOURCE PROGRAM
+                    |
+                    ↓
+             Input Buffer
+                    |
+                    ↓
+          +-------------------+
+          | Lexical Analyzer  |
+          +-------------------+
+             |      |      |
+             |      |      |
+             ↓      ↓      ↓
+          Tokens  Symbol   Errors
+                  Table
+                    |
+                    ↓
+             Syntax Analyzer
+
+
+The exact implementation varies.
+
+
+============================================================
+39. LEXICAL ANALYZER ALGORITHM
+============================================================
+
+Conceptual algorithm:
+
+    START
+
+    Read next character
+
+    If whitespace:
+        ignore it
+
+    Else if comment:
+        skip comment
+
+    Else if letter:
+        collect identifier/keyword
+        classify token
+
+    Else if digit:
+        collect numeric literal
+
+    Else if operator:
+        check possible multi-character operator
+        return operator token
+
+    Else if delimiter:
+        return delimiter token
+
+    Else:
+        report lexical error
+
+    Repeat until end of input
+
+    END
+
+
+============================================================
+40. COMPLETE EXAMPLE
+============================================================
+
+Input:
+
+    int result = a + 25;
+
+Lexical analysis:
+
+    "int"
+        ↓
+    KEYWORD
+
+    "result"
+        ↓
+    IDENTIFIER
+
+    "="
+        ↓
+    ASSIGNMENT_OPERATOR
+
+    "a"
+        ↓
+    IDENTIFIER
+
+    "+"
+        ↓
+    PLUS_OPERATOR
+
+    "25"
+        ↓
+    INTEGER_LITERAL
+
+    ";"
+        ↓
+    SEMICOLON
+
+
+Final:
+
+    <KEYWORD, int>
+    <ID, result>
+    <ASSIGN, =>
+    <ID, a>
+    <PLUS, +>
+    <NUM, 25>
+    <SEMICOLON, ;>
+
+
+============================================================
+41. COMPLETE EXAMPLE WITH COMMENTS
+============================================================
+
+Input:
+
+    // calculate total
+    int total = price + 10;
+
+Lexical analyzer ignores:
+
+    // calculate total
+
+Remaining meaningful input:
+
+    int total = price + 10;
+
+Tokens:
+
+    KEYWORD
+    ID
+    ASSIGN
+    ID
+    PLUS
+    NUM
+    SEMICOLON
+
+
+============================================================
+42. LEXICAL ANALYSIS vs PARSING
+============================================================
+
+LEXICAL ANALYSIS:
+
+    Input:
+        characters
+
+    Output:
+        tokens
+
+    Main concern:
+        token structure
+
+
+PARSING:
+
+    Input:
+        tokens
+
+    Output:
+        parse tree / syntax structure
+
+    Main concern:
+        grammatical structure
+
+
+Example:
+
+    int x = 10;
+
+
+Lexer:
+
+    int → KEYWORD
+    x   → ID
+    =   → ASSIGN
+    10  → NUM
+    ;   → SEMICOLON
+
+
+Parser checks whether this sequence follows the grammar.
+
+
+============================================================
+43. LEXICAL ANALYSIS vs SEMANTIC ANALYSIS
+============================================================
+
+Lexical analysis:
+
+    "What token is this?"
+
+Semantic analysis:
+
+    "Does this construct make sense according to the
+     language's semantic rules?"
+
+
+Example:
+
+    int x;
+    x = "hello";
+
+
+Lexically:
+
+    int → keyword
+    x → identifier
+    = → operator
+    "hello" → string literal
+
+Lexical analysis can recognize all these.
+
+The type incompatibility is a semantic issue.
+
+
+============================================================
+44. LEXICAL ANALYZER vs SYMBOL TABLE
+============================================================
+
+Lexical analyzer:
+
+    Recognizes tokens.
+
+Symbol table:
+
+    Stores information about identifiers and other entities.
+
+
+Example:
+
+    int age;
+
+Lexer recognizes:
+
+    int → KEYWORD
+    age → ID
+
+
+The compiler can maintain symbol-table information for:
+
+    age
+
+
+Symbol table information may include:
+
+    • Name
+    • Type
+    • Scope
+    • Storage information
+    • Other compiler-specific attributes
+
+
+============================================================
+45. LEXICAL ANALYZER TOOLS
+============================================================
+
+Lexical analyzers can be constructed manually or generated
+using tools.
+
+A famous tool is:
+
+    Lex
+
+A commonly used modern implementation is:
+
+    Flex
+
+
+Conceptually:
+
+    Regular Expressions
+            ↓
+       Lex/Flex
+            ↓
+      Lexer program
+            ↓
+       Token stream
+
+
+Lex/Flex specifications typically describe patterns and
+associated actions.
+
+
+============================================================
+46. REGULAR EXPRESSIONS AND LEXICAL ANALYSIS
+============================================================
+
+Lexical structures are commonly described using:
+
+    Regular Expressions
+
+Then:
+
+    Regular Expression
+          ↓
+    Finite Automaton
+          ↓
+    Lexical Analyzer
+
+
+This is why the next chapters are closely connected:
+
+    Chapter 4 → Lexical fundamentals
+    Chapter 5 → Regular Expressions
+    Chapter 6 → Finite Automata
+    Chapter 7 → RE ↔ Automata
+    Chapter 8 → Lexer Construction
+
+
+============================================================
+47. IMPORTANT RELATIONSHIP
+============================================================
+
+A common theoretical pipeline is:
+
+    Regular Expression
+            ↓
+          NFA
+            ↓
+          DFA
+            ↓
+    Lexical Analyzer
+
+
+For example, an identifier can be described by a regular
+expression.
+
+That expression can be converted into an automaton.
+
+The automaton can then be implemented as part of the lexer.
+
+
+============================================================
+48. LEXICAL ANALYZER AND DFA
+============================================================
+
+A DFA (Deterministic Finite Automaton) can be used to
+recognize token patterns.
+
+Example conceptual identifier recognition:
+
+    Start
+      |
+    letter
+      ↓
+    Identifier State
+      |
+   letter/digit
+      ↓
+    Identifier State
+
+
+When the input ends at an accepting state:
+
+    identifier recognized.
+
+
+Chapter 6 will study DFA/NFA in detail.
+
+
+============================================================
+49. IMPORTANT TERMS
+============================================================
+
+LEXICAL ANALYSIS:
+
+    Process of converting source characters into tokens.
+
+LEXEME:
+
+    Actual sequence of characters corresponding to a token.
+
+TOKEN:
+
+    Category/class of lexical unit.
+
+PATTERN:
+
+    Rule describing the form of lexemes.
+
+ATTRIBUTE:
+
+    Additional information associated with a token.
+
+KEYWORD:
+
+    Reserved word with predefined language meaning.
+
+IDENTIFIER:
+
+    Name used for program entities.
+
+LITERAL:
+
+    Directly written constant value.
+
+LOOKAHEAD:
+
+    Examining upcoming input characters.
+
+LONGEST MATCH:
+
+    Selecting the longest valid lexeme.
+
+INPUT BUFFER:
+
+    Memory area used to efficiently read source characters.
+
+SENTINEL:
+
+    Special marker used to simplify buffer-end detection.
+
+
+============================================================
+50. VERY IMPORTANT EXAM DIFFERENCES
+============================================================
+
+TOKEN vs LEXEME
+
+    Token:
+        Category
+
+    Lexeme:
+        Actual character sequence
+
+
+TOKEN vs PATTERN
+
+    Token:
+        Name/category
+
+    Pattern:
+        Rule defining valid lexemes
+
+
+LEXICAL ANALYSIS vs SYNTAX ANALYSIS
+
+    Lexical:
+        Characters → Tokens
+
+    Syntax:
+        Tokens → Parse/Syntax Structure
+
+
+LEXICAL ERROR vs SYNTAX ERROR
+
+    Lexical error:
+        Invalid/unrecognizable character sequence
+
+    Syntax error:
+        Token sequence violates grammar
+
+
+LEXER vs PARSER
+
+    Lexer:
+        Recognizes tokens
+
+    Parser:
+        Checks grammatical structure
+
+
+============================================================
+51. GATE-LEVEL CONCEPTS TO REMEMBER
+============================================================
+
+1. Lexical analyzer converts characters into tokens.
+
+2. Lexeme is the actual character sequence.
+
+3. Pattern describes the form of a lexeme.
+
+4. Token represents a category.
+
+5. Whitespace and comments are generally discarded.
+
+6. Lexical analyzers commonly use regular expressions and
+   finite automata.
+
+7. Longest-match/maximal-munch is a major lexical principle.
+
+8. Lookahead is needed for tokens such as:
+
+       <
+       <=
+
+       =
+       ==
+
+9. Input buffering improves scanning efficiency.
+
+10. Sentinel can simplify end-of-buffer handling.
+
+11. Lex/Flex can be used to generate lexical analyzers.
+
+12. Lexical errors are different from syntax errors.
+
+13. Lexer produces input for the parser.
+
+14. Symbol-table interaction may occur during lexical analysis.
+
+15. Keywords and identifiers must be distinguished correctly.
+
+
+============================================================
+52. GATE-STYLE CONCEPTUAL QUESTION
+============================================================
+
+Suppose:
+
+    int count = 10;
+
+Which statement is correct?
+
+A. "count" is a token and IDENTIFIER is its lexeme.
+
+B. "count" is a lexeme and IDENTIFIER is its token category.
+
+C. "count" is a pattern and IDENTIFIER is its lexeme.
+
+D. "count" is a keyword.
+
+Correct:
+
+    B
+
+Because:
+
+    count → lexeme
+    IDENTIFIER → token category
+
+
+============================================================
+53. ANOTHER IMPORTANT QUESTION
+============================================================
+
+Input:
+
+    a >= b
+
+Why must the lexer use lookahead?
+
+Because after reading:
+
+    >
+
+it must inspect the next character to determine whether
+the token is:
+
+    >
+or:
+    >=
+
+
+============================================================
+54. MASTER FLOW OF CHAPTER 4
+============================================================
+
+Source Program
+      ↓
+Characters
+      ↓
+Input Buffer
+      ↓
+Lexical Analyzer
+      ↓
+Identify Lexemes
+      ↓
+Match Patterns
+      ↓
+Generate Tokens
+      ↓
+Attach Attributes
+      ↓
+Symbol Table Interaction
+      ↓
+Token Stream
+      ↓
+Syntax Analyzer
+
+
+============================================================
+55. CHAPTER 4 MEMORY MAP
+============================================================
+
+                LEXICAL ANALYZER
+                       |
+        +--------------+--------------+
+        |              |              |
+     INPUT          PROCESS         OUTPUT
+        |              |              |
+    Characters     Find lexemes      Tokens
+    Buffer         Match patterns    Attributes
+    Lookahead      Ignore spaces      Errors
+    Sentinel       Ignore comments
+                   Longest match
+                       |
+              +--------+--------+
+              |        |        |
+           Keyword   ID       Literal
+              |
+          Operators
+              |
+         Delimiters
+
+
+============================================================
+56. ONE-LINE DEFINITIONS FOR REVISION
+============================================================
+
+Lexical Analysis:
+    Characters → Tokens.
+
+Token:
+    A category of lexical units.
+
+Lexeme:
+    Actual sequence of source characters.
+
+Pattern:
+    Rule describing a token's possible lexemes.
+
+Attribute:
+    Extra information associated with a token.
+
+Keyword:
+    Reserved word.
+
+Identifier:
+    Name of a program entity.
+
+Literal:
+    Directly represented constant value.
+
+Lookahead:
+    Examining future input characters.
+
+Longest Match:
+    Choose the longest valid token.
+
+Input Buffer:
+    Efficient temporary storage for source input.
+
+Sentinel:
+    Special marker used in buffered input scanning.
+
+Lexical Error:
+    Error in recognizing a valid lexical unit.
+
+
+============================================================
+57. CHAPTER 4 FINAL SUMMARY
+============================================================
+
+The lexical analyzer is the first major compiler phase.
+
+Its basic job is:
+
+    SOURCE CHARACTERS
+            ↓
+        LEXEMES
+            ↓
+          TOKENS
+
+The three most important concepts are:
+
+    TOKEN
+        = category
+
+    LEXEME
+        = actual text
+
+    PATTERN
+        = rule
+
+Example:
+
+    int count = 10;
+
+    int
+        → lexeme
+        → KEYWORD token
+
+    count
+        → lexeme
+        → IDENTIFIER token
+
+    =
+        → lexeme
+        → ASSIGNMENT token
+
+    10
+        → lexeme
+        → NUMBER token
+
+
+The lexical analyzer also handles:
+
+    • Whitespace
+    • Comments
+    • Keywords
+    • Identifiers
+    • Operators
+    • Literals
+    • Delimiters
+    • Lookahead
+    • Longest match
+    • Input buffering
+    • Lexical errors
+    • Symbol-table interaction
+
+
+NEXT CHAPTER:
+    CHAPTER 5 — REGULAR EXPRESSIONS
+
+Chapter 5 will build the theoretical foundation used to
+describe token patterns and will cover:
+
+    • Alphabet
+    • Strings
+    • Languages
+    • Regular languages
+    • Regular expressions
+    • Union
+    • Concatenation
+    • Kleene star
+    • Positive closure
+    • Precedence
+    • Operator priority
+    • Examples
+    • GATE-level problems
+============================================================

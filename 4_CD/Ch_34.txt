@@ -1,0 +1,2729 @@
+o============================================================
+COMPILER DESIGN — CHAPTER 34
+ADVANCED OPTIMIZATION
+============================================================
+
+LEVEL:
+Absolute Beginner → Intermediate → Advanced → GATE → Interview
+
+PREREQUISITES:
+• Chapter 30 — Optimization Fundamentals
+• Chapter 31 — Basic Optimizations
+• Chapter 32 — Data-Flow Analysis
+• Chapter 33 — Loop Optimization
+• Basic Blocks and CFG
+
+============================================================
+1. WHAT IS ADVANCED OPTIMIZATION?
+============================================================
+
+Compiler optimization means transforming a program into a
+more efficient form while preserving its meaning.
+
+Basic optimization:
+    Simple local improvements.
+
+Advanced optimization:
+    More powerful transformations that may involve:
+
+    • Multiple basic blocks
+    • Control-flow graphs
+    • Data-flow information
+    • Loops
+    • Dependencies
+    • Procedures/functions
+    • Registers
+    • Memory behavior
+    • Machine architecture
+
+Main objectives:
+
+    Source Program
+          |
+          v
+    Intermediate Representation
+          |
+          v
+    Optimization
+          |
+          v
+    Equivalent but better program
+
+"Better" may mean:
+
+    • Faster execution
+    • Smaller code
+    • Lower memory usage
+    • Better cache behavior
+    • Lower energy consumption
+    • Better parallelism
+
+============================================================
+2. IMPORTANT PRINCIPLE
+============================================================
+
+Optimization must preserve program semantics.
+
+Before optimization:
+
+    Program P
+
+After optimization:
+
+    Program P'
+
+Requirement:
+
+    P' must produce the same observable result as P
+    under the relevant language and machine semantics.
+
+Therefore:
+
+    OPTIMIZATION ≠ arbitrary code modification
+
+It is:
+
+    SAFE + SEMANTICS-PRESERVING TRANSFORMATION
+
+============================================================
+3. LOCAL vs GLOBAL vs LOOP vs INTERPROCEDURAL
+============================================================
+
+LOCAL OPTIMIZATION:
+
+    Works mainly within one basic block.
+
+Example:
+
+    x = 2 * 3;
+    y = x + 1;
+
+May become:
+
+    x = 6;
+    y = 7;
+
+------------------------------------------------------------
+
+GLOBAL OPTIMIZATION:
+
+    Works across multiple basic blocks within a procedure.
+
+Uses:
+
+    • CFG
+    • Data-flow analysis
+    • Reaching definitions
+    • Live variables
+    • Available expressions
+
+------------------------------------------------------------
+
+LOOP OPTIMIZATION:
+
+    Focuses on repeated execution.
+
+Examples:
+
+    • Loop-invariant code motion
+    • Strength reduction
+    • Loop unrolling
+    • Loop interchange
+
+------------------------------------------------------------
+
+INTERPROCEDURAL OPTIMIZATION:
+
+    Works across function/procedure boundaries.
+
+Example:
+
+    f() calls g()
+
+The compiler may analyze both f and g together.
+
+============================================================
+4. PEEPHOLE OPTIMIZATION
+============================================================
+
+Peephole optimization examines a small sequence of generated
+instructions.
+
+This small sequence is called a "peephole".
+
+Example:
+
+    LOAD R1, x
+    STORE x, R1
+
+If the store is unnecessary, it may be removed.
+
+Another example:
+
+    ADD R1, 0
+
+can become:
+
+    <nothing>
+
+Another example:
+
+    MUL R1, 1
+
+can become:
+
+    <nothing>
+
+The compiler looks at a small instruction window and replaces
+inefficient instruction patterns with better ones.
+
+============================================================
+5. TYPES OF PEEPHOLE OPTIMIZATION
+============================================================
+
+Common examples:
+
+1. Redundant instruction elimination
+2. Algebraic simplification
+3. Strength reduction
+4. Control-flow simplification
+5. Machine idiom recognition
+6. Unreachable instruction removal
+
+Example:
+
+    x = x + 0
+
+becomes:
+
+    x
+
+Example:
+
+    x = x * 1
+
+becomes:
+
+    x
+
+Example:
+
+    goto L1
+    L1:
+
+may be simplified depending on the surrounding control flow.
+
+============================================================
+6. ALGEBRAIC OPTIMIZATION
+============================================================
+
+Uses mathematical identities.
+
+Examples:
+
+    x + 0 → x
+
+    x - 0 → x
+
+    x * 1 → x
+
+    x / 1 → x
+
+    x * 0 → 0
+
+    x AND 0 → 0
+
+    x OR 0 → x
+
+But the compiler must consider language semantics.
+
+For floating-point arithmetic, overflow, NaN, signed zero,
+exceptions, and rounding can make apparently obvious
+transformations unsafe under strict semantics.
+
+============================================================
+7. CONSTANT FOLDING
+============================================================
+
+Evaluate constant expressions at compile time.
+
+Example:
+
+    x = 10 * 20;
+
+becomes:
+
+    x = 200;
+
+Another:
+
+    y = (5 + 3) * 2;
+
+becomes:
+
+    y = 16;
+
+Benefit:
+
+    Runtime computation → Compile-time computation
+
+============================================================
+8. CONSTANT PROPAGATION
+============================================================
+
+If a variable has a known constant value, replace its uses.
+
+Example:
+
+    x = 10;
+    y = x + 5;
+
+becomes:
+
+    x = 10;
+    y = 10 + 5;
+
+Then constant folding gives:
+
+    x = 10;
+    y = 15;
+
+If x is no longer needed, dead-code elimination may remove:
+
+    x = 10;
+
+Result:
+
+    y = 15;
+
+============================================================
+9. COPY PROPAGATION
+============================================================
+
+Example:
+
+    x = y;
+    z = x + 5;
+
+Replace uses of x with y:
+
+    x = y;
+    z = y + 5;
+
+If x is no longer needed:
+
+    z = y + 5;
+
+This can expose additional optimization opportunities.
+
+============================================================
+10. COMMON SUBEXPRESSION ELIMINATION
+============================================================
+
+Suppose:
+
+    x = a + b;
+    y = a + b;
+
+If a and b have not changed between the two computations:
+
+    t = a + b;
+    x = t;
+    y = t;
+
+The second computation is eliminated.
+
+This saves repeated work.
+
+IMPORTANT:
+
+The expression is reusable only when its operands still have
+the required values and evaluation has no problematic side
+effects.
+
+============================================================
+11. GLOBAL COMMON SUBEXPRESSION ELIMINATION
+============================================================
+
+Local CSE:
+
+    Same expression within one basic block.
+
+Global CSE:
+
+    Same expression may occur across multiple basic blocks.
+
+Example CFG:
+
+        B1
+       /  \
+      v    v
+     B2    B3
+       \  /
+        B4
+
+If an expression computed in B2 or B3 is available at B4,
+data-flow analysis may help determine whether it can be reused.
+
+This is why:
+
+    AVAILABLE EXPRESSIONS
+
+from Chapter 32 are important.
+
+============================================================
+12. DEAD CODE ELIMINATION
+============================================================
+
+Dead code is code whose result is never used and whose removal
+does not change observable behavior.
+
+Example:
+
+    x = 10;
+    y = 20;
+    print(y);
+
+If x is never used:
+
+    x = 10;
+
+may be removed.
+
+Optimized:
+
+    y = 20;
+    print(y);
+
+============================================================
+13. DEAD STORE ELIMINATION
+============================================================
+
+A store is dead if its value is overwritten before being read.
+
+Example:
+
+    x = 10;
+    x = 20;
+    print(x);
+
+The first assignment:
+
+    x = 10;
+
+is useless because x is overwritten before being read.
+
+Optimized:
+
+    x = 20;
+    print(x);
+
+This is particularly important for memory operations.
+
+============================================================
+14. CONTROL-FLOW OPTIMIZATION
+============================================================
+
+The compiler can simplify unnecessary control flow.
+
+Example:
+
+    if (constant_true) {
+        A;
+    } else {
+        B;
+    }
+
+Can become:
+
+    A;
+
+Another:
+
+    goto L1;
+
+    L1:
+        statement;
+
+may be simplified if the jump is unnecessary.
+
+Goal:
+
+    Reduce unnecessary branches and simplify CFG.
+
+============================================================
+15. UNREACHABLE CODE ELIMINATION
+============================================================
+
+Code that can never execute can be removed.
+
+Example:
+
+    return;
+
+    x = 10;
+    y = 20;
+
+Statements after return are unreachable in this simple case.
+
+Optimized:
+
+    return;
+
+============================================================
+16. CFG SIMPLIFICATION
+============================================================
+
+Compiler optimization may:
+
+    • Remove unreachable blocks
+    • Merge blocks
+    • Remove unnecessary jumps
+    • Simplify branches
+    • Remove empty blocks
+    • Redirect edges
+
+Example:
+
+    B1 → B2 → B3
+
+If B2 contains no useful operation and has only one predecessor
+and successor, it may sometimes be merged/removed.
+
+Simpler CFG:
+
+    B1 → B3
+
+============================================================
+17. TAIL MERGING
+============================================================
+
+Suppose two control-flow paths end with identical code.
+
+Before:
+
+    B1 → B3:
+            x = 10
+            return
+
+    B2 → B4:
+            x = 10
+            return
+
+The common tail may be shared.
+
+Conceptually:
+
+    B1 ----\
+           → COMMON:
+               x = 10
+               return
+    B2 ----/
+
+Benefits:
+
+    • Smaller code
+    • Less duplication
+
+============================================================
+18. CODE HOISTING
+============================================================
+
+Code hoisting moves a computation to an earlier point when it
+is safe and beneficial.
+
+Example:
+
+    if (condition) {
+        x = a + b;
+    }
+
+If the computation is guaranteed to be needed and safe before
+the condition, it may be moved before the branch.
+
+However, this is not automatically safe.
+
+Moving code earlier can:
+
+    • Execute it when it previously would not execute
+    • Change exceptions
+    • Change side effects
+    • Increase execution cost
+
+Therefore safety analysis is required.
+
+============================================================
+19. CODE SINKING
+============================================================
+
+Code sinking moves a computation to a later point.
+
+Example idea:
+
+    x = expensive_computation();
+
+    if (condition)
+        use(x);
+
+If x is only needed inside one branch, the computation may be
+moved into that branch when legal.
+
+Goal:
+
+    Avoid performing work when it is not needed.
+
+Code motion can therefore happen:
+
+    UPWARD  → Hoisting
+    DOWNWARD → Sinking
+
+============================================================
+20. PARTIAL REDUNDANCY
+============================================================
+
+An expression is partially redundant if it has already been
+computed on some paths but not on all paths.
+
+Example:
+
+          B1
+         /  \
+        v    v
+       B2    B3
+        |    |
+        |    | a+b
+        v    v
+         B4
+          |
+         a+b
+
+The expression:
+
+    a + b
+
+may be available on one path but not another.
+
+Partial redundancy elimination (PRE) attempts to eliminate such
+redundancy while preserving semantics.
+
+============================================================
+21. PARTIAL REDUNDANCY ELIMINATION (PRE)
+============================================================
+
+PRE means:
+
+    Partial Redundancy Elimination
+
+It combines ideas from:
+
+    • Common subexpression elimination
+    • Code motion
+
+Goal:
+
+    Make partially redundant computations unnecessary or
+    compute them at a better location.
+
+Conceptually:
+
+    Some paths already compute E
+              +
+    Other paths need E
+              ↓
+        Move/insert computation
+              ↓
+    Eliminate repeated computation
+
+PRE is an advanced optimization technique.
+
+============================================================
+22. GLOBAL VALUE NUMBERING
+============================================================
+
+Global Value Numbering (GVN) assigns an abstract value number
+to equivalent expressions/values.
+
+Example:
+
+    x = a + b;
+    y = a + b;
+
+If both represent the same value under the applicable
+assumptions:
+
+    value(a+b) = same value number
+
+Then the compiler can identify redundancy.
+
+GVN can detect redundancies that are not obvious from simple
+textual comparison.
+
+============================================================
+23. VALUE NUMBERING EXAMPLE
+============================================================
+
+Consider:
+
+    x = a + b;
+    y = a + b;
+
+Conceptually:
+
+    VN(a) = 1
+    VN(b) = 2
+
+Then:
+
+    VN(a+b) = 3
+
+Both expressions:
+
+    a+b
+
+receive value number 3.
+
+Therefore:
+
+    y = a+b
+
+can reuse the value already computed for x.
+
+============================================================
+24. SCCP
+============================================================
+
+SCCP = Sparse Conditional Constant Propagation.
+
+It combines ideas of:
+
+    • Constant propagation
+    • Reachability analysis
+
+The compiler attempts to determine:
+
+    Which values are constants?
+    Which CFG paths are reachable?
+
+Example:
+
+    if (0) {
+        x = 10;
+    }
+
+The branch is unreachable.
+
+Therefore the compiler can eliminate it.
+
+SCCP is an important advanced optimization in modern compiler
+implementations.
+
+============================================================
+25. SSA FORM
+============================================================
+
+SSA = Static Single Assignment.
+
+In SSA form:
+
+    Each variable version is assigned exactly once.
+
+Example:
+
+    x = 10;
+    x = 20;
+
+SSA-like representation:
+
+    x1 = 10;
+    x2 = 20;
+
+Different assignments get different versions.
+
+============================================================
+26. WHY SSA IS IMPORTANT
+============================================================
+
+SSA makes many optimization problems easier.
+
+It helps with:
+
+    • Constant propagation
+    • Dead code elimination
+    • Value numbering
+    • Global optimization
+    • Register allocation
+    • Data-flow reasoning
+
+The key property:
+
+    One SSA name → one definition
+
+============================================================
+27. PHI FUNCTION
+============================================================
+
+SSA introduces φ (phi) functions when multiple control-flow
+paths can define a value.
+
+Example:
+
+          B1
+         /  \
+        v    v
+       B2    B3
+        \    /
+         v  v
+          B4
+
+Suppose:
+
+    B2: x = 10
+    B3: x = 20
+
+At B4, which x should be used?
+
+SSA can represent:
+
+    x3 = φ(x1, x2)
+
+Meaning:
+
+    If control came from B2 → x1
+    If control came from B3 → x2
+
+The φ function selects the value corresponding to the incoming
+control-flow path.
+
+============================================================
+28. LOOP OPTIMIZATION WITH SSA
+============================================================
+
+SSA is especially useful for loops.
+
+Example:
+
+    i = 0;
+
+    while (i < n) {
+        i = i + 1;
+    }
+
+Conceptually:
+
+    i1 = 0
+
+    LOOP:
+        i2 = φ(i1, i3)
+        ...
+        i3 = i2 + 1
+        goto LOOP
+
+The φ function represents:
+
+    initial value
+        OR
+    value from previous iteration
+
+This makes loop-carried values explicit.
+
+============================================================
+29. STRENGTH REDUCTION IN ADVANCED FORM
+============================================================
+
+Example:
+
+    address = base + i * element_size
+
+If i changes by 1 each iteration:
+
+    address = address + element_size
+
+This is common in array access optimization.
+
+Example:
+
+    for (i = 0; i < n; i++)
+        A[i] = 0;
+
+The compiler may transform repeated index scaling into an
+incrementing address/pointer.
+
+============================================================
+30. LOOP-INVARIANT CODE MOTION
+    ADVANCED VIEW
+============================================================
+
+A loop-invariant expression may be moved to a preheader.
+
+Structure:
+
+          PREHEADER
+              |
+              v
+           HEADER <------+
+              |          |
+              v          |
+             BODY -------+
+              |
+              v
+             EXIT
+
+Invariant computation:
+
+    PREHEADER:
+        t = a * b
+
+    BODY:
+        use(t)
+
+This is generally more useful than placing the computation
+inside every iteration.
+
+============================================================
+31. LOOP UNROLLING + SOFTWARE PIPELINING
+============================================================
+
+Loop unrolling exposes several iterations at once.
+
+This may allow the compiler to reorder independent operations.
+
+Example:
+
+    Iteration 1:
+        load
+        add
+
+    Iteration 2:
+        load
+        add
+
+Instead of:
+
+    load1
+    add1
+    load2
+    add2
+
+the compiler may schedule:
+
+    load1
+    load2
+    add1
+    add2
+
+This can help hide latency.
+
+============================================================
+32. SOFTWARE PIPELINING
+============================================================
+
+Software pipelining schedules instructions from different loop
+iterations so that processor resources are used efficiently.
+
+Conceptual pipeline:
+
+    Iteration 1: LOAD
+    Iteration 2:       LOAD
+    Iteration 1:       ADD
+    Iteration 3:              LOAD
+    Iteration 2:              ADD
+
+The compiler tries to overlap operations from different
+iterations.
+
+Goal:
+
+    Improve instruction-level parallelism.
+
+============================================================
+33. INSTRUCTION-LEVEL PARALLELISM
+============================================================
+
+ILP = Instruction-Level Parallelism.
+
+It means multiple independent instructions can potentially
+execute simultaneously or overlap on modern processors.
+
+Compiler can expose ILP through:
+
+    • Loop unrolling
+    • Instruction scheduling
+    • Dependency analysis
+    • Software pipelining
+
+Example:
+
+    x = a + b;
+    y = c + d;
+
+There is no dependency between these calculations.
+
+They may potentially execute in parallel on suitable hardware.
+
+============================================================
+34. INSTRUCTION SCHEDULING
+============================================================
+
+Instruction scheduling changes instruction order without
+changing program meaning.
+
+Goal:
+
+    • Reduce pipeline stalls
+    • Hide instruction latency
+    • Improve processor utilization
+
+Example:
+
+    Instruction A → long latency
+    Instruction B → independent
+
+Instead of:
+
+    A
+    wait
+    A result
+    B
+
+The compiler may schedule:
+
+    A
+    B
+    use result of A
+
+provided dependencies are respected.
+
+============================================================
+35. REGISTER PROMOTION
+============================================================
+
+If a frequently used memory value can safely stay in a register,
+the compiler may avoid repeated loads/stores.
+
+Example:
+
+    sum = 0;
+
+    for (...) {
+        sum = sum + A[i];
+    }
+
+Instead of loading/storing sum from memory every iteration,
+the compiler may keep sum in a register for much of the loop.
+
+Conceptually:
+
+    memory → register
+    repeated operations
+    register → memory
+
+This can greatly improve performance.
+
+============================================================
+36. SCALAR REPLACEMENT
+============================================================
+
+Scalar replacement can replace repeated memory-based accesses
+with scalar/register values when safe.
+
+Example:
+
+    structure field / array element
+    repeatedly accessed
+
+If the compiler can prove that the memory value does not change,
+it can keep the value in a scalar temporary.
+
+Goal:
+
+    Reduce memory traffic.
+
+============================================================
+37. ALIAS ANALYSIS
+============================================================
+
+Alias = two references may refer to the same memory location.
+
+Example:
+
+    int *p;
+    int *q;
+
+    *p = 10;
+    x = *q;
+
+Can the compiler assume q does not point to p?
+
+Without sufficient information:
+
+    p and q MAY alias.
+
+Therefore moving or eliminating memory operations may be unsafe.
+
+Alias analysis tries to determine:
+
+    MAY-ALIAS
+    MUST-ALIAS
+    NO-ALIAS
+
+============================================================
+38. WHY ALIAS ANALYSIS MATTERS
+============================================================
+
+Consider:
+
+    *p = 10;
+    x = *q;
+
+If:
+
+    p == q
+
+then:
+
+    x = 10
+
+If:
+
+    p != q
+
+then x may have a completely different value.
+
+Therefore the compiler must understand possible aliases before
+performing aggressive memory optimizations.
+
+============================================================
+39. ESCAPE ANALYSIS
+============================================================
+
+Escape analysis determines whether an object/reference can
+escape a particular scope or thread.
+
+Example concept:
+
+    object created inside function
+
+If the compiler proves that the object never escapes, it may
+perform optimizations such as:
+
+    • Stack allocation instead of heap allocation
+    • Scalar replacement
+    • Removing unnecessary synchronization in some contexts
+
+Escape analysis is particularly important in managed runtimes
+and JIT compilers.
+
+============================================================
+40. INTERPROCEDURAL OPTIMIZATION
+============================================================
+
+IPO = Interprocedural Optimization.
+
+It analyzes multiple functions together.
+
+Example:
+
+    int square(int x) {
+        return x * x;
+    }
+
+    y = square(5);
+
+The compiler may determine:
+
+    square(5) = 25
+
+depending on language semantics and optimization opportunities.
+
+Interprocedural analysis can examine:
+
+    • Function calls
+    • Side effects
+    • Constants
+    • Aliases
+    • Function summaries
+    • Call graph
+
+============================================================
+41. FUNCTION INLINING
+============================================================
+
+Inlining replaces a function call with the function body.
+
+Before:
+
+    y = square(x);
+
+Function:
+
+    square(x) {
+        return x * x;
+    }
+
+After inlining:
+
+    y = x * x;
+
+Benefits:
+
+    • Removes call/return overhead
+    • Enables further optimization
+    • Exposes more code to optimizer
+
+Disadvantages:
+
+    • Code size increases
+    • Instruction-cache pressure may increase
+    • Excessive inlining can hurt performance
+
+============================================================
+42. CONSTANT PROPAGATION + INLINING
+============================================================
+
+Example:
+
+    int square(int x) {
+        return x * x;
+    }
+
+    y = square(5);
+
+After inlining:
+
+    y = 5 * 5;
+
+After constant folding:
+
+    y = 25;
+
+This demonstrates an important idea:
+
+    One optimization can create opportunities
+    for another optimization.
+
+============================================================
+43. FUNCTION SPECIALIZATION
+============================================================
+
+A general function can sometimes be specialized for a known
+case.
+
+Example:
+
+    f(x, constant_value)
+
+If one argument is always constant, the compiler may create a
+specialized version.
+
+General:
+
+    f(x, c)
+
+Specialized:
+
+    f_c(x)
+
+This may enable:
+
+    • Constant propagation
+    • Dead-code elimination
+    • Better instruction selection
+
+============================================================
+44. DE VIRTUALIZATION
+============================================================
+
+In object-oriented languages, a virtual method call may have
+multiple possible targets.
+
+If the compiler can determine the actual target:
+
+    virtual_call()
+
+may become:
+
+    direct_call()
+
+This is called devirtualization.
+
+Benefits:
+
+    • Lower call overhead
+    • Enables inlining
+    • Enables additional optimizations
+
+============================================================
+45. LOOP TRANSFORMATION SUMMARY
+============================================================
+
+Loop transformations from Chapter 33 and advanced optimization:
+
+    Loop invariant motion
+    Strength reduction
+    Induction variable optimization
+    Loop unrolling
+    Loop fusion
+    Loop fission
+    Loop interchange
+    Loop peeling
+    Loop unswitching
+    Vectorization
+    Software pipelining
+
+Advanced loop transformations often require:
+
+    • Dependence analysis
+    • Alias analysis
+    • Cost models
+
+============================================================
+46. DEPENDENCE ANALYSIS
+============================================================
+
+Before reordering operations, compiler asks:
+
+    "Can these operations affect each other?"
+
+Types commonly discussed:
+
+    RAW = Read After Write
+    WAR = Write After Read
+    WAW = Write After Write
+
+------------------------------------------------------------
+RAW
+------------------------------------------------------------
+
+    x = 10;
+    y = x + 1;
+
+Second instruction depends on first.
+
+This is a true data dependency.
+
+------------------------------------------------------------
+WAR
+------------------------------------------------------------
+
+    y = x;
+    x = 10;
+
+The write to x must not move before the read if that changes
+the required semantics.
+
+------------------------------------------------------------
+WAW
+------------------------------------------------------------
+
+    x = 10;
+    x = 20;
+
+Ordering can matter because both write the same location.
+
+============================================================
+47. MEMORY DEPENDENCE
+============================================================
+
+Memory makes optimization harder.
+
+Example:
+
+    A[i] = 10;
+    x = A[j];
+
+If i and j may be equal, there may be a dependency.
+
+Therefore compiler needs:
+
+    Alias/dependence analysis
+
+to determine whether reordering is safe.
+
+============================================================
+48. SPECULATIVE OPTIMIZATION
+============================================================
+
+Speculative optimization performs an operation earlier based
+on an assumption that it is beneficial and safe under expected
+conditions.
+
+Example concept:
+
+    Assume a likely branch.
+
+The compiler may arrange code to favor that path.
+
+Modern compilers often use:
+
+    • Branch prediction information
+    • Profile data
+    • Runtime guards
+
+Speculation must preserve correctness.
+
+============================================================
+49. PROFILE-GUIDED OPTIMIZATION
+============================================================
+
+PGO = Profile-Guided Optimization.
+
+The compiler uses information about how the program actually
+runs.
+
+Typical process:
+
+    Program
+       |
+       v
+    Instrument / profile
+       |
+       v
+    Runtime behavior
+       |
+       v
+    Profile data
+       |
+       v
+    Recompile / optimize
+       |
+       v
+    Better target code
+
+Profile information may reveal:
+
+    • Hot functions
+    • Hot loops
+    • Likely branches
+    • Common values
+    • Frequently executed paths
+
+============================================================
+50. HOT CODE
+============================================================
+
+Hot code = code executed very frequently.
+
+Example:
+
+    Loop executed:
+        1,000,000,000 times
+
+is a better optimization target than code executed once.
+
+Therefore compilers often prioritize:
+
+    HOT LOOPS
+    HOT FUNCTIONS
+    HOT PATHS
+
+This is especially important in JIT compilation.
+
+============================================================
+51. COLD CODE
+============================================================
+
+Cold code = code executed rarely.
+
+Compiler may optimize cold code differently.
+
+For example:
+
+    • Reduce code size
+    • Move it away from hot paths
+    • Reduce impact on instruction cache
+
+Thus:
+
+    HOT → performance priority
+    COLD → code-size/overall footprint may matter more
+
+============================================================
+52. BRANCH OPTIMIZATION
+============================================================
+
+Branches can affect CPU performance.
+
+Compiler may:
+
+    • Simplify conditions
+    • Remove unnecessary branches
+    • Reorder basic blocks
+    • Use likely/unlikely information
+    • Convert branches into conditional instructions when useful
+
+Goal:
+
+    Improve control-flow efficiency.
+
+============================================================
+53. TAIL DUPLICATION
+============================================================
+
+Tail duplication copies a common block into multiple predecessor
+paths.
+
+Why?
+
+It may eliminate a branch or simplify control flow.
+
+Trade-off:
+
+    More code size
+
+but potentially:
+
+    Better branch behavior
+    Better scheduling
+    Better optimization opportunities
+
+Thus optimization often involves trade-offs.
+
+============================================================
+54. CODE SIZE vs EXECUTION SPEED
+============================================================
+
+Optimization is not always:
+
+    "maximum speed at any cost"
+
+There may be competing goals.
+
+Example:
+
+    Loop unrolling
+
+can:
+
+    Increase speed
+
+but also:
+
+    Increase code size
+
+Therefore compiler uses a cost model.
+
+Typical trade-off:
+
+    Performance
+        ↕
+    Code size
+        ↕
+    Compile time
+        ↕
+    Memory usage
+        ↕
+    Energy
+
+============================================================
+55. COST MODEL
+============================================================
+
+A cost model estimates whether an optimization is worthwhile.
+
+Example:
+
+    Unroll loop by 8
+
+Possible benefit:
+
+    fewer branches
+
+Possible cost:
+
+    much larger code
+
+Compiler chooses based on expected benefit.
+
+Conceptually:
+
+    If Benefit > Cost
+        perform optimization
+    else
+        avoid optimization
+
+============================================================
+56. OPTIMIZATION PASSES
+============================================================
+
+Compiler rarely performs all optimizations in one operation.
+
+Instead:
+
+    IR
+     |
+     v
+    Pass 1
+     |
+     v
+    Pass 2
+     |
+     v
+    Pass 3
+     |
+     v
+    Pass 4
+     |
+     v
+    Optimized IR
+
+Examples:
+
+    Constant propagation
+          ↓
+    Dead code elimination
+          ↓
+    CSE
+          ↓
+    Loop optimization
+          ↓
+    Instruction scheduling
+
+One pass can expose opportunities for another.
+
+============================================================
+57. ITERATIVE OPTIMIZATION
+============================================================
+
+Sometimes one optimization creates a new opportunity.
+
+Example:
+
+Before:
+
+    x = 10;
+    y = x + 5;
+    z = y * 0;
+
+Constant propagation:
+
+    y = 15;
+    z = 15 * 0;
+
+Constant folding:
+
+    z = 0;
+
+Dead code elimination may then remove unused x/y/z.
+
+Therefore:
+
+    Optimization Pass
+          ↓
+    New Opportunity
+          ↓
+    Another Pass
+          ↓
+    Better IR
+
+============================================================
+58. FIXED POINT IN OPTIMIZATION
+============================================================
+
+An optimizer may repeatedly apply transformations until no more
+useful changes occur.
+
+Conceptually:
+
+    IR0
+     ↓
+    Optimize
+     ↓
+    IR1
+     ↓
+    Optimize
+     ↓
+    IR2
+     ↓
+    Optimize
+     ↓
+    IR3
+     ↓
+    No further changes
+
+Then:
+
+    IR3 = optimization fixed point
+
+This idea is closely related to data-flow analysis.
+
+============================================================
+59. OPTIMIZATION ORDER MATTERS
+============================================================
+
+Consider:
+
+    Function call
+        ↓
+    Inlining
+        ↓
+    Constant propagation
+        ↓
+    Constant folding
+        ↓
+    Dead code elimination
+
+Inlining can expose constants.
+
+Constants can expose dead code.
+
+Therefore:
+
+    Optimization A
+        ↓
+    creates opportunity for B
+
+Compiler pass ordering is important.
+
+============================================================
+60. SAFE vs UNSAFE OPTIMIZATION
+============================================================
+
+SAFE TRANSFORMATION:
+
+    Preserves required semantics.
+
+UNSAFE TRANSFORMATION:
+
+    Changes observable program behavior.
+
+Example:
+
+    x = a / b;
+
+Moving this calculation may be unsafe if it changes whether
+an exception occurs.
+
+Similarly:
+
+    printf(...)
+    file I/O
+    volatile memory access
+
+can impose strong restrictions on optimization.
+
+============================================================
+61. SIDE EFFECTS
+============================================================
+
+A side effect changes something outside the immediate expression.
+
+Examples:
+
+    • Writing to memory
+    • File I/O
+    • Printing
+    • Updating global state
+    • Calling functions with side effects
+
+Compiler cannot freely eliminate or reorder side-effecting
+operations.
+
+Example:
+
+    print("Hello");
+
+cannot simply be removed because its result is not stored in a
+variable.
+
+It has an observable side effect.
+
+============================================================
+62. VOLATILE MEMORY
+============================================================
+
+In languages such as C/C++, volatile accesses have special
+semantics.
+
+Example:
+
+    volatile int flag;
+
+The compiler generally cannot treat volatile reads/writes like
+ordinary removable memory operations.
+
+Therefore aggressive optimization must respect language rules.
+
+============================================================
+63. STRICT ALIASING / POINTER OPTIMIZATION
+============================================================
+
+Pointers make optimization difficult.
+
+Example:
+
+    *p = 10;
+    x = *q;
+
+If p and q can refer to the same object:
+
+    x may become 10.
+
+If they cannot alias:
+
+    the operations may be optimized more aggressively.
+
+Thus pointer analysis and alias analysis are essential for
+advanced optimization.
+
+============================================================
+64. LOOP VECTORIZE + ALIAS ANALYSIS
+============================================================
+
+Consider:
+
+    for (i = 0; i < n; i++)
+        A[i] = B[i] + C[i];
+
+If the compiler knows A, B, and C do not overlap in a harmful
+way, vectorization may be possible.
+
+If they may alias:
+
+    A == B
+
+then writing A[i] might affect a later read from B.
+
+The compiler must prove safety or use runtime checks/guards
+when supported.
+
+============================================================
+65. AUTO-VECTORIZATION
+============================================================
+
+The compiler automatically converts suitable loops into SIMD
+operations.
+
+Source:
+
+    for (i = 0; i < n; i++)
+        C[i] = A[i] + B[i];
+
+Conceptually:
+
+    vector C = vector A + vector B
+
+Requirements may include:
+
+    • No harmful loop-carried dependencies
+    • Suitable memory alignment/access
+    • Suitable operations
+    • Profitable vectorization
+    • Safe aliasing assumptions
+
+============================================================
+66. LOOP DISTRIBUTION
+============================================================
+
+Loop distribution is another name commonly used for loop
+fission.
+
+Example:
+
+    for (i = 0; i < n; i++) {
+        A[i] = B[i] + 1;
+        C[i] = D[i] + 1;
+    }
+
+May become:
+
+    for (i = 0; i < n; i++)
+        A[i] = B[i] + 1;
+
+    for (i = 0; i < n; i++)
+        C[i] = D[i] + 1;
+
+Useful when the separate loops can be optimized differently.
+
+============================================================
+67. INTERPROCEDURAL CONSTANT PROPAGATION
+============================================================
+
+Example:
+
+    int f() {
+        return g(10);
+    }
+
+If the compiler can analyze g and prove that the result is
+constant:
+
+    f()
+
+may itself become a constant-returning function.
+
+This requires information crossing function boundaries.
+
+============================================================
+68. WHOLE-PROGRAM OPTIMIZATION
+============================================================
+
+Whole-program optimization analyzes a very large portion of the
+program together.
+
+Potential benefits:
+
+    • More accurate call relationships
+    • More aggressive inlining
+    • Better constant propagation
+    • Better dead-code elimination
+    • Better devirtualization
+
+Potential cost:
+
+    • Increased compile time
+    • Increased memory usage
+    • More complex compilation
+
+============================================================
+69. LINK-TIME OPTIMIZATION
+============================================================
+
+LTO = Link-Time Optimization.
+
+Optimization can continue during the linking stage.
+
+Traditional:
+
+    Source
+      ↓
+    Compile each file
+      ↓
+    Object files
+      ↓
+    Link
+
+With LTO:
+
+    Multiple compilation units
+            ↓
+    Combined optimization information
+            ↓
+    Link-time optimization
+            ↓
+    Final executable
+
+This enables optimization across source-file boundaries.
+
+============================================================
+70. INTERPROCEDURAL ANALYSIS
+============================================================
+
+Important information may include:
+
+    • Call graph
+    • Function side effects
+    • Return values
+    • Argument properties
+    • Aliasing
+    • Modifies/uses information
+
+Example:
+
+    main()
+      |
+      v
+      f()
+      |
+      v
+      g()
+
+Compiler can analyze this call graph to determine
+optimization opportunities.
+
+============================================================
+71. MODERN ADVANCED OPTIMIZATION PIPELINE
+============================================================
+
+A simplified modern compiler pipeline:
+
+    Source Code
+         |
+         v
+    Front End
+         |
+         v
+    IR
+         |
+         v
+    Simplification
+         |
+         v
+    SSA Construction
+         |
+         v
+    Interprocedural Analysis
+         |
+         v
+    Global Optimization
+         |
+         v
+    Loop Optimization
+         |
+         v
+    Vectorization
+         |
+         v
+    Instruction Selection
+         |
+         v
+    Register Allocation
+         |
+         v
+    Scheduling
+         |
+         v
+    Peephole Optimization
+         |
+         v
+    Machine Code
+
+Actual compilers may use different pipelines.
+
+============================================================
+72. IMPORTANT ADVANCED TECHNIQUES
+============================================================
+
+Technique:
+    PRE
+
+Meaning:
+    Partial Redundancy Elimination
+
+Technique:
+    GVN
+
+Meaning:
+    Global Value Numbering
+
+Technique:
+    SCCP
+
+Meaning:
+    Sparse Conditional Constant Propagation
+
+Technique:
+    SSA
+
+Meaning:
+    Static Single Assignment
+
+Technique:
+    IPO
+
+Meaning:
+    Interprocedural Optimization
+
+Technique:
+    PGO
+
+Meaning:
+    Profile-Guided Optimization
+
+Technique:
+    LTO
+
+Meaning:
+    Link-Time Optimization
+
+Technique:
+    LICM
+
+Meaning:
+    Loop-Invariant Code Motion
+
+============================================================
+73. ACRONYMS — MUST REMEMBER
+============================================================
+
+SSA
+    Static Single Assignment
+
+PRE
+    Partial Redundancy Elimination
+
+GVN
+    Global Value Numbering
+
+SCCP
+    Sparse Conditional Constant Propagation
+
+IPO
+    Interprocedural Optimization
+
+PGO
+    Profile-Guided Optimization
+
+LTO
+    Link-Time Optimization
+
+ILP
+    Instruction-Level Parallelism
+
+SIMD
+    Single Instruction, Multiple Data
+
+LICM
+    Loop-Invariant Code Motion
+
+CFG
+    Control Flow Graph
+
+DCE
+    Dead Code Elimination
+
+CSE
+    Common Subexpression Elimination
+
+============================================================
+74. GATE TRAP #1
+============================================================
+
+Question:
+
+Which technique uses a small window of machine instructions?
+
+Answer:
+
+    Peephole optimization
+
+Remember:
+
+    PEEPHOLE = SMALL INSTRUCTION WINDOW
+
+============================================================
+75. GATE TRAP #2
+============================================================
+
+Question:
+
+What is the major property of SSA?
+
+Answer:
+
+    Each SSA variable/version has exactly one definition.
+
+Important:
+
+A source-level variable may have multiple assignments,
+but SSA represents them using different versions.
+
+============================================================
+76. GATE TRAP #3
+============================================================
+
+Question:
+
+Why is φ used in SSA?
+
+Answer:
+
+To merge values coming from different control-flow paths.
+
+Example:
+
+    x1 = 10
+    x2 = 20
+
+    x3 = φ(x1, x2)
+
+============================================================
+77. GATE TRAP #4
+============================================================
+
+Question:
+
+Which optimization works across procedure boundaries?
+
+Answer:
+
+    Interprocedural optimization.
+
+Not merely local optimization.
+
+============================================================
+78. GATE TRAP #5
+============================================================
+
+Question:
+
+Which technique uses runtime execution information?
+
+Answer:
+
+    Profile-Guided Optimization (PGO)
+
+============================================================
+79. GATE TRAP #6
+============================================================
+
+Question:
+
+What does LTO allow?
+
+Answer:
+
+Optimization using information available at link time,
+potentially across compilation-unit boundaries.
+
+============================================================
+80. GATE TRAP #7
+============================================================
+
+Question:
+
+Which analysis is especially important when pointers may refer
+to the same memory location?
+
+Answer:
+
+    Alias analysis.
+
+============================================================
+81. GATE TRAP #8
+============================================================
+
+Question:
+
+What is function inlining?
+
+Answer:
+
+Replacing a function call with the function body when
+appropriate.
+
+Benefit:
+
+    Enables further optimization.
+
+Disadvantage:
+
+    Can increase code size.
+
+============================================================
+82. GATE TRAP #9
+============================================================
+
+Question:
+
+What is the main purpose of instruction scheduling?
+
+Answer:
+
+To arrange instructions to improve processor utilization and
+reduce pipeline stalls while respecting dependencies.
+
+============================================================
+83. GATE TRAP #10
+============================================================
+
+Question:
+
+What is the key trade-off of loop unrolling?
+
+Answer:
+
+    Reduced loop overhead
+            VS
+    Increased code size
+
+============================================================
+84. INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is advanced optimization?
+
+Answer:
+Advanced optimization applies sophisticated transformations
+using CFG, data-flow, dependencies, loops, interprocedural
+information, and machine characteristics.
+
+------------------------------------------------------------
+
+Q2. What is peephole optimization?
+
+Answer:
+It examines a small sequence of target instructions and
+replaces inefficient patterns with equivalent better patterns.
+
+------------------------------------------------------------
+
+Q3. What is PRE?
+
+Answer:
+Partial Redundancy Elimination removes computations that are
+redundant on some control-flow paths by appropriately moving or
+introducing computations.
+
+------------------------------------------------------------
+
+Q4. What is GVN?
+
+Answer:
+Global Value Numbering identifies expressions or values that
+represent the same computational value.
+
+------------------------------------------------------------
+
+Q5. Why is SSA useful?
+
+Answer:
+SSA gives each variable version a single definition, making
+many global optimizations easier.
+
+------------------------------------------------------------
+
+Q6. What is a phi function?
+
+Answer:
+A phi function merges values from different control-flow
+predecessors in SSA form.
+
+------------------------------------------------------------
+
+Q7. What is alias analysis?
+
+Answer:
+It determines whether different references may refer to the
+same memory location.
+
+------------------------------------------------------------
+
+Q8. What is function inlining?
+
+Answer:
+Replacing a call with the called function's body.
+
+------------------------------------------------------------
+
+Q9. What is PGO?
+
+Answer:
+Profile-Guided Optimization uses runtime/profile information
+to guide compiler optimization decisions.
+
+------------------------------------------------------------
+
+Q10. What is LTO?
+
+Answer:
+Link-Time Optimization performs optimization using information
+available across compilation units during linking.
+
+------------------------------------------------------------
+
+Q11. Why can't compilers optimize every expression freely?
+
+Answer:
+Because side effects, exceptions, memory aliasing, volatile
+operations, floating-point semantics, and control flow can
+affect observable behavior.
+
+------------------------------------------------------------
+
+Q12. Why does optimization order matter?
+
+Answer:
+One optimization can expose opportunities for another
+optimization.
+
+============================================================
+85. PRACTICAL EXAMPLE — MULTIPLE OPTIMIZATIONS
+============================================================
+
+Original:
+
+    int f(int a, int b) {
+        int x = a + b;
+        int y = a + b;
+        int z = x * 1;
+
+        return z;
+    }
+
+STEP 1 — COMMON SUBEXPRESSION ELIMINATION
+
+    int x = a + b;
+    int y = x;
+    int z = x * 1;
+
+STEP 2 — ALGEBRAIC SIMPLIFICATION
+
+    int x = a + b;
+    int y = x;
+    int z = x;
+
+STEP 3 — DEAD CODE ELIMINATION
+
+If y is never used:
+
+    int x = a + b;
+    int z = x;
+
+If z is returned:
+
+    return a + b;
+
+Final conceptual result:
+
+    int f(int a, int b) {
+        return a + b;
+    }
+
+One optimization exposed opportunities for others.
+
+============================================================
+86. PRACTICAL EXAMPLE — LOOP
+============================================================
+
+Original:
+
+    for (i = 0; i < n; i++) {
+        x = a * b;
+        j = i * 4;
+        A[j] = x + i;
+    }
+
+Optimization 1:
+
+    a * b
+
+is invariant.
+
+Move it outside:
+
+    x = a * b;
+
+    for (i = 0; i < n; i++) {
+        j = i * 4;
+        A[j] = x + i;
+    }
+
+Optimization 2:
+
+    j = i * 4
+
+can potentially use strength reduction.
+
+    j = 0;
+
+    for (i = 0; i < n; i++) {
+        A[j] = x + i;
+        j = j + 4;
+    }
+
+Result:
+
+    Fewer repeated expensive computations.
+
+============================================================
+87. PRACTICAL EXAMPLE — FUNCTION INLINING
+============================================================
+
+Before:
+
+    int add(int a, int b) {
+        return a + b;
+    }
+
+    x = add(10, 20);
+
+After inlining:
+
+    x = 10 + 20;
+
+Constant folding:
+
+    x = 30;
+
+If x is unused:
+
+    Entire computation may potentially disappear.
+
+This illustrates:
+
+    Inlining
+       ↓
+    Constant propagation/folding
+       ↓
+    Dead-code elimination
+
+============================================================
+88. PRACTICAL EXAMPLE — ALIAS ANALYSIS
+============================================================
+
+Code:
+
+    *p = 10;
+    x = *q;
+
+Case 1:
+
+    p and q may alias
+
+Then compiler must conservatively consider:
+
+    x = 10
+
+possible.
+
+Case 2:
+
+    p and q proven not to alias
+
+Then the compiler has more freedom to reorder or optimize
+memory operations.
+
+KEY IDEA:
+
+    Better alias information
+            ↓
+    More optimization opportunities
+
+============================================================
+89. OPTIMIZATION HIERARCHY
+============================================================
+
+                    OPTIMIZATION
+                         |
+          +--------------+--------------+
+          |              |              |
+          v              v              v
+        LOCAL          GLOBAL          LOOP
+          |              |              |
+       Peephole        CSE             LICM
+       Algebraic       GVN             Unrolling
+       Constant        PRE             Strength
+       Folding         SCCP            reduction
+                                      Vectorization
+                         |
+                         v
+                  INTERPROCEDURAL
+                         |
+                    Inlining
+                    IPO
+                    LTO
+                    PGO
+
+============================================================
+90. CHAPTER 34 — ONE-PAGE REVISION
+============================================================
+
+ADVANCED OPTIMIZATION
+        |
+        +-- Peephole optimization
+        |
+        +-- Algebraic optimization
+        |
+        +-- Constant propagation
+        |
+        +-- Copy propagation
+        |
+        +-- Global CSE
+        |
+        +-- PRE
+        |
+        +-- GVN
+        |
+        +-- SCCP
+        |
+        +-- SSA
+        |     |
+        |     +-- Single definition
+        |     +-- Phi function
+        |
+        +-- CFG optimization
+        |
+        +-- Code hoisting
+        |
+        +-- Code sinking
+        |
+        +-- Instruction scheduling
+        |
+        +-- Register promotion
+        |
+        +-- Alias analysis
+        |
+        +-- Escape analysis
+        |
+        +-- Function inlining
+        |
+        +-- Devirtualization
+        |
+        +-- IPO
+        |
+        +-- LTO
+        |
+        +-- PGO
+        |
+        +-- Vectorization
+        |
+        +-- Software pipelining
+
+============================================================
+91. MOST IMPORTANT DIFFERENCES
+============================================================
+
+CSE:
+    Eliminates repeated expressions.
+
+GVN:
+    Identifies equivalent values globally.
+
+PRE:
+    Eliminates expressions that are redundant on only some paths.
+
+Constant propagation:
+    Replaces variables known to contain constants.
+
+Constant folding:
+    Evaluates constant expressions.
+
+Copy propagation:
+    Replaces copied variables with their source values.
+
+DCE:
+    Removes computations whose results are not needed.
+
+LICM:
+    Moves loop-invariant computation outside the loop.
+
+Inlining:
+    Replaces function calls with function bodies.
+
+Peephole:
+    Optimizes a small sequence of target instructions.
+
+PGO:
+    Uses runtime profile information.
+
+LTO:
+    Optimizes across compilation units at link time.
+
+============================================================
+92. FINAL MEMORY TRICKS
+============================================================
+
+PEEPHOLE
+    → Small instruction window
+
+SSA
+    → Single assignment per version
+
+PHI
+    → Merge control-flow values
+
+CSE
+    → Same expression again
+
+GVN
+    → Same value
+
+PRE
+    → Redundant on some paths
+
+SCCP
+    → Constants + reachable paths
+
+LICM
+    → Loop invariant → outside loop
+
+IPO
+    → Across functions
+
+LTO
+    → Link-time optimization
+
+PGO
+    → Profile information
+
+INLINE
+    → Function body replaces call
+
+ALIAS
+    → Can two references point to same memory?
+
+============================================================
+93. CHAPTER 34 EXAM CHECKLIST
+============================================================
+
+[✓] Local vs global optimization
+[✓] Peephole optimization
+[✓] Algebraic optimization
+[✓] Constant folding
+[✓] Constant propagation
+[✓] Copy propagation
+[✓] CSE
+[✓] Global CSE
+[✓] Dead code elimination
+[✓] CFG simplification
+[✓] Code hoisting
+[✓] Code sinking
+[✓] PRE
+[✓] GVN
+[✓] SCCP
+[✓] SSA
+[✓] Phi functions
+[✓] Instruction scheduling
+[✓] Register promotion
+[✓] Alias analysis
+[✓] Escape analysis
+[✓] Function inlining
+[✓] Devirtualization
+[✓] Interprocedural optimization
+[✓] LTO
+[✓] PGO
+[✓] Vectorization
+[✓] Software pipelining
+[✓] Cost models
+[✓] Optimization ordering
+[✓] Fixed-point optimization
+[✓] GATE traps
+[✓] Interview questions
+
+============================================================
+CONNECTION WITH PREVIOUS CHAPTERS
+============================================================
+
+Chapter 30:
+    Optimization Fundamentals
+             ↓
+Chapter 31:
+    Basic Optimizations
+             ↓
+Chapter 32:
+    Data-Flow Analysis
+             ↓
+Chapter 33:
+    Loop Optimization
+             ↓
+Chapter 34:
+    Advanced Optimization
+             ↓
+Chapter 35:
+    Garbage Collection
+
+IMPORTANT:
+
+Data-flow analysis
+        ↓
+helps optimization
+
+CFG
+        ↓
+helps identify paths and loops
+
+SSA
+        ↓
+makes many advanced optimizations easier
+
+Alias/dependence analysis
+        ↓
+determines whether aggressive transformations are safe
+
+============================================================
+END OF CHAPTER 34
+============================================================
+
+NEXT:
+Chapter 35 — Garbage Collection
+============================================================

@@ -1,0 +1,3130 @@
+======================================================================
+                 COMPILER DESIGN — CHAPTER 25
+                    RECURSION & SCOPE
+======================================================================
+
+LEVEL:
+Beginner → Intermediate → Advanced → GATE → Interview → Practical
+
+MASTER SYLLABUS:
+Chapter 25 — Recursion & Scope
+------------------------------------------------------------
+1. Recursion
+2. Stack behavior during recursion
+3. Static / lexical scope
+4. Dynamic scope
+5. Access links
+6. Displays
+7. Nested procedures
+8. Non-local variable access
+9. GATE concepts and numerical problems
+10. Interview questions
+11. Practical compiler connection
+------------------------------------------------------------
+
+
+======================================================================
+1. WHAT IS RECURSION?
+======================================================================
+
+RECURSION means:
+
+    A function/procedure calls itself, directly or indirectly.
+
+Simple example:
+
+    function A()
+    {
+        A();
+    }
+
+Here:
+
+    A → A
+
+This is DIRECT RECURSION.
+
+
+Another example:
+
+    A() calls B()
+    B() calls A()
+
+    A → B → A
+
+This is INDIRECT RECURSION.
+
+
+IMPORTANT:
+
+Recursion is not simply "repeating code."
+
+It is a situation where an active function invocation leads to
+another invocation of the same function, directly or indirectly.
+
+
+======================================================================
+2. REAL-WORLD ANALOGY
+======================================================================
+
+Imagine opening a box.
+
+Inside the box is another box.
+
+Inside that box is another box.
+
+You continue until you reach the smallest box.
+
+Then you close them in reverse order.
+
+
+Recursion behaves similarly:
+
+    Call
+      ↓
+    Call
+      ↓
+    Call
+      ↓
+    Base case
+      ↓
+    Return
+      ↑
+    Return
+      ↑
+    Return
+
+
+This is why recursion naturally works with a STACK.
+
+
+======================================================================
+3. BASIC RECURSIVE FUNCTION
+======================================================================
+
+Example:
+
+    int fact(int n)
+    {
+        if(n == 0)
+            return 1;
+
+        return n * fact(n-1);
+    }
+
+
+For:
+
+    fact(3)
+
+
+Execution:
+
+    fact(3)
+       ↓
+    fact(2)
+       ↓
+    fact(1)
+       ↓
+    fact(0)
+
+
+Then:
+
+    fact(0) = 1
+
+    fact(1) = 1 × 1 = 1
+
+    fact(2) = 2 × 1 = 2
+
+    fact(3) = 3 × 2 = 6
+
+
+Answer:
+
+    6
+
+
+======================================================================
+4. BASE CASE
+======================================================================
+
+A recursive function normally needs a BASE CASE.
+
+Base case:
+
+    The condition at which recursion stops.
+
+
+Example:
+
+    if(n == 0)
+        return 1;
+
+
+Here:
+
+    n == 0
+
+is the base case.
+
+
+Without a terminating condition, recursion may continue until
+a runtime resource is exhausted, commonly producing stack overflow
+in a stack-based implementation.
+
+
+Memory trick:
+
+    BASE CASE = STOP CONDITION
+
+
+======================================================================
+5. RECURSIVE CASE
+======================================================================
+
+The part that causes another recursive invocation is the
+RECURSIVE CASE.
+
+
+Example:
+
+    return n * fact(n-1);
+
+
+Here:
+
+    fact(n-1)
+
+creates another invocation.
+
+
+So:
+
+    Recursive function
+          |
+          +---- Base case
+          |
+          +---- Recursive case
+
+
+======================================================================
+6. ACTIVATION RECORD AND RECURSION
+======================================================================
+
+This is one of the most important compiler concepts.
+
+
+Every active invocation requires its own runtime state.
+
+For:
+
+    fact(3)
+
+
+we may have:
+
+    +----------------+
+    | fact(0)        |
+    | n = 0          |
+    +----------------+
+    | fact(1)        |
+    | n = 1          |
+    +----------------+
+    | fact(2)        |
+    | n = 2          |
+    +----------------+
+    | fact(3)        |
+    | n = 3          |
+    +----------------+
+    | main           |
+    +----------------+
+
+
+Each activation can have its own:
+
+    • parameters
+    • local variables
+    • return information
+    • temporaries
+    • saved registers
+    • control information
+
+
+IMPORTANT GATE FACT:
+
+    One function definition can have many simultaneous activations.
+
+
+======================================================================
+7. WHY DOES RECURSION NEED MULTIPLE FRAMES?
+======================================================================
+
+Consider:
+
+    fact(3)
+
+Before fact(3) returns, it calls:
+
+    fact(2)
+
+Before fact(2) returns, it calls:
+
+    fact(1)
+
+Before fact(1) returns, it calls:
+
+    fact(0)
+
+
+All of these invocations are active simultaneously.
+
+
+Therefore:
+
+    fact(3)
+    fact(2)
+    fact(1)
+    fact(0)
+
+need separate runtime state.
+
+
+If there were only one frame, the value of n for the earlier
+invocations would be overwritten.
+
+
+======================================================================
+8. STACK BEHAVIOR DURING RECURSION
+======================================================================
+
+A stack follows:
+
+    LIFO
+
+LIFO means:
+
+    Last In, First Out.
+
+
+For:
+
+    fact(3)
+
+
+CALL phase:
+
+    fact(3)
+       ↓
+    fact(2)
+       ↓
+    fact(1)
+       ↓
+    fact(0)
+
+
+The last function called is:
+
+    fact(0)
+
+
+Therefore it returns first.
+
+
+RETURN phase:
+
+    fact(0)
+       ↑
+    fact(1)
+       ↑
+    fact(2)
+       ↑
+    fact(3)
+
+
+Memory trick:
+
+    CALL:
+        Down
+
+    RETURN:
+        Up
+
+
+======================================================================
+9. RECURSION STACK DIAGRAM
+======================================================================
+
+Suppose:
+
+    fact(3)
+
+
+Initially:
+
+    +-------------+
+    | main        |
+    +-------------+
+
+
+After fact(3):
+
+    +-------------+
+    | fact(3)     |
+    +-------------+
+    | main        |
+    +-------------+
+
+
+After fact(2):
+
+    +-------------+
+    | fact(2)     |
+    +-------------+
+    | fact(3)     |
+    +-------------+
+    | main        |
+    +-------------+
+
+
+After fact(1):
+
+    +-------------+
+    | fact(1)     |
+    +-------------+
+    | fact(2)     |
+    +-------------+
+    | fact(3)     |
+    +-------------+
+    | main        |
+    +-------------+
+
+
+After fact(0):
+
+    +-------------+
+    | fact(0)     |
+    +-------------+
+    | fact(1)     |
+    +-------------+
+    | fact(2)     |
+    +-------------+
+    | fact(3)     |
+    +-------------+
+    | main        |
+    +-------------+
+
+
+Then frames are removed in reverse order.
+
+
+======================================================================
+10. MAXIMUM RECURSION DEPTH
+======================================================================
+
+Maximum recursion depth means:
+
+    Maximum number of simultaneously active recursive invocations.
+
+
+Example:
+
+    fact(5)
+
+with base case:
+
+    fact(0)
+
+
+Active invocations:
+
+    fact(5)
+    fact(4)
+    fact(3)
+    fact(2)
+    fact(1)
+    fact(0)
+
+
+Therefore:
+
+    6 recursive-function activation records.
+
+
+If main is included:
+
+    7 active stack frames.
+
+
+GATE TIP:
+
+Always determine whether the question counts:
+
+    • only recursive function frames
+or
+    • all frames including main.
+
+
+======================================================================
+11. RECURSION AND STACK OVERFLOW
+======================================================================
+
+A stack has finite available memory.
+
+If recursion continues too deeply:
+
+    more calls
+       ↓
+    more activation records
+       ↓
+    more stack memory
+       ↓
+    stack capacity exceeded
+       ↓
+    STACK OVERFLOW
+
+
+Example:
+
+    void f()
+    {
+        f();
+    }
+
+
+There is no base case.
+
+Therefore:
+
+    f()
+      ↓
+    f()
+      ↓
+    f()
+      ↓
+    ...
+
+
+Eventually, the program may exhaust available stack space.
+
+
+IMPORTANT:
+
+Stack overflow is a runtime resource problem.
+
+It is not primarily a lexical or syntax error.
+
+
+======================================================================
+12. TAIL RECURSION
+======================================================================
+
+A recursive call is called TAIL RECURSIVE when the recursive call
+is the final operation of the function's computation.
+
+
+Example:
+
+    int f(int n)
+    {
+        if(n == 0)
+            return 0;
+
+        return f(n-1);
+    }
+
+
+The recursive call:
+
+    f(n-1)
+
+is the final operation.
+
+
+Some languages/compilers can optimize suitable tail calls so that
+stack usage does not grow in the same way as ordinary recursion.
+
+
+IMPORTANT:
+
+Tail-call optimization is implementation/language dependent.
+
+
+======================================================================
+13. RECURSION VS ITERATION
+======================================================================
+
+RECURSION:
+
+    Function calls itself.
+
+
+ITERATION:
+
+    Loop repeatedly executes statements.
+
+
+Example iteration:
+
+    for(i=0; i<5; i++)
+        ...
+
+
+Example recursion:
+
+    f(n)
+    {
+        if(...)
+            return;
+        f(n-1);
+    }
+
+
+Compiler/runtime difference:
+
+    Recursion often requires multiple active activation records.
+
+    Iteration often reuses the same function activation.
+
+
+But compiler optimization can change implementation details.
+
+
+======================================================================
+14. WHAT IS SCOPE?
+======================================================================
+
+SCOPE means:
+
+    The region of a program in which a name/identifier is visible
+    and can be referenced according to the language's rules.
+
+
+Example:
+
+    int x = 10;
+
+    void f()
+    {
+        print(x);
+    }
+
+
+If x is visible inside f, then x is in scope there.
+
+
+Scope answers:
+
+    "Where can this name be used?"
+
+
+======================================================================
+15. SCOPE VS LIFETIME
+======================================================================
+
+These are different concepts.
+
+
+SCOPE:
+
+    Where a name is visible.
+
+
+LIFETIME:
+
+    How long the associated runtime object/storage exists.
+
+
+Example:
+
+    local variable x inside f()
+
+
+Scope:
+
+    region of source program where x can be referenced.
+
+
+Lifetime:
+
+    generally from the activation of f until that storage/object
+    ceases to exist, subject to the language's semantics.
+
+
+IMPORTANT GATE TRAP:
+
+    Scope ≠ lifetime.
+
+
+======================================================================
+16. LOCAL SCOPE
+======================================================================
+
+A local variable is visible only within a particular region,
+such as a function or block.
+
+
+Example:
+
+    void f()
+    {
+        int x = 10;
+
+        print(x);
+    }
+
+
+x is local to the function/block.
+
+
+Outside its scope:
+
+    print(x);
+
+may be invalid because x is not visible there.
+
+
+======================================================================
+17. GLOBAL SCOPE
+======================================================================
+
+A globally declared name can be visible across a larger portion
+of the program, depending on language rules.
+
+
+Example:
+
+    int x = 10;
+
+    void f()
+    {
+        print(x);
+    }
+
+    void g()
+    {
+        print(x);
+    }
+
+
+Both functions may be able to access x under the language's
+visibility/linkage rules.
+
+
+IMPORTANT:
+
+"Global" does not automatically mean universally accessible in
+every language. Visibility and linkage rules still matter.
+
+
+======================================================================
+18. NESTED SCOPE
+======================================================================
+
+A scope can be contained inside another scope.
+
+
+Example:
+
+    {
+        int x = 10;
+
+        {
+            int y = 20;
+
+            print(x);
+            print(y);
+        }
+
+        print(x);
+    }
+
+
+The inner block can often access names from the outer scope,
+subject to language rules.
+
+
+Conceptually:
+
+    OUTER SCOPE
+    +-----------------------+
+    | x                     |
+    |                       |
+    |   INNER SCOPE         |
+    |   +---------------+   |
+    |   | y             |   |
+    |   |               |   |
+    |   +---------------+   |
+    +-----------------------+
+
+
+======================================================================
+19. SHADOWING
+======================================================================
+
+SHADOWING occurs when an inner declaration uses the same name as
+an outer declaration.
+
+
+Example:
+
+    int x = 10;
+
+    {
+        int x = 20;
+
+        print(x);
+    }
+
+
+Inside the inner scope:
+
+    x = 20
+
+
+The inner x shadows the outer x.
+
+
+Conceptually:
+
+    Outer:
+        x = 10
+
+    Inner:
+        x = 20
+        ↑
+        visible x
+
+
+After leaving inner scope:
+
+    outer x = 10
+
+
+======================================================================
+20. STATIC / LEXICAL SCOPE
+======================================================================
+
+STATIC SCOPE is also called:
+
+    LEXICAL SCOPE.
+
+
+Under lexical scope:
+
+    The binding of a name is determined from the program's
+    lexical/static structure.
+
+
+In simple terms:
+
+    Look at where the code is written.
+
+
+Example:
+
+    int x = 10;
+
+    function A()
+    {
+        print(x);
+    }
+
+
+The lexical structure tells us which x is intended.
+
+
+The compiler can generally determine many name-resolution
+relationships before runtime.
+
+
+======================================================================
+21. WHY IS IT CALLED LEXICAL SCOPE?
+======================================================================
+
+Because the scope relationship can be determined from the
+source-code structure.
+
+"Lexical" refers to the textual/program structure.
+
+
+Think:
+
+    STATIC / LEXICAL
+        ↓
+    WHERE CODE IS WRITTEN
+
+
+This is a very important memory trick.
+
+
+======================================================================
+22. NESTED PROCEDURES UNDER STATIC SCOPE
+======================================================================
+
+Consider a language that supports nested procedures:
+
+    procedure Outer()
+    {
+        int x;
+
+        procedure Inner()
+        {
+            print(x);
+        }
+    }
+
+
+Inner is lexically nested inside Outer.
+
+
+Therefore:
+
+    Inner
+       |
+       ↓
+    Outer
+
+
+When Inner accesses x:
+
+    x belongs to Outer.
+
+
+The compiler needs a mechanism to access this non-local variable
+during execution.
+
+
+This leads to:
+
+    ACCESS LINK
+    or
+    DISPLAY
+
+
+======================================================================
+23. NON-LOCAL VARIABLE
+======================================================================
+
+A NON-LOCAL variable is a variable that is not declared in the
+current procedure/block but is accessible according to the
+language's scope rules.
+
+
+Example:
+
+    procedure Outer()
+    {
+        int x;
+
+        procedure Inner()
+        {
+            print(x);
+        }
+    }
+
+
+Inside Inner:
+
+    x
+
+is not local to Inner.
+
+But x is accessible from Outer.
+
+
+Therefore:
+
+    x = non-local variable of Inner.
+
+
+IMPORTANT:
+
+    Local:
+        declared in current scope.
+
+    Non-local:
+        declared elsewhere but accessible.
+
+
+======================================================================
+24. STATIC LINK / ACCESS LINK
+======================================================================
+
+An ACCESS LINK is also commonly called a:
+
+    STATIC LINK.
+
+
+It can be stored in an activation record to help a nested procedure
+find its lexically enclosing activation.
+
+
+Example:
+
+    Outer()
+    {
+        int x;
+
+        Inner()
+        {
+            print(x);
+        }
+    }
+
+
+Conceptually:
+
+    Inner activation record
+             |
+             | static/access link
+             ↓
+    Outer activation record
+             |
+             | x
+             ↓
+           value
+
+
+Thus:
+
+    Inner → Outer
+
+
+======================================================================
+25. WHY IS ACCESS LINK NEEDED?
+======================================================================
+
+Suppose:
+
+    Outer()
+    {
+        int x = 100;
+
+        Inner();
+    }
+
+    Inner()
+    {
+        print(x);
+    }
+
+
+If x is lexically defined in Outer, Inner needs to find the
+correct activation of Outer.
+
+
+The access link can provide the path.
+
+
+Conceptually:
+
+    Inner frame
+        |
+        | access link
+        ↓
+    Outer frame
+        |
+        ↓
+       x=100
+
+
+Then Inner can access x.
+
+
+======================================================================
+26. STATIC LINK CHAIN
+======================================================================
+
+Consider three lexical nesting levels:
+
+    Level 1:
+        A
+
+    Level 2:
+        B inside A
+
+    Level 3:
+        C inside B
+
+
+Conceptually:
+
+    C frame
+      |
+      | static link
+      ↓
+    B frame
+      |
+      | static link
+      ↓
+    A frame
+
+
+If C wants a variable declared in A:
+
+    C
+    ↓
+    B
+    ↓
+    A
+    ↓
+    variable
+
+
+This is called following the STATIC LINK CHAIN.
+
+
+======================================================================
+27. STATIC LINK DISTANCE
+======================================================================
+
+Suppose:
+
+    A
+      |
+      B
+        |
+        C
+
+
+C accesses a variable declared in B.
+
+Distance:
+
+    1 static-link step.
+
+
+C accesses a variable declared in A.
+
+Distance:
+
+    2 static-link steps.
+
+
+This lexical nesting depth is important in compiler implementation.
+
+
+Example:
+
+    C
+    |
+    | 1
+    ↓
+    B
+    |
+    | 2
+    ↓
+    A
+
+
+GATE questions can ask how many static-link traversals are required.
+
+
+======================================================================
+28. CONTROL LINK VS STATIC LINK
+======================================================================
+
+This is one of the MOST IMPORTANT GATE concepts.
+
+
+CONTROL LINK:
+
+    Also called dynamic link.
+
+    Relationship:
+        current activation → caller activation
+
+
+STATIC / ACCESS LINK:
+
+    Relationship:
+        current activation → lexically enclosing activation
+
+
+Memory:
+
+    CONTROL = CALLER
+
+    STATIC = SCOPE
+
+
+Example:
+
+    Dynamic call:
+
+        A calls B
+
+        B → A
+        control/dynamic link
+
+
+Lexical nesting:
+
+        Outer contains Inner
+
+        Inner → Outer
+        access/static link
+
+
+These two links may point to different activation records.
+
+
+======================================================================
+29. IMPORTANT EXAMPLE — DIFFERENT LINKS
+======================================================================
+
+Suppose lexical nesting is:
+
+    A
+      |
+      B
+        |
+        C
+
+
+But runtime calls are:
+
+    A → D → C
+
+
+Then:
+
+    C's CONTROL LINK
+        → D
+
+
+But:
+
+    C's STATIC LINK
+        → B
+
+
+assuming C is lexically nested inside B.
+
+
+Therefore:
+
+    Control link = D
+    Static link  = B
+
+
+This is a very important GATE concept.
+
+
+======================================================================
+30. DYNAMIC SCOPE
+======================================================================
+
+DYNAMIC SCOPE determines name lookup based on the
+runtime calling sequence.
+
+
+In simple terms:
+
+    Look at who called whom.
+
+
+Suppose:
+
+    A calls B
+    B calls C
+
+
+If C references x, dynamic lookup may search:
+
+    C
+     ↓
+    B
+     ↓
+    A
+     ↓
+    caller of A
+     ↓
+    ...
+
+
+Therefore dynamic scope is associated with the runtime
+dynamic chain.
+
+
+Memory:
+
+    STATIC SCOPE
+        → where code is written
+
+    DYNAMIC SCOPE
+        → who called whom
+
+
+======================================================================
+31. STATIC VS DYNAMIC SCOPE
+======================================================================
+
++----------------------+-----------------------------+
+| Feature              | Static/Lexical Scope      |
++----------------------+-----------------------------+
+| Determined from      | Program structure         |
+| Lookup basis         | Lexical nesting           |
+| Main time            | Can often be resolved     |
+|                      | largely at compile time   |
+| Runtime link concept | Static/access link       |
++----------------------+-----------------------------+
+
+
++----------------------+-----------------------------+
+| Feature              | Dynamic Scope             |
++----------------------+-----------------------------+
+| Determined from      | Runtime call chain        |
+| Lookup basis         | Calling sequence          |
+| Main time            | Runtime                   |
+| Runtime link concept | Dynamic/control chain     |
++----------------------+-----------------------------+
+
+
+MEMORY:
+
+    STATIC = SOURCE STRUCTURE
+
+    DYNAMIC = CALLING STRUCTURE
+
+
+======================================================================
+32. STATIC SCOPE EXAMPLE
+======================================================================
+
+Consider:
+
+    int x = 10;
+
+    A()
+    {
+        int x = 20;
+        B();
+    }
+
+    B()
+    {
+        print(x);
+    }
+
+
+Assume B is lexically defined at global level, not inside A.
+
+
+Under lexical/static scope:
+
+    B's x
+
+is determined by where B is written, not by who called B.
+
+
+So B does not automatically use A's local x merely because
+A called B.
+
+
+This is a classic scope distinction.
+
+
+======================================================================
+33. DYNAMIC SCOPE EXAMPLE
+======================================================================
+
+Using the same conceptual program:
+
+    x = 10;
+
+    A()
+    {
+        x = 20;
+        B();
+    }
+
+    B()
+    {
+        print(x);
+    }
+
+
+Under a dynamic-scope language:
+
+    B may search its active callers.
+
+
+Runtime chain:
+
+    B
+    ↓
+    A
+    ↓
+    main
+
+
+It may find:
+
+    x = 20
+
+in A.
+
+
+Therefore:
+
+    Static scope and dynamic scope can produce different results.
+
+
+======================================================================
+34. WHY COMPILERS CARE ABOUT SCOPE
+======================================================================
+
+Scope affects:
+
+    • name resolution
+    • symbol-table lookup
+    • type checking
+    • variable binding
+    • code generation
+    • runtime access to non-local variables
+
+
+Compiler must determine:
+
+    Which declaration does this identifier refer to?
+
+
+Example:
+
+    x = x + 1;
+
+
+The compiler must resolve both occurrences of x.
+
+
+This is primarily a semantic-analysis issue,
+but runtime implementation may also be required for non-local
+access.
+
+
+======================================================================
+35. SYMBOL TABLE AND SCOPE
+======================================================================
+
+The symbol table stores information about names.
+
+
+For nested scopes, compiler may conceptually maintain:
+
+    Scope 1
+      |
+      +--- x
+      |
+      +--- Scope 2
+              |
+              +--- y
+
+
+When entering Scope 2:
+
+    create/activate nested scope
+
+
+When leaving:
+
+    restore outer scope
+
+
+Typical operations:
+
+    BEGIN_SCOPE
+    INSERT
+    LOOKUP
+    END_SCOPE
+
+
+Scope management is closely connected with Chapter 16.
+
+
+======================================================================
+36. NON-LOCAL ACCESS UNDER STATIC SCOPE
+======================================================================
+
+Suppose:
+
+    A
+      |
+      B
+        |
+        C
+
+
+C uses variable x declared in A.
+
+
+With static links:
+
+    C frame
+      ↓
+    B frame
+      ↓
+    A frame
+      ↓
+      x
+
+
+The compiler knows the lexical level of x.
+
+
+Therefore it can generate code to follow the required number
+of access links.
+
+
+======================================================================
+37. DISPLAY
+======================================================================
+
+A DISPLAY is another technique for accessing non-local variables
+under static/lexical nesting.
+
+
+Instead of following a chain one link at a time, a display can keep
+a direct reference to the active activation record at each
+lexical nesting level.
+
+
+Conceptually:
+
+    Display:
+
+    +--------+----------------+
+    | Level 0| frame of A     |
+    +--------+----------------+
+    | Level 1| frame of B     |
+    +--------+----------------+
+    | Level 2| frame of C     |
+    +--------+----------------+
+
+
+If C needs a variable in A:
+
+    display[0]
+
+can directly identify A's relevant activation record.
+
+
+======================================================================
+38. STATIC LINK VS DISPLAY
+======================================================================
+
+STATIC LINK:
+
+    Each activation record contains a link to its lexically
+    enclosing activation.
+
+
+For:
+
+    C inside B inside A
+
+    C → B → A
+
+
+Accessing A may require multiple link traversals.
+
+
+DISPLAY:
+
+    A table/array provides access to active frames at lexical
+    levels.
+
+
+Conceptually:
+
+    display[0] → A
+    display[1] → B
+    display[2] → C
+
+
+Then C can directly access the relevant lexical-level frame.
+
+
+======================================================================
+39. STATIC LINK VS DISPLAY — COMPARISON
+======================================================================
+
++--------------------+-----------------------------+
+| Static Link        | Display                    |
++--------------------+-----------------------------+
+| Chain of links     | Array/table of frame refs  |
+| Follow links       | Direct level-based access  |
+| Simple concept     | Can reduce traversal       |
+| Access may require | Access can be more direct  |
+| multiple hops      | for known lexical level    |
++--------------------+-----------------------------+
+
+
+Memory:
+
+    STATIC LINK = CHAIN
+
+    DISPLAY = TABLE
+
+
+======================================================================
+40. DISPLAY EXAMPLE
+======================================================================
+
+Lexical structure:
+
+    A
+      |
+      B
+        |
+        C
+
+
+At runtime:
+
+    display[0] = A frame
+    display[1] = B frame
+    display[2] = C frame
+
+
+Suppose C wants:
+
+    variable x from A
+
+
+Instead of:
+
+    C → B → A
+
+
+a display-based implementation may use:
+
+    display[0] → A
+
+
+Therefore:
+
+    direct level-based access
+
+
+The exact implementation details depend on the language/compiler.
+
+
+======================================================================
+41. NESTED PROCEDURES
+======================================================================
+
+Some programming languages allow a procedure/function to be
+defined inside another procedure.
+
+
+Example:
+
+    procedure Outer()
+    {
+        int x;
+
+        procedure Inner()
+        {
+            x = x + 1;
+        }
+
+        Inner();
+    }
+
+
+Here:
+
+    Inner is nested inside Outer.
+
+
+Inner can access:
+
+    x
+
+
+even though x is not declared inside Inner.
+
+
+Therefore:
+
+    x = non-local variable for Inner.
+
+
+This requires suitable runtime/environment support.
+
+
+======================================================================
+42. NESTED PROCEDURE + STATIC LINK
+======================================================================
+
+Conceptually:
+
+    Outer frame
+    +----------------+
+    | x = 100        |
+    +----------------+
+            ↑
+            |
+      static/access link
+            |
+            |
+    Inner frame
+    +----------------+
+    | ...            |
+    +----------------+
+
+
+When Inner accesses x:
+
+    Inner
+      ↓
+    static link
+      ↓
+    Outer
+      ↓
+    x
+
+
+======================================================================
+43. NESTED PROCEDURE + DISPLAY
+======================================================================
+
+Same example:
+
+    Outer
+      |
+      Inner
+
+
+Display could contain:
+
+    display[0] → Outer frame
+    display[1] → Inner frame
+
+
+Inner can access Outer variables using the appropriate lexical
+level entry.
+
+
+======================================================================
+44. RECURSION + SCOPE
+======================================================================
+
+These concepts can occur together.
+
+
+Example:
+
+    function f(n)
+    {
+        int x;
+
+        if(n > 0)
+            f(n-1);
+    }
+
+
+Every recursive activation has its own:
+
+    n
+    x
+    return information
+    other runtime state
+
+
+Therefore:
+
+    f(3)
+       ↓
+    f(2)
+       ↓
+    f(1)
+       ↓
+    f(0)
+
+
+Each frame contains a different x if x is an ordinary local
+variable of the function.
+
+
+This is important.
+
+
+======================================================================
+45. RECURSIVE LOCAL VARIABLES
+======================================================================
+
+Consider:
+
+    f()
+    {
+        int x;
+        x = x + 1;
+
+        f();
+    }
+
+
+Every active invocation conceptually has its own local x.
+
+
+Stack:
+
+    +----------------+
+    | f #4           |
+    | x              |
+    +----------------+
+    | f #3           |
+    | x              |
+    +----------------+
+    | f #2           |
+    | x              |
+    +----------------+
+    | f #1           |
+    | x              |
+    +----------------+
+
+
+Therefore:
+
+    local variable storage is associated with each activation.
+
+
+======================================================================
+46. RECURSION + STATIC SCOPE
+======================================================================
+
+Suppose:
+
+    Outer()
+    {
+        int x;
+
+        Inner()
+        {
+            recursive_call();
+            use(x);
+        }
+    }
+
+
+All active Inner invocations may need access to the appropriate
+lexically enclosing environment.
+
+
+The compiler/runtime must maintain enough information to resolve
+non-local references correctly.
+
+
+This is one reason activation records and access mechanisms are
+important in compiler design.
+
+
+======================================================================
+47. DYNAMIC CHAIN
+======================================================================
+
+The DYNAMIC CHAIN is formed by following control/dynamic links.
+
+
+Suppose:
+
+    main → A → B → C
+
+
+Then:
+
+    C → B → A → main
+
+
+This represents the active calling structure.
+
+
+If dynamic scope is used, variable lookup can follow this chain.
+
+
+Even in statically scoped languages, the dynamic/control chain
+still has important runtime purposes, such as returning to callers
+and maintaining call relationships.
+
+
+======================================================================
+48. STATIC CHAIN
+======================================================================
+
+The STATIC CHAIN is formed by following access/static links.
+
+
+Suppose lexical nesting is:
+
+    A
+      |
+      B
+        |
+        C
+
+
+Then:
+
+    C → B → A
+
+
+This represents lexical nesting, not necessarily the actual
+runtime caller chain.
+
+
+IMPORTANT:
+
+    Dynamic chain = runtime calls
+
+    Static chain = lexical nesting
+
+
+======================================================================
+49. DYNAMIC CHAIN VS STATIC CHAIN
+======================================================================
+
++--------------------+-----------------------------+
+| Dynamic Chain      | Static Chain               |
++--------------------+-----------------------------+
+| Runtime call path  | Lexical nesting path       |
+| Control links      | Access/static links        |
+| Who called me?     | Who lexically encloses me? |
+| Relevant to        | Relevant to lexical       |
+| dynamic scope      | non-local access          |
++--------------------+-----------------------------+
+
+
+MEMORY:
+
+    DYNAMIC = CALL
+
+    STATIC = CODE STRUCTURE
+
+
+======================================================================
+50. GATE PROBLEM — STATIC LINK COUNT
+======================================================================
+
+Lexical nesting:
+
+    A
+      |
+      B
+        |
+        C
+          |
+          D
+
+
+Suppose:
+
+    D accesses variable declared in A.
+
+
+Static-link traversal:
+
+    D → C   = 1
+    C → B   = 2
+    B → A   = 3
+
+
+Answer:
+
+    3 static-link traversals.
+
+
+If a display is used, the implementation may access the relevant
+lexical level more directly.
+
+
+======================================================================
+51. GATE PROBLEM — CONTROL LINK
+======================================================================
+
+Suppose runtime call sequence is:
+
+    A → B → C
+
+
+Then:
+
+    C's control/dynamic link
+        → B
+
+    B's control/dynamic link
+        → A
+
+
+Therefore:
+
+    dynamic chain:
+
+        C → B → A
+
+
+======================================================================
+52. GATE PROBLEM — STATIC VS DYNAMIC
+======================================================================
+
+Lexical nesting:
+
+    A contains B.
+
+Runtime calls:
+
+    X calls B.
+
+Question:
+
+    What does B's static/access link point toward?
+
+
+Answer:
+
+    A
+
+because A is B's lexical parent.
+
+
+What does B's control/dynamic link point toward?
+
+
+Answer:
+
+    X
+
+because X is B's runtime caller.
+
+
+Therefore:
+
+    Static link  → A
+    Dynamic link → X
+
+
+This is a very high-value GATE pattern.
+
+
+======================================================================
+53. GATE PROBLEM — RECURSION DEPTH
+======================================================================
+
+Suppose:
+
+    f(n)
+    {
+        if(n == 0)
+            return;
+        f(n-1);
+    }
+
+
+Call:
+
+    f(4)
+
+
+Active calls:
+
+    f(4)
+    f(3)
+    f(2)
+    f(1)
+    f(0)
+
+
+Number:
+
+    5
+
+
+If main is counted:
+
+    6
+
+
+Always check what the question counts.
+
+
+======================================================================
+54. GATE PROBLEM — SHADOWING
+======================================================================
+
+Suppose:
+
+    int x = 10;
+
+    {
+        int x = 20;
+
+        {
+            int x = 30;
+
+            print(x);
+        }
+    }
+
+
+Which x is visible at print?
+
+
+Answer:
+
+    x = 30
+
+
+Because the innermost declaration shadows outer declarations.
+
+
+After leaving the innermost block:
+
+    x = 20
+
+
+After leaving that block:
+
+    x = 10
+
+
+======================================================================
+55. GATE TRAP — SCOPE VS LIFETIME
+======================================================================
+
+Question:
+
+    "The scope of a variable is the time for which its storage
+     exists."
+
+Answer:
+
+    FALSE.
+
+
+Scope:
+
+    where the name can be referenced.
+
+
+Lifetime:
+
+    duration for which the associated runtime entity/storage exists.
+
+
+They are different dimensions.
+
+
+======================================================================
+56. GATE TRAP — STATIC SCOPE
+======================================================================
+
+Statement:
+
+    "Static scope is determined by the runtime call sequence."
+
+FALSE.
+
+
+Static/lexical scope:
+
+    determined by program structure.
+
+
+Dynamic scope:
+
+    determined by runtime calling relationships.
+
+
+======================================================================
+57. GATE TRAP — STATIC LINK
+======================================================================
+
+Statement:
+
+    "Static link always points to the caller."
+
+FALSE.
+
+
+Static link:
+
+    points toward the lexically enclosing activation/environment.
+
+
+Caller relationship:
+
+    control/dynamic link.
+
+
+======================================================================
+58. GATE TRAP — DISPLAY
+======================================================================
+
+Statement:
+
+    "Display is another name for dynamic chain."
+
+FALSE.
+
+
+Display is a technique for efficiently accessing active
+lexical-level environments/activation records.
+
+
+======================================================================
+59. GATE TRAP — RECURSION
+======================================================================
+
+Statement:
+
+    "Recursive calls reuse the same activation record."
+
+Generally FALSE for simultaneously active ordinary recursive
+invocations.
+
+
+Each active invocation requires distinct activation state.
+
+
+Compiler optimizations such as tail-call optimization can alter
+stack behavior for eligible calls.
+
+
+======================================================================
+60. COMPILER IMPLEMENTATION OF NON-LOCAL ACCESS
+======================================================================
+
+Suppose:
+
+    Outer()
+    {
+        int x;
+
+        Inner()
+        {
+            print(x);
+        }
+    }
+
+
+Compiler performs roughly:
+
+    1. Resolve x during semantic analysis.
+    2. Determine x's lexical level.
+    3. Determine the runtime mechanism for non-local access.
+    4. Generate code using static links, display, environment objects,
+       or another suitable mechanism.
+    5. Produce target instructions.
+
+
+Therefore:
+
+    Scope resolution
+        ↓
+    lexical-level information
+        ↓
+    runtime access mechanism
+        ↓
+    code generation
+
+
+======================================================================
+61. SCOPE LEVEL / NESTING LEVEL
+======================================================================
+
+Compiler can assign lexical nesting levels.
+
+
+Example:
+
+    Level 0:
+        Outer/global
+
+    Level 1:
+        B
+
+    Level 2:
+        C
+
+
+If C accesses variable at Level 0:
+
+    lexical difference = 2
+
+
+Conceptually with static links:
+
+    C → B → Outer
+
+
+The compiler can use this known difference to generate access code.
+
+
+======================================================================
+62. ACCESSING A NON-LOCAL VARIABLE
+======================================================================
+
+Suppose:
+
+    A
+      |
+      B
+        |
+        C
+
+
+Variable:
+
+    x declared in A.
+
+
+C executes:
+
+    x = x + 1;
+
+
+With static links:
+
+    C
+    ↓
+    B
+    ↓
+    A
+    ↓
+    x
+
+
+Compiler generates code that conceptually:
+
+    follow static link(s)
+    locate x
+    read x
+    add 1
+    store x
+
+
+With a display:
+
+    locate A's active frame using its lexical level
+    access x
+
+
+======================================================================
+63. RECURSION WITH STATIC LINKS
+======================================================================
+
+Suppose a nested procedure is recursive.
+
+Each activation has its own frame.
+
+Example:
+
+    Outer
+      |
+      Inner()
+          |
+          +-- Inner()
+
+
+Stack may contain:
+
+    +----------------+
+    | Inner #3       |
+    +----------------+
+    | Inner #2       |
+    +----------------+
+    | Inner #1       |
+    +----------------+
+    | Outer          |
+    +----------------+
+
+
+The static/access relationship may still point toward the
+lexically enclosing environment according to the language/compiler
+implementation.
+
+
+This demonstrates:
+
+    recursion
+        +
+    nested scope
+        +
+    activation records
+        +
+    access links
+
+
+======================================================================
+64. SCOPE AND BINDING
+======================================================================
+
+BINDING means associating a name with an entity.
+
+
+Example:
+
+    int x = 10;
+
+
+The identifier:
+
+    x
+
+is associated with:
+
+    a variable/entity.
+
+
+Scope determines where that binding is visible.
+
+
+Therefore:
+
+    Binding + Scope
+         ↓
+    Name resolution
+
+
+Compiler's semantic analysis performs much of this work.
+
+
+======================================================================
+65. STATIC BINDING
+======================================================================
+
+Many languages resolve variable references according to lexical
+structure.
+
+For example:
+
+    int x = 10;
+
+    void f()
+    {
+        print(x);
+    }
+
+
+The compiler can determine which declaration of x is intended based
+on lexical rules.
+
+
+This makes static/lexical scope convenient for compiler analysis.
+
+
+======================================================================
+66. DYNAMIC BINDING / DYNAMIC LOOKUP
+======================================================================
+
+With dynamic scope, the active runtime environment affects
+which declaration is found.
+
+
+Conceptually:
+
+    current function
+         ↓
+    caller
+         ↓
+    caller's caller
+         ↓
+    ...
+
+
+This can make runtime name lookup more complicated.
+
+
+======================================================================
+67. WHY STATIC SCOPE IS COMMON
+======================================================================
+
+Static/lexical scope provides:
+
+    • predictable name resolution
+    • easier compiler analysis
+    • easier optimization
+    • easier reasoning about programs
+    • lexical understanding of nested environments
+
+
+The compiler can often determine relationships without examining
+all possible runtime call sequences.
+
+
+======================================================================
+68. COMPLETE CONCEPT MAP
+======================================================================
+
+                    RECURSION & SCOPE
+                           |
+          +----------------+----------------+
+          |                                 |
+      RECURSION                           SCOPE
+          |                                 |
+      function calls                    name visibility
+          |                                 |
+      activation records             +-------+-------+
+          |                          |               |
+        stack                    STATIC          DYNAMIC
+          |                          |               |
+        LIFO                     lexical           runtime
+          |                      structure        call chain
+          |                          |               |
+      stack depth               static link      dynamic link
+          |                          |               |
+    stack overflow               display          caller chain
+                                     |
+                              non-local access
+                                     |
+                              nested procedures
+
+
+======================================================================
+69. CHAPTER CONNECTION MAP
+======================================================================
+
+Chapter 15:
+    Semantic Analysis
+        ↓
+    Scope + binding
+
+
+Chapter 16:
+    Symbol Tables
+        ↓
+    Scope management
+
+
+Chapter 22:
+    Runtime Storage
+        ↓
+    Stack / heap / static areas
+
+
+Chapter 23:
+    Activation Records
+        ↓
+    Runtime state per invocation
+
+
+Chapter 24:
+    Procedure Calls
+        ↓
+    Caller ↔ Callee
+
+
+Chapter 25:
+    Recursion & Scope
+        ↓
+    Recursive frames
+    Static/dynamic scope
+    Static/access links
+    Displays
+    Non-local access
+
+
+Chapter 26:
+    Code Generation
+        ↓
+    Generate machine instructions for calls/accesses
+
+
+======================================================================
+70. INTERVIEW QUESTIONS
+======================================================================
+
+Q1. What is recursion?
+
+A:
+
+Recursion is a technique in which a function/procedure invokes
+itself directly or indirectly.
+
+
+Q2. Why does recursion require stack frames?
+
+A:
+
+Each active invocation needs separate runtime state such as
+parameters, local variables, return information, and temporaries.
+
+
+Q3. What is scope?
+
+A:
+
+Scope is the region of a program in which a name is visible under
+the language's name-resolution rules.
+
+
+Q4. What is static scope?
+
+A:
+
+Static or lexical scope determines name visibility from the
+program's lexical structure.
+
+
+Q5. What is dynamic scope?
+
+A:
+
+Dynamic scope determines name lookup using the active runtime
+calling chain.
+
+
+======================================================================
+71. INTERVIEW QUESTIONS — LINKS
+======================================================================
+
+Q6. What is a static link?
+
+A:
+
+A runtime link used to locate the lexically enclosing activation
+or environment for non-local variable access.
+
+
+Q7. What is a dynamic link?
+
+A:
+
+A link representing the caller's activation record, commonly used
+to represent the dynamic calling chain.
+
+
+Q8. Difference between static and dynamic links?
+
+A:
+
+Static link:
+    lexical parent.
+
+Dynamic link:
+    runtime caller.
+
+
+Q9. What is a display?
+
+A:
+
+A display is a runtime structure containing references to active
+activation records/environments at lexical nesting levels, allowing
+non-local access without repeatedly traversing a static-link chain.
+
+
+Q10. Why are access links needed?
+
+A:
+
+They provide a mechanism for a nested procedure to access variables
+from lexically enclosing procedures.
+
+
+======================================================================
+72. INTERVIEW — SCOPE
+======================================================================
+
+Q11. What is shadowing?
+
+A:
+
+Shadowing occurs when an inner declaration of a name hides an
+outer declaration with the same name.
+
+
+Q12. Scope vs lifetime?
+
+A:
+
+Scope concerns where a name is visible.
+
+Lifetime concerns how long the associated runtime entity exists.
+
+
+Q13. What is a non-local variable?
+
+A:
+
+A variable that is not declared in the current procedure/scope but
+is accessible according to the language's scope rules.
+
+
+Q14. What is lexical nesting?
+
+A:
+
+The hierarchical relationship created when one scope/procedure is
+defined inside another.
+
+
+======================================================================
+73. INTERVIEW — RECURSION
+======================================================================
+
+Q15. What is stack overflow?
+
+A:
+
+It occurs when stack usage exceeds available capacity, commonly
+because of excessive or unbounded recursion or deeply nested calls.
+
+
+Q16. What is tail recursion?
+
+A:
+
+A recursive call is in tail position when no further computation
+is required after that call returns.
+
+
+Q17. Can tail recursion use less stack?
+
+A:
+
+Yes, if the language/compiler performs tail-call optimization for
+that call.
+
+
+Q18. Does every recursive function necessarily cause stack overflow?
+
+A:
+
+No. Properly terminating recursion may be shallow enough, and
+tail-call optimization or other implementation techniques may
+change stack behavior.
+
+
+======================================================================
+74. PRACTICAL MINI-COMPILER EXAMPLE
+======================================================================
+
+Suppose your mini language supports:
+
+    function outer()
+    {
+        int x = 10;
+
+        function inner()
+        {
+            return x + 1;
+        }
+
+        return inner();
+    }
+
+
+Compiler tasks:
+
+STEP 1:
+    Lexer recognizes identifiers and keywords.
+
+
+STEP 2:
+    Parser constructs AST.
+
+
+STEP 3:
+    Semantic analyzer determines:
+
+        inner is nested inside outer.
+
+        x belongs to outer.
+
+        x is non-local inside inner.
+
+
+STEP 4:
+    Compiler assigns lexical levels:
+
+        outer = level 0
+        inner = level 1
+
+
+STEP 5:
+    Runtime implementation can use:
+
+        static link
+        OR
+        display
+        OR
+        another environment representation.
+
+
+STEP 6:
+    Generated call to inner must preserve enough information
+    for inner to find outer's x.
+
+
+Conceptually:
+
+    outer frame
+    +----------------+
+    | x = 10         |
+    +----------------+
+            ↑
+            |
+        access link
+            |
+            |
+    inner frame
+    +----------------+
+    | return info    |
+    +----------------+
+
+
+======================================================================
+75. PRACTICAL RECURSION EXAMPLE
+======================================================================
+
+Mini language:
+
+    function factorial(n)
+    {
+        if(n == 0)
+            return 1;
+
+        return n * factorial(n-1);
+    }
+
+
+Compiler generates:
+
+    conditional test
+        ↓
+    recursive CALL
+        ↓
+    new activation
+        ↓
+    return value
+        ↓
+    multiplication
+        ↓
+    return
+
+
+Runtime:
+
+    factorial(3)
+        ↓
+    factorial(2)
+        ↓
+    factorial(1)
+        ↓
+    factorial(0)
+
+
+Then:
+
+    1
+    ↑
+    1
+    ↑
+    2
+    ↑
+    6
+
+
+======================================================================
+76. VERY IMPORTANT GATE TABLE
+======================================================================
+
++----------------------+-----------------------------+
+| Concept              | Key Meaning                 |
++----------------------+-----------------------------+
+| Recursion            | Function calls itself       |
+| Base case            | Stops recursion             |
+| Activation record    | Runtime state per call      |
+| Stack                | LIFO call storage           |
+| Scope                | Name visibility              |
+| Static scope         | Lexical/source structure    |
+| Dynamic scope        | Runtime call chain           |
+| Local variable       | Current scope declaration   |
+| Non-local variable   | Accessible outer variable   |
+| Shadowing            | Inner name hides outer name |
+| Static link          | Lexical parent              |
+| Dynamic link         | Caller                      |
+| Static chain         | Lexical nesting chain       |
+| Dynamic chain        | Runtime call chain          |
+| Display              | Table of lexical frames     |
++----------------------+-----------------------------+
+
+
+======================================================================
+77. TOP 10 GATE TRAPS
+======================================================================
+
+TRAP 1:
+
+    Static scope = runtime call sequence.
+
+    WRONG.
+
+    Static scope = lexical structure.
+
+
+TRAP 2:
+
+    Dynamic scope = lexical nesting.
+
+    WRONG.
+
+    Dynamic scope = runtime calling chain.
+
+
+TRAP 3:
+
+    Static link = caller.
+
+    WRONG.
+
+    Static link = lexical parent/environment.
+
+
+TRAP 4:
+
+    Dynamic link = lexical parent.
+
+    WRONG.
+
+    Dynamic link = caller.
+
+
+TRAP 5:
+
+    Scope = lifetime.
+
+    WRONG.
+
+
+TRAP 6:
+
+    Recursion uses one frame.
+
+    WRONG for simultaneously active ordinary invocations.
+
+
+TRAP 7:
+
+    Every recursive call returns in call order.
+
+    WRONG.
+
+    Returns occur in reverse order for nested calls.
+
+
+TRAP 8:
+
+    Display = static link.
+
+    WRONG.
+
+    Display is an alternative/access structure for lexical levels.
+
+
+TRAP 9:
+
+    Non-local variable = global variable.
+
+    WRONG.
+
+    A non-local variable can be declared in an enclosing local scope.
+
+
+TRAP 10:
+
+    Infinite recursion is a compile-time syntax error.
+
+    WRONG.
+
+    It can result in runtime stack exhaustion.
+
+
+======================================================================
+78. ULTRA-SHORT REVISION
+======================================================================
+
+RECURSION:
+
+    Function calls itself.
+
+BASE CASE:
+
+    Stop condition.
+
+STACK:
+
+    LIFO.
+
+RECURSIVE ACTIVATION:
+
+    Separate runtime state for each active invocation.
+
+STATIC SCOPE:
+
+    Where code is written.
+
+DYNAMIC SCOPE:
+
+    Who called whom.
+
+LOCAL:
+
+    Current scope.
+
+NON-LOCAL:
+
+    Accessible from an enclosing scope.
+
+SHADOWING:
+
+    Inner declaration hides outer declaration.
+
+STATIC LINK:
+
+    Current activation → lexical parent.
+
+DYNAMIC LINK:
+
+    Current activation → caller.
+
+STATIC CHAIN:
+
+    Lexical nesting chain.
+
+DYNAMIC CHAIN:
+
+    Runtime call chain.
+
+DISPLAY:
+
+    Direct lexical-level frame references.
+
+SCOPE:
+
+    Visibility.
+
+LIFETIME:
+
+    Duration of existence.
+
+
+======================================================================
+79. FINAL MASTER DIAGRAM
+======================================================================
+
+                         PROGRAM
+                            |
+             +--------------+--------------+
+             |                             |
+          RECURSION                      SCOPE
+             |                             |
+       function call                  name visibility
+             |                             |
+       activation record            +------+------+
+             |                       |             |
+           STACK                  STATIC        DYNAMIC
+             |                       |             |
+           LIFO                  lexical       runtime
+             |                    nesting       calls
+             |                       |             |
+       stack depth              static link    dynamic link
+             |                       |             |
+     stack overflow             static chain   dynamic chain
+                                     |
+                              non-local access
+                                     |
+                         +-----------+-----------+
+                         |                       |
+                    Static Link              Display
+                         |                       |
+                      chain                  table/array
+                         |                       |
+                         +-----------+-----------+
+                                     |
+                              Nested Procedures
+
+
+======================================================================
+80. CHAPTER 25 FINAL TAKEAWAY
+======================================================================
+
+The central idea of this chapter is:
+
+    RECURSION explains how multiple function activations coexist.
+
+    SCOPE explains which names are visible and which declaration
+    a name refers to.
+
+    STATIC/LEXICAL SCOPE depends on program structure.
+
+    DYNAMIC SCOPE depends on the runtime calling chain.
+
+    STATIC/ACCESS LINKS help nested procedures find lexically
+    enclosing environments.
+
+    DISPLAYS provide another mechanism for accessing active
+    lexical environments.
+
+    ACTIVATION RECORDS provide the runtime storage required for
+    function invocations.
+
+Therefore:
+
+    Scope
+      ↓
+    Name resolution
+      ↓
+    Lexical nesting
+      ↓
+    Static links / displays
+      ↓
+    Runtime non-local access
+
+And:
+
+    Recursive call
+      ↓
+    New activation
+      ↓
+    Stack growth
+      ↓
+    Base case
+      ↓
+    Reverse-order returns
+      ↓
+    Stack unwinding
+
+
+======================================================================
+CHAPTER 25 COMPLETE
+======================================================================
+
+MASTER PHASE 6 STATUS:
+
+    Chapter 22 — Runtime Storage Organization       ✓
+    Chapter 23 — Activation Records                 ✓
+    Chapter 24 — Procedure Calls                    ✓
+    Chapter 25 — Recursion & Scope                  ✓
+
+NEXT:
+
+    CHAPTER 26 — CODE GENERATION FUNDAMENTALS
+
+Topics:
+    • Target machine
+    • Instruction selection
+    • Register allocation
+    • Register assignment
+    • Addressing modes
+    • Instruction ordering
+    • Code-generation issues
+    • GATE concepts
+    • Interview questions
+    • Practical compiler implementation
+
+Type NEXT to continue.
+======================================================================

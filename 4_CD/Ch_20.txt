@@ -1,0 +1,2971 @@
+====================================================================
+                 COMPILER DESIGN — CHAPTER 20
+                 THREE-ADDRESS CODE (TAC)
+       Beginner → Core → GATE → Interview → Practical
+====================================================================
+
+MASTER SYLLABUS POSITION
+------------------------
+
+PHASE 5 — INTERMEDIATE REPRESENTATION
+
+Chapter 18 → Attribute Grammars
+Chapter 19 → Intermediate Representation
+Chapter 20 → Three-Address Code (TAC)       ← CURRENT
+Chapter 21 → Boolean Expressions & Control Flow
+
+
+====================================================================
+1. WHAT IS THREE-ADDRESS CODE?
+====================================================================
+
+Three-Address Code (TAC) is an intermediate representation in
+which a program is broken into simple instructions.
+
+A typical TAC instruction contains at most:
+
+    Three addresses
+
+For example:
+
+    x = y + z
+
+Here:
+
+    x → result
+    y → first operand
+    z → second operand
+
+Therefore:
+
+    x = y + z
+
+is a three-address instruction.
+
+
+IMPORTANT:
+
+"Three-address" does NOT mean every instruction must literally
+contain three operands.
+
+Different TAC instructions can contain fewer operands.
+
+
+Examples:
+
+    x = y + z          → binary operation
+    x = -y             → unary operation
+    x = y              → copy
+    goto L1            → jump
+    if x < y goto L1   → conditional jump
+
+
+====================================================================
+2. WHY DO WE NEED TAC?
+====================================================================
+
+Source expressions can be complicated.
+
+Example:
+
+    x = a + b * c - d
+
+
+It is difficult for a simple code generator to directly handle
+the entire expression.
+
+TAC breaks it into smaller operations:
+
+    t1 = b * c
+    t2 = a + t1
+    t3 = t2 - d
+    x = t3
+
+
+Now each operation is simple.
+
+Advantages:
+
+    • Easy to generate
+    • Easy to optimize
+    • Easy to analyze
+    • Easy to translate into machine code
+    • Makes dependencies explicit
+    • Simplifies complex expressions
+
+
+====================================================================
+3. TAC IN THE COMPILER PIPELINE
+====================================================================
+
+    Source Program
+          ↓
+    Lexical Analysis
+          ↓
+    Syntax Analysis
+          ↓
+        AST
+          ↓
+    Semantic Analysis
+          ↓
+    Three-Address Code
+          ↓
+    Optimization
+          ↓
+    Target Code
+
+
+TAC is therefore an important bridge between
+semantic processing and lower-level code generation.
+
+
+====================================================================
+4. TEMPORARY VARIABLES
+====================================================================
+
+TAC frequently uses temporary variables.
+
+Usually written as:
+
+    t1
+    t2
+    t3
+    ...
+
+
+Example:
+
+    a + b * c
+
+
+Because:
+
+    * has higher precedence than +
+
+First:
+
+    t1 = b * c
+
+Then:
+
+    t2 = a + t1
+
+
+Final:
+
+    t1 = b * c
+    t2 = a + t1
+
+
+Here:
+
+    t1 and t2
+
+are compiler-generated temporary names.
+
+
+====================================================================
+5. BASIC TAC FORM
+====================================================================
+
+The most common form is:
+
+    x = y op z
+
+
+where:
+
+    x = destination
+    y = first operand
+    z = second operand
+    op = operator
+
+
+Examples:
+
+    x = a + b
+    t1 = x * y
+    t2 = p - q
+    result = a / b
+
+
+====================================================================
+6. BINARY OPERATIONS
+====================================================================
+
+Binary operators operate on two operands.
+
+Examples:
+
+    +
+    -
+    *
+    /
+    %
+    <
+    >
+    <=
+    >=
+    ==
+    !=
+    AND
+    OR
+
+
+Typical TAC:
+
+    x = y op z
+
+
+Examples:
+
+    t1 = a + b
+    t2 = x - y
+    t3 = p * q
+    t4 = m / n
+
+
+====================================================================
+7. UNARY OPERATIONS
+====================================================================
+
+Unary operators operate on one operand.
+
+Example:
+
+    x = -y
+
+
+TAC:
+
+    x = -y
+
+
+Other examples:
+
+    t1 = -a
+    t2 = !b
+
+
+Depending on the language and TAC design, unary operators
+may be represented using different conventions.
+
+
+====================================================================
+8. SIMPLE ASSIGNMENT
+====================================================================
+
+Source:
+
+    x = y
+
+
+TAC:
+
+    x = y
+
+
+Example:
+
+    a = b
+
+
+means:
+
+    a ← b
+
+
+No arithmetic operation is necessary.
+
+
+====================================================================
+9. CONSTANT ASSIGNMENT
+====================================================================
+
+Source:
+
+    x = 10
+
+
+TAC:
+
+    x = 10
+
+
+Expression:
+
+    x = 10 + 20
+
+
+can initially become:
+
+    t1 = 10 + 20
+    x = t1
+
+
+Later optimization may transform it into:
+
+    x = 30
+
+
+====================================================================
+10. COMPLEX EXPRESSION
+====================================================================
+
+Consider:
+
+    x = a + b * c
+
+
+Operator precedence:
+
+    b * c
+
+first.
+
+TAC:
+
+    t1 = b * c
+    t2 = a + t1
+    x = t2
+
+
+Step-by-step:
+
+    b * c → t1
+
+    a + t1 → t2
+
+    t2 → x
+
+
+====================================================================
+11. MORE COMPLEX EXPRESSION
+====================================================================
+
+Expression:
+
+    x = a + b * c - d / e
+
+
+Precedence:
+
+    multiplication and division first.
+
+TAC:
+
+    t1 = b * c
+    t2 = d / e
+    t3 = a + t1
+    t4 = t3 - t2
+    x = t4
+
+
+Equivalent conceptual computation:
+
+    t1 = b*c
+    t2 = d/e
+    t3 = a+t1
+    t4 = t3-t2
+    x = t4
+
+
+====================================================================
+12. PARENTHESES
+====================================================================
+
+Expression:
+
+    x = (a + b) * c
+
+
+First:
+
+    a + b
+
+
+TAC:
+
+    t1 = a + b
+    t2 = t1 * c
+    x = t2
+
+
+Parentheses determine the order of computation.
+
+
+====================================================================
+13. NESTED EXPRESSIONS
+====================================================================
+
+Expression:
+
+    x = (a + b) * (c - d)
+
+
+TAC:
+
+    t1 = a + b
+    t2 = c - d
+    t3 = t1 * t2
+    x = t3
+
+
+General strategy:
+
+    1. Break expression into smaller operations.
+    2. Create temporary for each intermediate result.
+    3. Use temporaries in subsequent operations.
+
+
+====================================================================
+14. TAC FOR RELATIONAL OPERATIONS
+====================================================================
+
+Example:
+
+    x = a < b
+
+
+TAC:
+
+    x = a < b
+
+
+Or, depending on the TAC representation:
+
+    if a < b goto L1
+    goto L2
+
+
+The exact representation depends on whether the compiler
+represents booleans as values or as control flow.
+
+
+====================================================================
+15. CONDITIONAL JUMP
+====================================================================
+
+A common TAC form is:
+
+    if x relop y goto L
+
+
+Example:
+
+    if a < b goto L1
+
+
+Meaning:
+
+    If a < b is true,
+    jump to label L1.
+
+
+Examples:
+
+    if x == y goto L1
+    if a != b goto L2
+    if p <= q goto L3
+
+
+====================================================================
+16. UNCONDITIONAL JUMP
+====================================================================
+
+Form:
+
+    goto L
+
+
+Example:
+
+    goto L1
+
+
+Meaning:
+
+    Always transfer control to L1.
+
+
+Labels:
+
+    L1:
+    L2:
+    L3:
+
+
+Labels identify positions in the TAC sequence.
+
+
+====================================================================
+17. LABELS
+====================================================================
+
+Example:
+
+    if x < 10 goto L1
+    goto L2
+
+L1:
+    y = 1
+
+L2:
+    z = 2
+
+
+Here:
+
+    L1
+    L2
+
+are labels.
+
+
+Labels are essential for representing control flow
+in TAC.
+
+
+====================================================================
+18. TAC FOR IF STATEMENT
+====================================================================
+
+Source:
+
+    if (x < 10)
+        y = 1;
+
+
+Possible TAC:
+
+    if x < 10 goto L1
+    goto L2
+
+L1:
+    y = 1
+
+L2:
+
+
+The condition determines which label is reached.
+
+
+====================================================================
+19. TAC FOR IF-ELSE
+====================================================================
+
+Source:
+
+    if (x < 10)
+        y = 1;
+    else
+        y = 2;
+
+
+TAC:
+
+    if x < 10 goto L1
+    goto L2
+
+L1:
+    y = 1
+    goto L3
+
+L2:
+    y = 2
+
+L3:
+
+
+Flow:
+
+             condition
+              /     \
+             /       \
+           L1         L2
+           |           |
+         y=1         y=2
+           \           /
+            \         /
+                L3
+
+
+Chapter 21 covers control-flow translation in greater detail.
+
+
+====================================================================
+20. TAC FOR WHILE LOOP
+====================================================================
+
+Source:
+
+    while (x < 10)
+        x = x + 1;
+
+
+Possible TAC:
+
+L1:
+    if x >= 10 goto L2
+    t1 = x + 1
+    x = t1
+    goto L1
+L2:
+
+
+Flow:
+
+    L1
+     ↓
+   condition
+    ↓   ↓
+  body  L2
+    |
+    ↓
+   L1
+
+
+This illustrates how loops become labels and jumps.
+
+
+====================================================================
+21. TAC FOR DO-WHILE
+====================================================================
+
+Source:
+
+    do
+        x = x + 1;
+    while (x < 10);
+
+
+Possible TAC:
+
+L1:
+    t1 = x + 1
+    x = t1
+    if x < 10 goto L1
+
+
+Difference:
+
+    while:
+        condition checked before body
+
+    do-while:
+        body executed before condition check
+
+
+====================================================================
+22. TAC FOR FOR-LOOP
+====================================================================
+
+Source:
+
+    for (i = 0; i < 10; i++)
+        sum = sum + i;
+
+
+Possible TAC:
+
+    i = 0
+
+L1:
+    if i >= 10 goto L2
+
+    t1 = sum + i
+    sum = t1
+
+    t2 = i + 1
+    i = t2
+
+    goto L1
+
+L2:
+
+
+A for-loop can be transformed into initialization,
+condition, body, update, and jumps.
+
+
+====================================================================
+23. ARRAY ACCESS
+====================================================================
+
+Suppose:
+
+    x = A[i]
+
+
+The compiler must calculate the address/location of A[i].
+
+A conceptual TAC form may be:
+
+    t1 = i * width
+    t2 = base(A) + t1
+    x = *t2
+
+
+where:
+
+    width = size of each array element
+
+
+Exact TAC syntax depends on the compiler's IR design.
+
+
+====================================================================
+24. ARRAY ASSIGNMENT
+====================================================================
+
+Source:
+
+    A[i] = x
+
+
+Conceptual TAC:
+
+    t1 = i * width
+    t2 = base(A) + t1
+    *t2 = x
+
+
+Here:
+
+    t1 = offset
+    t2 = address of A[i]
+
+
+This makes address calculation explicit.
+
+
+====================================================================
+25. TWO-DIMENSIONAL ARRAY
+====================================================================
+
+For:
+
+    A[i][j]
+
+
+Address calculation depends on:
+
+    • Row-major or column-major layout
+    • Number of columns/rows
+    • Element width
+    • Array bounds/layout
+
+
+For row-major storage, a common conceptual offset formula is:
+
+    offset = ((i × number_of_columns) + j) × width
+
+
+Then:
+
+    address = base(A) + offset
+
+
+TAC can break this into multiple instructions.
+
+
+====================================================================
+26. POINTER OPERATIONS
+====================================================================
+
+Suppose:
+
+    x = *p
+
+
+Meaning:
+
+    Read the value stored at the address contained in p.
+
+
+Conceptual TAC:
+
+    x = *p
+
+
+For:
+
+    *p = x
+
+
+TAC:
+
+    *p = x
+
+
+Here:
+
+    *p
+
+represents an indirect memory access.
+
+
+====================================================================
+27. ADDRESS OF OPERATOR
+====================================================================
+
+Suppose:
+
+    p = &x
+
+
+TAC:
+
+    p = &x
+
+
+Meaning:
+
+    p receives the address of x.
+
+
+Common pointer-related operations:
+
+    x = *p
+    *p = x
+    p = &x
+
+
+These are especially important for C/C++-style languages.
+
+
+====================================================================
+28. PROCEDURE / FUNCTION CALL
+====================================================================
+
+Source:
+
+    result = f(a, b);
+
+
+TAC can conceptually use:
+
+    param a
+    param b
+    t1 = call f, 2
+    result = t1
+
+
+Here:
+
+    param = pass an argument
+    call = invoke function
+    2 = number of arguments
+
+
+The exact syntax varies by compiler.
+
+
+====================================================================
+29. PROCEDURE CALL WITHOUT RETURN VALUE
+====================================================================
+
+Source:
+
+    print(x);
+
+
+Possible TAC:
+
+    param x
+    call print, 1
+
+
+No result temporary is required if the function returns
+no value used by the caller.
+
+
+====================================================================
+30. RETURN STATEMENT
+====================================================================
+
+Source:
+
+    return x;
+
+
+TAC:
+
+    return x
+
+
+For:
+
+    return;
+
+
+TAC:
+
+    return
+
+
+For:
+
+    return a + b;
+
+
+TAC:
+
+    t1 = a + b
+    return t1
+
+
+====================================================================
+31. QUADRUPLES
+====================================================================
+
+Quadruples are one representation of TAC.
+
+A quadruple generally contains four fields:
+
+    (operator, argument1, argument2, result)
+
+
+Example:
+
+    t1 = a + b
+
+
+Quadruple:
+
+    (+, a, b, t1)
+
+
+Example:
+
+    t2 = t1 * c
+
+
+Quadruple:
+
+    (*, t1, c, t2)
+
+
+====================================================================
+32. QUADRUPLE STRUCTURE
+====================================================================
+
+For:
+
+    x = y op z
+
+
+Quadruple:
+
+    +---------+----------+----------+--------+
+    | op      | arg1     | arg2     | result |
+    +---------+----------+----------+--------+
+    | op      | y        | z        | x      |
+    +---------+----------+----------+--------+
+
+
+Example:
+
+    t1 = a + b
+
+becomes:
+
+    +------+-------+-------+--------+
+    |  +   |   a   |   b   |   t1   |
+    +------+-------+-------+--------+
+
+
+====================================================================
+33. QUADRUPLE EXAMPLE
+====================================================================
+
+Expression:
+
+    x = a + b * c
+
+
+TAC:
+
+    t1 = b * c
+    t2 = a + t1
+    x = t2
+
+
+Quadruples:
+
+    +------+-------+-------+--------+
+    |  *   |   b   |   c   |   t1   |
+    +------+-------+-------+--------+
+    |  +   |   a   |  t1   |   t2   |
+    +------+-------+-------+--------+
+    |  =   |  t2   |   -   |   x    |
+    +------+-------+-------+--------+
+
+
+The exact convention for assignment may vary.
+
+
+====================================================================
+34. ADVANTAGE OF QUADRUPLES
+====================================================================
+
+Advantages:
+
+    • Explicit result field
+    • Easy to rearrange instructions
+    • Convenient for optimization
+    • Easy to reference temporary results
+    • Straightforward representation
+
+
+Disadvantage:
+
+    • Temporary names may increase storage requirements.
+
+
+====================================================================
+35. TRIPLES
+====================================================================
+
+Triples are another representation of TAC.
+
+A triple generally contains:
+
+    (operator, argument1, argument2)
+
+
+There is no separate result field.
+
+Instead, the result is identified by the position/index
+of the triple.
+
+
+Example:
+
+    t1 = a + b
+
+
+Triple:
+
+    ( +, a, b )
+
+
+Its position may be:
+
+    (0) (+, a, b)
+
+
+Another instruction can refer to result 0.
+
+
+====================================================================
+36. TRIPLE EXAMPLE
+====================================================================
+
+Expression:
+
+    x = a + b * c
+
+
+TAC:
+
+    t1 = b * c
+    t2 = a + t1
+    x = t2
+
+
+Triples:
+
+    0: (*, b, c)
+
+    1: (+, a, (0))
+
+    2: (=, (1), x)
+
+
+Here:
+
+    (0)
+
+means:
+
+    result produced by triple 0.
+
+
+====================================================================
+37. QUADRUPLES vs TRIPLES
+====================================================================
+
+QUADRUPLE:
+
+    (op, arg1, arg2, result)
+
+
+TRIPLE:
+
+    (op, arg1, arg2)
+
+Result is represented by the instruction's position.
+
+
+Example:
+
+    t1 = a + b
+
+
+Quadruple:
+
+    (+, a, b, t1)
+
+
+Triple:
+
+    (+, a, b)
+
+
+Triple result:
+
+    position/index of this triple.
+
+
+====================================================================
+38. ADVANTAGE OF TRIPLES
+====================================================================
+
+Advantages:
+
+    • No explicit temporary result field
+    • Can reduce the number of temporary names
+
+
+Disadvantage:
+
+    • Moving instructions can be more difficult because
+      other instructions may refer to their positions.
+
+
+Example:
+
+    Triple 0
+
+    (+, a, b)
+
+
+Another triple:
+
+    (*, (0), c)
+
+
+If triple 0 is moved, references based on positions
+must be updated.
+
+
+====================================================================
+39. INDIRECT TRIPLES
+====================================================================
+
+Indirect triples add an additional level of indirection.
+
+Instead of directly referring to triple positions,
+a separate pointer list is maintained.
+
+Conceptually:
+
+    Pointer Table
+        ↓
+    Triple Table
+
+
+Example:
+
+    Pointer list:
+
+    P0 → Triple 2
+    P1 → Triple 0
+    P2 → Triple 1
+
+
+The pointer list determines execution/order.
+
+
+====================================================================
+40. WHY INDIRECT TRIPLES?
+====================================================================
+
+The main idea is to make rearranging or reordering
+instructions easier.
+
+With direct triples:
+
+    References may depend on triple positions.
+
+With indirect triples:
+
+    A separate pointer structure can be changed
+    without physically moving the triple records.
+
+
+Therefore:
+
+    Indirect triples
+        ↓
+    Easier instruction reordering
+
+
+====================================================================
+41. QUADRUPLES vs TRIPLES vs INDIRECT TRIPLES
+====================================================================
+
++-------------------+--------------------------------+
+| Feature           | Quadruples                     |
++-------------------+--------------------------------+
+| Fields            | op, arg1, arg2, result         |
+| Result            | Explicit                       |
+| Temporaries       | Usually explicit              |
+| Rearrangement     | Relatively easy                |
++-------------------+--------------------------------+
+
++-------------------+--------------------------------+
+| Feature           | Triples                        |
++-------------------+--------------------------------+
+| Fields            | op, arg1, arg2                 |
+| Result            | Position/index                 |
+| Temporaries       | Less explicit                  |
+| Rearrangement     | More difficult                 |
++-------------------+--------------------------------+
+
++-------------------+--------------------------------+
+| Feature           | Indirect Triples               |
++-------------------+--------------------------------+
+| Fields            | Triple structure + pointers    |
+| Result            | Position/reference             |
+| Ordering          | Pointer table helps            |
+| Rearrangement     | Easier than direct triples     |
++-------------------+--------------------------------+
+
+
+====================================================================
+42. IMPORTANT GATE TABLE
+====================================================================
+
+Remember:
+
+    Quadruple:
+
+        (op, arg1, arg2, result)
+
+
+    Triple:
+
+        (op, arg1, arg2)
+
+        Result identified by position.
+
+
+    Indirect Triple:
+
+        Triple table
+             ↑
+        Pointer table
+
+
+====================================================================
+43. TAC FOR UNARY MINUS
+====================================================================
+
+Source:
+
+    x = -a
+
+
+TAC:
+
+    t1 = -a
+    x = t1
+
+
+Some TAC designs may allow:
+
+    x = -a
+
+directly.
+
+The exact number of temporaries is representation-dependent.
+
+
+====================================================================
+44. TAC FOR RELATIONAL CONDITION
+====================================================================
+
+Source:
+
+    if (a < b)
+        x = 1;
+
+
+Possible TAC:
+
+    if a < b goto L1
+    goto L2
+
+L1:
+    x = 1
+
+L2:
+
+
+This form represents the condition directly as control flow.
+
+
+====================================================================
+45. BOOLEAN EXPRESSIONS
+====================================================================
+
+Consider:
+
+    if (a < b && c < d)
+        x = 1;
+
+
+A compiler may use short-circuit evaluation.
+
+Conceptual TAC:
+
+    if a < b goto L1
+    goto Lfalse
+
+L1:
+    if c < d goto Ltrue
+    goto Lfalse
+
+Ltrue:
+    x = 1
+
+Lfalse:
+
+
+This topic is covered in detail in:
+
+    CHAPTER 21
+
+
+====================================================================
+46. TAC GENERATION — GENERAL ALGORITHM
+====================================================================
+
+For an expression:
+
+    E1 op E2
+
+
+Conceptual steps:
+
+    1. Generate TAC for E1.
+    2. Generate TAC for E2.
+    3. Create a new temporary t.
+    4. Emit:
+
+           t = E1.place op E2.place
+
+    5. Return t as the place of the complete expression.
+
+
+Example:
+
+    a + b
+
+
+Generate:
+
+    place(a) = a
+    place(b) = b
+
+Create:
+
+    t1
+
+Emit:
+
+    t1 = a + b
+
+Return:
+
+    place(E) = t1
+
+
+====================================================================
+47. TAC GENERATION FOR NESTED EXPRESSION
+====================================================================
+
+Expression:
+
+    a + b * c
+
+
+AST:
+
+              +
+             / \
+            a   *
+               / \
+              b   c
+
+
+Process:
+
+    First generate TAC for:
+
+        b * c
+
+    t1 = b * c
+
+
+Then:
+
+    a + t1
+
+    t2 = a + t1
+
+
+Final:
+
+    t1 = b * c
+    t2 = a + t1
+
+
+====================================================================
+48. TAC AND AST CONNECTION
+====================================================================
+
+AST:
+
+              *
+             / \
+            +   c
+           / \
+          a   b
+
+
+TAC:
+
+    t1 = a + b
+    t2 = t1 * c
+
+
+General relationship:
+
+    AST
+     ↓
+    Postorder-style traversal
+     ↓
+    TAC generation
+
+
+For expression trees, a bottom-up/postorder traversal
+naturally produces intermediate results for subexpressions.
+
+
+====================================================================
+49. TAC AND DAG
+====================================================================
+
+DAG can detect shared computations before TAC generation
+or during optimization.
+
+Example:
+
+    x = a + b
+    y = a + b
+
+
+DAG can identify:
+
+    a + b
+
+as a common computation.
+
+Possible optimized TAC:
+
+    t1 = a + b
+    x = t1
+    y = t1
+
+
+Instead of computing:
+
+    a + b
+
+twice.
+
+
+====================================================================
+50. TAC AND BASIC BLOCKS
+====================================================================
+
+TAC instructions can be grouped into basic blocks.
+
+Example:
+
+    t1 = a + b
+    t2 = t1 * c
+    if t2 < 10 goto L1
+    goto L2
+
+L1:
+    x = 1
+
+L2:
+    y = 2
+
+
+Basic blocks divide this TAC into regions with
+single-entry/single-exit behavior.
+
+
+====================================================================
+51. TAC AND CONTROL FLOW GRAPH
+====================================================================
+
+TAC:
+
+    if x < 10 goto L1
+    goto L2
+
+L1:
+    y = 1
+    goto L3
+
+L2:
+    y = 2
+
+L3:
+    z = y
+
+
+CFG:
+
+                condition
+                 /      \
+                /        \
+             L1           L2
+              |            |
+             y=1          y=2
+              \            /
+               \          /
+                    L3
+                     |
+                    z=y
+
+
+TAC provides the instructions.
+
+CFG provides the control-flow relationships.
+
+
+====================================================================
+52. TAC AND CODE OPTIMIZATION
+====================================================================
+
+Example:
+
+    t1 = a + 0
+    t2 = t1
+    x = t2
+
+
+Optimization can simplify:
+
+    x = a
+
+
+Possible optimization techniques:
+
+    • Constant folding
+    • Constant propagation
+    • Copy propagation
+    • Dead-code elimination
+    • Common subexpression elimination
+    • Algebraic simplification
+
+
+These are studied extensively in Phase 8.
+
+
+====================================================================
+53. TAC AND MACHINE CODE
+====================================================================
+
+TAC:
+
+    t1 = a + b
+    x = t1
+
+
+A target machine may produce:
+
+    LOAD R1, a
+    ADD R1, b
+    STORE x, R1
+
+
+TAC hides many machine-specific details.
+
+Code generation decides:
+
+    • Which instructions?
+    • Which registers?
+    • Which addressing modes?
+
+
+====================================================================
+54. TAC IS NOT MACHINE CODE
+====================================================================
+
+Important distinction:
+
+    TAC:
+
+        Compiler intermediate representation.
+
+
+    Assembly:
+
+        Target-specific instructions.
+
+
+    Machine code:
+
+        Binary encoding understood by the processor.
+
+
+Pipeline:
+
+    TAC
+     ↓
+    Code Generation
+     ↓
+    Assembly / Machine Code
+
+
+====================================================================
+55. GATE IMPORTANT — COUNTING TEMPORARIES
+====================================================================
+
+Consider:
+
+    a + b * c
+
+
+TAC:
+
+    t1 = b * c
+    t2 = a + t1
+
+
+Number of intermediate temporaries:
+
+    2
+
+
+But the exact count can vary depending on the chosen
+TAC representation and whether the final destination
+can directly hold a result.
+
+
+For GATE problems, follow the representation and
+instructions specified in the question.
+
+
+====================================================================
+56. GATE EXAMPLE — EXPRESSION
+====================================================================
+
+Expression:
+
+    x = a * b + c * d
+
+
+Correct precedence:
+
+    (a*b) + (c*d)
+
+
+TAC:
+
+    t1 = a * b
+    t2 = c * d
+    t3 = t1 + t2
+    x = t3
+
+
+Do NOT generate:
+
+    t1 = a * b
+    t2 = t1 + c
+    t3 = t2 * d
+
+because that represents:
+
+    (a*b + c)*d
+
+which is a different expression.
+
+
+====================================================================
+57. GATE EXAMPLE — QUADRUPLE
+====================================================================
+
+TAC:
+
+    t1 = a + b
+
+
+Quadruple:
+
+    (+, a, b, t1)
+
+
+Question:
+
+    How many fields?
+
+Answer:
+
+    4
+
+
+They are:
+
+    operator
+    argument 1
+    argument 2
+    result
+
+
+====================================================================
+58. GATE EXAMPLE — TRIPLE
+====================================================================
+
+TAC:
+
+    t1 = a + b
+
+
+Triple:
+
+    (+, a, b)
+
+
+The result is associated with:
+
+    the position/index of the triple.
+
+
+Therefore:
+
+    Triple has no explicit result field.
+
+
+====================================================================
+59. GATE TRAP — QUADRUPLE
+====================================================================
+
+Statement:
+
+    "A quadruple has three fields."
+
+FALSE.
+
+A quadruple has four fields:
+
+    (op, arg1, arg2, result)
+
+
+====================================================================
+60. GATE TRAP — TRIPLE
+====================================================================
+
+Statement:
+
+    "Triple explicitly stores a temporary result name."
+
+Generally FALSE.
+
+The result is represented by the position/index
+of the triple.
+
+
+====================================================================
+61. GATE TRAP — INDIRECT TRIPLES
+====================================================================
+
+Statement:
+
+    "Indirect triples eliminate the triple table."
+
+FALSE.
+
+They use:
+
+    Triple table
+        +
+    Separate pointer/reference table.
+
+
+====================================================================
+62. GATE TRAP — THREE ADDRESSES
+====================================================================
+
+Statement:
+
+    "Every TAC instruction has exactly three addresses."
+
+FALSE.
+
+TAC instructions can have different forms.
+
+Examples:
+
+    x = y + z
+    x = -y
+    goto L1
+    return x
+
+
+"Three-address code" refers to the representation style,
+not a requirement that every instruction always have
+three operands.
+
+
+====================================================================
+63. GATE TRAP — TAC AND AST
+====================================================================
+
+Statement:
+
+    "TAC and AST are identical representations."
+
+FALSE.
+
+AST:
+
+    hierarchical/tree-based representation.
+
+TAC:
+
+    sequence of simple instructions.
+
+
+Both can represent the same computation.
+
+
+====================================================================
+64. GATE TRAP — TAC AND MACHINE CODE
+====================================================================
+
+Statement:
+
+    "TAC is target machine code."
+
+FALSE.
+
+TAC is an intermediate representation.
+
+
+====================================================================
+65. IMPORTANT TAC INSTRUCTION TYPES
+====================================================================
+
+Common forms:
+
+    1. Assignment
+
+        x = y
+
+
+    2. Binary operation
+
+        x = y op z
+
+
+    3. Unary operation
+
+        x = op y
+
+
+    4. Conditional jump
+
+        if x relop y goto L
+
+
+    5. Unconditional jump
+
+        goto L
+
+
+    6. Label
+
+        L:
+
+
+    7. Parameter passing
+
+        param x
+
+
+    8. Function call
+
+        call f
+
+
+    9. Return
+
+        return x
+
+
+   10. Address operations
+
+        x = &y
+        x = *y
+        *x = y
+
+
+Exact syntax varies among TAC implementations.
+
+
+====================================================================
+66. TAC FOR FUNCTION CALL — COMPLETE EXAMPLE
+====================================================================
+
+Source:
+
+    x = f(a + b, c);
+
+
+Step 1:
+
+    t1 = a + b
+
+
+Step 2:
+
+    param t1
+    param c
+
+
+Step 3:
+
+    t2 = call f, 2
+
+
+Step 4:
+
+    x = t2
+
+
+Final:
+
+    t1 = a + b
+    param t1
+    param c
+    t2 = call f, 2
+    x = t2
+
+
+====================================================================
+67. TAC FOR RETURN EXPRESSION
+====================================================================
+
+Source:
+
+    return a * b + c;
+
+
+TAC:
+
+    t1 = a * b
+    t2 = t1 + c
+    return t2
+
+
+====================================================================
+68. TAC FOR CONDITIONAL ASSIGNMENT
+====================================================================
+
+Source:
+
+    if (a > b)
+        x = a;
+    else
+        x = b;
+
+
+TAC:
+
+    if a > b goto L1
+    goto L2
+
+L1:
+    x = a
+    goto L3
+
+L2:
+    x = b
+
+L3:
+
+
+This is a standard style of lowering structured control
+flow into labels and jumps.
+
+
+====================================================================
+69. TAC FOR SWITCH — CONCEPT
+====================================================================
+
+Source:
+
+    switch(x) {
+        case 1: y = 10; break;
+        case 2: y = 20; break;
+        default: y = 0;
+    }
+
+
+Possible conceptual TAC:
+
+    if x == 1 goto L1
+    if x == 2 goto L2
+    goto Ldefault
+
+L1:
+    y = 10
+    goto Lend
+
+L2:
+    y = 20
+    goto Lend
+
+Ldefault:
+    y = 0
+
+Lend:
+
+
+A compiler may instead use a jump table when appropriate.
+
+
+====================================================================
+70. QUADRUPLE — COMPLETE EXAMPLE
+====================================================================
+
+Expression:
+
+    x = a + b * c
+
+
+TAC:
+
+    t1 = b * c
+    t2 = a + t1
+    x = t2
+
+
+Quadruples:
+
+    1. (*, b, c, t1)
+    2. (+, a, t1, t2)
+    3. (=, t2, -, x)
+
+
+Possible conventions may represent assignment differently,
+but the central four-field structure remains.
+
+
+====================================================================
+71. TRIPLE — COMPLETE EXAMPLE
+====================================================================
+
+TAC:
+
+    t1 = b * c
+    t2 = a + t1
+    x = t2
+
+
+Triples:
+
+    0: (*, b, c)
+    1: (+, a, (0))
+    2: (=, (1), x)
+
+
+Here:
+
+    (0) = result of triple 0
+    (1) = result of triple 1
+
+
+====================================================================
+72. INDIRECT TRIPLE — CONCEPTUAL EXAMPLE
+====================================================================
+
+Triple table:
+
+    0: (*, b, c)
+    1: (+, a, (0))
+    2: (=, (1), x)
+
+
+Pointer table:
+
+    P0 → 0
+    P1 → 1
+    P2 → 2
+
+
+If the compiler wants a different ordering:
+
+    P0 → 1
+    P1 → 0
+    P2 → 2
+
+
+The pointer order can be changed without changing
+the underlying triple records.
+
+
+====================================================================
+73. TAC GENERATION FROM AST
+====================================================================
+
+AST:
+
+                *
+               / \
+              +   c
+             / \
+            a   b
+
+
+Postorder traversal:
+
+    a
+    b
+    +
+    c
+    *
+
+
+Generate:
+
+    t1 = a + b
+    t2 = t1 * c
+
+
+This is one intuitive way to understand TAC generation
+from an expression tree.
+
+
+====================================================================
+74. TAC GENERATION FROM ATTRIBUTE INFORMATION
+====================================================================
+
+Chapter 18 introduced attributes.
+
+For an expression node E, an attribute such as:
+
+    E.place
+
+can store where the result is located.
+
+
+Example:
+
+    E → E1 + E2
+
+
+Semantic action:
+
+    E.place = newtemp()
+
+    emit(
+        E.place = E1.place + E2.place
+    )
+
+
+For:
+
+    a + b
+
+
+we get:
+
+    E1.place = a
+    E2.place = b
+
+Create:
+
+    t1
+
+Emit:
+
+    t1 = a + b
+
+Therefore:
+
+    E.place = t1
+
+
+This connects:
+
+    Attribute Grammar
+          ↓
+    TAC generation
+
+
+====================================================================
+75. TAC GENERATION — COMPLETE CONNECTION
+====================================================================
+
+    Source:
+        x = a + b * c
+
+            ↓
+
+    Lexer:
+        tokens
+
+            ↓
+
+    Parser:
+        AST
+
+            ↓
+
+    Semantic Analysis:
+        type/scope information
+
+            ↓
+
+    Attribute Evaluation:
+        expression places
+
+            ↓
+
+    TAC:
+        t1 = b * c
+        t2 = a + t1
+        x = t2
+
+            ↓
+
+    Optimization
+
+            ↓
+
+    Target Code
+
+
+====================================================================
+76. ADVANTAGES OF TAC
+====================================================================
+
+1. SIMPLE
+
+    Complex expressions become simple operations.
+
+
+2. OPTIMIZATION-FRIENDLY
+
+    Compiler can easily identify computations.
+
+
+3. MACHINE INDEPENDENCE
+
+    TAC can hide many target-specific details.
+
+
+4. EASY CODE GENERATION
+
+    Simple operations can be mapped to machine instructions.
+
+
+5. EXPLICIT TEMPORARIES
+
+    Intermediate values are visible.
+
+
+6. CONTROL FLOW
+
+    Labels and jumps explicitly represent branches and loops.
+
+
+====================================================================
+77. LIMITATIONS OF TAC
+====================================================================
+
+TAC can:
+
+    • Generate many temporary variables
+    • Require additional instructions
+    • Still require later lowering to target-specific forms
+    • Need additional structures for complex control flow,
+      data-flow, memory models, and machine constraints
+
+
+Therefore real compilers may use richer IRs in addition
+to or instead of a simple textbook TAC.
+
+
+====================================================================
+78. TAC vs QUADRUPLES vs TRIPLES
+====================================================================
+
+TAC:
+
+    The intermediate instruction representation/concept.
+
+
+Quadruple:
+
+    One way of storing TAC instructions.
+
+
+Triple:
+
+    Another way of storing TAC instructions.
+
+
+Indirect Triple:
+
+    Triple representation with an additional level
+    of indirection.
+
+
+Important:
+
+    TAC ≠ Quadruple.
+
+    Quadruple is a representation of TAC.
+
+
+====================================================================
+79. GATE HIGH-YIELD TABLE
+====================================================================
+
++------------------+--------------------------------------+
+| Topic            | Key Point                            |
++------------------+--------------------------------------+
+| TAC              | Simple intermediate instructions    |
+| Binary TAC       | x = y op z                          |
+| Unary TAC        | x = op y                            |
+| Temporary        | Stores intermediate result          |
+| Label            | Marks control-flow destination      |
+| goto             | Unconditional jump                  |
+| if-goto          | Conditional jump                    |
+| Quadruple        | op, arg1, arg2, result              |
+| Triple           | op, arg1, arg2                      |
+| Indirect Triple  | Triple + pointer/reference table    |
+| Array access     | Address calculation may be explicit |
+| Pointer access   | *p / &x                             |
+| Function call    | param/call/return forms             |
++------------------+--------------------------------------+
+
+
+====================================================================
+80. GATE NUMERICAL STRATEGY
+====================================================================
+
+When asked to generate TAC:
+
+    STEP 1:
+        Understand operator precedence.
+
+    STEP 2:
+        Respect parentheses.
+
+    STEP 3:
+        Build the expression structure.
+
+    STEP 4:
+        Evaluate subexpressions first.
+
+    STEP 5:
+        Introduce temporaries as needed.
+
+    STEP 6:
+        Generate simple instructions.
+
+    STEP 7:
+        Add assignment/control-flow instructions.
+
+
+Example:
+
+    x = (a+b) * (c-d)
+
+
+Do:
+
+    t1 = a + b
+    t2 = c - d
+    t3 = t1 * t2
+    x = t3
+
+
+====================================================================
+81. GATE PRACTICE QUESTION
+====================================================================
+
+Expression:
+
+    a + b * c
+
+
+How many binary arithmetic operations are required?
+
+Answer:
+
+    2
+
+Operations:
+
+    b * c
+    a + result
+
+
+Possible TAC:
+
+    t1 = b * c
+    t2 = a + t1
+
+
+====================================================================
+82. GATE PRACTICE QUESTION
+====================================================================
+
+Expression:
+
+    (a+b) * (c+d)
+
+
+TAC:
+
+    t1 = a + b
+    t2 = c + d
+    t3 = t1 * t2
+
+
+Number of arithmetic operations:
+
+    3
+
+
+====================================================================
+83. GATE PRACTICE QUESTION
+====================================================================
+
+TAC:
+
+    t1 = a + b
+    t2 = t1 * c
+
+
+Which expression is represented?
+
+Answer:
+
+    (a + b) * c
+
+
+NOT:
+
+    a + (b * c)
+
+
+This is a common precedence/structure trap.
+
+
+====================================================================
+84. GATE PRACTICE QUESTION
+====================================================================
+
+Given quadruple:
+
+    (*, a, b, t1)
+
+What does it represent?
+
+Answer:
+
+    t1 = a * b
+
+
+====================================================================
+85. GATE PRACTICE QUESTION
+====================================================================
+
+Given triple:
+
+    0: (+, a, b)
+    1: (*, (0), c)
+
+
+What is represented?
+
+Answer:
+
+    (a + b) * c
+
+
+because:
+
+    triple 0 → a+b
+
+and:
+
+    triple 1 → result of triple 0 multiplied by c.
+
+
+====================================================================
+86. INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is Three-Address Code?
+
+Answer:
+
+TAC is an intermediate representation in which complex
+computations are decomposed into simple instructions,
+typically with a form such as x = y op z.
+
+
+Q2. Why is TAC called three-address code?
+
+Answer:
+
+A common binary TAC instruction has three operand/address
+positions: destination and two operands.
+
+
+Q3. What is a temporary variable?
+
+Answer:
+
+A compiler-generated name used to store an intermediate
+computation result.
+
+
+Q4. What is a quadruple?
+
+Answer:
+
+A four-field representation of a TAC instruction:
+
+    (operator, arg1, arg2, result)
+
+
+Q5. What is a triple?
+
+Answer:
+
+A TAC representation containing:
+
+    (operator, arg1, arg2)
+
+where the result is identified by the triple's position.
+
+
+Q6. What is an indirect triple?
+
+Answer:
+
+A triple representation using an additional pointer/reference
+table to identify and order triple entries.
+
+
+Q7. Why is TAC useful?
+
+Answer:
+
+It simplifies complex expressions, optimization, analysis,
+and target-code generation.
+
+
+Q8. How is TAC generated from an AST?
+
+Answer:
+
+The compiler recursively processes subexpressions, creates
+temporaries for intermediate results, and emits simple TAC
+instructions.
+
+
+Q9. What is the difference between TAC and machine code?
+
+Answer:
+
+TAC is an intermediate compiler representation, whereas
+machine code is target-specific executable instruction data.
+
+
+Q10. Can TAC represent control flow?
+
+Answer:
+
+Yes. Labels, conditional jumps, and unconditional jumps
+can represent branches and loops.
+
+
+====================================================================
+87. INTERVIEW — QUADRUPLE vs TRIPLE
+====================================================================
+
+Question:
+
+Why might a compiler prefer quadruples over triples?
+
+Answer:
+
+Quadruples explicitly store the result, making instruction
+references and rearrangement relatively straightforward.
+Triples use instruction positions as result references,
+which can make code movement more complicated.
+
+
+====================================================================
+88. INTERVIEW — WHY TEMPORARIES?
+====================================================================
+
+Question:
+
+Why are temporaries used in TAC?
+
+Answer:
+
+They provide explicit locations for intermediate results,
+making complex expressions easier to represent, analyze,
+optimize, and translate into machine instructions.
+
+
+====================================================================
+89. REAL-WORLD COMPILER CONNECTION
+====================================================================
+
+Textbook TAC is useful for learning the fundamental idea
+of compiler IR.
+
+Modern compilers often use richer representations.
+
+Examples include:
+
+    LLVM IR
+    GCC GIMPLE
+    GCC RTL
+    JVM bytecode
+    SSA-based representations
+
+
+Therefore:
+
+    TAC teaches the fundamental IR model.
+
+    Modern compilers may use much more sophisticated IRs.
+
+
+====================================================================
+90. CHAPTER 20 — MASTER MEMORY MAP
+====================================================================
+
+                    THREE-ADDRESS CODE
+                           |
+          +----------------+----------------+
+          |                |                |
+      Expressions       Control Flow      Calls
+          |                |                |
+     temporaries       labels/jumps     param/call
+          |                |             return
+          |
+     +----+----+
+     |         |
+   Binary     Unary
+     |         |
+ x=y op z    x=op y
+     |
+     ↓
+  Storage Formats
+     |
+ +---+-------------+
+ |                 |
+Quadruple        Triple
+ |                 |
+4 fields         3 fields
+ |                 |
+ +-------+---------+
+         |
+   Indirect Triple
+         |
+   Pointer Table
+
+
+====================================================================
+91. CHAPTER 20 — MOST IMPORTANT FORMULAS / FORMS
+====================================================================
+
+Binary operation:
+
+    x = y op z
+
+
+Unary operation:
+
+    x = op y
+
+
+Conditional jump:
+
+    if x relop y goto L
+
+
+Unconditional jump:
+
+    goto L
+
+
+Label:
+
+    L:
+
+
+Parameter:
+
+    param x
+
+
+Call:
+
+    t = call f, n
+
+
+Return:
+
+    return x
+
+
+Quadruple:
+
+    (op, arg1, arg2, result)
+
+
+Triple:
+
+    (op, arg1, arg2)
+
+
+Array offset:
+
+    offset = index × element_width
+
+for a simple one-dimensional layout.
+
+
+Row-major 2D conceptual offset:
+
+    offset =
+        ((i × number_of_columns) + j) × width
+
+
+====================================================================
+92. CHAPTER 20 — ULTRA-SHORT REVISION
+====================================================================
+
+TAC:
+
+    Intermediate representation using simple instructions.
+
+
+Typical form:
+
+    x = y op z
+
+
+Temporary:
+
+    Stores intermediate result.
+
+
+Control flow:
+
+    labels + conditional/unconditional jumps.
+
+
+Quadruple:
+
+    (op, arg1, arg2, result)
+
+
+Triple:
+
+    (op, arg1, arg2)
+
+
+Indirect triple:
+
+    triples + pointer/reference table.
+
+
+TAC can represent:
+
+    • Expressions
+    • Assignments
+    • Conditions
+    • Loops
+    • Arrays
+    • Pointers
+    • Function calls
+    • Returns
+
+
+====================================================================
+93. CHAPTER 20 — FINAL EXAM CHECKLIST
+====================================================================
+
+[✓] What is TAC?
+[✓] Why do compilers use TAC?
+[✓] What are temporaries?
+[✓] Binary TAC?
+[✓] Unary TAC?
+[✓] Assignment TAC?
+[✓] Conditional jump?
+[✓] Unconditional jump?
+[✓] Labels?
+[✓] TAC for if?
+[✓] TAC for if-else?
+[✓] TAC for while?
+[✓] TAC for for-loop?
+[✓] TAC for do-while?
+[✓] TAC for arrays?
+[✓] TAC for pointers?
+[✓] TAC for functions?
+[✓] What are quadruples?
+[✓] What are triples?
+[✓] What are indirect triples?
+[✓] Quadruple vs triple?
+[✓] TAC vs AST?
+[✓] TAC vs machine code?
+[✓] TAC and optimization?
+[✓] TAC and CFG?
+[✓] TAC generation from AST?
+
+
+====================================================================
+94. CHAPTER 20 — FINAL SUMMARY
+====================================================================
+
+Three-Address Code converts complicated source-level
+expressions into simple intermediate instructions.
+
+Example:
+
+    Source:
+
+        x = a + b * c
+
+
+    TAC:
+
+        t1 = b * c
+        t2 = a + t1
+        x = t2
+
+
+TAC can represent:
+
+    Arithmetic
+    Relational operations
+    Assignments
+    Branches
+    Loops
+    Arrays
+    Pointers
+    Function calls
+    Returns
+
+
+Three important storage formats:
+
+    QUADRUPLES
+
+        (op, arg1, arg2, result)
+
+
+    TRIPLES
+
+        (op, arg1, arg2)
+
+
+    INDIRECT TRIPLES
+
+        Triple table
+             +
+        Pointer/reference table
+
+
+The big compiler connection:
+
+    AST
+     ↓
+    Semantic Information
+     ↓
+    TAC
+     ↓
+    Optimization
+     ↓
+    Basic Blocks / CFG
+     ↓
+    Code Generation
+     ↓
+    Target Code
+
+
+====================================================================
+CHAPTER 20 COMPLETE
+====================================================================
+
+NEXT MASTER-SYLLABUS CHAPTER:
+
+    CHAPTER 21 — BOOLEAN EXPRESSIONS & CONTROL FLOW
+
+Topics:
+
+    • Boolean representation
+    • Relational operators
+    • Logical operators
+    • Short-circuit evaluation
+    • Conditional jumps
+    • Unconditional jumps
+    • Labels
+    • Backpatching
+    • Truelist
+    • Falselist
+    • Nextlist
+    • Translation of if
+    • Translation of if-else
+    • while
+    • do-while
+    • for
+    • switch
+    • Jump tables
+    • Control-flow translation
+    • GATE numerical problems
+    • GATE traps
+    • Interview questions
+    • Practical examples
+
+Type:
+
+    NEXT
+
+to move to Chapter 21.
+====================================================================
