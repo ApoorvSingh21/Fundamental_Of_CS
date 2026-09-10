@@ -1,0 +1,3210 @@
+======================================================================
+CHAPTER 3 — TYPES OF APIs
+MASTER-LEVEL API ENGINEERING — ZERO → ADVANCED
+======================================================================
+
+GOAL OF THIS CHAPTER
+--------------------
+After completing this chapter, you should be able to:
+
+1. Explain different types of APIs.
+2. Understand REST, SOAP, GraphQL, gRPC, WebSocket and Webhook.
+3. Understand API types based on accessibility.
+4. Choose the correct API style for a real-world system.
+5. Compare REST vs SOAP vs GraphQL vs gRPC.
+6. Understand RPC architecture.
+7. Understand synchronous vs asynchronous APIs.
+8. Understand request-response vs event-driven communication.
+9. Understand API protocol, architecture style and access level separately.
+10. Answer API interview questions at an advanced level.
+
+
+======================================================================
+1. IMPORTANT: "API TYPE" CAN MEAN DIFFERENT THINGS
+======================================================================
+
+The word "API type" is overloaded.
+
+We can classify APIs using different dimensions.
+
+                    API CLASSIFICATION
+                           |
+          +----------------+----------------+
+          |                |                |
+      Architecture      Communication     Accessibility
+          |                |                |
+       REST            Request/Response    Internal
+       SOAP            Streaming           Partner
+       GraphQL         Event/Webhook        Public
+       RPC             Bidirectional        Private
+       gRPC
+          |
+      Technology
+          |
+   Web API
+   Library API
+   OS API
+   Database API
+
+
+IMPORTANT:
+
+REST, SOAP, GraphQL and gRPC describe HOW APIs communicate.
+
+Internal, Partner, Public and Private describe WHO CAN ACCESS APIs.
+
+Therefore:
+
+A REST API can be:
+    - Internal REST API
+    - Partner REST API
+    - Public REST API
+
+Example:
+
+https://company.com/internal/users
+
+could be an internal REST API.
+
+https://api.paymentcompany.com/payments
+
+could be a partner REST API.
+
+https://api.weather.com/current
+
+could be a public API.
+
+
+======================================================================
+2. WEB API
+======================================================================
+
+A Web API is an API accessible through web/network protocols.
+
+Most commonly:
+
+    HTTP / HTTPS
+
+Example:
+
+    GET https://example.com/api/users
+
+Request:
+
+    GET /api/users HTTP/1.1
+    Host: example.com
+
+Response:
+
+    HTTP/1.1 200 OK
+
+    [
+      {
+        "id": 1,
+        "name": "Apoorv"
+      }
+    ]
+
+
+Web APIs are commonly used for:
+
+    Web applications
+    Mobile applications
+    Microservices
+    Cloud applications
+    Third-party integrations
+    IoT systems
+
+
+COMMON WEB API TECHNOLOGIES
+---------------------------
+
+    REST
+    SOAP
+    GraphQL
+    gRPC
+    WebSocket
+
+
+IMPORTANT:
+
+Web API is a broad category.
+
+REST API is a type of Web API.
+
+GraphQL API can be exposed over HTTP.
+
+SOAP API commonly uses HTTP/HTTPS.
+
+gRPC commonly runs over HTTP/2.
+
+
+======================================================================
+3. REST API
+======================================================================
+
+REST = Representational State Transfer
+
+REST is NOT a protocol.
+
+REST is an architectural style for designing networked APIs.
+
+It was introduced by Roy Fielding in his dissertation.
+
+
+REST commonly uses:
+
+    HTTP
+    JSON
+    URLs
+    HTTP methods
+    HTTP status codes
+
+
+Example:
+
+    GET /users
+    GET /users/10
+    POST /users
+    PUT /users/10
+    PATCH /users/10
+    DELETE /users/10
+
+
+RESOURCE MODEL
+--------------
+
+REST generally models data as resources.
+
+Example:
+
+    User
+    Product
+    Order
+    Payment
+    Student
+
+
+Example resource:
+
+    /users
+
+Individual resource:
+
+    /users/101
+
+
+Relationship:
+
+    /users/101/orders
+
+Meaning:
+
+    Orders belonging to user 101.
+
+
+======================================================================
+4. REST ARCHITECTURAL CONSTRAINTS
+======================================================================
+
+A mature understanding of REST requires understanding its constraints.
+
+
+1. CLIENT-SERVER
+----------------
+
+Client and server have separate responsibilities.
+
+Client:
+
+    UI
+    User interaction
+    Request generation
+
+Server:
+
+    Business logic
+    Data processing
+    Database interaction
+
+
+Example:
+
+Mobile App
+    |
+    | HTTP Request
+    v
+REST API Server
+    |
+    v
+Database
+
+
+2. STATELESSNESS
+----------------
+
+Each request should contain the information necessary for
+the server to process it.
+
+The server should not depend on stored client session state
+between requests.
+
+Example:
+
+    GET /users/101
+
+Authorization information can be provided through:
+
+    Authorization: Bearer <token>
+
+
+3. CACHEABILITY
+---------------
+
+Responses can be cacheable when appropriate.
+
+Example:
+
+    Cache-Control: max-age=300
+
+
+4. UNIFORM INTERFACE
+--------------------
+
+Resources should be accessed using a consistent interface.
+
+Example:
+
+    GET    /products
+    GET    /products/10
+    POST   /products
+    PATCH  /products/10
+    DELETE /products/10
+
+
+5. LAYERED SYSTEM
+-----------------
+
+Client does not necessarily know whether it is communicating
+directly with the application server.
+
+Architecture:
+
+    Client
+       |
+       v
+    CDN
+       |
+       v
+ API Gateway
+       |
+       v
+ Load Balancer
+       |
+       v
+ Application
+       |
+       v
+ Database
+
+
+6. CODE-ON-DEMAND
+-----------------
+
+Optional REST constraint.
+
+A server can send executable code to the client.
+
+This constraint is rarely central to modern REST API discussions.
+
+
+======================================================================
+5. REST MATURITY MODEL
+======================================================================
+
+Richardson Maturity Model:
+
+Level 0:
+    HTTP as transport only
+
+Level 1:
+    Resources
+
+Level 2:
+    HTTP verbs + status codes
+
+Level 3:
+    Hypermedia controls
+
+Example:
+
+Level 0:
+
+    POST /service
+
+Level 1:
+
+    /users
+    /orders
+    /products
+
+Level 2:
+
+    GET /users
+    POST /users
+    DELETE /users/10
+
+Level 3:
+
+    Response contains links/actions:
+
+    {
+      "id": 10,
+      "name": "Apoorv",
+      "_links": {
+        "self": "/users/10",
+        "orders": "/users/10/orders"
+      }
+    }
+
+
+======================================================================
+6. REST ADVANTAGES
+======================================================================
+
+Advantages:
+
+    Simple
+    Human-readable
+    Uses standard HTTP
+    Easy browser integration
+    Easy debugging
+    Large ecosystem
+    Easy Postman testing
+    JSON support
+    Good for public APIs
+    Good for CRUD systems
+    Good for microservices
+
+
+DISADVANTAGES:
+
+    Over-fetching
+    Under-fetching
+    Multiple requests may be required
+    JSON can be verbose
+    Strict REST principles are often misunderstood
+    Real-time communication requires additional technologies
+
+
+======================================================================
+7. SOAP API
+======================================================================
+
+SOAP = Simple Object Access Protocol
+
+SOAP is a protocol.
+
+This distinction is important:
+
+    REST  = Architectural style
+    SOAP  = Protocol
+
+
+SOAP commonly uses XML.
+
+Example:
+
+    <soap:Envelope>
+        <soap:Body>
+            <GetUser>
+                <UserId>101</UserId>
+            </GetUser>
+        </soap:Body>
+    </soap:Envelope>
+
+
+SOAP has a formal messaging model.
+
+
+SOAP MESSAGE STRUCTURE
+----------------------
+
+    Envelope
+       |
+       +--- Header
+       |
+       +--- Body
+              |
+              +--- Request/Response
+              |
+              +--- Fault
+
+
+Example:
+
+    SOAP Envelope
+        |
+        +-- Header
+        |
+        +-- Body
+             |
+             +-- GetUser
+                  |
+                  +-- UserId = 101
+
+
+======================================================================
+8. SOAP CHARACTERISTICS
+======================================================================
+
+SOAP provides strong standards around:
+
+    Messaging
+    XML
+    Security
+    Transactions
+    Reliability
+    Contracts
+
+
+SOAP can work with different underlying transports,
+although HTTP/HTTPS is common in web services.
+
+
+SOAP commonly uses:
+
+    WSDL
+    XML
+    XSD
+    WS-Security
+    WS-ReliableMessaging
+    WS-Addressing
+
+
+======================================================================
+9. WSDL
+======================================================================
+
+WSDL = Web Services Description Language
+
+It describes a SOAP web service.
+
+It can describe:
+
+    Operations
+    Messages
+    Data types
+    Endpoints
+    Bindings
+
+
+Conceptually:
+
+    WSDL
+      |
+      +-- What operations exist?
+      +-- What data is required?
+      +-- What responses exist?
+      +-- Where is the service?
+      +-- How is communication performed?
+
+
+Example:
+
+    getUser(userId)
+    createUser(user)
+    deleteUser(userId)
+
+
+======================================================================
+10. SOAP ADVANTAGES
+======================================================================
+
+Advantages:
+
+    Formal contract
+    Strong enterprise standards
+    XML schema validation
+    Mature security standards
+    Transaction support
+    Reliable messaging capabilities
+    Suitable for complex enterprise integrations
+
+
+DISADVANTAGES:
+
+    XML is verbose
+    More complex
+    More difficult to develop
+    More bandwidth
+    More tooling/configuration
+    Usually heavier than simple REST APIs
+
+
+COMMON USE CASES:
+
+    Banking
+    Insurance
+    Government systems
+    Enterprise integrations
+    Legacy enterprise systems
+    Transaction-heavy systems
+
+
+======================================================================
+11. REST vs SOAP
+======================================================================
+
++----------------------+----------------------+
+| REST                 | SOAP                 |
++----------------------+----------------------+
+| Architectural style | Protocol             |
+| Commonly HTTP        | Multiple transports  |
+| JSON commonly used   | XML messaging        |
+| Lightweight          | Generally heavier    |
+| Flexible             | Formal standards     |
+| Easy to consume      | More complex         |
+| Resource-oriented    | Operation/message    |
+| Popular for web APIs | Common in enterprise |
++----------------------+----------------------+
+
+
+INTERVIEW QUESTION:
+
+Q: Is REST a protocol?
+
+Answer:
+
+    No.
+
+REST is an architectural style.
+
+HTTP is a protocol commonly used to implement RESTful APIs.
+
+
+======================================================================
+12. GRAPHQL
+======================================================================
+
+GraphQL is a query language for APIs and a runtime for executing
+those queries against a type system.
+
+It was developed at Facebook and later open-sourced.
+
+
+Core idea:
+
+CLIENT TELLS SERVER WHAT DATA IT NEEDS.
+
+
+Example:
+
+    query {
+        user(id: 101) {
+            id
+            name
+            email
+        }
+    }
+
+
+Possible response:
+
+    {
+      "data": {
+        "user": {
+          "id": 101,
+          "name": "Apoorv",
+          "email": "apoorv@example.com"
+        }
+      }
+    }
+
+
+======================================================================
+13. GRAPHQL PROBLEM
+======================================================================
+
+REST can sometimes produce:
+
+
+OVER-FETCHING
+-------------
+
+Client needs:
+
+    id
+    name
+
+But server returns:
+
+    id
+    name
+    email
+    phone
+    address
+    age
+    createdAt
+    updatedAt
+    ...
+
+
+Client receives more data than required.
+
+
+UNDER-FETCHING
+--------------
+
+Client needs:
+
+    User
+    Orders
+    Products
+
+REST may require:
+
+    GET /users/101
+    GET /users/101/orders
+    GET /orders/500/products
+
+
+GraphQL can request related data in one query.
+
+
+======================================================================
+14. GRAPHQL SCHEMA
+======================================================================
+
+GraphQL uses a strongly typed schema.
+
+Example:
+
+    type User {
+        id: ID!
+        name: String!
+        email: String
+    }
+
+
+Query:
+
+    type Query {
+        user(id: ID!): User
+    }
+
+
+Schema defines what the API supports.
+
+
+======================================================================
+15. GRAPHQL CORE CONCEPTS
+======================================================================
+
+Important concepts:
+
+    Schema
+    Query
+    Mutation
+    Subscription
+    Resolver
+    Type
+    Field
+    Argument
+    Fragment
+    Directive
+
+
+QUERY
+-----
+
+Used for reading data.
+
+    query {
+        users {
+            id
+            name
+        }
+    }
+
+
+MUTATION
+--------
+
+Used for changing data.
+
+    mutation {
+        createUser(
+            name: "Apoorv"
+        ) {
+            id
+            name
+        }
+    }
+
+
+SUBSCRIPTION
+------------
+
+Used for real-time event updates.
+
+Example:
+
+    subscription {
+        messageAdded {
+            id
+            message
+        }
+    }
+
+
+======================================================================
+16. GRAPHQL RESOLVER
+======================================================================
+
+A resolver provides the logic used to obtain a field's value.
+
+
+Example:
+
+    user(id: 101)
+
+Resolver may:
+
+    Validate input
+    Query database
+    Call another service
+    Transform data
+    Return result
+
+
+Architecture:
+
+    GraphQL Client
+          |
+          v
+    GraphQL Server
+          |
+          v
+      Resolver
+       /     \
+      v       v
+   Database  REST API
+              |
+              v
+           Service
+
+
+======================================================================
+17. GRAPHQL ADVANTAGES
+======================================================================
+
+Advantages:
+
+    Client controls response shape
+    Strong type system
+    Reduces over-fetching
+    Can reduce under-fetching
+    Single endpoint is common
+    Excellent for complex data graphs
+    Good developer experience
+
+
+DISADVANTAGES:
+
+    More complex server implementation
+    Query complexity can become dangerous
+    Caching is more complicated than simple HTTP caching
+    Authorization can become field-level
+    N+1 query problem
+    Requires careful query-depth/cost controls
+
+
+======================================================================
+18. GRAPHQL N+1 PROBLEM
+======================================================================
+
+Suppose query requests:
+
+    users {
+        id
+        orders {
+            id
+        }
+    }
+
+
+Naive implementation:
+
+    Query users once.
+
+Then for each user:
+
+    Query orders.
+
+If there are 100 users:
+
+    1 query for users
+    100 queries for orders
+
+Total:
+
+    101 queries
+
+
+This is the N+1 query problem.
+
+
+COMMON SOLUTION:
+
+    DataLoader / batching
+
+
+Instead of:
+
+    getOrders(user1)
+    getOrders(user2)
+    getOrders(user3)
+    ...
+
+
+Batch:
+
+    getOrders([user1, user2, user3, ...])
+
+
+======================================================================
+19. gRPC
+======================================================================
+
+gRPC is a high-performance Remote Procedure Call (RPC)
+framework.
+
+gRPC commonly uses:
+
+    HTTP/2
+    Protocol Buffers (Protobuf)
+
+
+Instead of thinking primarily in resources:
+
+    /users/101
+
+RPC thinks in operations:
+
+    GetUser()
+    CreateUser()
+    UpdateUser()
+
+
+Example:
+
+    rpc GetUser(GetUserRequest)
+        returns (User);
+
+
+======================================================================
+20. PROTOCOL BUFFERS
+======================================================================
+
+Protocol Buffers = Protobuf
+
+It is a language-neutral serialization mechanism.
+
+Example:
+
+    message User {
+        int64 id = 1;
+        string name = 2;
+        string email = 3;
+    }
+
+
+The schema is compiled into code for supported languages.
+
+
+Example ecosystem:
+
+    .proto
+      |
+      v
+   protoc
+      |
+      +---- C++
+      +---- Java
+      +---- Go
+      +---- Python
+      +---- C#
+      +---- etc.
+
+
+======================================================================
+21. gRPC COMMUNICATION TYPES
+======================================================================
+
+gRPC supports:
+
+1. Unary RPC
+
+    Client -> Request
+    Server -> Response
+
+
+2. Server streaming
+
+    Client -> Request
+    Server -> Response stream
+
+
+3. Client streaming
+
+    Client -> Request stream
+    Server -> Response
+
+
+4. Bidirectional streaming
+
+    Client <----> Server
+       continuous streams
+
+
+This makes gRPC useful for high-performance distributed systems.
+
+
+======================================================================
+22. gRPC ADVANTAGES
+======================================================================
+
+Advantages:
+
+    High performance
+    Compact binary serialization
+    HTTP/2
+    Strong contracts
+    Code generation
+    Streaming support
+    Excellent for microservices
+    Multi-language support
+
+
+DISADVANTAGES:
+
+    Less human-readable than JSON
+    Browser integration is less direct
+    Tooling is more specialized
+    Public API consumers may prefer REST
+    Debugging raw traffic is less convenient
+
+
+======================================================================
+23. REST vs gRPC
+======================================================================
+
++----------------------+----------------------+
+| REST                 | gRPC                 |
++----------------------+----------------------+
+| HTTP-based style    | RPC framework        |
+| JSON commonly used   | Protobuf commonly    |
+| Human-readable       | Binary efficient     |
+| Simple clients       | Generated clients    |
+| Excellent public API | Excellent internal   |
+| CRUD friendly        | Service-to-service   |
+| Streaming possible   | Strong streaming     |
++----------------------+----------------------+
+
+
+Typical architecture:
+
+Public API:
+
+    Client
+      |
+      v
+    REST
+      |
+      v
+ API Gateway
+      |
+      v
+   gRPC
+      |
+      +---- User Service
+      +---- Order Service
+      +---- Payment Service
+
+
+This is a common architectural pattern.
+
+
+======================================================================
+24. RPC
+======================================================================
+
+RPC = Remote Procedure Call
+
+It allows software to call a function/procedure running on
+another machine as if it were a local operation.
+
+
+Local:
+
+    result = calculate(10, 20)
+
+
+Remote:
+
+    result = remoteCalculate(10, 20)
+
+
+Conceptually:
+
+    Client
+      |
+      | RPC Request
+      v
+  Network
+      |
+      v
+    Server
+      |
+      v
+  Function
+      |
+      v
+  Response
+
+
+Examples:
+
+    gRPC
+    JSON-RPC
+    XML-RPC
+    Thrift
+
+
+======================================================================
+25. REST vs RPC MENTAL MODEL
+======================================================================
+
+REST:
+
+    "What RESOURCE am I interacting with?"
+
+RPC:
+
+    "What OPERATION do I want to execute?"
+
+
+REST:
+
+    PATCH /users/101
+
+RPC:
+
+    UpdateUser()
+
+
+REST is resource-oriented.
+
+RPC is operation-oriented.
+
+
+======================================================================
+26. WEBSOCKET API
+======================================================================
+
+WebSocket provides a persistent, bidirectional communication
+channel between client and server.
+
+Normal HTTP:
+
+    Client -> Request
+    Server -> Response
+
+WebSocket:
+
+    Client <================> Server
+
+
+After connection establishment:
+
+    Client -> Message
+    Server -> Message
+    Client -> Message
+    Server -> Message
+
+
+Both sides can send messages independently.
+
+
+======================================================================
+27. WEBSOCKET CONNECTION
+======================================================================
+
+Conceptually:
+
+    Client
+       |
+       | HTTP Upgrade
+       v
+    Server
+       |
+       | 101 Switching Protocols
+       v
+ WebSocket Connection
+       |
+       +----------------------+
+       |                      |
+       v                      v
+   Client messages       Server messages
+
+
+Connection remains open until closed.
+
+
+======================================================================
+28. WEBSOCKET USE CASES
+======================================================================
+
+Excellent for:
+
+    Chat applications
+    Multiplayer games
+    Live dashboards
+    Stock price updates
+    Real-time notifications
+    Collaborative editing
+    Live tracking
+
+
+Example:
+
+    User A
+       |
+       v
+ WebSocket Server
+       |
+       +------> User B
+       |
+       +------> User C
+
+
+======================================================================
+29. WEBSOCKET vs HTTP
+======================================================================
+
+HTTP:
+
+    Request/Response
+
+
+WebSocket:
+
+    Persistent bidirectional communication
+
+
+HTTP is generally better for:
+
+    CRUD
+    Normal API operations
+    Stateless request-response
+
+
+WebSocket is generally better for:
+
+    Real-time communication
+    Continuous updates
+    Low-latency bidirectional messaging
+
+
+======================================================================
+30. WEBHOOK
+======================================================================
+
+A webhook is an event-driven callback mechanism.
+
+Instead of repeatedly asking:
+
+    "Did something happen?"
+
+the receiving system says:
+
+    "Tell me when something happens."
+
+
+POLLING:
+
+    Client -> Did payment complete?
+    Client -> Did payment complete?
+    Client -> Did payment complete?
+    Client -> Did payment complete?
+
+
+WEBHOOK:
+
+    Payment completed
+          |
+          v
+    Payment Provider
+          |
+          | HTTP POST
+          v
+    Your Webhook Endpoint
+
+
+Example:
+
+    POST /webhooks/payment
+
+
+Payload:
+
+    {
+      "event": "payment.success",
+      "payment_id": "PAY123",
+      "amount": 500
+    }
+
+
+======================================================================
+31. WEBHOOK CHARACTERISTICS
+======================================================================
+
+Webhook is NOT primarily a new HTTP protocol.
+
+It is an integration pattern.
+
+Usually:
+
+    Event occurs
+        |
+        v
+    Provider
+        |
+        v
+    HTTP request
+        |
+        v
+    Consumer endpoint
+
+
+Common webhook events:
+
+    payment.success
+    payment.failed
+    order.created
+    order.shipped
+    user.created
+    repository.push
+
+
+======================================================================
+32. WEBHOOK SECURITY
+======================================================================
+
+A webhook endpoint should verify that the request is genuine.
+
+Common mechanisms:
+
+    HMAC signature
+    Secret token
+    Timestamp
+    IP restrictions where appropriate
+    Replay protection
+
+
+Example conceptual headers:
+
+    X-Signature: abc123
+    X-Timestamp: 1720000000
+
+
+Server verifies:
+
+    signature = HMAC(secret, payload)
+
+
+IMPORTANT:
+
+Do not trust a webhook merely because it reached your endpoint.
+
+
+======================================================================
+33. WEBHOOK RETRIES
+======================================================================
+
+What happens if your server is temporarily unavailable?
+
+Provider may retry:
+
+    Attempt 1
+       |
+       X
+
+    Attempt 2
+       |
+       X
+
+    Attempt 3
+       |
+       v
+     Success
+
+
+Therefore webhook handlers should be:
+
+    Idempotent
+
+
+Example:
+
+Event ID:
+
+    evt_12345
+
+If the same event arrives twice:
+
+    First:
+        Process payment event.
+
+    Second:
+        Detect evt_12345 already processed.
+        Do not perform the operation again.
+
+
+======================================================================
+34. WEB API vs WEBHOOK
+======================================================================
+
+Web API:
+
+    YOU call THEM.
+
+
+Webhook:
+
+    THEY call YOU.
+
+
+Example:
+
+REST API:
+
+    Your application
+          |
+          v
+    Payment Provider
+
+
+Webhook:
+
+    Payment Provider
+          |
+          v
+    Your application
+
+
+This distinction is extremely important.
+
+
+======================================================================
+35. LIBRARY API
+======================================================================
+
+An API does not have to be a web API.
+
+A programming library exposes APIs.
+
+Example C++:
+
+    vector.push_back(value);
+
+
+The vector class provides methods that form part of its API.
+
+
+Python:
+
+    requests.get(url)
+
+Database:
+
+    connection.execute(query)
+
+
+These are programming APIs.
+
+
+======================================================================
+36. OPERATING SYSTEM API
+======================================================================
+
+Operating systems expose APIs for applications.
+
+Examples:
+
+    Windows API
+    POSIX APIs
+    Linux system interfaces
+
+
+Applications may need to:
+
+    Create files
+    Open files
+    Create processes
+    Allocate resources
+    Communicate through sockets
+    Access system information
+
+
+Conceptually:
+
+    Application
+        |
+        v
+    OS API
+        |
+        v
+    Operating System
+        |
+        v
+    Hardware
+
+
+Example POSIX-style API:
+
+    open()
+    read()
+    write()
+    close()
+    fork()
+    exec()
+
+
+======================================================================
+37. SYSTEM CALL vs API
+======================================================================
+
+These terms are related but NOT always identical.
+
+
+API:
+
+    Interface exposed to programmers.
+
+
+System call:
+
+    Mechanism through which a program requests a service
+    from the operating system kernel.
+
+
+Conceptual path:
+
+    Application
+        |
+        v
+    Library/API
+        |
+        v
+    System Call
+        |
+        v
+    Kernel
+        |
+        v
+    Hardware
+
+
+Example:
+
+    C program
+       |
+       v
+    write()
+       |
+       v
+    system call
+       |
+       v
+    Linux kernel
+
+
+======================================================================
+38. DATABASE API
+======================================================================
+
+A database API allows software to interact with databases.
+
+
+Examples:
+
+    JDBC
+    ODBC
+    Python DB-API
+    ADO.NET
+    Database-specific drivers
+
+
+Typical flow:
+
+    Application
+        |
+        v
+    Database API/Driver
+        |
+        v
+    Database
+        |
+        v
+    SQL Engine
+        |
+        v
+    Data
+
+
+Example Python:
+
+    connection.execute(
+        "SELECT * FROM users"
+    )
+
+
+======================================================================
+39. INTERNAL API
+======================================================================
+
+An internal API is primarily intended for use within an
+organization/system.
+
+Example:
+
+    Frontend
+       |
+       v
+    API Gateway
+       |
+       +------> User Service
+       |
+       +------> Order Service
+       |
+       +------> Payment Service
+
+
+These service-to-service APIs may be internal.
+
+
+Benefits:
+
+    Controlled access
+    Better integration
+    Service separation
+    Microservice communication
+
+
+======================================================================
+40. PARTNER API
+======================================================================
+
+Partner APIs are APIs exposed to selected external organizations.
+
+Example:
+
+    E-commerce Company
+           |
+           v
+    Shipping Company API
+
+
+Another:
+
+    Banking Platform
+           |
+           v
+    Payment Provider
+
+
+Partner APIs normally have:
+
+    Authentication
+    Authorization
+    Rate limits
+    Contracts
+    SLAs
+    Monitoring
+
+
+======================================================================
+41. PUBLIC API
+======================================================================
+
+A public API is made available to external developers or users,
+usually under defined terms.
+
+
+Example conceptual API:
+
+    GET /api/weather?city=Indore
+
+
+Developers may receive:
+
+    API key
+    OAuth token
+    Documentation
+    Rate limits
+
+
+Public APIs require strong attention to:
+
+    Security
+    Documentation
+    Versioning
+    Backward compatibility
+    Rate limiting
+    Abuse prevention
+
+
+======================================================================
+42. PRIVATE API
+======================================================================
+
+"Private API" can mean different things depending on the organization.
+
+Often it means:
+
+    API restricted to internal users/systems.
+
+
+Example:
+
+    Internal employee application
+          |
+          v
+    Private API
+          |
+          v
+    Company Database
+
+
+IMPORTANT:
+
+Terminology varies.
+
+Some organizations use:
+
+    Private API = Internal API
+
+Others may use "private" to mean:
+
+    Not publicly documented
+    Restricted access
+    Non-public interface
+
+
+Always understand the actual access policy.
+
+
+======================================================================
+43. OPEN API vs OPENAPI
+======================================================================
+
+These two terms are commonly confused.
+
+
+OPEN API
+--------
+
+Usually means an API that is openly available to external
+developers, depending on the provider's definition.
+
+
+OPENAPI
+--------
+
+OpenAPI is a specification used to describe HTTP APIs.
+
+Example:
+
+    openapi: 3.1.0
+
+It can describe:
+
+    Paths
+    Methods
+    Parameters
+    Request bodies
+    Responses
+    Schemas
+    Authentication
+
+
+Tools:
+
+    Swagger UI
+    Redoc
+    Code generators
+
+
+IMPORTANT:
+
+    Open API != OpenAPI Specification
+
+
+======================================================================
+44. API ACCESS CLASSIFICATION
+======================================================================
+
++----------------+----------------------------------+
+| Type           | Typical Consumers                |
++----------------+----------------------------------+
+| Internal       | Organization's own systems      |
+| Private        | Restricted consumers            |
+| Partner        | Selected external partners      |
+| Public/Open    | Broad external developer base   |
++----------------+----------------------------------+
+
+
+Example:
+
+    Company
+      |
+      +-- Internal API
+      |
+      +-- Partner API
+      |
+      +-- Public API
+
+
+======================================================================
+45. SYNCHRONOUS API
+======================================================================
+
+In synchronous communication, the client waits for a response.
+
+
+Example:
+
+    Client
+      |
+      | Request
+      v
+    Server
+      |
+      | Processing
+      |
+      v
+    Response
+      |
+      v
+    Client
+
+
+Example:
+
+    POST /orders
+
+Server may return:
+
+    201 Created
+
+
+The client waits for the operation/result.
+
+
+======================================================================
+46. ASYNCHRONOUS API
+======================================================================
+
+In asynchronous communication, the client does not necessarily
+wait for the final processing result.
+
+
+Example:
+
+    Client
+      |
+      | Submit job
+      v
+    API
+      |
+      v
+    Queue
+      |
+      v
+    Worker
+      |
+      v
+    Processing
+
+
+Client might immediately receive:
+
+    202 Accepted
+
+
+Example:
+
+    POST /reports
+
+Response:
+
+    {
+      "job_id": "JOB123",
+      "status": "processing"
+    }
+
+
+Later:
+
+    GET /reports/jobs/JOB123
+
+
+Or the system may send a webhook/event when completed.
+
+
+======================================================================
+47. EVENT-DRIVEN API
+======================================================================
+
+In event-driven architecture, systems communicate using events.
+
+
+Example:
+
+    Order Created
+          |
+          v
+       Broker
+       /     \
+      v       v
+ Inventory  Notification
+ Service     Service
+
+
+Events:
+
+    order.created
+    payment.completed
+    shipment.created
+
+
+Technologies may include:
+
+    Kafka
+    RabbitMQ
+    NATS
+    Amazon EventBridge
+    Other messaging systems
+
+
+======================================================================
+48. REQUEST-RESPONSE vs EVENT-DRIVEN
+======================================================================
+
+REQUEST-RESPONSE:
+
+    Client
+      |
+      v
+    Server
+      |
+      v
+    Response
+
+
+EVENT-DRIVEN:
+
+    Producer
+       |
+       v
+    Event Broker
+       |
+       +----> Consumer A
+       |
+       +----> Consumer B
+       |
+       +----> Consumer C
+
+
+Request-response asks:
+
+    "Give me the result."
+
+
+Event-driven says:
+
+    "Something happened."
+
+
+======================================================================
+49. STREAMING API
+======================================================================
+
+Streaming means data is delivered continuously rather than
+waiting for one complete response.
+
+Examples:
+
+    Server-Sent Events (SSE)
+    WebSocket
+    gRPC streaming
+    HTTP streaming
+
+
+Example:
+
+    Client
+      |
+      v
+    Server
+      |
+      +--> Event 1
+      +--> Event 2
+      +--> Event 3
+      +--> Event 4
+      +--> Event 5
+
+
+Useful for:
+
+    Live dashboards
+    AI token streaming
+    Logs
+    Monitoring
+    Financial data
+    Real-time notifications
+
+
+======================================================================
+50. SERVER-SENT EVENTS (SSE)
+======================================================================
+
+SSE allows the server to continuously send events to the client
+over an HTTP connection.
+
+Direction:
+
+    Server ------------> Client
+
+
+Unlike WebSocket:
+
+    WebSocket:
+        Client <-------> Server
+
+    SSE:
+        Server ---------> Client
+
+
+SSE is useful when:
+
+    Client mainly receives continuous updates.
+
+
+Example:
+
+    GET /events
+
+Server continuously sends:
+
+    data: update 1
+
+    data: update 2
+
+    data: update 3
+
+
+======================================================================
+51. WEBSOCKET vs SSE
+======================================================================
+
++------------------+----------------------+
+| WebSocket        | SSE                  |
++------------------+----------------------+
+| Bidirectional    | Server -> Client     |
+| Persistent       | Persistent           |
+| Real-time        | Real-time            |
+| Chat             | Notifications        |
+| Games            | Live feeds           |
+| Collaboration    | Dashboards           |
++------------------+----------------------+
+
+
+Choose WebSocket when both sides need to communicate continuously.
+
+Choose SSE when the server mainly pushes updates to the client.
+
+
+======================================================================
+52. REST, GRAPHQL, gRPC, WEBSOCKET, WEBHOOK
+======================================================================
+
+REST:
+
+    Resource-oriented API
+
+
+GraphQL:
+
+    Client-controlled data querying
+
+
+gRPC:
+
+    High-performance RPC
+
+
+WebSocket:
+
+    Persistent bidirectional communication
+
+
+Webhook:
+
+    Event notification/callback pattern
+
+
+Mental model:
+
+    REST       -> Resource
+    GraphQL    -> Query
+    gRPC       -> Procedure
+    WebSocket  -> Conversation
+    Webhook    -> Notification
+
+
+======================================================================
+53. API TYPE DECISION FRAMEWORK
+======================================================================
+
+Ask the following questions.
+
+
+QUESTION 1:
+
+Is this normal CRUD/business API?
+
+    Consider REST.
+
+
+QUESTION 2:
+
+Does the client need highly flexible data selection?
+
+    Consider GraphQL.
+
+
+QUESTION 3:
+
+Is this internal service-to-service communication
+where performance and strong contracts matter?
+
+    Consider gRPC.
+
+
+QUESTION 4:
+
+Do both client and server need continuous real-time communication?
+
+    Consider WebSocket.
+
+
+QUESTION 5:
+
+Does another system need to notify your system about events?
+
+    Consider Webhook.
+
+
+QUESTION 6:
+
+Is the organization using enterprise SOAP standards?
+
+    Consider SOAP.
+
+
+======================================================================
+54. REAL-WORLD E-COMMERCE ARCHITECTURE
+======================================================================
+
+                    Mobile App
+                        |
+                        v
+                   API Gateway
+                        |
+          +-------------+-------------+
+          |             |             |
+          v             v             v
+       REST API      GraphQL       WebSocket
+          |             |             |
+          +-------------+-------------+
+                        |
+                        v
+                 Internal Services
+                        |
+             +----------+----------+
+             |          |          |
+             v          v          v
+          User       Order      Payment
+          Service    Service    Service
+             |          |          |
+             +----------+----------+
+                        |
+                        v
+                     gRPC
+
+
+Payment Provider
+       |
+       | Webhook
+       v
+Payment Service
+
+
+Message/Event Broker:
+
+    Order Service
+          |
+          v
+       Kafka
+       /   \
+      v     v
+ Inventory Notification
+
+
+This demonstrates that a large system can use MULTIPLE API
+technologies simultaneously.
+
+
+======================================================================
+55. API TYPES ARE NOT MUTUALLY EXCLUSIVE
+======================================================================
+
+One system may use:
+
+    REST
+    GraphQL
+    gRPC
+    WebSocket
+    Webhooks
+    Events
+
+
+Example:
+
+    Public clients
+        |
+        v
+      REST
+        |
+        v
+   API Gateway
+        |
+        v
+      gRPC
+        |
+        v
+ Internal Services
+
+
+And:
+
+    Payment Provider
+         |
+         v
+      Webhook
+         |
+         v
+    Payment Service
+
+
+Therefore, the question:
+
+    "Which API type is best?"
+
+is incomplete.
+
+Correct question:
+
+    "Which communication style is appropriate for this
+     specific requirement?"
+
+
+======================================================================
+56. API PROTOCOL vs API ARCHITECTURE vs API ACCESS
+======================================================================
+
+Do not mix these concepts.
+
+
+PROTOCOL:
+
+    HTTP
+    HTTP/2
+    WebSocket
+    SOAP messaging specifications
+
+
+ARCHITECTURAL STYLE / API APPROACH:
+
+    REST
+    RPC
+    GraphQL
+
+
+IMPLEMENTATION TECHNOLOGY:
+
+    gRPC
+    Apollo GraphQL
+    Express
+    FastAPI
+    Spring Boot
+
+
+ACCESS MODEL:
+
+    Internal
+    Private
+    Partner
+    Public
+
+
+DOCUMENTATION:
+
+    OpenAPI
+    WSDL
+    GraphQL Schema
+    Protobuf
+
+
+This distinction is extremely important at advanced level.
+
+
+======================================================================
+57. API COMPARISON — MASTER TABLE
+======================================================================
+
++------------+-----------+-----------+-----------------------------+
+| API        | Main Idea | Data      | Best For                   |
++------------+-----------+-----------+-----------------------------+
+| REST       | Resource  | JSON      | Web/mobile CRUD             |
+| SOAP       | Messages  | XML       | Enterprise/legacy          |
+| GraphQL    | Query     | JSON      | Flexible data requirements |
+| gRPC       | Procedure | Protobuf  | Internal microservices     |
+| WebSocket  | Channel   | Messages  | Real-time bidirectional    |
+| Webhook    | Event     | JSON/etc. | Event notification         |
+| SSE        | Stream    | Text      | Server-to-client updates   |
++------------+-----------+-----------+-----------------------------+
+
+
+======================================================================
+58. PERFORMANCE MENTAL MODEL
+======================================================================
+
+Performance is NOT determined only by API type.
+
+It depends on:
+
+    Network latency
+    Serialization
+    Payload size
+    Database performance
+    Server processing
+    Connection management
+    Caching
+    Compression
+    Query complexity
+    Infrastructure
+
+
+For example:
+
+    REST + optimized architecture
+
+can outperform a poorly implemented:
+
+    gRPC + inefficient database queries.
+
+
+Never say:
+
+    "gRPC is always faster."
+
+Instead say:
+
+    "gRPC can provide efficient service-to-service communication
+     because of its binary serialization and HTTP/2-based transport,
+     but actual performance depends on the complete system."
+
+
+======================================================================
+59. SECURITY ACROSS API TYPES
+======================================================================
+
+Regardless of API type, security matters.
+
+Important concepts:
+
+    Authentication
+    Authorization
+    TLS
+    Input validation
+    Rate limiting
+    Replay protection
+    Secret management
+    Logging
+    Monitoring
+    Least privilege
+
+
+REST:
+
+    OAuth 2.0
+    JWT
+    API keys
+
+
+GraphQL:
+
+    Query depth limits
+    Query cost limits
+    Field authorization
+
+
+gRPC:
+
+    TLS
+    mTLS
+    Interceptors
+    Authorization
+
+
+WebSocket:
+
+    Authentication
+    Origin checks
+    Message validation
+    Connection limits
+
+
+Webhook:
+
+    Signature verification
+    Timestamp validation
+    Replay protection
+    Idempotency
+
+
+======================================================================
+60. VERSIONING STRATEGIES
+======================================================================
+
+Different APIs may use different versioning approaches.
+
+
+URL:
+
+    /api/v1/users
+    /api/v2/users
+
+
+Header:
+
+    Accept: application/vnd.company.v2+json
+
+
+Query:
+
+    /users?version=2
+
+
+GraphQL generally emphasizes schema evolution rather than
+traditional URL versioning.
+
+Example:
+
+    Add new fields without removing old fields.
+
+Deprecated:
+
+    oldField
+
+
+======================================================================
+61. BACKWARD COMPATIBILITY
+======================================================================
+
+A good API should avoid breaking existing clients unnecessarily.
+
+
+Safe change:
+
+    Add optional field.
+
+
+Potentially breaking:
+
+    Remove field.
+    Rename field.
+    Change data type.
+    Change required field.
+    Change semantics.
+
+
+Example:
+
+Version 1:
+
+    {
+      "id": 101,
+      "name": "Apoorv"
+    }
+
+
+Adding:
+
+    {
+      "id": 101,
+      "name": "Apoorv",
+      "email": "a@example.com"
+    }
+
+
+Usually safer than:
+
+    {
+      "user_name": "Apoorv"
+    }
+
+
+because "name" was removed/renamed.
+
+
+======================================================================
+62. API CONTRACT
+======================================================================
+
+Every serious API needs a contract.
+
+REST:
+
+    OpenAPI
+
+
+SOAP:
+
+    WSDL/XSD
+
+
+GraphQL:
+
+    GraphQL Schema
+
+
+gRPC:
+
+    .proto
+
+
+Contract defines:
+
+    Inputs
+    Outputs
+    Types
+    Operations
+    Errors
+    Rules
+
+
+======================================================================
+63. API DOCUMENTATION BY TYPE
+======================================================================
+
+REST:
+
+    OpenAPI / Swagger
+
+
+SOAP:
+
+    WSDL
+
+
+GraphQL:
+
+    GraphQL Schema / introspection
+
+
+gRPC:
+
+    Protobuf definitions
+
+
+Documentation should answer:
+
+    What endpoint?
+    What operation?
+    What parameters?
+    What authentication?
+    What response?
+    What errors?
+    What limits?
+    What examples?
+
+
+======================================================================
+64. INTERVIEW QUESTIONS
+======================================================================
+
+Q1. What is REST?
+
+Answer:
+
+    REST is an architectural style for designing networked systems
+    around resources and a uniform interface. HTTP is commonly used
+    to implement REST APIs.
+
+
+Q2. Is SOAP an API?
+
+Answer:
+
+    SOAP is a protocol used for exchanging structured messages,
+    commonly using XML.
+
+
+Q3. Is REST a protocol?
+
+Answer:
+
+    No. REST is an architectural style.
+
+
+Q4. What is GraphQL?
+
+Answer:
+
+    GraphQL is a query language for APIs and a runtime that executes
+    queries against a typed schema.
+
+
+Q5. Why use GraphQL?
+
+Answer:
+
+    It allows clients to request exactly the data they need and
+    can reduce over-fetching and under-fetching.
+
+
+Q6. What is gRPC?
+
+Answer:
+
+    gRPC is an RPC framework commonly using HTTP/2 and Protocol
+    Buffers for efficient service-to-service communication.
+
+
+Q7. What is WebSocket?
+
+Answer:
+
+    A protocol providing persistent, bidirectional communication
+    between client and server.
+
+
+Q8. What is a webhook?
+
+Answer:
+
+    A webhook is an event-driven callback pattern where one system
+    sends an HTTP request to another system when an event occurs.
+
+
+Q9. REST vs GraphQL?
+
+Answer:
+
+    REST exposes resources through multiple endpoints, while
+    GraphQL commonly exposes a schema through which clients specify
+    the data they need.
+
+
+Q10. REST vs gRPC?
+
+Answer:
+
+    REST is commonly resource-oriented and HTTP/JSON based, while
+    gRPC is operation-oriented and commonly uses Protobuf over HTTP/2.
+
+
+Q11. WebSocket vs Webhook?
+
+Answer:
+
+    WebSocket provides an ongoing communication channel.
+    Webhook is usually a one-way event notification from one system
+    to another.
+
+
+Q12. Can one application use REST and gRPC together?
+
+Answer:
+
+    Yes. A common architecture exposes REST externally and uses gRPC
+    internally between microservices.
+
+
+======================================================================
+65. PRACTICAL EXERCISE 1 — REST
+======================================================================
+
+Design a Student API.
+
+Resources:
+
+    Student
+    Course
+    Enrollment
+
+
+Endpoints:
+
+    GET    /students
+    GET    /students/{id}
+    POST   /students
+    PATCH  /students/{id}
+    DELETE /students/{id}
+
+
+Example:
+
+    GET /students/101
+
+
+Response:
+
+    {
+      "id": 101,
+      "name": "Apoorv",
+      "course": "M.Tech"
+    }
+
+
+======================================================================
+66. PRACTICAL EXERCISE 2 — GRAPHQL
+======================================================================
+
+Design:
+
+    type Student {
+        id: ID!
+        name: String!
+        course: String!
+    }
+
+
+Query:
+
+    query {
+        student(id: 101) {
+            id
+            name
+        }
+    }
+
+
+Question:
+
+Why might GraphQL be useful here?
+
+Because the client can request only the fields it requires.
+
+
+======================================================================
+67. PRACTICAL EXERCISE 3 — gRPC
+======================================================================
+
+Create:
+
+    student.proto
+
+
+Concept:
+
+    service StudentService {
+        rpc GetStudent(GetStudentRequest)
+            returns (Student);
+    }
+
+
+Then define:
+
+    GetStudentRequest
+    Student
+
+
+Compile the .proto file to generate client/server code.
+
+
+======================================================================
+68. PRACTICAL EXERCISE 4 — WEBHOOK
+======================================================================
+
+Create:
+
+    POST /webhooks/order
+
+
+Payload:
+
+    {
+      "event_id": "EVT1001",
+      "event": "order.created",
+      "order_id": "ORD101"
+    }
+
+
+Your server should:
+
+    1. Verify signature.
+    2. Validate payload.
+    3. Check event_id.
+    4. Process event.
+    5. Store event_id.
+    6. Return success.
+
+
+======================================================================
+69. PRACTICAL EXERCISE 5 — API SELECTION
+======================================================================
+
+Choose the most suitable approach.
+
+
+A.
+
+Simple employee CRUD system.
+
+Answer:
+
+    REST
+
+
+B.
+
+Mobile application needs flexible nested data.
+
+Answer:
+
+    GraphQL may be suitable.
+
+
+C.
+
+Microservices need efficient internal communication.
+
+Answer:
+
+    gRPC may be suitable.
+
+
+D.
+
+Online multiplayer game.
+
+Answer:
+
+    WebSocket may be suitable.
+
+
+E.
+
+Payment provider needs to notify your application.
+
+Answer:
+
+    Webhook
+
+
+F.
+
+Legacy enterprise banking integration requires SOAP standards.
+
+Answer:
+
+    SOAP
+
+
+======================================================================
+70. MASTER-LEVEL API SELECTION MATRIX
+======================================================================
+
+Requirement
+     |
+     +-- CRUD?
+     |      |
+     |      +--> REST
+     |
+     +-- Flexible data querying?
+     |      |
+     |      +--> GraphQL
+     |
+     +-- High-performance internal RPC?
+     |      |
+     |      +--> gRPC
+     |
+     +-- Bidirectional real-time?
+     |      |
+     |      +--> WebSocket
+     |
+     +-- Server push only?
+     |      |
+     |      +--> SSE
+     |
+     +-- Event notification?
+     |      |
+     |      +--> Webhook
+     |
+     +-- Enterprise SOAP ecosystem?
+            |
+            +--> SOAP
+
+
+======================================================================
+71. COMMON BEGINNER MISTAKES
+======================================================================
+
+Mistake 1:
+
+    "REST is a protocol."
+
+Correct:
+
+    REST is an architectural style.
+
+
+Mistake 2:
+
+    "JSON is an API."
+
+Correct:
+
+    JSON is a data-interchange format.
+
+
+Mistake 3:
+
+    "Webhook is another HTTP protocol."
+
+Correct:
+
+    Webhook is an event-driven integration pattern.
+
+
+Mistake 4:
+
+    "GraphQL always replaces REST."
+
+Correct:
+
+    GraphQL and REST solve different problems and can coexist.
+
+
+Mistake 5:
+
+    "gRPC is only for high speed."
+
+Correct:
+
+    gRPC also provides strong contracts, code generation,
+    streaming and structured service communication.
+
+
+Mistake 6:
+
+    "WebSocket is better for every API."
+
+Correct:
+
+    WebSocket is specialized for persistent real-time communication.
+
+
+Mistake 7:
+
+    "Public API means no authentication."
+
+Correct:
+
+    Public APIs can still require API keys, OAuth, tokens,
+    quotas and other security controls.
+
+
+======================================================================
+72. MASTER MENTAL MODEL
+======================================================================
+
+Think about API technologies like this:
+
+
+REST
+----
+    Resource-oriented communication
+
+    "Give me this resource."
+
+
+SOAP
+----
+    Structured enterprise messaging
+
+    "Execute this formally defined operation/message."
+
+
+GraphQL
+-------
+    Client-driven querying
+
+    "Give me exactly these fields."
+
+
+gRPC
+----
+    Remote procedure call
+
+    "Execute this service method."
+
+
+WebSocket
+---------
+    Persistent bidirectional channel
+
+    "Let's keep communicating."
+
+
+Webhook
+-------
+    Event callback
+
+    "Notify me when this event happens."
+
+
+SSE
+---
+    Server-to-client stream
+
+    "Keep sending me updates."
+
+
+======================================================================
+73. COMPLETE API LANDSCAPE
+======================================================================
+
+                         APIs
+                           |
+       +-------------------+-------------------+
+       |                   |                   |
+     Web APIs          Programming APIs     System APIs
+       |                   |                   |
+       |                   +---- Library       +---- OS
+       |                   +---- SDK           +---- System calls
+       |
+       +---------------------------------------+
+       |
+       +---- REST
+       |
+       +---- SOAP
+       |
+       +---- GraphQL
+       |
+       +---- gRPC / RPC
+       |
+       +---- WebSocket
+       |
+       +---- SSE
+       |
+       +---- Webhook
+       |
+       +---- Event APIs
+
+
+ACCESS MODEL:
+
+       API
+        |
+        +---- Internal
+        |
+        +---- Private
+        |
+        +---- Partner
+        |
+        +---- Public/Open
+
+
+======================================================================
+74. WHAT YOU SHOULD REMEMBER FOR JOB INTERVIEWS
+======================================================================
+
+MOST IMPORTANT DISTINCTIONS:
+
+    REST       = Architectural style
+    SOAP       = Protocol
+    GraphQL    = Query language + runtime
+    gRPC       = RPC framework
+    WebSocket  = Bidirectional communication protocol
+    Webhook    = Event callback pattern
+    SSE        = Server-to-client event stream
+    OpenAPI    = API description specification
+
+
+DATA MODELS:
+
+    REST       -> Resources
+    GraphQL    -> Schema/Fields
+    gRPC       -> Services/Methods
+    SOAP       -> Messages/Operations
+
+
+COMMUNICATION:
+
+    REST       -> Request/Response
+    SOAP       -> Message exchange
+    GraphQL    -> Query/Mutation/Subscription
+    gRPC       -> RPC/Streaming
+    WebSocket  -> Bidirectional
+    Webhook    -> Event callback
+    SSE        -> Server -> Client
+
+
+COMMON USE:
+
+    REST       -> Public Web/Mobile APIs
+    SOAP       -> Enterprise/Legacy
+    GraphQL    -> Flexible client applications
+    gRPC       -> Internal microservices
+    WebSocket  -> Real-time applications
+    Webhook    -> Third-party event integration
+    SSE        -> Live server updates
+
+
+======================================================================
+75. CHAPTER 3 FINAL SUMMARY
+======================================================================
+
+An API is not limited to REST.
+
+The API ecosystem contains multiple approaches.
+
+
+WEB API TYPES:
+
+    REST
+    SOAP
+    GraphQL
+    gRPC
+    WebSocket
+    SSE
+    Webhook
+
+
+NON-WEB API TYPES:
+
+    Library APIs
+    OS APIs
+    Database APIs
+
+
+ACCESS TYPES:
+
+    Internal
+    Private
+    Partner
+    Public/Open
+
+
+COMMUNICATION TYPES:
+
+    Synchronous
+    Asynchronous
+    Request/Response
+    Streaming
+    Event-driven
+    Bidirectional
+
+
+The most important skill is NOT memorizing API names.
+
+The real master-level skill is:
+
+    REQUIREMENT
+         |
+         v
+    COMMUNICATION PATTERN
+         |
+         v
+    API STYLE / PROTOCOL
+         |
+         v
+    CONTRACT
+         |
+         v
+    SECURITY
+         |
+         v
+    IMPLEMENTATION
+         |
+         v
+    TESTING
+         |
+         v
+    MONITORING
+         |
+         v
+    VERSIONING
+         |
+         v
+    PRODUCTION
+
+
+======================================================================
+CHAPTER 3 COMPLETE
+======================================================================
+
+NEXT CHAPTER:
+    CHAPTER 4 — HTTP FUNDAMENTALS FOR API ENGINEERING
+
+Topics will include:
+
+    HTTP architecture
+    HTTP request/response
+    HTTP methods in depth
+    HTTP status codes
+    HTTP headers
+    HTTP body
+    HTTP versions
+    HTTP/1.1
+    HTTP/2
+    HTTP/3
+    HTTPS
+    TLS
+    Cookies
+    Sessions
+    Cache-Control
+    Content Negotiation
+    MIME types
+    Idempotency
+    Safe methods
+    Conditional requests
+    ETag
+    Range requests
+    Proxies
+    Reverse proxies
+    CDNs
+    HTTP connection lifecycle
+    Keep-Alive
+    HTTP/2 multiplexing
+    HTTP/3 and QUIC
+    API-level HTTP debugging
+    Master-level interview questions
+======================================================================

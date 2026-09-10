@@ -1,0 +1,2073 @@
+============================================================
+                 OPERATING SYSTEMS
+              CHAPTER 2 — SYSTEM CALLS
+============================================================
+
+LEVEL:
+    Beginner → Intermediate → Advanced → Interview Ready
+
+============================================================
+1. WHAT IS A SYSTEM CALL?
+============================================================
+
+A System Call is a mechanism through which a user-level program
+requests a service from the Operating System kernel.
+
+Simple definition:
+
+    System Call = Interface between User Program and OS Kernel
+
+A normal application cannot directly perform certain privileged
+operations.
+
+For example, an application may need to:
+
+    - Create a process
+    - Open a file
+    - Read data from a file
+    - Write data to a file
+    - Allocate certain resources
+    - Communicate with another process
+    - Create a socket
+    - Change permissions
+
+For these operations, the application requests the kernel through
+system calls.
+
+
+------------------------------------------------------------
+REAL-WORLD ANALOGY
+------------------------------------------------------------
+
+Imagine a bank.
+
+You are a customer.
+
+You cannot directly enter the bank's secure vault and take money.
+
+Instead:
+
+    Customer
+       |
+       | Request
+       v
+    Bank Employee
+       |
+       | Authorized operation
+       v
+    Bank System
+       |
+       v
+    Result
+
+Similarly:
+
+    User Application
+          |
+          | System Call
+          v
+       Kernel
+          |
+          | Hardware/resource operation
+          v
+       Hardware
+
+
+============================================================
+2. WHY DO WE NEED SYSTEM CALLS?
+============================================================
+
+Modern operating systems provide protection between applications
+and hardware.
+
+Suppose a program directly modifies disk hardware.
+
+It could:
+
+    - Corrupt files
+    - Delete important data
+    - Crash the system
+    - Access another user's data
+    - Damage OS structures
+
+Therefore, applications normally run in:
+
+    USER MODE
+
+The kernel runs in:
+
+    KERNEL MODE
+
+Privileged operations are performed by the kernel.
+
+System calls provide a controlled gateway from user mode to
+kernel mode.
+
+
+============================================================
+3. USER MODE AND KERNEL MODE
+============================================================
+
+Modern CPUs generally provide different privilege levels.
+
+The two important conceptual modes are:
+
+    1. User Mode
+    2. Kernel Mode
+
+
+------------------------------------------------------------
+USER MODE
+------------------------------------------------------------
+
+Applications normally execute in user mode.
+
+Examples:
+
+    - Chrome
+    - VS Code
+    - Text editor
+    - Calculator
+    - Python program
+
+User-mode programs have restricted access.
+
+They normally cannot directly:
+
+    - Access arbitrary hardware
+    - Execute privileged CPU instructions
+    - Modify kernel memory
+    - Control hardware directly
+
+
+------------------------------------------------------------
+KERNEL MODE
+------------------------------------------------------------
+
+The OS kernel executes in kernel mode.
+
+Kernel mode has much greater privileges.
+
+The kernel can:
+
+    - Manage memory
+    - Manage processes
+    - Access devices
+    - Manage filesystems
+    - Schedule CPU
+    - Handle interrupts
+    - Manage networking
+    - Control hardware
+
+
+============================================================
+4. BASIC SYSTEM CALL FLOW
+============================================================
+
+Consider:
+
+    C Program
+       |
+       v
+    Library/API
+       |
+       v
+    System Call Interface
+       |
+       v
+    CPU privilege transition
+       |
+       v
+    Kernel
+       |
+       v
+    Device Driver / Hardware
+       |
+       v
+    Result
+       |
+       v
+    Application
+
+
+Example:
+
+    Application wants to read a file.
+
+    Application
+         |
+         | read()
+         v
+    System Call Interface
+         |
+         v
+    Kernel
+         |
+         v
+    File System
+         |
+         v
+    Storage Driver
+         |
+         v
+    Disk/SSD
+         |
+         v
+    Data returned
+         |
+         v
+    Application
+
+
+============================================================
+5. SYSTEM CALL INTERFACE
+============================================================
+
+The System Call Interface (SCI) is the mechanism that allows
+user programs to request kernel services.
+
+Conceptually:
+
+    User Space
+    ---------------------
+       Application
+            |
+       Library/API
+            |
+       System Call
+    ---------------------
+    Kernel Space
+            |
+       System Call Handler
+            |
+       Kernel Service
+            |
+       Hardware
+
+
+The kernel maintains a collection of supported system calls.
+
+Each system call generally has an identifier/number.
+
+For example, conceptually:
+
+    System Call Number
+           |
+           v
+    +----------------+
+    | System Call    |
+    | Table          |
+    +----------------+
+       |     |     |
+       v     v     v
+     read  write  open
+
+
+============================================================
+6. SYSTEM CALL NUMBER
+============================================================
+
+Operating systems internally identify system calls.
+
+A system call number allows the kernel to determine which
+operation the user process is requesting.
+
+Conceptually:
+
+    User Program
+         |
+         | System call number = X
+         v
+    Kernel
+         |
+         | Look up X
+         v
+    Corresponding system call handler
+
+
+IMPORTANT:
+
+Exact system call numbers depend on the operating system,
+architecture, and ABI.
+
+Therefore, do not memorize a system-call number universally.
+
+
+============================================================
+7. HOW A SYSTEM CALL WORKS
+============================================================
+
+Let's understand the process step by step.
+
+Suppose a program wants to read a file.
+
+Step 1:
+    Application calls a library/API function.
+
+Step 2:
+    Parameters are prepared.
+
+Step 3:
+    System call identifier is prepared.
+
+Step 4:
+    A special CPU instruction causes a transition into kernel mode.
+
+Step 5:
+    Kernel identifies the requested system call.
+
+Step 6:
+    Kernel validates parameters and permissions.
+
+Step 7:
+    Kernel performs the requested operation.
+
+Step 8:
+    Kernel prepares the return value.
+
+Step 9:
+    CPU returns to user mode.
+
+Step 10:
+    Application continues execution.
+
+
+FLOW:
+
+    User Mode
+       |
+       v
+    Application
+       |
+       v
+    API / Library Wrapper
+       |
+       v
+    System Call Instruction
+       |
+       v
+    Kernel Mode
+       |
+       v
+    System Call Handler
+       |
+       v
+    Kernel Service
+       |
+       v
+    Hardware / Driver
+       |
+       v
+    Return Result
+       |
+       v
+    User Mode
+
+
+============================================================
+8. SYSTEM CALL vs FUNCTION CALL
+============================================================
+
+This is extremely important for interviews and exams.
+
+
+FUNCTION CALL
+-------------
+
+A function call usually transfers control from one function
+to another within the same program/address space.
+
+Example:
+
+    result = add(a, b);
+
+
+Conceptually:
+
+    Function A
+       |
+       v
+    Function B
+
+
+SYSTEM CALL
+------------
+
+A system call requests a service from the operating system kernel.
+
+Conceptually:
+
+    User Program
+         |
+         v
+    Kernel
+
+
+Important difference:
+
+    Function call:
+        Program → Function
+
+    System call:
+        User Program → Kernel
+
+
+System calls generally involve more overhead than ordinary
+function calls because they may involve privilege transitions
+and kernel-side work.
+
+
+============================================================
+9. SYSTEM CALL vs API
+============================================================
+
+These concepts are often confused.
+
+API:
+
+    Application Programming Interface
+
+A system call:
+
+    Kernel interface/mechanism for requesting OS services.
+
+An API may internally use one or more system calls.
+
+For example, a programming-language library function may provide
+a convenient interface to an underlying OS service.
+
+Conceptually:
+
+    Application
+         |
+         v
+        API
+         |
+         v
+    Library Function
+         |
+         v
+    System Call
+         |
+         v
+       Kernel
+
+
+IMPORTANT:
+
+    API ≠ System Call
+
+An API is a programming interface.
+
+A system call is an OS/kernel entry mechanism.
+
+
+============================================================
+10. MAIN CATEGORIES OF SYSTEM CALLS
+============================================================
+
+Major categories include:
+
+    1. Process Control
+    2. File Management
+    3. Device Management
+    4. Information Maintenance
+    5. Communication
+    6. Protection/Security
+
+
+============================================================
+11. PROCESS CONTROL SYSTEM CALLS
+============================================================
+
+Process control system calls deal with processes.
+
+Typical operations:
+
+    - Create process
+    - Terminate process
+    - Execute a program
+    - Wait for a process
+    - Signal a process
+    - Get process information
+
+
+Examples in Unix/Linux:
+
+    fork()
+    exec()
+    wait()
+    exit()
+    _exit()
+    kill()
+
+
+------------------------------------------------------------
+fork()
+------------------------------------------------------------
+
+fork() creates a new process.
+
+The existing process is called:
+
+    Parent process
+
+The newly created process is called:
+
+    Child process
+
+
+Conceptually:
+
+        Parent
+          |
+        fork()
+          |
+       +--+--+
+       |     |
+       v     v
+    Parent  Child
+
+
+IMPORTANT:
+
+After fork(), both parent and child continue execution
+from the point after fork(), subject to scheduling.
+
+
+------------------------------------------------------------
+exec()
+------------------------------------------------------------
+
+The exec family replaces the current process image with
+another program.
+
+Important distinction:
+
+    fork() → creates a new process
+
+    exec() → replaces the current process image
+
+
+A common pattern is:
+
+    fork()
+       |
+       +------ Child
+                 |
+                exec()
+                 |
+                 v
+             New Program
+
+
+------------------------------------------------------------
+wait()
+------------------------------------------------------------
+
+wait() allows a parent process to wait for a child process
+to change state, commonly to terminate.
+
+Example:
+
+    Parent
+       |
+       | wait()
+       v
+    waits for child
+
+
+------------------------------------------------------------
+exit()
+------------------------------------------------------------
+
+exit() terminates a process and performs process termination
+activities.
+
+Conceptually:
+
+    Process
+       |
+      exit()
+       |
+       v
+    Terminated
+
+
+============================================================
+12. FILE MANAGEMENT SYSTEM CALLS
+============================================================
+
+File-related system calls allow programs to interact with files.
+
+Common operations:
+
+    - Create
+    - Open
+    - Read
+    - Write
+    - Seek
+    - Close
+    - Delete
+
+
+Common Unix/Linux interfaces include:
+
+    open()
+    read()
+    write()
+    lseek()
+    close()
+    unlink()
+
+
+------------------------------------------------------------
+open()
+------------------------------------------------------------
+
+Used to open a file and obtain a file descriptor.
+
+Conceptually:
+
+    open("data.txt")
+            |
+            v
+       File Descriptor
+
+
+------------------------------------------------------------
+FILE DESCRIPTOR
+------------------------------------------------------------
+
+A file descriptor is a small integer used by a process to
+refer to an open file or another I/O object.
+
+Common Unix conventions:
+
+    0 → standard input
+    1 → standard output
+    2 → standard error
+
+
+Example:
+
+    fd = open(...)
+
+Here:
+
+    fd = file descriptor
+
+
+------------------------------------------------------------
+read()
+------------------------------------------------------------
+
+Reads data from an open file descriptor.
+
+Conceptually:
+
+    File
+      |
+      | read()
+      v
+    Process memory
+
+
+------------------------------------------------------------
+write()
+------------------------------------------------------------
+
+Writes data through a file descriptor.
+
+Conceptually:
+
+    Process memory
+          |
+        write()
+          |
+          v
+        File
+
+
+------------------------------------------------------------
+close()
+------------------------------------------------------------
+
+Releases the file descriptor when the program is finished
+using the corresponding open file.
+
+
+============================================================
+13. DEVICE MANAGEMENT SYSTEM CALLS
+============================================================
+
+Programs often need to interact with devices such as:
+
+    - Keyboard
+    - Mouse
+    - Disk
+    - Printer
+    - Network interface
+    - Display
+
+The OS provides controlled mechanisms for device access.
+
+Many Unix/Linux device interactions use file descriptors and
+system-call interfaces such as:
+
+    open()
+    read()
+    write()
+    ioctl()
+    close()
+
+
+The exact mechanism depends on the device and OS.
+
+
+============================================================
+14. INFORMATION MAINTENANCE SYSTEM CALLS
+============================================================
+
+These system calls allow programs to obtain or modify
+system/process information.
+
+Examples include operations related to:
+
+    - Process ID
+    - Time
+    - System information
+    - File metadata
+    - Resource information
+
+
+Linux examples:
+
+    getpid()
+    getppid()
+    uname()
+    gettimeofday() / clock-related interfaces
+
+
+------------------------------------------------------------
+PID
+------------------------------------------------------------
+
+PID = Process ID
+
+Every active process generally has an identifier.
+
+Example:
+
+    Process A → PID 1200
+    Process B → PID 1201
+    Process C → PID 1202
+
+
+============================================================
+15. COMMUNICATION SYSTEM CALLS
+============================================================
+
+Processes often need to communicate.
+
+This is called:
+
+    IPC
+    Inter-Process Communication
+
+Important IPC mechanisms include:
+
+    - Pipes
+    - Named pipes
+    - Message queues
+    - Shared memory
+    - Sockets
+    - Signals
+
+
+Linux/Unix-related interfaces include:
+
+    pipe()
+    socket()
+    send()
+    recv()
+    shm-related interfaces
+    msg-related interfaces
+
+
+============================================================
+16. PROTECTION AND SECURITY SYSTEM CALLS
+============================================================
+
+Operating systems must control:
+
+    Who can access what?
+
+Examples:
+
+    - File permissions
+    - User IDs
+    - Group IDs
+    - Access control
+    - Process credentials
+
+
+Linux interfaces include operations such as:
+
+    chmod()
+    chown()
+    setuid()
+    getuid()
+
+
+Example:
+
+    chmod()
+
+can change file permission bits.
+
+
+============================================================
+17. SYSTEM CALL EXAMPLE — OPENING A FILE
+============================================================
+
+Suppose we want to read:
+
+    notes.txt
+
+
+Conceptual sequence:
+
+    Application
+         |
+         v
+    open("notes.txt")
+         |
+         v
+       Kernel
+         |
+         v
+    Check:
+        - Does file exist?
+        - Does user have permission?
+        - Is path valid?
+         |
+         v
+    File System
+         |
+         v
+    File Descriptor
+         |
+         v
+    Application
+
+
+Then:
+
+    read(fd, buffer, size)
+
+and finally:
+
+    close(fd)
+
+
+Complete flow:
+
+    open()
+      |
+      v
+    read()
+      |
+      v
+    process data
+      |
+      v
+    close()
+
+
+============================================================
+18. SYSTEM CALL EXAMPLE — PRINTING TO SCREEN
+============================================================
+
+Suppose a program wants to output:
+
+    Hello
+
+
+At a conceptual OS level:
+
+    Program
+       |
+       v
+    Output API/library
+       |
+       v
+    write-like system call
+       |
+       v
+    Kernel
+       |
+       v
+    Standard Output
+       |
+       v
+    Terminal
+
+
+In Unix-like systems, standard output is commonly file
+descriptor 1.
+
+
+============================================================
+19. TRAP / SYSCALL INSTRUCTION
+============================================================
+
+How does a user program enter the kernel?
+
+A special mechanism/instruction is used.
+
+Depending on architecture and OS, this may involve
+instructions such as:
+
+    syscall
+    sysenter
+    trap mechanisms
+
+The exact instruction is architecture-specific.
+
+Conceptually:
+
+    User Mode
+        |
+        | system-call instruction
+        v
+    Kernel Mode
+
+
+This transition is controlled by the processor.
+
+
+============================================================
+20. SYSTEM CALL HANDLING
+============================================================
+
+When the system-call mechanism is invoked:
+
+    1. CPU performs controlled privilege transition.
+    2. Kernel entry point is reached.
+    3. Kernel identifies the system call.
+    4. Arguments are obtained safely.
+    5. Kernel validates the request.
+    6. Kernel performs the operation.
+    7. Return value/error is prepared.
+    8. Execution returns to user mode.
+
+
+============================================================
+21. SYSTEM CALL ARGUMENTS
+============================================================
+
+A system call may require arguments.
+
+Example concept:
+
+    read(fd, buffer, count)
+
+
+Arguments:
+
+    fd      → file descriptor
+    buffer  → memory location for data
+    count   → amount of data
+
+
+The OS must carefully validate arguments.
+
+Why?
+
+Because user programs cannot be blindly trusted.
+
+Potential problems:
+
+    - Invalid pointer
+    - Invalid memory address
+    - Unauthorized access
+    - Incorrect size
+    - Malicious input
+
+
+Therefore:
+
+    User Input
+        |
+        v
+    Validation
+        |
+        v
+    Kernel Operation
+
+
+============================================================
+22. RETURN VALUES AND ERRORS
+============================================================
+
+System calls commonly return:
+
+    - Success value
+    - Failure indication
+    - Data/result
+
+For example:
+
+    read()
+
+may return the number of bytes successfully read,
+or indicate an error.
+
+The exact error-reporting mechanism depends on the OS/API.
+
+
+Common Linux/POSIX concept:
+
+    errno
+
+When an operation fails, errno can provide information
+about the error condition through the relevant library/API
+conventions.
+
+
+============================================================
+23. BLOCKING SYSTEM CALL
+============================================================
+
+A system call can cause a process to wait.
+
+Example:
+
+    read()
+
+If requested data is not currently available, the process
+may block depending on the object and flags.
+
+Meaning:
+
+    Process
+       |
+       | read()
+       v
+    Waiting
+       |
+       v
+    Data becomes available
+       |
+       v
+    Process continues
+
+
+This connects system calls with:
+
+    - Process states
+    - Scheduling
+    - I/O
+    - Context switching
+
+
+============================================================
+24. BLOCKING vs NON-BLOCKING
+============================================================
+
+BLOCKING:
+
+    Process may wait until operation can proceed.
+
+
+NON-BLOCKING:
+
+    Operation returns without waiting for the resource/data
+    to become available.
+
+
+Example concept:
+
+    Blocking read:
+        "Wait until data is available."
+
+    Non-blocking read:
+        "Return now if data is not available."
+
+
+This is very important in:
+
+    - Network programming
+    - Servers
+    - Operating systems
+    - Concurrent programming
+
+
+============================================================
+25. SYSTEM CALL OVERHEAD
+============================================================
+
+A system call generally has more overhead than a simple
+function call.
+
+Why?
+
+Because it may involve:
+
+    - User → kernel transition
+    - Saving/restoring execution state
+    - Argument validation
+    - Kernel processing
+    - Possible scheduling
+    - Possible context switch
+    - Device/I/O waiting
+
+
+IMPORTANT:
+
+    System call ≠ always context switch
+
+A privilege transition into the kernel is not necessarily
+the same thing as switching from one process to another.
+
+This distinction is important for interviews.
+
+
+============================================================
+26. SYSTEM CALL vs CONTEXT SWITCH
+============================================================
+
+SYSTEM CALL:
+
+    User program requests a kernel service.
+
+CONTEXT SWITCH:
+
+    CPU changes execution from one process/thread to another.
+
+
+Example:
+
+    Process A
+       |
+    system call
+       |
+       v
+    Kernel
+       |
+       v
+    Process A continues
+
+No process switch necessarily occurred.
+
+
+But:
+
+    Process A
+       |
+    blocking system call
+       |
+       v
+    Kernel
+       |
+       v
+    Scheduler
+       |
+       v
+    Process B
+
+Here a context switch may occur.
+
+
+============================================================
+27. SYSTEM CALL vs INTERRUPT
+============================================================
+
+INTERRUPT:
+
+    Usually an asynchronous event that requests CPU attention,
+    commonly generated by hardware.
+
+Examples:
+
+    - Network packet arrival
+    - Timer event
+    - Keyboard input
+
+
+SYSTEM CALL:
+
+    A user program intentionally requests an OS service.
+
+
+Conceptually:
+
+    System Call:
+        Program → Kernel
+
+    Hardware Interrupt:
+        Hardware → CPU/Kernel
+
+
+Exceptions/traps are another category and can be synchronous
+with the currently executing instruction.
+
+
+============================================================
+28. SYSTEM CALL vs TRAP
+============================================================
+
+A trap is a synchronous mechanism/event associated with
+execution of an instruction.
+
+Historically and conceptually, operating systems may use
+trap mechanisms to enter the kernel.
+
+Modern architectures can provide dedicated system-call
+instructions.
+
+Therefore:
+
+    Trap = broader CPU exception/entry concept
+
+    System call = intentional request for OS service
+
+The exact terminology varies by architecture.
+
+
+============================================================
+29. LIBRARY FUNCTIONS AND SYSTEM CALLS
+============================================================
+
+This is an important practical concept.
+
+A programmer may write:
+
+    printf("Hello");
+
+printf() is a library function.
+
+Internally, output may eventually require a system call such
+as write().
+
+Conceptually:
+
+    printf()
+       |
+       v
+    C Library
+       |
+       v
+    write()
+       |
+       v
+    Kernel
+       |
+       v
+    Terminal
+
+
+Another example:
+
+    fopen()
+       |
+       v
+    C Library
+       |
+       v
+    OS system-call mechanisms
+
+
+IMPORTANT:
+
+A library function does not necessarily correspond to exactly
+one system call.
+
+It may:
+
+    - Use multiple system calls
+    - Perform user-space work
+    - Use no system call for some operations
+
+
+============================================================
+30. POSIX
+============================================================
+
+POSIX stands for:
+
+    Portable Operating System Interface
+
+It is a family of standards intended to improve portability
+of applications across Unix-like systems.
+
+POSIX defines interfaces and behavior for many OS facilities.
+
+Examples include concepts around:
+
+    - Processes
+    - Files
+    - Threads
+    - Signals
+    - IPC
+
+
+============================================================
+31. COMMON UNIX/LINUX SYSTEM CALL INTERFACES
+============================================================
+
+PROCESS:
+
+    fork()
+    execve()
+    wait()
+    exit-related mechanisms
+    kill()
+
+
+FILE:
+
+    open()
+    read()
+    write()
+    lseek()
+    close()
+    unlink()
+
+
+PROCESS INFORMATION:
+
+    getpid()
+    getppid()
+
+
+IPC:
+
+    pipe()
+    socket()
+
+
+MEMORY:
+
+    mmap()
+    munmap()
+
+
+SECURITY/PERMISSIONS:
+
+    chmod()
+    chown()
+    setuid()
+
+
+============================================================
+32. mmap()
+============================================================
+
+mmap() maps files or anonymous memory into a process's
+virtual address space, depending on how it is used.
+
+Conceptually:
+
+    File
+      |
+      | mmap()
+      v
+    Process Virtual Memory
+      |
+      v
+    Access memory through mapping
+
+
+This can be useful for:
+
+    - File-backed memory
+    - Shared memory
+    - Efficient data access
+    - Memory-mapped I/O
+
+
+============================================================
+33. SYSTEM CALL AND FILE DESCRIPTOR TABLE
+============================================================
+
+A process maintains references to open files/resources.
+
+Conceptually:
+
+    Process
+    +----------------------+
+    | File Descriptor Table|
+    +----------------------+
+       |
+       +-- 0 → stdin
+       |
+       +-- 1 → stdout
+       |
+       +-- 2 → stderr
+       |
+       +-- 3 → opened file
+       |
+       +-- 4 → socket
+
+
+When a program executes:
+
+    fd = open(...)
+
+the OS returns a file descriptor representing the opened
+resource from the process's perspective.
+
+
+============================================================
+34. SYSTEM CALL SECURITY
+============================================================
+
+System calls are security-sensitive.
+
+Suppose a malicious program requests:
+
+    "Give me access to another user's private file."
+
+The kernel checks:
+
+    - Who is requesting?
+    - What resource?
+    - What permissions?
+    - Is the operation allowed?
+    - Are arguments valid?
+
+
+Therefore:
+
+    System Call
+         |
+         v
+    Authentication / Credentials
+         |
+         v
+    Authorization
+         |
+         v
+    Resource Access
+
+
+============================================================
+35. WHY USER PROGRAMS CANNOT DIRECTLY ACCESS HARDWARE
+============================================================
+
+If every application had unrestricted hardware access:
+
+    Application A
+       |
+       +---- Disk
+
+    Application B
+       |
+       +---- Memory
+
+    Application C
+       |
+       +---- Network card
+
+There would be no central control.
+
+Possible result:
+
+    - Data corruption
+    - Security vulnerabilities
+    - Resource conflicts
+    - System crashes
+
+
+Instead:
+
+    Applications
+         |
+      System Calls
+         |
+       Kernel
+         |
+      Drivers
+         |
+      Hardware
+
+
+The kernel acts as the trusted control layer.
+
+
+============================================================
+36. SYSTEM CALL TABLE
+============================================================
+
+Conceptually, the kernel can maintain a table mapping
+system-call identifiers to handlers.
+
+Example:
+
+    +-----------------------------+
+    | System Call Table           |
+    +-----------------------------+
+    | ID  | Handler               |
+    +-----------------------------+
+    |  X1 | read handler          |
+    |  X2 | write handler         |
+    |  X3 | open handler          |
+    |  X4 | close handler         |
+    |  X5 | fork handler          |
+    +-----------------------------+
+
+When a request arrives:
+
+    System call ID
+          |
+          v
+    Table lookup
+          |
+          v
+    Correct kernel handler
+
+
+The exact implementation differs between operating systems
+and architectures.
+
+
+============================================================
+37. COMPLETE SYSTEM CALL ARCHITECTURE
+============================================================
+
+                 USER SPACE
+    +--------------------------------+
+    | Application                     |
+    |                                 |
+    | C/C++/Java/Python/etc.          |
+    +---------------+----------------+
+                    |
+                    v
+    +--------------------------------+
+    | Libraries / APIs                |
+    | Example: libc                   |
+    +---------------+----------------+
+                    |
+                    v
+    +--------------------------------+
+    | System Call Interface           |
+    +---------------+----------------+
+                    |
+              CPU transition
+                    |
+                    v
+                 KERNEL
+    +--------------------------------+
+    | System Call Handler             |
+    +---------------+----------------+
+                    |
+                    v
+    +--------------------------------+
+    | Kernel Subsystems               |
+    |                                |
+    | Process Management              |
+    | Memory Management               |
+    | File System                     |
+    | Networking                      |
+    | Security                        |
+    +---------------+----------------+
+                    |
+                    v
+    +--------------------------------+
+    | Device Drivers                  |
+    +---------------+----------------+
+                    |
+                    v
+    +--------------------------------+
+    | Hardware                        |
+    | CPU | RAM | Disk | NIC | etc.  |
+    +--------------------------------+
+
+
+============================================================
+38. PRACTICAL LINUX — TRACE SYSTEM CALLS
+============================================================
+
+Linux provides tools that allow us to observe system calls.
+
+One important tool is:
+
+    strace
+
+
+Example:
+
+    strace ls
+
+
+This can display system-call activity performed by the
+program.
+
+You may see operations related to:
+
+    openat()
+    read()
+    write()
+    close()
+    mmap()
+    execve()
+    etc.
+
+
+This is extremely useful for:
+
+    - Debugging
+    - Linux administration
+    - Performance analysis
+    - Security analysis
+    - Understanding programs
+
+
+============================================================
+39. PRACTICAL EXAMPLE
+============================================================
+
+Create a simple C program:
+
+    #include <unistd.h>
+
+    int main()
+    {
+        write(1, "Hello\n", 6);
+        return 0;
+    }
+
+
+Here:
+
+    write()
+
+is a POSIX/Linux system-call interface.
+
+Arguments:
+
+    1
+      ↓
+    File descriptor for standard output
+
+    "Hello\n"
+      ↓
+    Data to write
+
+    6
+      ↓
+    Number of bytes
+
+
+Conceptual flow:
+
+    C Program
+       |
+       v
+    write()
+       |
+       v
+    Kernel
+       |
+       v
+    Terminal
+
+
+============================================================
+40. IMPORTANT SYSTEM CALL CONCEPTS
+============================================================
+
+Remember these:
+
+    System call
+        ↓
+    User program requests kernel service
+
+    User mode
+        ↓
+    Restricted execution
+
+    Kernel mode
+        ↓
+    Privileged execution
+
+    System Call Interface
+        ↓
+    Gateway to kernel services
+
+    fork()
+        ↓
+    Create child process
+
+    exec()
+        ↓
+    Replace process image
+
+    wait()
+        ↓
+    Wait for child/state change
+
+    open()
+        ↓
+    Open resource/file
+
+    read()
+        ↓
+    Read data
+
+    write()
+        ↓
+    Write data
+
+    close()
+        ↓
+    Close file descriptor
+
+    pipe()
+        ↓
+    IPC pipe
+
+    socket()
+        ↓
+    Network communication
+
+    mmap()
+        ↓
+    Memory mapping
+
+
+============================================================
+41. MOST IMPORTANT DIFFERENCES
+============================================================
+
+SYSTEM CALL vs FUNCTION CALL
+-----------------------------
+
+Function call:
+    Function → Function
+
+System call:
+    User program → Kernel
+
+
+SYSTEM CALL vs API
+------------------
+
+API:
+    Programming interface
+
+System call:
+    Kernel service entry mechanism
+
+
+SYSTEM CALL vs INTERRUPT
+------------------------
+
+System call:
+    Intentional OS-service request
+
+Interrupt:
+    Event requiring CPU attention,
+    commonly hardware-generated
+
+
+SYSTEM CALL vs CONTEXT SWITCH
+-----------------------------
+
+System call:
+    Kernel service request
+
+Context switch:
+    Switch execution between processes/threads
+
+
+USER MODE vs KERNEL MODE
+------------------------
+
+User mode:
+    Restricted privileges
+
+Kernel mode:
+    Privileged execution
+
+
+fork() vs exec()
+----------------
+
+fork():
+    Creates a child process
+
+exec():
+    Replaces current process image
+
+
+============================================================
+42. INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is a system call?
+
+Answer:
+A system call is a controlled interface through which a
+user-level program requests a service from the OS kernel.
+
+
+Q2. Why are system calls required?
+
+Answer:
+Because user programs operate with restricted privileges and
+cannot directly perform many privileged OS/hardware operations.
+
+
+Q3. What is the difference between user mode and kernel mode?
+
+Answer:
+
+    User mode:
+        Restricted privileges
+
+    Kernel mode:
+        Privileged access to OS resources and hardware
+
+
+Q4. Is every function call a system call?
+
+Answer:
+
+    No.
+
+A normal function call can occur entirely in user space.
+
+
+Q5. Does every system call cause a context switch?
+
+Answer:
+
+    No.
+
+A system call causes entry into kernel execution, but a
+process context switch occurs only when the scheduler changes
+the running process/thread.
+
+
+Q6. What does fork() do?
+
+Answer:
+
+    Creates a new child process.
+
+
+Q7. What does exec() do?
+
+Answer:
+
+    Replaces the current process image with a new program.
+
+
+Q8. What is a file descriptor?
+
+Answer:
+
+    A small integer used by a process to refer to an open
+    file or other I/O object in Unix-like systems.
+
+
+Q9. What is strace?
+
+Answer:
+
+    A Linux tool that can trace system calls and signals
+    made/received by a program.
+
+
+Q10. What is the purpose of the system-call table?
+
+Answer:
+
+    Conceptually, it maps system-call identifiers to the
+    corresponding kernel handlers.
+
+
+============================================================
+43. GATE / COMPETITIVE EXAM FOCUS
+============================================================
+
+Very important topics:
+
+    ★ User mode vs kernel mode
+    ★ System call
+    ★ System call overhead
+    ★ System call vs context switch
+    ★ fork()
+    ★ exec()
+    ★ wait()
+    ★ Process creation
+    ★ File descriptors
+    ★ read/write/open/close
+    ★ Blocking system calls
+    ★ IPC system calls
+    ★ System call arguments
+    ★ Trap/system-call mechanism
+
+
+Common conceptual question:
+
+    A system call is executed in:
+
+    Answer:
+        Kernel mode after the controlled transition
+        from user mode.
+
+
+Important trap:
+
+    "System call always causes context switch."
+
+    FALSE.
+
+A system call and a context switch are different concepts.
+
+
+============================================================
+44. JOB-READY SKILLS FROM CHAPTER 2
+============================================================
+
+You should be able to:
+
+    [ ] Explain system calls
+    [ ] Explain user/kernel mode
+    [ ] Explain system-call flow
+    [ ] Understand fork()
+    [ ] Understand exec()
+    [ ] Understand wait()
+    [ ] Understand open/read/write/close
+    [ ] Understand file descriptors
+    [ ] Understand IPC system calls
+    [ ] Understand blocking I/O
+    [ ] Use strace
+    [ ] Explain API vs system call
+    [ ] Explain system call vs context switch
+    [ ] Explain privilege transitions
+
+
+============================================================
+45. CHAPTER 2 KNOWLEDGE MAP
+============================================================
+
+                    SYSTEM CALLS
+                         |
+       +-----------------+------------------+
+       |                 |                  |
+       v                 v                  v
+    PURPOSE           MODES             INTERFACE
+       |                 |                  |
+       v                 v                  v
+ Kernel service      User Mode          API/Library
+ request             Kernel Mode            |
+                                             v
+                                      System Call
+                                             |
+                                             v
+                                           Kernel
+       |
+       +-----------------------------------------+
+       |             |             |             |
+       v             v             v             v
+    Process         File          Device       IPC
+    Control       Management     Management   Communication
+       |             |             |             |
+       v             v             v             v
+    fork()         open()        ioctl()       pipe()
+    exec()         read()        etc.          socket()
+    wait()         write()
+    exit()         close()
+
+
+============================================================
+46. CHAPTER 2 FINAL SUMMARY
+============================================================
+
+The most important idea is:
+
+    APPLICATION
+         |
+         | System Call
+         v
+       KERNEL
+         |
+         v
+    OS RESOURCE / HARDWARE
+
+
+System calls provide a controlled and protected way for
+applications to use operating-system services.
+
+Major categories:
+
+    1. Process Control
+    2. File Management
+    3. Device Management
+    4. Information Maintenance
+    5. Communication
+    6. Protection/Security
+
+
+Most important examples:
+
+    fork()
+    exec()
+    wait()
+    open()
+    read()
+    write()
+    close()
+    pipe()
+    socket()
+    mmap()
+
+
+MOST IMPORTANT INTERVIEW CONCEPT:
+
+    System Call ≠ Context Switch
+
+A system call transfers execution into the kernel to request
+an OS service.
+
+A context switch changes the CPU's execution from one
+process/thread to another.
+
+============================================================
+CHAPTER 2 COMPLETE
+============================================================
+
+NEXT CHAPTER:
+
+    CHAPTER 3 — PROCESS MANAGEMENT
+
+Topics include:
+
+    Process concept
+    Process states
+    PCB
+    Process creation
+    Process termination
+    Parent/child processes
+    Process hierarchy
+    Context switching
+    Schedulers
+    Zombie process
+    Orphan process
+    Process queues
+    CPU-bound vs I/O-bound processes
+    Practical Linux process management
+    Interview questions
+    GATE questions
+
+Type:
+
+    NEXT
+
+to begin Chapter 3.
+============================================================

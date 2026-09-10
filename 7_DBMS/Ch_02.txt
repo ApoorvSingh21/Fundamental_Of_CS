@@ -1,0 +1,2708 @@
+======================================================================
+                    DBMS — CHAPTER 02
+          DATABASE ARCHITECTURE & DATA ABSTRACTION
+======================================================================
+
+LEVEL:
+    Beginner → M.Tech → GATE/NET → Job-Ready
+
+CHAPTER OBJECTIVES
+------------------
+
+After completing this chapter, you should be able to:
+
+    1. Explain data abstraction.
+    2. Explain the three levels of database architecture.
+    3. Understand external, conceptual, and internal schemas.
+    4. Explain data independence.
+    5. Differentiate logical and physical data independence.
+    6. Differentiate schema and instance.
+    7. Understand different database models.
+    8. Understand major components of a DBMS.
+    9. Explain query processor and storage manager.
+   10. Understand the high-level internal working of a DBMS.
+   11. Answer interview and exam questions on DBMS architecture.
+
+
+======================================================================
+2.1 DATABASE ARCHITECTURE
+======================================================================
+
+DATABASE ARCHITECTURE means the way a database system is
+structured and how users, applications, DBMS components,
+and stored data interact with each other.
+
+A simplified view:
+
+                         USERS
+                           |
+                           ↓
+                    APPLICATIONS
+                           |
+                           ↓
+                         DBMS
+                           |
+                           ↓
+                       DATABASE
+
+
+A more detailed DBMS architecture contains:
+
+                         USER
+                           |
+                           ↓
+                    SQL / APPLICATION
+                           |
+                           ↓
+                  +-------------------+
+                  |   QUERY PROCESSOR |
+                  +-------------------+
+                           |
+                           ↓
+                  +-------------------+
+                  |  STORAGE MANAGER  |
+                  +-------------------+
+                           |
+             +-------------+-------------+
+             |             |             |
+             ↓             ↓             ↓
+          DATA FILES    INDEXES        LOGS
+             |
+             ↓
+          DATABASE
+
+
+The internal components will be studied in detail later.
+
+In this chapter, our main focus is:
+
+    DATA ABSTRACTION
+    +
+    THREE-SCHEMA ARCHITECTURE
+    +
+    DATA INDEPENDENCE
+
+
+======================================================================
+2.2 WHY DATABASE ABSTRACTION IS REQUIRED
+======================================================================
+
+Imagine a database contains millions of records.
+
+A user does NOT need to know:
+
+    - Where data is physically stored.
+    - Which disk block contains a record.
+    - How indexes are implemented.
+    - How records are organized on storage.
+    - How the DBMS manages memory.
+
+The user simply asks:
+
+    "Give me the students whose marks are greater than 80."
+
+
+Example:
+
+    SELECT *
+    FROM Student
+    WHERE Marks > 80;
+
+
+The user does not need to know how the DBMS physically finds
+those records.
+
+This separation is called:
+
+                DATA ABSTRACTION
+
+
+======================================================================
+2.3 DATA ABSTRACTION
+======================================================================
+
+DEFINITION:
+
+    Data abstraction is the process of hiding unnecessary
+    implementation details from database users and exposing
+    only the information necessary at a particular level.
+
+
+Simple idea:
+
+    USER
+      |
+      |  Wants useful data
+      ↓
+    ABSTRACT VIEW
+      |
+      |  Hides implementation details
+      ↓
+    DATABASE
+
+
+Example:
+
+    When using an ATM:
+
+        You see:
+            Account balance
+            Withdraw
+            Deposit
+
+        You do NOT see:
+            Disk blocks
+            Database pages
+            B+ tree nodes
+            Buffer pool
+            Transaction logs
+
+
+The DBMS hides these internal details.
+
+
+======================================================================
+2.4 THREE LEVELS OF DATA ABSTRACTION
+======================================================================
+
+The three levels are:
+
+    1. External Level
+    2. Conceptual Level
+    3. Internal Level
+
+
+                    USERS
+                      |
+                      ↓
+             +------------------+
+             |  EXTERNAL LEVEL  |
+             +------------------+
+                      |
+                      ↓
+             +------------------+
+             | CONCEPTUAL LEVEL |
+             +------------------+
+                      |
+                      ↓
+             +------------------+
+             |  INTERNAL LEVEL  |
+             +------------------+
+                      |
+                      ↓
+                 STORAGE
+
+
+Remember:
+
+    EXTERNAL
+       ↓
+    CONCEPTUAL
+       ↓
+    INTERNAL
+
+
+======================================================================
+2.5 EXTERNAL LEVEL
+======================================================================
+
+The EXTERNAL LEVEL is the highest level of database abstraction.
+
+It describes how individual users or groups of users view
+the database.
+
+It is also called:
+
+    VIEW LEVEL
+
+
+At this level, users see only the data they need.
+
+Example:
+
+A university database contains:
+
+    Student
+    Teacher
+    Course
+    Fees
+    Attendance
+    Examination
+    Salary
+
+
+A student may see:
+
+    Student information
+    Courses
+    Marks
+    Attendance
+
+
+A teacher may see:
+
+    Student information
+    Attendance
+    Marks
+    Courses
+
+
+An accountant may see:
+
+    Student fees
+    Payments
+    Transactions
+
+
+The underlying database is the same, but each user can have
+a different VIEW.
+
+
+======================================================================
+2.6 EXTERNAL SCHEMA
+======================================================================
+
+An EXTERNAL SCHEMA describes a particular user's view of
+the database.
+
+Example:
+
+    Complete database:
+
+        Student
+        Course
+        Teacher
+        Salary
+        Fees
+        Examination
+
+
+Student external view:
+
+        Student
+        Course
+        Marks
+        Attendance
+
+
+Teacher external view:
+
+        Student
+        Course
+        Marks
+        Attendance
+
+
+Accountant external view:
+
+        Student
+        Fees
+        Payments
+
+
+Therefore:
+
+    One database
+         ↓
+    Multiple external schemas/views
+
+
+IMPORTANT:
+
+    External level focuses on:
+        "What does a particular user see?"
+
+
+======================================================================
+2.7 CONCEPTUAL LEVEL
+======================================================================
+
+The CONCEPTUAL LEVEL is the middle level.
+
+It describes the complete logical structure of the database.
+
+It specifies:
+
+    - Entities
+    - Attributes
+    - Relationships
+    - Constraints
+    - Tables
+    - Data types
+    - Keys
+
+
+Example:
+
+    UNIVERSITY DATABASE
+
+        STUDENT
+            |
+            | enrolls
+            ↓
+        COURSE
+
+
+Student:
+
+    Student_ID
+    Name
+    Age
+    Email
+
+
+Course:
+
+    Course_ID
+    Course_Name
+    Credits
+
+
+Enrollment:
+
+    Student_ID
+    Course_ID
+    Enrollment_Date
+
+
+At this level, we are concerned with the logical organization
+of data, not the physical storage details.
+
+
+======================================================================
+2.8 CONCEPTUAL SCHEMA
+======================================================================
+
+The conceptual schema is the overall logical schema of the
+entire database.
+
+It describes:
+
+    - What data exists?
+    - What relationships exist?
+    - What constraints exist?
+    - How entities are logically related?
+
+
+Example:
+
+    STUDENT
+       |
+       | 1
+       |
+       | enrolls
+       |
+       | N
+       ↓
+    COURSE
+
+
+The conceptual schema does NOT normally specify:
+
+    - Which disk sector stores the record.
+    - Which physical page contains the row.
+    - How a B+ tree node is stored.
+
+Those details belong to the internal level.
+
+
+======================================================================
+2.9 INTERNAL LEVEL
+======================================================================
+
+The INTERNAL LEVEL is the lowest level of abstraction.
+
+It describes HOW data is physically stored.
+
+It deals with:
+
+    - Files
+    - Pages
+    - Blocks
+    - Records
+    - Indexes
+    - Storage structures
+    - Record placement
+    - Data compression
+    - Access paths
+
+
+Example:
+
+    Student record
+
+        Student_ID = 101
+        Name = Apoorv
+
+
+At the internal level, the DBMS may manage:
+
+        Disk
+         ↓
+        Page
+         ↓
+        Record
+         ↓
+        Bytes
+
+
+Users normally do not need to know these details.
+
+
+======================================================================
+2.10 INTERNAL SCHEMA
+======================================================================
+
+The INTERNAL SCHEMA describes the physical storage
+representation of the database.
+
+It may specify:
+
+    - File organization
+    - Index structures
+    - Storage allocation
+    - Record formats
+    - Data pages
+    - Access paths
+
+
+Example:
+
+    STUDENT table
+          ↓
+    Data pages
+          ↓
+    Page 101
+    Page 102
+    Page 103
+          ↓
+    B+ Tree Index
+          ↓
+    Student_ID
+
+
+The exact physical organization is managed by the DBMS.
+
+
+======================================================================
+2.11 THREE-SCHEMA ARCHITECTURE
+======================================================================
+
+The three-schema architecture is traditionally associated
+with ANSI/SPARC database architecture.
+
+The three levels are:
+
+    EXTERNAL LEVEL
+        ↓
+    CONCEPTUAL LEVEL
+        ↓
+    INTERNAL LEVEL
+
+
+Detailed diagram:
+
+             +--------------------------+
+             |       USER 1             |
+             |    External View 1       |
+             +--------------------------+
+                        |
+                        |
+             +--------------------------+
+             |       USER 2             |
+             |    External View 2       |
+             +--------------------------+
+                        |
+                        |
+             +--------------------------+
+             |       USER 3             |
+             |    External View 3       |
+             +--------------------------+
+                        |
+                        ↓
+             +--------------------------+
+             |    CONCEPTUAL SCHEMA     |
+             |                          |
+             | Complete logical DB     |
+             +--------------------------+
+                        |
+                        ↓
+             +--------------------------+
+             |      INTERNAL SCHEMA     |
+             |                          |
+             | Physical storage        |
+             +--------------------------+
+                        |
+                        ↓
+                    STORAGE
+
+
+IMPORTANT:
+
+    External Level
+        = User views
+
+    Conceptual Level
+        = Complete logical database
+
+    Internal Level
+        = Physical storage
+
+
+======================================================================
+2.12 MAPPING BETWEEN LEVELS
+======================================================================
+
+There are mappings between the three levels.
+
+    External Schema
+          |
+          | External-Conceptual Mapping
+          ↓
+    Conceptual Schema
+          |
+          | Conceptual-Internal Mapping
+          ↓
+    Internal Schema
+
+
+These mappings allow changes at one level to be isolated
+from other levels as much as possible.
+
+
+======================================================================
+2.13 EXTERNAL-CONCEPTUAL MAPPING
+======================================================================
+
+This mapping connects:
+
+    External Level
+          ↕
+    Conceptual Level
+
+
+Example:
+
+Conceptual database contains:
+
+    Student_ID
+    Name
+    Age
+    Address
+    Phone
+    Email
+    Marks
+    Attendance
+
+
+Student view might contain:
+
+    Student_ID
+    Name
+    Marks
+    Attendance
+
+
+The mapping connects this user view to the appropriate
+conceptual data.
+
+
+======================================================================
+2.14 CONCEPTUAL-INTERNAL MAPPING
+======================================================================
+
+This mapping connects:
+
+    Conceptual Level
+          ↕
+    Internal Level
+
+
+Example:
+
+Conceptual level:
+
+    STUDENT(Student_ID, Name, Marks)
+
+
+Internal level:
+
+    File F1
+    Page P1
+    Page P2
+    B+ Tree Index on Student_ID
+
+
+The mapping tells the DBMS how the logical representation
+corresponds to physical storage.
+
+
+======================================================================
+2.15 DATA INDEPENDENCE
+======================================================================
+
+DATA INDEPENDENCE is one of the most important concepts
+in database architecture.
+
+
+DEFINITION:
+
+    Data independence is the ability to change the schema
+    at one level without requiring changes to the schema
+    at the next higher level.
+
+
+Simple idea:
+
+    Change database implementation
+              ↓
+    Application should continue working
+              ↓
+    Minimal/no changes required
+
+
+There are TWO major types:
+
+    1. Physical Data Independence
+    2. Logical Data Independence
+
+
+======================================================================
+2.16 PHYSICAL DATA INDEPENDENCE
+======================================================================
+
+DEFINITION:
+
+    Physical data independence is the ability to change the
+    internal/physical schema without changing the conceptual
+    schema or external views.
+
+
+Example:
+
+Initially:
+
+    Student table
+        ↓
+    Heap file
+
+
+Later:
+
+    Student table
+        ↓
+    B+ Tree index
+
+
+The physical storage mechanism changes.
+
+But:
+
+    Table structure
+    +
+    User views
+
+remain logically the same.
+
+
+Another example:
+
+    Change:
+        HDD → SSD
+
+or:
+
+    Change:
+        File organization
+
+or:
+
+    Add an index
+
+or:
+
+    Change:
+        Storage allocation
+
+
+Applications should generally continue working without
+requiring changes to their logical view of the database.
+
+
+Therefore:
+
+    INTERNAL SCHEMA changes
+              ↓
+    CONCEPTUAL SCHEMA remains
+              ↓
+    EXTERNAL VIEWS remain
+
+
+======================================================================
+2.17 LOGICAL DATA INDEPENDENCE
+======================================================================
+
+DEFINITION:
+
+    Logical data independence is the ability to change the
+    conceptual schema without requiring changes to external
+    schemas/views or application programs that depend on them,
+    to the extent supported by the mappings.
+
+
+Example:
+
+Initially:
+
+    STUDENT
+
+        Student_ID
+        Name
+        Age
+
+
+Later, the conceptual schema is changed:
+
+    STUDENT
+
+        Student_ID
+        Name
+        Age
+        Email
+
+
+Existing applications that do not use Email can continue
+to operate through appropriate views/mappings.
+
+
+Another example:
+
+    Split:
+
+        STUDENT
+        Address
+
+
+into:
+
+        STUDENT
+        ADDRESS
+
+
+The logical organization changes, but suitable external views
+can preserve the interface seen by existing users.
+
+
+======================================================================
+2.18 PHYSICAL vs LOGICAL DATA INDEPENDENCE
+======================================================================
+
++----------------------+--------------------------------------------+
+| Feature              | Physical Data Independence                |
++----------------------+--------------------------------------------+
+| Changes              | Internal schema                            |
+| Concern              | Physical storage                          |
+| Higher level         | Conceptual schema                         |
+| Example               | Add index, change file organization       |
+| Difficulty            | Generally easier                          |
++----------------------+--------------------------------------------+
+
++----------------------+--------------------------------------------+
+| Feature              | Logical Data Independence                 |
++----------------------+--------------------------------------------+
+| Changes              | Conceptual schema                         |
+| Concern              | Logical structure                         |
+| Higher level         | External schemas/views                    |
+| Example               | Add/split logical structures              |
+| Difficulty            | Generally harder                          |
++----------------------+--------------------------------------------+
+
+
+IMPORTANT GATE/INTERVIEW POINT:
+
+    Physical data independence is generally easier to achieve
+    than logical data independence.
+
+
+WHY?
+
+    Physical changes usually remain hidden below the conceptual
+    level.
+
+    Logical changes can affect user views and application
+    assumptions.
+
+
+======================================================================
+2.19 EASY MEMORY TRICK
+======================================================================
+
+Remember:
+
+    PHYSICAL = HOW data is stored
+
+    LOGICAL = WHAT data structure looks like
+
+
+Therefore:
+
+    Physical Data Independence
+        =
+    Change HOW data is stored.
+
+
+    Logical Data Independence
+        =
+    Change WHAT the logical database looks like.
+
+
+Memory:
+
+    INTERNAL → PHYSICAL
+    CONCEPTUAL → LOGICAL
+    EXTERNAL → USER VIEW
+
+
+======================================================================
+2.20 SCHEMA
+======================================================================
+
+WHAT IS SCHEMA?
+
+    A schema is the structure or blueprint of a database.
+
+
+Example:
+
+    STUDENT(
+        Student_ID,
+        Name,
+        Age,
+        Email
+    )
+
+
+This describes the structure.
+
+It does not represent all current rows.
+
+
+Think:
+
+    SCHEMA = BLUEPRINT
+
+
+Example:
+
+    House blueprint
+        ↓
+    Structure
+
+    Database schema
+        ↓
+    Database structure
+
+
+======================================================================
+2.21 DATABASE INSTANCE
+======================================================================
+
+An INSTANCE is the actual data stored in the database at
+a particular point in time.
+
+
+Schema:
+
+    STUDENT(
+        ID,
+        Name,
+        Age
+    )
+
+
+Instance:
+
+    +----+---------+-----+
+    | ID | Name    | Age |
+    +----+---------+-----+
+    | 1  | Apoorv  | 23  |
+    | 2  | Rahul   | 22  |
+    | 3  | Neha    | 24  |
+    +----+---------+-----+
+
+
+The structure is the schema.
+
+The current records are the instance.
+
+
+======================================================================
+2.22 SCHEMA vs INSTANCE
+======================================================================
+
+SCHEMA:
+
+    - Structure of database
+    - Relatively stable
+    - Defined using database design
+    - Blueprint
+
+
+INSTANCE:
+
+    - Actual data
+    - Changes frequently
+    - Current state of database
+    - Data snapshot
+
+
+Example:
+
+    SCHEMA:
+
+        STUDENT(ID, Name, Age)
+
+
+    INSTANCE at 10:00 AM:
+
+        101, Apoorv, 23
+        102, Rahul, 22
+
+
+    INSTANCE at 12:00 PM:
+
+        101, Apoorv, 24
+        102, Rahul, 22
+        103, Neha, 23
+
+
+Schema may remain the same while the instance changes.
+
+
+======================================================================
+2.23 SCHEMA vs INSTANCE — INTERVIEW TABLE
+======================================================================
+
++----------------+-----------------------------+----------------------+
+| Feature        | Schema                      | Instance             |
++----------------+-----------------------------+----------------------+
+| Meaning        | Database structure          | Actual data          |
+| Changes        | Less frequently             | Frequently            |
+| Example        | Table definition            | Table rows            |
+| Analogy        | Blueprint                   | Actual building      |
+| Nature         | Structural                  | Data state            |
++----------------+-----------------------------+----------------------+
+
+
+======================================================================
+2.24 DATABASE MODELS
+======================================================================
+
+A DATABASE MODEL defines how data is represented,
+organized, and related.
+
+Major database models:
+
+    1. Hierarchical Model
+    2. Network Model
+    3. Relational Model
+    4. Object-Oriented Model
+    5. Object-Relational Model
+    6. NoSQL Models
+
+
+======================================================================
+2.25 HIERARCHICAL DATABASE MODEL
+======================================================================
+
+The hierarchical model organizes data in a TREE structure.
+
+Example:
+
+                    UNIVERSITY
+                        |
+             +----------+----------+
+             |                     |
+          DEPARTMENT             DEPARTMENT
+             |                     |
+          Student                Student
+             |
+          Course
+
+
+Structure:
+
+    Parent
+      |
+      +---- Child
+      |
+      +---- Child
+
+
+Characteristics:
+
+    - Tree-based
+    - One parent can have many children
+    - A child generally has one parent in the classical model
+
+
+Advantages:
+
+    - Simple tree structure
+    - Fast navigation for hierarchical relationships
+    - Easy to understand for naturally hierarchical data
+
+
+Disadvantages:
+
+    - Poor support for complex relationships
+    - Many-to-many relationships are difficult
+    - Structural changes can be difficult
+
+
+Historical example:
+
+    IBM IMS
+
+
+======================================================================
+2.26 NETWORK DATABASE MODEL
+======================================================================
+
+The network model extends the hierarchical approach and
+supports more complex relationships.
+
+A record can have multiple relationships.
+
+Example:
+
+        STUDENT
+        /     \
+       /       \
+   COURSE     CLUB
+       \       /
+        \     /
+        TEACHER
+
+
+Characteristics:
+
+    - Graph-like structure
+    - Supports many-to-many relationships
+    - More flexible than hierarchical model
+
+
+Disadvantages:
+
+    - Complex implementation
+    - Difficult maintenance
+    - Less common in modern application development
+
+
+Historical example:
+
+    CODASYL database systems
+
+
+======================================================================
+2.27 RELATIONAL DATABASE MODEL
+======================================================================
+
+The relational model represents data using RELATIONS,
+commonly implemented as TABLES.
+
+
+Example:
+
+    STUDENT
+
+    +----+---------+-----+
+    | ID | Name    | Age |
+    +----+---------+-----+
+    | 1  | Apoorv  | 23  |
+    | 2  | Rahul   | 22  |
+    | 3  | Neha    | 24  |
+    +----+---------+-----+
+
+
+Important concepts:
+
+    Relation
+    Tuple
+    Attribute
+    Domain
+    Keys
+    Constraints
+
+
+Relationships between tables are commonly represented
+using foreign keys.
+
+
+Example:
+
+    STUDENT
+       |
+       | Student_ID
+       ↓
+    ENROLLMENT
+       |
+       | Course_ID
+       ↓
+    COURSE
+
+
+Advantages:
+
+    - Simple table-based representation
+    - Powerful query language
+    - Strong integrity mechanisms
+    - Mature technology
+    - Excellent support for structured transactional data
+
+
+Examples:
+
+    PostgreSQL
+    MySQL
+    Oracle
+    SQL Server
+    SQLite
+
+
+The relational model will be studied deeply in Chapter 3.
+
+
+======================================================================
+2.28 OBJECT-ORIENTED DATABASE MODEL
+======================================================================
+
+The object-oriented model stores data as OBJECTS.
+
+It is influenced by object-oriented programming concepts.
+
+Objects may contain:
+
+    - Attributes
+    - Methods
+    - Identity
+
+
+Concepts:
+
+    Class
+    Object
+    Encapsulation
+    Inheritance
+    Polymorphism
+
+
+Useful for:
+
+    - Complex engineering data
+    - Multimedia
+    - CAD/CAM
+    - Scientific applications
+
+
+======================================================================
+2.29 OBJECT-RELATIONAL MODEL
+======================================================================
+
+Object-relational databases combine:
+
+    Relational model
+            +
+    Object-oriented features
+
+
+They retain relational tables but can support richer data types
+and object-like features.
+
+Example:
+
+    PostgreSQL supports several advanced data types and
+    object-relational capabilities.
+
+
+======================================================================
+2.30 NoSQL DATA MODELS
+======================================================================
+
+NoSQL databases are non-relational database systems designed
+for particular scalability, flexibility, or data-modeling needs.
+
+
+Major categories:
+
+    1. Key-Value
+    2. Document
+    3. Wide-Column
+    4. Graph
+
+
+KEY-VALUE:
+
+    key → value
+
+    Example:
+
+        user:101 → "Apoorv"
+
+
+    Example database:
+        Redis
+
+
+DOCUMENT:
+
+    {
+        "id": 101,
+        "name": "Apoorv",
+        "course": "M.Tech"
+    }
+
+
+    Example:
+        MongoDB
+
+
+WIDE-COLUMN:
+
+    Data organized around column families.
+
+    Example:
+        Cassandra
+
+
+GRAPH:
+
+    Nodes + Relationships + Properties
+
+    Example:
+        Neo4j
+
+
+NoSQL will be studied deeply in Chapter 28.
+
+
+======================================================================
+2.31 COMPARISON OF DATABASE MODELS
+======================================================================
+
++----------------+----------------------+----------------------------+
+| Model          | Structure             | Main Idea                  |
++----------------+----------------------+----------------------------+
+| Hierarchical   | Tree                  | Parent-child              |
+| Network        | Graph-like            | Complex relationships     |
+| Relational     | Tables                | Relations                 |
+| Object         | Objects               | OOP-based data            |
+| Object-Rel.    | Tables + objects      | Hybrid                    |
+| Key-Value      | Key → Value           | Simple lookup             |
+| Document       | Documents             | JSON/BSON-like data       |
+| Wide-Column    | Column families       | Distributed data          |
+| Graph          | Nodes + edges         | Relationships             |
++----------------+----------------------+----------------------------+
+
+
+======================================================================
+2.32 DBMS INTERNAL COMPONENTS
+======================================================================
+
+A DBMS contains several important components.
+
+Major components:
+
+    1. Query Processor
+    2. Storage Manager
+    3. Transaction Manager
+    4. Buffer Manager
+    5. File Manager
+    6. Authorization/Security Manager
+    7. Recovery Manager
+
+
+High-level architecture:
+
+                         SQL QUERY
+                             |
+                             ↓
+                    +----------------+
+                    | Query Processor|
+                    +----------------+
+                             |
+                             ↓
+                    +----------------+
+                    |Storage Manager |
+                    +----------------+
+                       /    |     \
+                      /     |      \
+                     ↓      ↓       ↓
+                  Files   Indexes   Buffer
+                             
+                             +
+                             |
+                             ↓
+                          Logs
+                             |
+                             ↓
+                       Recovery
+
+
+======================================================================
+2.33 QUERY PROCESSOR
+======================================================================
+
+The QUERY PROCESSOR handles database queries.
+
+Example:
+
+    SELECT Name
+    FROM Student
+    WHERE Marks > 80;
+
+
+The DBMS must:
+
+    1. Parse the SQL.
+    2. Check syntax.
+    3. Check semantic correctness.
+    4. Translate the query.
+    5. Optimize the query.
+    6. Create an execution plan.
+    7. Execute the plan.
+    8. Return the result.
+
+
+Major conceptual components:
+
+    Parser
+       ↓
+    Translator
+       ↓
+    Query Optimizer
+       ↓
+    Execution Engine
+
+
+Detailed query processing will be covered in Chapter 22.
+
+
+======================================================================
+2.34 PARSER
+======================================================================
+
+The parser analyzes the SQL statement.
+
+Example:
+
+    SELECT *
+    FROM Student
+    WHERE Marks > 80;
+
+
+The parser checks whether the SQL follows the expected syntax.
+
+
+If the query is invalid:
+
+    SELECT FROM Student;
+
+
+The DBMS can report a syntax error.
+
+
+Parser responsibilities include:
+
+    - Lexical analysis
+    - Syntax analysis
+    - Parse tree generation
+    - Initial semantic checks
+
+
+======================================================================
+2.35 QUERY OPTIMIZER
+======================================================================
+
+The query optimizer tries to find an efficient way to execute
+a query.
+
+Suppose:
+
+    SELECT *
+    FROM Student
+    WHERE Student_ID = 101;
+
+
+Possible approaches:
+
+    Method 1:
+        Scan the entire table.
+
+    Method 2:
+        Use an index on Student_ID.
+
+
+If an appropriate index exists, the optimizer may choose
+an index-based access path.
+
+
+Goal:
+
+    Minimize execution cost.
+
+
+Cost can involve:
+
+    - Disk I/O
+    - CPU
+    - Memory
+    - Network communication
+
+
+Query optimization is extremely important for job-ready
+database development.
+
+
+======================================================================
+2.36 EXECUTION ENGINE
+======================================================================
+
+The execution engine executes the selected query plan.
+
+Example:
+
+    SQL
+     ↓
+    Query Plan
+     ↓
+    Execution
+     ↓
+    Result
+
+
+It may perform operations such as:
+
+    - Table scan
+    - Index scan
+    - Join
+    - Sort
+    - Filter
+    - Aggregation
+
+
+======================================================================
+2.37 STORAGE MANAGER
+======================================================================
+
+The STORAGE MANAGER is responsible for interacting with
+the database stored on storage devices.
+
+
+It manages:
+
+    - Data files
+    - Indexes
+    - Storage allocation
+    - Data access
+    - Buffer interaction
+
+
+Simplified:
+
+    Query Processor
+          ↓
+    Storage Manager
+          ↓
+    Disk / SSD
+          ↓
+    Database files
+
+
+======================================================================
+2.38 FILE MANAGER
+======================================================================
+
+The file manager handles the organization of database files
+on storage.
+
+It may manage:
+
+    - Data files
+    - File allocation
+    - Pages
+    - Blocks
+    - Record organization
+
+
+Example:
+
+    STUDENT TABLE
+         ↓
+    Data File
+         ↓
+    Pages
+         ↓
+    Records
+
+
+======================================================================
+2.39 BUFFER MANAGER
+======================================================================
+
+The BUFFER MANAGER manages memory used to temporarily hold
+database pages.
+
+Why is this needed?
+
+Disk/SSD access is generally slower than accessing data already
+available in RAM.
+
+Therefore:
+
+    Disk
+      ↓
+    Buffer Pool / RAM
+      ↓
+    CPU
+
+
+Example:
+
+    Query requests Page 100.
+
+    If Page 100 is already in memory:
+
+        Buffer Hit
+            ↓
+        Faster access
+
+
+    If Page 100 is not in memory:
+
+        Read from storage
+            ↓
+        Put page into buffer
+            ↓
+        Process it
+
+
+The buffer manager is critical for database performance.
+
+
+======================================================================
+2.40 BUFFER POOL
+======================================================================
+
+A BUFFER POOL is an area of main memory used by the DBMS
+to cache database pages.
+
+Example:
+
+    DATABASE ON DISK
+           |
+           ↓
+    +----------------+
+    |  Buffer Pool   |
+    |                |
+    | Page 10        |
+    | Page 25        |
+    | Page 40        |
+    +----------------+
+           |
+           ↓
+          CPU
+
+
+Benefits:
+
+    - Reduces disk I/O
+    - Improves query performance
+    - Allows frequently accessed pages to stay in memory
+
+
+Buffer replacement algorithms include concepts such as:
+
+    - LRU-like policies
+    - Clock algorithms
+
+Exact implementation varies by DBMS.
+
+
+======================================================================
+2.41 TRANSACTION MANAGER
+======================================================================
+
+The TRANSACTION MANAGER manages transactions.
+
+Example:
+
+    Bank transfer:
+
+        A: -₹5,000
+        B: +₹5,000
+
+
+Both operations should behave as one logical unit.
+
+
+Transaction manager helps with:
+
+    - Atomicity
+    - Isolation
+    - Concurrency
+    - Commit
+    - Rollback
+
+
+Important commands:
+
+    BEGIN
+    COMMIT
+    ROLLBACK
+
+
+Detailed transaction management will be studied in
+Chapter 16 onward.
+
+
+======================================================================
+2.42 CONCURRENCY CONTROL MANAGER
+======================================================================
+
+Multiple users may access the database simultaneously.
+
+Example:
+
+    User A → UPDATE Account
+    User B → UPDATE Account
+
+The DBMS must coordinate these operations.
+
+Concurrency control helps prevent problems such as:
+
+    - Lost update
+    - Dirty read
+    - Non-repeatable read
+    - Phantom read
+
+
+Important techniques:
+
+    - Locks
+    - Two-phase locking
+    - MVCC
+    - Timestamp-based techniques
+
+
+Detailed study:
+
+    Chapter 17
+    Chapter 18
+
+
+======================================================================
+2.43 RECOVERY MANAGER
+======================================================================
+
+The recovery manager helps restore the database to a
+consistent state after failures.
+
+Possible failures:
+
+    - System crash
+    - Transaction failure
+    - Power failure
+    - Storage failure
+
+
+It uses mechanisms such as:
+
+    - Logs
+    - Checkpoints
+    - UNDO
+    - REDO
+    - Backup/recovery mechanisms
+
+
+Detailed study:
+
+    Chapter 19
+
+
+======================================================================
+2.44 AUTHORIZATION / SECURITY MANAGER
+======================================================================
+
+The security manager controls access to database resources.
+
+Example:
+
+    User A:
+        SELECT permission
+
+    User B:
+        SELECT + INSERT
+
+    DBA:
+        Administrative privileges
+
+
+Commands:
+
+    GRANT
+    REVOKE
+
+
+Security topics include:
+
+    - Authentication
+    - Authorization
+    - Roles
+    - Privileges
+    - Auditing
+    - SQL injection prevention
+
+
+Detailed study:
+
+    Chapter 25
+
+
+======================================================================
+2.45 COMPLETE DBMS COMPONENT FLOW
+======================================================================
+
+Suppose the user sends:
+
+    SELECT Name
+    FROM Student
+    WHERE Marks > 80;
+
+
+Flow:
+
+    USER
+      |
+      ↓
+    SQL QUERY
+      |
+      ↓
+    PARSER
+      |
+      ↓
+    QUERY OPTIMIZER
+      |
+      ↓
+    EXECUTION PLAN
+      |
+      ↓
+    EXECUTION ENGINE
+      |
+      ↓
+    STORAGE MANAGER
+      |
+      ↓
+    BUFFER MANAGER
+      |
+      ↓
+    DATA FILE / INDEX
+      |
+      ↓
+    RESULT
+      |
+      ↓
+    USER
+
+
+This is a very important conceptual flow.
+
+
+======================================================================
+2.46 DATABASE SYSTEM ARCHITECTURE — COMPLETE VIEW
+======================================================================
+
+                         USERS
+                           |
+          +----------------+----------------+
+          |                |                |
+          ↓                ↓                ↓
+       Student          Teacher            DBA
+          |                |                |
+          +----------------+----------------+
+                           |
+                           ↓
+                     APPLICATION
+                           |
+                           ↓
+                      SQL QUERY
+                           |
+                           ↓
+                  +------------------+
+                  | QUERY PROCESSOR  |
+                  +------------------+
+                           |
+             +-------------+-------------+
+             |             |             |
+             ↓             ↓             ↓
+          Parser       Optimizer    Execution
+                                         |
+                                         ↓
+                                +----------------+
+                                |Storage Manager |
+                                +----------------+
+                                   /    |      \
+                                  /     |       \
+                                 ↓      ↓        ↓
+                              Files  Buffer    Indexes
+                                         |
+                                         ↓
+                                      Storage
+                                         |
+                                         ↓
+                                    DATABASE
+
+
+======================================================================
+2.47 TWO-TIER ARCHITECTURE
+======================================================================
+
+In two-tier architecture, the client communicates directly
+with the database server.
+
+Diagram:
+
+        CLIENT
+          |
+          | SQL / DB connection
+          ↓
+     DATABASE SERVER
+          |
+          ↓
+       DATABASE
+
+
+Example:
+
+    Desktop application
+          ↓
+    Oracle/MySQL/PostgreSQL
+
+
+Advantages:
+
+    - Simple
+    - Easy for small applications
+
+
+Disadvantages:
+
+    - Limited scalability
+    - Security concerns
+    - Business logic may be placed in clients
+
+
+======================================================================
+2.48 THREE-TIER ARCHITECTURE
+======================================================================
+
+Modern web applications commonly use three logical tiers:
+
+    1. Presentation Layer
+    2. Application/Business Logic Layer
+    3. Database Layer
+
+
+Diagram:
+
+        USER
+          |
+          ↓
+    PRESENTATION
+       LAYER
+          |
+          ↓
+    APPLICATION
+       SERVER
+          |
+          ↓
+    DATABASE
+       SERVER
+          |
+          ↓
+      DATABASE
+
+
+Example:
+
+    Browser
+       ↓
+    React / HTML / CSS
+       ↓
+    Backend
+       ↓
+    Django / Spring / Node.js
+       ↓
+    PostgreSQL / MySQL
+
+
+This architecture is highly relevant to software development.
+
+
+======================================================================
+2.49 TWO-TIER vs THREE-TIER
+======================================================================
+
++----------------+-----------------------+-------------------------+
+| Feature        | Two-Tier              | Three-Tier              |
++----------------+-----------------------+-------------------------+
+| Layers         | 2                     | 3                        |
+| Client         | Talks to DB directly  | Talks to application     |
+| Business logic | Client-side/common    | Application server       |
+| Scalability    | Limited               | Better                   |
+| Security       | Lower separation      | Better separation        |
+| Common use     | Small applications    | Web/enterprise systems   |
++----------------+-----------------------+-------------------------+
+
+
+======================================================================
+2.50 DATA ABSTRACTION vs DATA INDEPENDENCE
+======================================================================
+
+These concepts are related but NOT identical.
+
+
+DATA ABSTRACTION:
+
+    Hides unnecessary implementation details.
+
+
+DATA INDEPENDENCE:
+
+    Allows changes at one level without requiring changes
+    at higher levels.
+
+
+Example:
+
+    Data abstraction:
+
+        User does not see disk blocks.
+
+
+    Data independence:
+
+        DB administrator changes physical storage
+        without changing user applications.
+
+
+Memory:
+
+    ABSTRACTION = HIDE
+
+    INDEPENDENCE = CHANGE WITHOUT AFFECTING HIGHER LEVEL
+
+
+======================================================================
+2.51 SCHEMA LEVELS — QUICK REVISION
+======================================================================
+
+    EXTERNAL LEVEL
+        ↓
+    User-specific views
+
+    CONCEPTUAL LEVEL
+        ↓
+    Complete logical database
+
+    INTERNAL LEVEL
+        ↓
+    Physical storage
+
+
+Memory:
+
+    EXTERNAL
+        = WHAT USER SEES
+
+    CONCEPTUAL
+        = WHAT DATABASE LOGICALLY CONTAINS
+
+    INTERNAL
+        = HOW DATABASE IS PHYSICALLY STORED
+
+
+======================================================================
+2.52 IMPORTANT EXAMPLE — UNIVERSITY DATABASE
+======================================================================
+
+Suppose a university database contains:
+
+    STUDENT
+    COURSE
+    TEACHER
+    DEPARTMENT
+    EXAM
+    FEES
+    ATTENDANCE
+
+
+EXTERNAL LEVEL:
+
+    Student View:
+
+        Name
+        Course
+        Marks
+        Attendance
+
+
+    Teacher View:
+
+        Student
+        Course
+        Marks
+        Attendance
+
+
+    Accountant View:
+
+        Student
+        Fees
+        Payment
+
+
+CONCEPTUAL LEVEL:
+
+    STUDENT
+        |
+        ↓
+    ENROLLMENT
+        |
+        ↓
+    COURSE
+
+
+    TEACHER
+        |
+        ↓
+    COURSE
+
+
+INTERNAL LEVEL:
+
+    Data files
+    Pages
+    Records
+    Indexes
+    Storage blocks
+
+
+This example demonstrates all three levels.
+
+
+======================================================================
+2.53 GATE/INTERVIEW TRAPS
+======================================================================
+
+TRAP 1:
+
+    "External level represents physical storage."
+
+    WRONG.
+
+    External level = user views.
+
+
+TRAP 2:
+
+    "Internal level represents user views."
+
+    WRONG.
+
+    Internal level = physical storage.
+
+
+TRAP 3:
+
+    "Physical data independence means changing tables."
+
+    Usually WRONG.
+
+    Physical data independence concerns the internal/physical
+    storage level.
+
+
+TRAP 4:
+
+    "Logical data independence is easier than physical."
+
+    Generally WRONG.
+
+    Physical data independence is generally easier.
+
+
+TRAP 5:
+
+    "Schema changes every time a row is inserted."
+
+    WRONG.
+
+    Instance changes when data changes.
+
+
+TRAP 6:
+
+    "Schema = current records."
+
+    WRONG.
+
+    Schema = structure.
+    Instance = current data.
+
+
+======================================================================
+2.54 IMPORTANT FORMULAS / RELATIONSHIPS
+======================================================================
+
+Three-schema architecture:
+
+    External
+       ↓
+    Conceptual
+       ↓
+    Internal
+
+
+Data independence:
+
+    Physical:
+        Internal changes
+            ↓
+        Conceptual unaffected
+
+
+    Logical:
+        Conceptual changes
+            ↓
+        External views unaffected
+        where mappings permit
+
+
+Database state:
+
+    SCHEMA = Structure
+
+    INSTANCE = State
+
+
+======================================================================
+2.55 INTERVIEW QUESTIONS
+======================================================================
+
+Q1. What is data abstraction?
+
+ANSWER:
+
+    Data abstraction is the process of hiding unnecessary
+    implementation details from users and showing only the
+    required information.
+
+
+Q2. What are the three levels of DBMS architecture?
+
+ANSWER:
+
+    1. External level
+    2. Conceptual level
+    3. Internal level
+
+
+Q3. What is the external level?
+
+ANSWER:
+
+    It represents user-specific views of the database.
+
+
+Q4. What is the conceptual level?
+
+ANSWER:
+
+    It represents the complete logical structure of the database.
+
+
+Q5. What is the internal level?
+
+ANSWER:
+
+    It represents the physical storage organization of data.
+
+
+Q6. What is an external schema?
+
+ANSWER:
+
+    An external schema defines a particular user's or application's
+    view of the database.
+
+
+Q7. What is a conceptual schema?
+
+ANSWER:
+
+    It defines the overall logical structure of the database.
+
+
+Q8. What is an internal schema?
+
+ANSWER:
+
+    It defines how data is physically organized and stored.
+
+
+Q9. What is data independence?
+
+ANSWER:
+
+    Data independence is the ability to modify a schema at one
+    level without requiring changes at higher levels.
+
+
+Q10. What is physical data independence?
+
+ANSWER:
+
+    It is the ability to change the internal physical storage
+    without changing the conceptual or external schemas.
+
+
+Q11. What is logical data independence?
+
+ANSWER:
+
+    It is the ability to change the conceptual schema without
+    requiring changes to external views/applications, to the
+    extent supported by the mappings.
+
+
+Q12. Which is generally easier: physical or logical data independence?
+
+ANSWER:
+
+    Physical data independence is generally easier.
+
+
+Q13. What is schema?
+
+ANSWER:
+
+    Schema is the structure or blueprint of a database.
+
+
+Q14. What is an instance?
+
+ANSWER:
+
+    Instance is the actual data stored in the database at a
+    particular point in time.
+
+
+Q15. What is the difference between schema and instance?
+
+ANSWER:
+
+    Schema defines structure, while instance represents the
+    current state/data of the database.
+
+
+Q16. What is a database model?
+
+ANSWER:
+
+    A database model defines how data is structured,
+    represented, and related.
+
+
+Q17. Name major database models.
+
+ANSWER:
+
+    Hierarchical
+    Network
+    Relational
+    Object-oriented
+    Object-relational
+    NoSQL models
+
+
+Q18. What does the query processor do?
+
+ANSWER:
+
+    It parses, optimizes, and executes database queries.
+
+
+Q19. What is a buffer manager?
+
+ANSWER:
+
+    It manages database pages cached in main memory to reduce
+    storage I/O and improve performance.
+
+
+Q20. What is a transaction manager?
+
+ANSWER:
+
+    It manages transactions and helps maintain properties such
+    as atomicity, isolation, and consistency.
+
+
+======================================================================
+2.56 GATE-LEVEL CONCEPT CHECK
+======================================================================
+
+QUESTION 1:
+
+    Which level describes physical storage?
+
+    A. External
+    B. Conceptual
+    C. Internal
+    D. View
+
+    ANSWER:
+        C. Internal
+
+
+QUESTION 2:
+
+    Which level represents user-specific views?
+
+    A. Internal
+    B. External
+    C. Physical
+    D. Storage
+
+    ANSWER:
+        B. External
+
+
+QUESTION 3:
+
+    Adding an index without changing the logical schema is
+    primarily an example of:
+
+    A. Logical data independence
+    B. Physical data independence
+    C. Referential integrity
+    D. Entity integrity
+
+    ANSWER:
+        B. Physical data independence
+
+
+QUESTION 4:
+
+    Which generally changes more frequently?
+
+    A. Schema
+    B. Instance
+    C. Database model
+    D. Conceptual architecture
+
+    ANSWER:
+        B. Instance
+
+
+QUESTION 5:
+
+    Which component is mainly responsible for finding an
+    efficient execution strategy?
+
+    A. Buffer manager
+    B. Query optimizer
+    C. File manager
+    D. Recovery manager
+
+    ANSWER:
+        B. Query optimizer
+
+
+======================================================================
+2.57 CHAPTER 2 QUICK REVISION
+======================================================================
+
+DATA ABSTRACTION
+    ↓
+    Hides unnecessary implementation details
+
+
+THREE LEVELS:
+
+    External
+        ↓
+    User views
+
+    Conceptual
+        ↓
+    Complete logical structure
+
+    Internal
+        ↓
+    Physical storage
+
+
+DATA INDEPENDENCE:
+
+    Physical
+        ↓
+    Internal changes without requiring conceptual changes
+
+
+    Logical
+        ↓
+    Conceptual changes without requiring external changes,
+    where mappings permit
+
+
+SCHEMA:
+
+    Database blueprint
+
+
+INSTANCE:
+
+    Current database state
+
+
+DATABASE MODELS:
+
+    Hierarchical
+    Network
+    Relational
+    Object-Oriented
+    Object-Relational
+    NoSQL
+
+
+DBMS COMPONENTS:
+
+    Query Processor
+    Storage Manager
+    Buffer Manager
+    File Manager
+    Transaction Manager
+    Recovery Manager
+    Authorization/Security Manager
+
+
+======================================================================
+2.58 COMPLETE CHAPTER CONCEPT MAP
+======================================================================
+
+                        DBMS ARCHITECTURE
+                               |
+              +----------------+----------------+
+              |                                 |
+              ↓                                 ↓
+       DATA ABSTRACTION                   DBMS COMPONENTS
+              |                                 |
+      +-------+-------+              +----------+----------+
+      |       |       |              |          |          |
+      ↓       ↓       ↓              ↓          ↓          ↓
+   External Conceptual Internal   Query      Storage   Transaction
+      |         |        |        Processor   Manager    Manager
+      |         |        |           |          |          |
+   User      Logical   Physical    Parser     Files     ACID
+   Views     Schema    Storage      Optimizer Buffer    Locks
+                                   Executor    Indexes   Recovery
+                                                       
+                               |
+                               ↓
+                       DATA INDEPENDENCE
+                               |
+                    +----------+----------+
+                    |                     |
+                    ↓                     ↓
+                Physical               Logical
+                    |                     |
+              Internal changes      Conceptual changes
+                    |                     |
+                    ↓                     ↓
+              Higher levels         External views
+
+
+======================================================================
+2.59 JOB-READY CONNECTION
+======================================================================
+
+As a software developer, you should understand this architecture:
+
+    FRONTEND
+       |
+       ↓
+    BACKEND / API
+       |
+       ↓
+    DATABASE DRIVER / ORM
+       |
+       ↓
+    DBMS
+       |
+       +---- Query Processor
+       |
+       +---- Transaction Manager
+       |
+       +---- Storage Manager
+       |
+       +---- Buffer Manager
+       |
+       +---- Recovery
+       |
+       ↓
+    DATABASE STORAGE
+
+
+Example:
+
+    React
+      ↓
+    Django / Spring Boot / Node.js
+      ↓
+    PostgreSQL
+      ↓
+    Tables + Indexes + Transactions
+
+
+Why this matters:
+
+    If a query becomes slow:
+        → Query optimizer
+        → Execution plan
+        → Index
+        → Buffer/cache
+        → Disk I/O
+
+    If two users modify the same data:
+        → Concurrency control
+
+    If payment fails halfway:
+        → Transaction + rollback
+
+    If server crashes:
+        → Recovery
+
+    If unauthorized user accesses data:
+        → Security / authorization
+
+
+This is the foundation for advanced DBMS and system design.
+
+
+======================================================================
+2.60 FINAL CHAPTER CHECKPOINT
+======================================================================
+
+You should now be able to explain:
+
+    [✓] Database architecture
+    [✓] Data abstraction
+    [✓] External level
+    [✓] External schema
+    [✓] Conceptual level
+    [✓] Conceptual schema
+    [✓] Internal level
+    [✓] Internal schema
+    [✓] Three-schema architecture
+    [✓] External-conceptual mapping
+    [✓] Conceptual-internal mapping
+    [✓] Physical data independence
+    [✓] Logical data independence
+    [✓] Schema
+    [✓] Instance
+    [✓] Database models
+    [✓] Hierarchical model
+    [✓] Network model
+    [✓] Relational model
+    [✓] Object-oriented model
+    [✓] Object-relational model
+    [✓] NoSQL models
+    [✓] Query processor
+    [✓] Parser
+    [✓] Query optimizer
+    [✓] Execution engine
+    [✓] Storage manager
+    [✓] File manager
+    [✓] Buffer manager
+    [✓] Transaction manager
+    [✓] Recovery manager
+    [✓] Security/authorization manager
+    [✓] Two-tier architecture
+    [✓] Three-tier architecture
+
+
+======================================================================
+                  MOST IMPORTANT 10 POINTS
+======================================================================
+
+    1. External level = User views.
+
+    2. Conceptual level = Complete logical database structure.
+
+    3. Internal level = Physical storage.
+
+    4. Schema = Database structure/blueprint.
+
+    5. Instance = Current database state.
+
+    6. Physical data independence = Change physical storage
+       without requiring conceptual changes.
+
+    7. Logical data independence = Change conceptual structure
+       without requiring external changes, where mappings permit.
+
+    8. Physical data independence is generally easier than
+       logical data independence.
+
+    9. Query processor handles parsing, optimization,
+       and execution of queries.
+
+   10. Storage manager handles interaction with stored
+       database data and storage structures.
+
+
+======================================================================
+                    NEXT CHAPTER
+======================================================================
+
+CHAPTER 03 — RELATIONAL DATA MODEL
+
+Topics:
+
+    3.1 Relational Model Fundamentals
+    3.2 Relation
+    3.3 Tuple
+    3.4 Attribute
+    3.5 Domain
+    3.6 Relation Schema
+    3.7 Relation Instance
+    3.8 Degree and Cardinality
+    3.9 Super Key
+    3.10 Candidate Key
+    3.11 Primary Key
+    3.12 Alternate Key
+    3.13 Foreign Key
+    3.14 Composite Key
+    3.15 Natural and Surrogate Keys
+    3.16 Domain Constraints
+    3.17 Entity Integrity
+    3.18 Referential Integrity
+    3.19 NULL Values
+    3.20 Three-Valued Logic
+
+    Chapter 3 is especially important because it forms the
+    foundation for SQL, database design, normalization,
+    relational algebra, and DBMS interviews.
+======================================================================

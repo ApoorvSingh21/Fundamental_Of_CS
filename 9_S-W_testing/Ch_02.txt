@@ -1,0 +1,2035 @@
+Absolutely. Chapter 2 — How a Web Application Works is especially important for a software tester because it connects browser, frontend, HTTP/HTTPS, server, API, database, cookies, sessions, and responses. Understanding this flow will make later API testing, DevTools, automation, and debugging much easier.
+
+====================================================================
+        SOFTWARE TESTING — CHAPTER 2
+        HOW A WEB APPLICATION WORKS
+====================================================================
+
+OBJECTIVE:
+    After completing this chapter, you should understand:
+
+    ✓ How a web application works
+    ✓ Browser and client
+    ✓ Web server and application server
+    ✓ Request and response
+    ✓ HTTP and HTTPS
+    ✓ URL
+    ✓ DNS
+    ✓ IP address
+    ✓ HTTP methods
+    ✓ HTTP status codes
+    ✓ Headers
+    ✓ Request body and response body
+    ✓ JSON
+    ✓ Cookies
+    ✓ Sessions
+    ✓ Cache
+    ✓ Authentication
+    ✓ Authorization
+    ✓ REST API basics
+    ✓ Complete request flow
+    ✓ What a tester should verify
+
+
+====================================================================
+2.1 WHAT IS A WEB APPLICATION?
+====================================================================
+
+A web application is a software application that users access
+through a web browser over a network.
+
+Examples:
+
+    Gmail
+    GitHub
+    Amazon
+    Flipkart
+    Banking Applications
+    Online Examination Systems
+    Learning Management Systems
+
+
+Unlike a simple static webpage, a web application usually contains:
+
+    Frontend
+    Backend
+    Database
+    APIs
+    Authentication
+    Business Logic
+
+
+Basic architecture:
+
+                    USER
+                      |
+                      v
+                  BROWSER
+                      |
+                 HTTP/HTTPS
+                      |
+                      v
+                  WEB SERVER
+                      |
+                      v
+              APPLICATION SERVER
+                      |
+                      v
+                  DATABASE
+
+
+====================================================================
+2.2 WEB APPLICATION ARCHITECTURE
+====================================================================
+
+A modern web application commonly has several layers.
+
+                    WEB APPLICATION
+                           |
+          +----------------+----------------+
+          |                |                |
+       Frontend         Backend          Database
+          |                |
+       Browser           API
+                           |
+                    Business Logic
+
+
+Example:
+
+    Online shopping application
+
+    Frontend:
+        Login
+        Product page
+        Cart
+        Checkout
+
+    Backend:
+        Login processing
+        Product processing
+        Order processing
+        Payment processing
+
+    Database:
+        Users
+        Products
+        Orders
+        Payments
+
+
+====================================================================
+2.3 BROWSER
+====================================================================
+
+A browser is software used to access websites and web applications.
+
+Examples:
+
+    Google Chrome
+    Mozilla Firefox
+    Microsoft Edge
+    Safari
+
+
+Browser responsibilities:
+
+    1. Accept URL
+    2. Resolve domain name
+    3. Send HTTP/HTTPS request
+    4. Receive server response
+    5. Process HTML/CSS/JavaScript
+    6. Display webpage
+    7. Store cookies
+    8. Store local/session data
+    9. Execute JavaScript
+   10. Communicate with APIs
+
+
+For testers, browser Developer Tools are extremely important.
+
+
+====================================================================
+2.4 CLIENT
+====================================================================
+
+A client is a software component that requests a service from a
+server.
+
+Examples:
+
+    Web Browser
+    Mobile Application
+    Desktop Application
+    API Client
+    Postman
+
+
+In web testing:
+
+    Browser = Client
+
+
+Example:
+
+    Browser asks:
+
+        "Give me the product information."
+
+
+Server processes the request and sends:
+
+        Product information
+
+
+====================================================================
+2.5 SERVER
+====================================================================
+
+A server is a system that receives requests and provides
+services/data.
+
+Example:
+
+    Client:
+
+        GET /products/101
+
+
+    Server:
+
+        Returns product information.
+
+
+Server may perform:
+
+    Authentication
+    Authorization
+    Business logic
+    Database operations
+    API processing
+    Validation
+    Error handling
+
+
+====================================================================
+2.6 WEB SERVER VS APPLICATION SERVER
+====================================================================
+
+WEB SERVER:
+
+    Primarily handles HTTP requests and serves web content.
+
+Examples:
+
+    Apache
+    Nginx
+    IIS
+
+
+APPLICATION SERVER:
+
+    Runs application/business logic.
+
+Examples:
+
+    Java application servers
+    Node.js applications
+    Python web applications
+    .NET applications
+
+
+In modern architectures, the exact division can vary.
+
+A simplified model:
+
+    Browser
+       |
+       v
+    Web Server
+       |
+       v
+    Application
+       |
+       v
+    Database
+
+
+====================================================================
+2.7 REQUEST
+====================================================================
+
+A request is a message sent by a client to a server.
+
+Example:
+
+    User opens:
+
+        https://example.com/products
+
+
+Browser sends a request to the server.
+
+
+A simplified HTTP request:
+
+    GET /products HTTP/1.1
+    Host: example.com
+
+
+A request can contain:
+
+    Method
+    URL
+    Headers
+    Query Parameters
+    Body
+
+
+====================================================================
+2.8 RESPONSE
+====================================================================
+
+A response is the message sent by the server back to the client.
+
+Example:
+
+    Server response:
+
+    HTTP/1.1 200 OK
+
+    {
+        "id": 101,
+        "name": "Laptop",
+        "price": 50000
+    }
+
+
+A response commonly contains:
+
+    Status Code
+    Headers
+    Response Body
+
+
+====================================================================
+2.9 REQUEST-RESPONSE CYCLE
+====================================================================
+
+The basic communication is:
+
+        CLIENT
+           |
+           | REQUEST
+           v
+        SERVER
+           |
+           | PROCESS
+           v
+        DATABASE
+           |
+           | DATA
+           v
+        SERVER
+           |
+           | RESPONSE
+           v
+        CLIENT
+
+
+Example:
+
+    User clicks:
+
+        "View Profile"
+
+
+    Step 1:
+        Browser sends request.
+
+    Step 2:
+        Server receives request.
+
+    Step 3:
+        Server validates user.
+
+    Step 4:
+        Server retrieves user data.
+
+    Step 5:
+        Server creates response.
+
+    Step 6:
+        Browser displays profile.
+
+
+====================================================================
+2.10 URL
+====================================================================
+
+URL = Uniform Resource Locator
+
+A URL identifies a resource on the internet/web.
+
+Example:
+
+    https://www.example.com/products?id=101
+
+
+Parts:
+
+    https://
+       ↓
+    Protocol/Scheme
+
+    www.example.com
+       ↓
+    Domain/Host
+
+    /products
+       ↓
+    Path
+
+    ?id=101
+       ↓
+    Query Parameter
+
+
+General structure:
+
+    scheme://host/path?query
+
+
+Example:
+
+    https://api.example.com/users/101?active=true
+
+
+    Scheme:
+        https
+
+    Host:
+        api.example.com
+
+    Path:
+        /users/101
+
+    Query parameter:
+        active=true
+
+
+====================================================================
+2.11 DOMAIN NAME
+====================================================================
+
+A domain name is a human-readable name used to identify a website
+or service.
+
+Examples:
+
+    google.com
+    github.com
+    amazon.in
+
+
+Humans prefer:
+
+    google.com
+
+
+Computers communicate using:
+
+    IP addresses
+
+
+DNS connects the two.
+
+
+====================================================================
+2.12 DNS
+====================================================================
+
+DNS = Domain Name System
+
+DNS translates domain names into IP addresses.
+
+Example:
+
+    User enters:
+
+        www.example.com
+
+    DNS helps determine the corresponding IP address.
+
+
+Simplified flow:
+
+    Browser
+       |
+       | "What is the IP of example.com?"
+       v
+      DNS
+       |
+       | IP address
+       v
+    Browser
+       |
+       v
+    Server
+
+
+Without DNS, users would generally need to remember IP addresses
+instead of domain names.
+
+
+====================================================================
+2.13 IP ADDRESS
+====================================================================
+
+An IP address identifies a device/interface on an IP network.
+
+Example IPv4:
+
+    192.168.1.10
+
+
+Example IPv6:
+
+    2001:db8::1
+
+
+Two broad categories commonly discussed:
+
+    Private IP
+    Public IP
+
+
+Private IP:
+
+    Used inside private networks.
+
+Public IP:
+
+    Used for internet-routable communication.
+
+
+TESTER RELEVANCE:
+
+    Understanding IP addresses helps when dealing with:
+
+        Network problems
+        Environment configuration
+        Server connectivity
+        API endpoints
+        Deployment environments
+
+
+====================================================================
+2.14 HTTP
+====================================================================
+
+HTTP = HyperText Transfer Protocol
+
+HTTP is a protocol used for communication between clients and
+servers on the web.
+
+Example:
+
+    Browser → HTTP Request → Server
+
+    Browser ← HTTP Response ← Server
+
+
+HTTP is commonly used for:
+
+    Web pages
+    APIs
+    Web applications
+    Data communication
+
+
+Important HTTP methods:
+
+    GET
+    POST
+    PUT
+    PATCH
+    DELETE
+    HEAD
+    OPTIONS
+
+
+====================================================================
+2.15 HTTPS
+====================================================================
+
+HTTPS = HTTP Secure
+
+HTTPS uses TLS to protect communication between client and server.
+
+Simplified:
+
+    HTTP:
+
+        Client ←---- readable network communication ----→ Server
+
+
+    HTTPS:
+
+        Client ←---- encrypted/protected communication ----→ Server
+
+
+HTTPS helps provide:
+
+    Confidentiality
+    Integrity
+    Server authentication
+
+
+Example:
+
+    https://example.com
+
+
+TESTER SHOULD CHECK:
+
+    ✓ HTTPS is used where required
+    ✓ Certificate is valid
+    ✓ Sensitive information is not unnecessarily exposed
+    ✓ Secure communication is working correctly
+
+
+====================================================================
+2.16 HTTP METHODS
+====================================================================
+
+HTTP methods indicate the intended action.
+
+--------------------------------------------------------------------
+GET
+--------------------------------------------------------------------
+
+Used to retrieve data.
+
+Example:
+
+    GET /users/101
+
+
+Meaning:
+
+    "Give me user 101."
+
+
+Typically does not modify server state.
+
+
+--------------------------------------------------------------------
+POST
+--------------------------------------------------------------------
+
+Used to submit data, commonly for creating a resource or triggering
+an operation.
+
+Example:
+
+    POST /users
+
+
+Request body:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+--------------------------------------------------------------------
+PUT
+--------------------------------------------------------------------
+
+Commonly used to replace/update a resource.
+
+Example:
+
+    PUT /users/101
+
+
+--------------------------------------------------------------------
+PATCH
+--------------------------------------------------------------------
+
+Commonly used for a partial update.
+
+Example:
+
+    PATCH /users/101
+
+
+Request:
+
+    {
+        "email": "new@example.com"
+    }
+
+
+--------------------------------------------------------------------
+DELETE
+--------------------------------------------------------------------
+
+Used to delete a resource.
+
+Example:
+
+    DELETE /users/101
+
+
+====================================================================
+2.17 HTTP STATUS CODES
+====================================================================
+
+HTTP status codes tell the client the general result of a request.
+
+
+-------------------- 1xx -------------------------------------------
+
+Informational responses.
+
+Example:
+
+    100 Continue
+
+
+-------------------- 2xx -------------------------------------------
+
+Successful responses.
+
+    200 OK
+        Request succeeded.
+
+    201 Created
+        Resource was successfully created.
+
+    202 Accepted
+        Request accepted for processing.
+
+    204 No Content
+        Request succeeded but response has no content.
+
+
+-------------------- 3xx -------------------------------------------
+
+Redirection.
+
+    301 Moved Permanently
+    302 Found
+    304 Not Modified
+
+
+-------------------- 4xx -------------------------------------------
+
+Client-side/request-related errors.
+
+    400 Bad Request
+    401 Unauthorized
+    403 Forbidden
+    404 Not Found
+    405 Method Not Allowed
+    409 Conflict
+    429 Too Many Requests
+
+
+-------------------- 5xx -------------------------------------------
+
+Server-side errors.
+
+    500 Internal Server Error
+    502 Bad Gateway
+    503 Service Unavailable
+    504 Gateway Timeout
+
+
+IMPORTANT:
+
+    401 and 403 are different.
+
+    401:
+        Authentication is required or failed.
+
+    403:
+        Server understood the request but refuses access.
+
+
+====================================================================
+2.18 HTTP HEADERS
+====================================================================
+
+Headers provide additional information about a request or response.
+
+Example request:
+
+    GET /users HTTP/1.1
+    Host: example.com
+    Accept: application/json
+    Authorization: Bearer <token>
+
+
+Common headers:
+
+    Content-Type
+    Accept
+    Authorization
+    Cookie
+    User-Agent
+    Cache-Control
+
+
+Response may contain:
+
+    Content-Type
+    Set-Cookie
+    Cache-Control
+    Location
+
+
+TESTER USE:
+
+    Headers are very important during API testing.
+
+
+====================================================================
+2.19 CONTENT-TYPE
+====================================================================
+
+Content-Type tells the receiver what kind of data is being sent.
+
+Example:
+
+    Content-Type: application/json
+
+
+Means:
+
+    The body contains JSON data.
+
+
+Other examples:
+
+    text/html
+    application/xml
+    multipart/form-data
+    application/x-www-form-urlencoded
+
+
+====================================================================
+2.20 REQUEST BODY
+====================================================================
+
+Request body contains data sent by the client.
+
+Example:
+
+    POST /login
+
+    {
+        "username": "apoorv",
+        "password": "example-password"
+    }
+
+
+Tester checks:
+
+    ✓ Required fields
+    ✓ Data type
+    ✓ Valid values
+    ✓ Invalid values
+    ✓ Missing fields
+    ✓ Boundary values
+    ✓ Error handling
+
+
+IMPORTANT:
+
+    Never use real passwords or sensitive credentials in practice
+    examples or shared test data.
+
+
+====================================================================
+2.21 RESPONSE BODY
+====================================================================
+
+Response body contains data returned by the server.
+
+Example:
+
+    {
+        "id": 101,
+        "name": "Apoorv",
+        "status": "active"
+    }
+
+
+Tester validates:
+
+    ✓ Correct data
+    ✓ Correct data types
+    ✓ Required fields
+    ✓ Business rules
+    ✓ Error messages
+    ✓ Schema/structure
+
+
+====================================================================
+2.22 JSON
+====================================================================
+
+JSON = JavaScript Object Notation
+
+It is widely used for exchanging structured data between clients
+and servers.
+
+Example:
+
+    {
+        "id": 101,
+        "name": "Apoorv",
+        "age": 24,
+        "active": true
+    }
+
+
+JSON supports values such as:
+
+    String
+    Number
+    Boolean
+    Null
+    Object
+    Array
+
+
+Example array:
+
+    {
+        "products": [
+            {
+                "id": 1,
+                "name": "Laptop"
+            },
+            {
+                "id": 2,
+                "name": "Mouse"
+            }
+        ]
+    }
+
+
+TESTER SHOULD CHECK:
+
+    ✓ JSON syntax
+    ✓ Required fields
+    ✓ Data types
+    ✓ Values
+    ✓ Nested objects
+    ✓ Arrays
+
+
+====================================================================
+2.23 QUERY PARAMETERS
+====================================================================
+
+Query parameters are values added to a URL after '?'.
+
+Example:
+
+    /products?category=laptop
+
+
+Multiple parameters:
+
+    /products?category=laptop&page=2&limit=20
+
+
+Tester should test:
+
+    Valid values
+    Invalid values
+    Missing values
+    Empty values
+    Special characters
+    Boundary values
+
+
+====================================================================
+2.24 PATH PARAMETERS
+====================================================================
+
+Path parameters are values included directly in the URL path.
+
+Example:
+
+    GET /users/101
+
+
+Here:
+
+    101 = user ID
+
+
+Another example:
+
+    GET /products/500
+
+
+Here:
+
+    500 = product ID
+
+
+Difference:
+
+    Query parameter:
+
+        /users?id=101
+
+
+    Path parameter:
+
+        /users/101
+
+
+====================================================================
+2.25 COOKIES
+====================================================================
+
+A cookie is a small piece of data stored by the browser and
+associated with a website/domain.
+
+Cookies can be used for:
+
+    Session management
+    Preferences
+    Authentication-related state
+    Tracking
+
+
+Example:
+
+    Server sends:
+
+        Set-Cookie: session_id=abc123
+
+
+Browser stores the cookie and may send it with later requests.
+
+
+TESTER CHECKS:
+
+    ✓ Cookie creation
+    ✓ Cookie expiration
+    ✓ Secure attribute
+    ✓ HttpOnly attribute
+    ✓ SameSite behavior
+    ✓ Login/logout behavior
+
+
+====================================================================
+2.26 SESSION
+====================================================================
+
+A session represents a user's interaction/state with an application
+over a period of time.
+
+Example:
+
+    User logs in.
+
+    Server establishes authenticated state.
+
+    User visits:
+
+        Dashboard
+        Profile
+        Orders
+
+    User does not need to authenticate independently on every page.
+
+
+Typical flow:
+
+    Login
+      ↓
+    Authentication
+      ↓
+    Session/token
+      ↓
+    Access protected resources
+      ↓
+    Logout
+      ↓
+    Session/token invalidated
+
+
+TESTER CHECKS:
+
+    ✓ Session creation
+    ✓ Session timeout
+    ✓ Logout
+    ✓ Back-button behavior
+    ✓ Unauthorized access after logout
+
+
+====================================================================
+2.27 AUTHENTICATION
+====================================================================
+
+Authentication answers:
+
+    "Who are you?"
+
+
+Examples:
+
+    Username + Password
+    OTP
+    Biometrics
+    Access Token
+    OAuth-based login
+
+
+Example:
+
+    User enters:
+
+        Username
+        Password
+
+    Server verifies credentials.
+
+
+If correct:
+
+    Authentication succeeds.
+
+
+====================================================================
+2.28 AUTHORIZATION
+====================================================================
+
+Authorization answers:
+
+    "What are you allowed to do?"
+
+
+Example:
+
+    Admin:
+        Can delete users.
+
+    Normal user:
+        Cannot delete users.
+
+
+Important distinction:
+
+    Authentication:
+        Identity verification.
+
+    Authorization:
+        Permission verification.
+
+
+Tester should test both.
+
+
+====================================================================
+2.29 CACHE
+====================================================================
+
+Cache stores previously retrieved data temporarily to improve
+performance.
+
+Examples:
+
+    Browser cache
+    CDN cache
+    Server cache
+    Application cache
+
+
+Example:
+
+    User visits a website.
+
+    Browser may reuse cached resources such as:
+
+        Images
+        CSS
+        JavaScript
+
+
+Benefits:
+
+    Faster loading
+    Reduced network usage
+    Reduced server load
+
+
+Testing concerns:
+
+    ✓ Stale data
+    ✓ Cache invalidation
+    ✓ Updated content
+    ✓ User-specific data
+    ✓ Logout/security behavior
+
+
+====================================================================
+2.30 REST API BASICS
+====================================================================
+
+REST = Representational State Transfer
+
+REST is an architectural style commonly used for web APIs.
+
+Example:
+
+    GET    /users
+    GET    /users/101
+    POST   /users
+    PUT    /users/101
+    PATCH  /users/101
+    DELETE /users/101
+
+
+REST APIs commonly use:
+
+    HTTP
+    JSON
+    Resources
+    HTTP methods
+    HTTP status codes
+
+
+Example:
+
+    GET /products/101
+
+
+Response:
+
+    {
+        "id": 101,
+        "name": "Laptop",
+        "price": 50000
+    }
+
+
+====================================================================
+2.31 COMPLETE LOGIN FLOW
+====================================================================
+
+Let's understand a real-world login process.
+
+USER:
+
+    Username: apoorv
+    Password: ********
+
+
+STEP 1:
+    User clicks LOGIN.
+
+
+STEP 2:
+    Frontend validates basic input.
+
+
+STEP 3:
+    Frontend sends API request.
+
+    POST /api/login
+
+
+STEP 4:
+    Request body:
+
+    {
+        "username": "apoorv",
+        "password": "********"
+    }
+
+
+STEP 5:
+    Backend receives request.
+
+
+STEP 6:
+    Backend validates the request.
+
+
+STEP 7:
+    Backend checks user information in database.
+
+
+STEP 8:
+    Database returns matching information.
+
+
+STEP 9:
+    Backend verifies the credentials.
+
+
+STEP 10:
+    Server generates authenticated state/token as appropriate.
+
+
+STEP 11:
+    Server sends response.
+
+    Example:
+
+    HTTP 200 OK
+
+    {
+        "message": "Login successful",
+        "token": "..."
+    }
+
+
+STEP 12:
+    Frontend stores/uses authentication state according to the
+    application's design.
+
+
+STEP 13:
+    User accesses dashboard.
+
+
+STEP 14:
+    Browser sends authenticated request.
+
+
+STEP 15:
+    Server validates authentication/authorization.
+
+
+STEP 16:
+    Dashboard data is returned.
+
+
+====================================================================
+2.32 COMPLETE E-COMMERCE REQUEST FLOW
+====================================================================
+
+User wants to buy a laptop.
+
+                         USER
+                           |
+                           v
+                       BROWSER
+                           |
+                           | HTTPS
+                           v
+                       WEB SERVER
+                           |
+                           v
+                    APPLICATION/API
+                           |
+              +------------+------------+
+              |            |            |
+              v            v            v
+          DATABASE      PAYMENT      INVENTORY
+              |          SERVICE        |
+              +------------+------------+
+                           |
+                           v
+                        RESPONSE
+                           |
+                           v
+                       BROWSER
+                           |
+                           v
+                           USER
+
+
+Example:
+
+    User clicks "Buy Now"
+
+
+    Browser:
+
+        POST /api/orders
+
+
+    Request:
+
+        {
+            "productId": 101,
+            "quantity": 1
+        }
+
+
+    Backend:
+
+        Check authentication
+        Check product
+        Check inventory
+        Calculate price
+        Process payment
+        Create order
+
+
+    Database:
+
+        Save order
+
+
+    Response:
+
+        201 Created
+
+
+    Browser:
+
+        "Order placed successfully"
+
+
+====================================================================
+2.33 WHAT CAN GO WRONG?
+====================================================================
+
+A professional tester thinks about failures at every layer.
+
+
+FRONTEND:
+
+    Button doesn't work
+    Incorrect validation
+    Broken layout
+
+
+NETWORK:
+
+    Timeout
+    Connection failure
+
+
+API:
+
+    Wrong status code
+    Incorrect response
+    Missing field
+
+
+BACKEND:
+
+    Incorrect business logic
+    Calculation error
+    Exception
+
+
+DATABASE:
+
+    Wrong data
+    Missing record
+    Duplicate record
+    Data inconsistency
+
+
+AUTHENTICATION:
+
+    Invalid credentials accepted
+
+
+AUTHORIZATION:
+
+    Normal user accesses admin functionality
+
+
+EXTERNAL SERVICE:
+
+    Payment service unavailable
+
+
+This is why understanding architecture is extremely important.
+
+
+====================================================================
+2.34 TESTING USING BROWSER DEVTOOLS
+====================================================================
+
+Browser Developer Tools are one of the most important tools for
+a web tester.
+
+
+Open:
+
+    Chrome/Edge/Firefox
+        ↓
+    Developer Tools
+        ↓
+    Network
+
+
+You can inspect:
+
+    Request URL
+    HTTP method
+    Status code
+    Request headers
+    Response headers
+    Request payload
+    Response body
+    Timing
+    Cookies
+
+
+Example:
+
+    Login request
+
+    Method:
+        POST
+
+    URL:
+        /api/login
+
+    Status:
+        200
+
+    Request:
+        username/password
+
+    Response:
+        authentication result
+
+
+This allows a tester to investigate problems beyond the visible UI.
+
+
+====================================================================
+2.35 EXAMPLE — UI BUG VS API BUG
+====================================================================
+
+Suppose:
+
+    UI displays:
+
+        Price = ₹1,000
+
+
+But API response says:
+
+        "price": 1200
+
+
+Possible conclusion:
+
+    Backend/API may be correct,
+    but frontend may be displaying incorrect data.
+
+
+Another situation:
+
+    UI displays:
+
+        ₹1,200
+
+    API response:
+
+        ₹1,000
+
+
+Now the tester has evidence that the issue may be related to
+frontend/API integration or data processing.
+
+
+This is much better than simply reporting:
+
+    "Price is wrong."
+
+
+====================================================================
+2.36 TESTER'S REQUEST/RESPONSE CHECKLIST
+====================================================================
+
+For every important API request, check:
+
+
+REQUEST:
+
+    [ ] Correct URL
+    [ ] Correct HTTP method
+    [ ] Correct headers
+    [ ] Correct authentication
+    [ ] Correct query parameters
+    [ ] Correct path parameters
+    [ ] Correct request body
+    [ ] Required fields
+    [ ] Invalid input handling
+
+
+RESPONSE:
+
+    [ ] Correct status code
+    [ ] Correct response body
+    [ ] Correct data
+    [ ] Correct data types
+    [ ] Correct headers
+    [ ] Error message
+    [ ] Response time
+    [ ] Security-sensitive data not unnecessarily exposed
+
+
+====================================================================
+2.37 WEB TESTING SCENARIO
+====================================================================
+
+Requirement:
+
+    "A registered user can log in using email and password."
+
+
+TESTER THINKING:
+
+
+POSITIVE:
+
+    Valid email
+    Valid password
+    → Login successful
+
+
+NEGATIVE:
+
+    Invalid email
+    Valid password
+
+    Valid email
+    Invalid password
+
+    Invalid email
+    Invalid password
+
+
+BOUNDARY:
+
+    Empty email
+    Empty password
+    Very long email
+    Very long password
+
+
+SECURITY:
+
+    Password should not be unnecessarily exposed
+    Protected pages should require authentication
+    Logout should invalidate authenticated access as designed
+
+
+API:
+
+    Correct method
+    Correct request
+    Correct response
+    Correct status code
+
+
+DATABASE:
+
+    Correct user record
+    Correct account status
+
+
+SESSION:
+
+    Session/token created correctly
+    Logout invalidates access
+    Session expiration works
+
+
+====================================================================
+2.38 IMPORTANT WEB TESTING CONCEPTS
+====================================================================
+
+STATIC WEB PAGE:
+
+    Mostly fixed content.
+
+DYNAMIC WEB APPLICATION:
+
+    Content and behavior can change based on:
+
+        User
+        Database
+        Request
+        Business rules
+        Time
+        Permissions
+
+
+STATELESS HTTP:
+
+    HTTP itself is fundamentally stateless.
+
+    Applications use mechanisms such as:
+
+        Cookies
+        Sessions
+        Tokens
+
+    to maintain user-related state.
+
+
+SINGLE-PAGE APPLICATION (SPA):
+
+    Application where much of the user interaction happens within
+    a single web page while data is dynamically loaded.
+
+
+RESPONSIVE WEB DESIGN:
+
+    UI adapts to different screen sizes.
+
+
+====================================================================
+2.39 JOB-READY SKILLS FROM CHAPTER 2
+====================================================================
+
+After this chapter, you should know:
+
+    ✓ Browser
+    ✓ Client
+    ✓ Server
+    ✓ Web server
+    ✓ Application server
+    ✓ Frontend
+    ✓ Backend
+    ✓ Database
+    ✓ API
+    ✓ URL
+    ✓ Domain
+    ✓ DNS
+    ✓ IP address
+    ✓ HTTP
+    ✓ HTTPS
+    ✓ HTTP methods
+    ✓ Status codes
+    ✓ Headers
+    ✓ Request body
+    ✓ Response body
+    ✓ JSON
+    ✓ Query parameters
+    ✓ Path parameters
+    ✓ Cookies
+    ✓ Sessions
+    ✓ Authentication
+    ✓ Authorization
+    ✓ Cache
+    ✓ REST API basics
+    ✓ Browser DevTools
+
+
+====================================================================
+2.40 INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is a web application?
+
+Q2. How does a web application work?
+
+Q3. What is a client?
+
+Q4. What is a server?
+
+Q5. What is client-server architecture?
+
+Q6. What happens when you enter a URL into a browser?
+
+Q7. What is DNS?
+
+Q8. What is an IP address?
+
+Q9. What is HTTP?
+
+Q10. What is HTTPS?
+
+Q11. Difference between HTTP and HTTPS?
+
+Q12. What is an HTTP request?
+
+Q13. What is an HTTP response?
+
+Q14. What are HTTP methods?
+
+Q15. Difference between GET and POST?
+
+Q16. Difference between PUT and PATCH?
+
+Q17. What is an HTTP status code?
+
+Q18. Explain 200, 201, 400, 401, 403, 404 and 500.
+
+Q19. What are HTTP headers?
+
+Q20. What is request body?
+
+Q21. What is response body?
+
+Q22. What is JSON?
+
+Q23. What is a query parameter?
+
+Q24. What is a path parameter?
+
+Q25. What are cookies?
+
+Q26. What is a session?
+
+Q27. What is authentication?
+
+Q28. What is authorization?
+
+Q29. Difference between authentication and authorization?
+
+Q30. What is REST API?
+
+Q31. How do you inspect API requests in a browser?
+
+Q32. What is browser Developer Tools?
+
+Q33. How would you test a login API?
+
+Q34. How would you investigate if UI data differs from API data?
+
+Q35. Explain the complete flow of a login request.
+
+
+====================================================================
+2.41 PRACTICAL LAB
+====================================================================
+
+LAB 1 — Browser Network Inspection
+
+    1. Open a website.
+    2. Open Developer Tools.
+    3. Select Network.
+    4. Reload the page.
+    5. Select any request.
+
+    Identify:
+
+        URL
+        Method
+        Status Code
+        Request Headers
+        Response Headers
+        Response
+        Timing
+
+
+LAB 2 — HTTP Status Codes
+
+    Observe examples of:
+
+        200
+        201
+        301/302
+        400
+        401
+        403
+        404
+        500
+
+
+LAB 3 — JSON
+
+    Practice reading:
+
+    {
+        "id": 101,
+        "name": "Laptop",
+        "price": 50000,
+        "available": true
+    }
+
+    Identify:
+
+        String
+        Number
+        Boolean
+
+
+LAB 4 — API
+
+    Use Postman with a safe public/test API.
+
+    Practice:
+
+        GET
+        POST
+        PUT/PATCH
+        DELETE
+
+    Inspect:
+
+        Request
+        Response
+        Headers
+        Status code
+
+
+LAB 5 — Cookie Inspection
+
+    Browser:
+
+        Developer Tools
+        → Application/Storage
+        → Cookies
+
+    Observe:
+
+        Name
+        Value
+        Domain
+        Path
+        Expiration
+        Secure
+        HttpOnly
+        SameSite
+
+
+LAB 6 — Login Testing
+
+    Create test scenarios:
+
+        Valid credentials
+        Invalid credentials
+        Empty username
+        Empty password
+        Invalid email format
+        Account locked/inactive
+        Logout
+        Session expiration
+
+
+====================================================================
+2.42 CHAPTER 2 QUICK REVISION
+====================================================================
+
+USER
+  ↓
+BROWSER
+  ↓
+DNS resolves domain
+  ↓
+SERVER IP
+  ↓
+HTTPS CONNECTION
+  ↓
+HTTP REQUEST
+  ↓
+WEB/APPLICATION SERVER
+  ↓
+BUSINESS LOGIC
+  ↓
+DATABASE / EXTERNAL SERVICES
+  ↓
+SERVER RESPONSE
+  ↓
+BROWSER
+  ↓
+USER
+
+
+HTTP REQUEST:
+
+    Method
+    URL
+    Headers
+    Parameters
+    Body
+
+
+HTTP RESPONSE:
+
+    Status Code
+    Headers
+    Body
+
+
+COMMON METHODS:
+
+    GET
+    POST
+    PUT
+    PATCH
+    DELETE
+
+
+COMMON STATUS CODES:
+
+    200 = OK
+    201 = Created
+    204 = No Content
+    400 = Bad Request
+    401 = Authentication required/failed
+    403 = Forbidden
+    404 = Not Found
+    409 = Conflict
+    429 = Too Many Requests
+    500 = Internal Server Error
+    503 = Service Unavailable
+
+
+====================================================================
+2.43 MOST IMPORTANT CONCEPT
+====================================================================
+
+For a Software Tester, remember this architecture:
+
+                         USER
+                           |
+                           v
+                      FRONTEND/UI
+                           |
+                           | HTTP/HTTPS
+                           v
+                         API
+                           |
+                           v
+                     BACKEND
+                           |
+                    +------+------+
+                    |             |
+                    v             v
+                DATABASE      EXTERNAL API
+                    |
+                    v
+                   DATA
+
+
+A good tester does not stop at the UI.
+
+If a feature fails:
+
+    UI
+     ↓
+    Check Network
+     ↓
+    Check API
+     ↓
+    Check Backend/Logs
+     ↓
+    Check Database
+     ↓
+    Find the actual failure point
+
+
+====================================================================
+CHAPTER 2 COMPLETE
+====================================================================
+
+Next recommended chapter: Chapter 3 — SDLC (Software Development Life Cycle). This is where you’ll learn where the tester fits into a real software development project, including requirements → development → testing → deployment → maintenance.

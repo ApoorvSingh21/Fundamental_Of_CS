@@ -1,0 +1,3048 @@
+====================================================================
+CHAPTER 2 — WHAT IS AN API?
+MASTER-LEVEL API ENGINEERING
+ZERO → ADVANCED
+====================================================================
+
+CHAPTER OBJECTIVE
+-----------------
+
+In this chapter you will understand APIs from first principles.
+
+After completing this chapter, you should be able to explain:
+
+    What is an API?
+    Why APIs exist?
+    What problem does an API solve?
+    API as a contract
+    API consumer
+    API provider
+    API request
+    API response
+    Endpoint
+    Resource
+    Operation
+    API contract
+    API documentation
+    API lifecycle
+    Real-world API examples
+    Internal vs external APIs
+    API architecture
+    API gateway relationship
+    API vs database
+    API vs UI
+    API vs library
+    How a real API request works
+
+
+====================================================================
+1. WHAT IS AN API?
+====================================================================
+
+API stands for:
+
+    Application Programming Interface
+
+
+An API is a defined interface through which one software component
+can communicate with another software component.
+
+Simple definition:
+
+    API = A set of rules and interfaces that allows software
+          systems to communicate and interact.
+
+
+Example:
+
+    Mobile App
+        |
+        | API Request
+        ↓
+    Backend Server
+        |
+        ↓
+    Database
+
+
+The mobile application does not need to know how the database
+works internally.
+
+It communicates with the backend through an API.
+
+
+====================================================================
+2. SIMPLE REAL-LIFE ANALOGY
+====================================================================
+
+Imagine a restaurant.
+
+    Customer
+        |
+        ↓
+      Menu
+        |
+        ↓
+     Waiter
+        |
+        ↓
+     Kitchen
+
+
+Customer does not directly enter the kitchen.
+
+The customer communicates through the waiter.
+
+Similarly:
+
+    Client Application
+          |
+          ↓
+         API
+          |
+          ↓
+       Backend
+
+
+The API acts as an interface between software components.
+
+IMPORTANT:
+
+    API is NOT necessarily a server.
+
+    API is NOT necessarily REST.
+
+    REST is one architectural style used for APIs.
+
+    API is a much broader concept.
+
+
+====================================================================
+3. WHY DO WE NEED APIs?
+====================================================================
+
+Imagine an e-commerce application.
+
+It contains:
+
+    User System
+    Product System
+    Order System
+    Payment System
+    Notification System
+
+
+Without well-defined interfaces, components may become tightly
+coupled.
+
+With APIs:
+
+    Mobile App
+         |
+         ↓
+    User API
+         |
+         ↓
+    User Service
+
+
+    Mobile App
+         |
+         ↓
+    Product API
+         |
+         ↓
+    Product Service
+
+
+    Mobile App
+         |
+         ↓
+    Order API
+         |
+         ↓
+    Order Service
+
+
+APIs provide controlled communication.
+
+
+====================================================================
+4. PROBLEMS APIs SOLVE
+====================================================================
+
+APIs help solve several software engineering problems.
+
+1. SYSTEM INTEGRATION
+
+    System A
+       |
+       ↓
+      API
+       |
+       ↓
+    System B
+
+
+2. ABSTRACTION
+
+Client does not need to know internal implementation.
+
+Example:
+
+    Client:
+        GET /users/10
+
+The client does not need to know:
+
+    Which database?
+    Which SQL query?
+    Which programming language?
+    Which server?
+    Which internal service?
+
+
+3. REUSABILITY
+
+One API can serve multiple clients.
+
+             +--> Web Application
+             |
+    API -----+--> Mobile Application
+             |
+             +--> Partner Application
+
+
+4. SEPARATION OF CONCERNS
+
+Frontend and backend can evolve independently.
+
+
+5. SECURITY
+
+The backend can expose only controlled operations.
+
+Instead of:
+
+    Client → Direct Database
+
+
+Use:
+
+    Client → API → Database
+
+
+6. SCALABILITY
+
+APIs allow services to be deployed and scaled independently.
+
+
+====================================================================
+5. API AS AN INTERFACE
+====================================================================
+
+The word "interface" is extremely important.
+
+Suppose you have:
+
+    Payment System
+
+
+The internal implementation may be complicated:
+
+    Payment Gateway
+         |
+         ↓
+    Fraud Detection
+         |
+         ↓
+    Bank
+         |
+         ↓
+    Transaction Database
+         |
+         ↓
+    Ledger
+
+
+The client might only see:
+
+    POST /payments
+
+
+The API hides internal complexity.
+
+This is called:
+
+    ABSTRACTION
+
+
+The client cares about:
+
+    What operation is available?
+    What input is required?
+    What response will I receive?
+    What errors can occur?
+
+The client does NOT need to know every internal implementation detail.
+
+
+====================================================================
+6. API CONSUMER
+====================================================================
+
+An API consumer is a software component that uses an API.
+
+Examples:
+
+    Web Browser
+    Mobile App
+    Frontend Application
+    Backend Service
+    Desktop Application
+    Third-Party Application
+    Postman
+    Automated Test
+
+
+Example:
+
+    Mobile App
+         |
+         | Uses
+         ↓
+       API
+
+
+Mobile App = API Consumer.
+
+
+====================================================================
+7. API PROVIDER
+====================================================================
+
+The API provider is the system that exposes the API.
+
+Example:
+
+    Mobile App
+         |
+         | Request
+         ↓
+    API Provider
+         |
+         ↓
+    Database
+
+
+The API provider is responsible for:
+
+    Authentication
+    Authorization
+    Validation
+    Business Logic
+    Data Access
+    Response Generation
+    Error Handling
+    Monitoring
+
+
+====================================================================
+8. API CONSUMER VS API PROVIDER
+====================================================================
+
+API CONSUMER:
+
+    Uses the API.
+
+
+API PROVIDER:
+
+    Provides the API.
+
+
+Example:
+
+    E-commerce Mobile App
+            |
+            | Consumer
+            ↓
+       E-commerce API
+            |
+            | Provider
+            ↓
+       Backend Services
+
+
+Another example:
+
+    Your Application
+          |
+          | Consumer
+          ↓
+      Payment API
+          |
+          | Provider
+          ↓
+     Payment Company
+
+
+One important concept:
+
+    A system can be a consumer AND provider at the same time.
+
+
+Example:
+
+    Service A
+       |
+       | consumes API
+       ↓
+    Service B
+
+    Service A may also expose an API
+       |
+       ↓
+    Service C
+
+
+====================================================================
+9. API REQUEST
+====================================================================
+
+An API request is a message sent by an API consumer to an API
+provider asking it to perform an operation or provide information.
+
+
+Example:
+
+    GET /api/users/10
+
+
+Meaning:
+
+    "Give me information about user 10."
+
+
+A request may contain:
+
+    HTTP Method
+    URL
+    Path
+    Query Parameters
+    Headers
+    Body
+
+
+Example:
+
+    POST /api/users HTTP/1.1
+    Host: api.example.com
+    Content-Type: application/json
+
+    {
+        "name": "Apoorv",
+        "email": "user@example.com"
+    }
+
+
+Breakdown:
+
+    POST
+        ↓
+    Operation/method semantics
+
+    /api/users
+        ↓
+    Endpoint path
+
+    Content-Type
+        ↓
+    Header
+
+    JSON
+        ↓
+    Request body
+
+
+====================================================================
+10. API RESPONSE
+====================================================================
+
+An API response is the result returned by the API provider.
+
+Example:
+
+    HTTP/1.1 201 Created
+    Content-Type: application/json
+
+    {
+        "id": 101,
+        "name": "Apoorv",
+        "email": "user@example.com"
+    }
+
+
+A response can contain:
+
+    Status Code
+    Headers
+    Body
+
+
+The body may contain:
+
+    JSON
+    XML
+    Text
+    Binary Data
+    File
+    Empty Response
+
+
+====================================================================
+11. API REQUEST-RESPONSE MODEL
+====================================================================
+
+Basic flow:
+
+    API Consumer
+          |
+          | REQUEST
+          ↓
+    API Provider
+          |
+          | Processing
+          ↓
+       Database
+          |
+          | Data
+          ↓
+    API Provider
+          |
+          | RESPONSE
+          ↓
+    API Consumer
+
+
+Example:
+
+    Mobile App
+        |
+        | GET /products/10
+        ↓
+    Product API
+        |
+        | SELECT ...
+        ↓
+    Database
+        |
+        ↓
+    Product API
+        |
+        | JSON
+        ↓
+    Mobile App
+
+
+====================================================================
+12. ENDPOINT
+====================================================================
+
+An endpoint is a specific network-accessible interface location
+through which an API operation can be invoked.
+
+Example:
+
+    https://api.example.com/users
+
+
+This may represent a users collection.
+
+
+Another:
+
+    https://api.example.com/users/10
+
+
+This may represent user 10.
+
+
+Typical REST API endpoints:
+
+    GET    /users
+    GET    /users/10
+    POST   /users
+    PUT    /users/10
+    PATCH  /users/10
+    DELETE /users/10
+
+
+IMPORTANT:
+
+An endpoint is not simply a URL in every possible API style.
+
+In HTTP APIs, developers commonly describe the combination of
+method + target path as an endpoint/operation.
+
+
+For example:
+
+    GET /users
+
+
+and:
+
+    POST /users
+
+
+use the same path but represent different operations.
+
+
+====================================================================
+13. RESOURCE
+====================================================================
+
+A resource is a conceptual entity or piece of information exposed
+through an API.
+
+Examples:
+
+    User
+    Product
+    Order
+    Payment
+    Employee
+    Course
+    Student
+
+
+Example:
+
+    /users
+
+
+represents a collection of user resources.
+
+
+    /users/10
+
+
+represents a particular user resource.
+
+
+Think:
+
+    Resource = WHAT you are working with.
+
+    Operation = WHAT you want to do with it.
+
+
+====================================================================
+14. RESOURCE VS ENDPOINT
+====================================================================
+
+RESOURCE:
+
+    User
+
+
+API path:
+
+    /users
+
+
+Individual resource:
+
+    /users/10
+
+
+Operations:
+
+    GET /users/10
+    PUT /users/10
+    DELETE /users/10
+
+
+The resource is the conceptual object.
+
+The endpoint/operation is how the API exposes interaction with it.
+
+
+====================================================================
+15. OPERATION
+====================================================================
+
+An operation represents an action or interaction available through
+an API.
+
+For HTTP APIs, HTTP methods provide standardized semantics.
+
+Examples:
+
+    GET
+        Retrieve representation/data.
+
+    POST
+        Submit data, often creating a resource or triggering
+        processing.
+
+    PUT
+        Replace a resource representation.
+
+    PATCH
+        Partially modify a resource.
+
+    DELETE
+        Remove a resource.
+
+
+Example:
+
+    GET /users/10
+
+
+Operation:
+
+    Retrieve user 10.
+
+
+Example:
+
+    DELETE /users/10
+
+
+Operation:
+
+    Delete user 10.
+
+
+====================================================================
+16. API CONTRACT
+====================================================================
+
+This is one of the MOST IMPORTANT concepts in professional
+API development.
+
+An API contract defines how a consumer and provider communicate.
+
+It specifies things such as:
+
+    Available operations
+    Request format
+    Required parameters
+    Authentication
+    Response format
+    Status codes
+    Error format
+    Data types
+    Validation rules
+    Compatibility expectations
+
+
+Example contract:
+
+    Endpoint:
+        GET /users/{id}
+
+    Input:
+        id = integer
+
+    Authentication:
+        Bearer token
+
+    Success:
+        200 OK
+
+    Response:
+        JSON
+
+
+Example:
+
+    GET /users/10
+
+    Response:
+
+    {
+        "id": 10,
+        "name": "Apoorv"
+    }
+
+
+The client can be developed against this contract.
+
+
+====================================================================
+17. WHY API CONTRACT IS IMPORTANT
+====================================================================
+
+Suppose:
+
+    Frontend Team
+          |
+          ↓
+       API Contract
+          |
+          ↓
+    Backend Team
+
+
+Frontend developers can build the UI based on the expected API.
+
+Backend developers can implement the API according to the same
+contract.
+
+
+Without a stable contract:
+
+    Frontend expects:
+
+    {
+        "userName": "Apoorv"
+    }
+
+
+Backend returns:
+
+    {
+        "name": "Apoorv"
+    }
+
+
+The application may break.
+
+
+Therefore:
+
+    API Contract = Agreement between API consumer and provider.
+
+
+====================================================================
+18. API SCHEMA
+====================================================================
+
+A schema describes the structure of API data.
+
+Example:
+
+    User:
+
+    {
+        "id": integer,
+        "name": string,
+        "email": string
+    }
+
+
+Schema can define:
+
+    Field names
+    Data types
+    Required fields
+    Optional fields
+    Constraints
+    Nested objects
+    Arrays
+
+
+Example:
+
+    {
+        "id": 101,
+        "name": "Apoorv",
+        "email": "user@example.com"
+    }
+
+
+Possible schema:
+
+    id:
+        integer
+        required
+
+    name:
+        string
+        required
+
+    email:
+        string
+        required
+
+
+OpenAPI can be used to describe HTTP API schemas.
+
+
+====================================================================
+19. API DOCUMENTATION
+====================================================================
+
+API documentation explains how consumers should use an API.
+
+Good documentation normally contains:
+
+    API Overview
+    Base URL
+    Authentication
+    Endpoints
+    Methods
+    Parameters
+    Request Body
+    Response
+    Status Codes
+    Errors
+    Examples
+    Rate Limits
+    Versioning
+
+
+Example:
+
+    GET /users/{id}
+
+
+Parameters:
+
+    id
+        Type: integer
+        Required: yes
+
+
+Response:
+
+    200 OK
+
+    {
+        "id": 10,
+        "name": "Apoorv"
+    }
+
+
+Error:
+
+    404 Not Found
+
+
+Popular documentation technologies:
+
+    OpenAPI
+    Swagger UI
+    Redoc
+
+
+====================================================================
+20. BASE URL
+====================================================================
+
+A base URL is the common root used by an API.
+
+Example:
+
+    https://api.example.com
+
+
+Endpoint:
+
+    /users
+
+
+Complete request:
+
+    https://api.example.com/users
+
+
+Another endpoint:
+
+    /orders/100
+
+
+Complete URL:
+
+    https://api.example.com/orders/100
+
+
+In API documentation, the base URL helps consumers understand
+where requests should be sent.
+
+
+====================================================================
+21. API ROUTE
+====================================================================
+
+A route defines how an application maps an incoming request to
+specific application logic.
+
+Example:
+
+    GET /users
+
+
+could route to:
+
+    UserController.getUsers()
+
+
+Another:
+
+    GET /users/10
+
+
+could route to:
+
+    UserController.getUserById(10)
+
+
+Conceptually:
+
+    HTTP Request
+         |
+         ↓
+       Router
+         |
+         ↓
+      Controller
+         |
+         ↓
+       Service
+         |
+         ↓
+      Repository
+         |
+         ↓
+      Database
+
+
+====================================================================
+22. API CONTROLLER
+====================================================================
+
+A controller typically handles incoming API requests at the
+application boundary.
+
+Example:
+
+    GET /users/10
+
+
+Controller:
+
+    getUser(10)
+
+
+The controller may:
+
+    Read parameters
+    Validate request
+    Call service
+    Return response
+
+
+Professional architecture often separates controller logic from
+business logic.
+
+
+Example:
+
+    Controller
+        ↓
+    Service
+        ↓
+    Repository
+        ↓
+    Database
+
+
+====================================================================
+23. API SERVICE
+====================================================================
+
+The service layer usually contains business logic.
+
+Example:
+
+    OrderService.createOrder()
+
+
+It may perform:
+
+    Check inventory
+    Calculate price
+    Apply discount
+    Create order
+    Trigger payment
+    Send notification
+
+
+The controller should generally not contain all of this logic.
+
+
+Better:
+
+    Controller
+        |
+        ↓
+    OrderService
+        |
+        ↓
+    OrderRepository
+        |
+        ↓
+    Database
+
+
+====================================================================
+24. API VS DATABASE
+====================================================================
+
+API:
+
+    Interface for communication.
+
+
+Database:
+
+    System for storing/managing data.
+
+
+Bad architecture:
+
+    Mobile App
+        |
+        ↓
+    Direct Database
+
+
+Problems:
+
+    Security
+    Coupling
+    Validation
+    Business logic exposure
+    Difficult maintenance
+
+
+Better:
+
+    Mobile App
+        |
+        ↓
+       API
+        |
+        ↓
+    Database
+
+
+API acts as a controlled application boundary.
+
+
+====================================================================
+25. API VS USER INTERFACE
+====================================================================
+
+UI:
+
+    Designed for humans.
+
+
+API:
+
+    Designed primarily for software-to-software interaction.
+
+
+Example:
+
+    Human
+      |
+      ↓
+    Website UI
+      |
+      ↓
+    API
+      |
+      ↓
+    Backend
+
+
+Another:
+
+    Mobile App
+       |
+       ↓
+      API
+       |
+       ↓
+    Backend
+
+
+Multiple interfaces can consume the same backend API.
+
+
+====================================================================
+26. API VS LIBRARY
+====================================================================
+
+A library API is different from a Web API.
+
+Example:
+
+    C++ Standard Library API
+
+
+You call functions such as:
+
+    std::vector
+    std::sort
+
+
+This is an API too.
+
+But it may not involve HTTP or a network.
+
+
+Web API:
+
+    Client
+       |
+       | HTTP
+       ↓
+    Server
+
+
+Library API:
+
+    Program
+       |
+       | Function call
+       ↓
+    Library
+
+
+Therefore:
+
+    API ≠ HTTP
+
+    API ≠ REST
+
+    API ≠ Web API
+
+
+API is a broader software engineering concept.
+
+
+====================================================================
+27. API TYPES BY ACCESS
+====================================================================
+
+1. PRIVATE / INTERNAL API
+
+Used inside an organization.
+
+Example:
+
+    Order Service
+         |
+         ↓
+    Payment Service
+
+
+2. PARTNER API
+
+Used by approved external partners.
+
+Example:
+
+    E-commerce Company
+         |
+         ↓
+    Logistics Partner API
+
+
+3. PUBLIC API
+
+Available for external developers, usually subject to terms,
+authentication and quotas.
+
+Example:
+
+    Weather API
+
+
+====================================================================
+28. INTERNAL API
+====================================================================
+
+An internal API is used within an organization or system boundary.
+
+Example:
+
+    User Service
+         |
+         ↓
+    Order Service
+         |
+         ↓
+    Payment Service
+
+
+Advantages:
+
+    Service separation
+    Reusability
+    Independent deployment
+    Team ownership
+
+
+Common in:
+
+    Microservices
+    Enterprise systems
+    Internal platforms
+
+
+====================================================================
+29. EXTERNAL API
+====================================================================
+
+An external API is exposed to consumers outside the provider's
+internal system.
+
+Example:
+
+    Your Application
+          |
+          ↓
+      Payment API
+          |
+          ↓
+    External Provider
+
+
+External APIs require careful attention to:
+
+    Security
+    Documentation
+    Versioning
+    Rate limiting
+    Reliability
+    Backward compatibility
+
+
+====================================================================
+30. PUBLIC API
+====================================================================
+
+A public API is designed for broad external consumption.
+
+Example:
+
+    Developer
+       |
+       ↓
+    Public API
+       |
+       ↓
+    Service
+
+
+A public API should usually provide:
+
+    Documentation
+    Authentication
+    Usage limits
+    Stable contracts
+    Versioning policy
+    Error handling
+
+
+====================================================================
+31. API KEY
+====================================================================
+
+An API key is a credential used by some APIs to identify or
+authorize clients.
+
+Example:
+
+    GET /weather
+
+    X-API-Key: abc123...
+
+
+The server checks the key.
+
+Important:
+
+    API keys should be treated as secrets when they provide access
+    privileges.
+
+Do not hard-code sensitive API keys into public source code.
+
+
+API keys are NOT a universal replacement for stronger
+authentication/authorization systems.
+
+
+====================================================================
+32. AUTHENTICATION VS AUTHORIZATION
+====================================================================
+
+AUTHENTICATION:
+
+    "Who are you?"
+
+
+AUTHORIZATION:
+
+    "What are you allowed to do?"
+
+
+Example:
+
+    User logs in.
+
+Authentication:
+
+    Verify identity.
+
+
+Authorization:
+
+    Can this user delete this order?
+
+
+Flow:
+
+    Client
+      |
+      | Credentials
+      ↓
+    Authentication
+      |
+      ↓
+    Identity
+      |
+      ↓
+    Authorization
+      |
+      ↓
+    API Operation
+
+
+These concepts will be studied deeply in the API Security phase.
+
+
+====================================================================
+33. API GATEWAY RELATIONSHIP
+====================================================================
+
+In a microservices architecture, clients may not communicate
+directly with every service.
+
+Instead:
+
+    Client
+       |
+       ↓
+    API Gateway
+       |
+       +----→ User Service
+       |
+       +----→ Order Service
+       |
+       +----→ Payment Service
+       |
+       +----→ Product Service
+
+
+API Gateway can provide:
+
+    Routing
+    Authentication
+    Rate limiting
+    TLS termination
+    Logging
+    Request transformation
+    Aggregation
+
+
+API Gateway is an infrastructure/architecture component.
+
+It is NOT the same thing as an API itself.
+
+
+====================================================================
+34. API ABSTRACTION
+====================================================================
+
+Suppose a client calls:
+
+    GET /products/10
+
+
+Internally, the API might perform:
+
+    API
+     |
+     +→ Redis
+     |
+     +→ Product Service
+     |
+     +→ PostgreSQL
+     |
+     +→ Inventory Service
+     |
+     +→ Pricing Service
+
+
+The client only sees:
+
+    GET /products/10
+
+
+This is abstraction.
+
+The API hides internal implementation details.
+
+
+====================================================================
+35. API COUPLING
+====================================================================
+
+Coupling means how strongly components depend on each other.
+
+High coupling:
+
+    Client
+      |
+      | Depends directly on database schema
+      ↓
+    Database
+
+
+Low coupling:
+
+    Client
+      |
+      ↓
+    Stable API Contract
+      |
+      ↓
+    Internal Implementation
+
+
+The API contract acts as a boundary.
+
+
+IMPORTANT:
+
+Good API design aims for:
+
+    Low unnecessary coupling
+    Stable contracts
+    Clear responsibilities
+
+
+====================================================================
+36. API LIFECYCLE
+====================================================================
+
+An API is not just created and forgotten.
+
+It has a lifecycle.
+
+
+Typical lifecycle:
+
+    1. Planning
+          ↓
+    2. Design
+          ↓
+    3. Development
+          ↓
+    4. Testing
+          ↓
+    5. Documentation
+          ↓
+    6. Deployment
+          ↓
+    7. Monitoring
+          ↓
+    8. Versioning
+          ↓
+    9. Deprecation
+          ↓
+    10. Retirement
+
+
+This is called:
+
+    API Lifecycle Management
+
+
+====================================================================
+37. API PLANNING
+====================================================================
+
+Before building an API, ask:
+
+    Who are the consumers?
+    What resources exist?
+    What operations are required?
+    What data is required?
+    What authentication is needed?
+    What are the performance requirements?
+    What are the security requirements?
+    What errors can happen?
+    How will the API evolve?
+
+
+Example:
+
+E-commerce API:
+
+    Users
+    Products
+    Cart
+    Orders
+    Payments
+
+
+Define the contract before implementation where appropriate.
+
+
+====================================================================
+38. API DESIGN
+====================================================================
+
+API design decides:
+
+    Endpoint structure
+    Resource names
+    Methods
+    Request schemas
+    Response schemas
+    Status codes
+    Authentication
+    Authorization
+    Error format
+    Pagination
+    Versioning
+
+
+Example:
+
+    GET /products
+    GET /products/{id}
+    POST /products
+    PATCH /products/{id}
+    DELETE /products/{id}
+
+
+Good API design focuses on:
+
+    Consistency
+    Simplicity
+    Predictability
+    Security
+    Evolvability
+
+
+====================================================================
+39. API DEVELOPMENT
+====================================================================
+
+After design:
+
+    API implementation begins.
+
+Typical layers:
+
+    Route
+      ↓
+    Controller
+      ↓
+    Service
+      ↓
+    Repository
+      ↓
+    Database
+
+
+Example:
+
+    POST /users
+
+    Route
+      ↓
+    UserController
+      ↓
+    UserService
+      ↓
+    UserRepository
+      ↓
+    Database
+
+
+====================================================================
+40. API TESTING
+====================================================================
+
+APIs must be tested.
+
+Types:
+
+    Unit Testing
+    Integration Testing
+    Functional Testing
+    Contract Testing
+    Security Testing
+    Performance Testing
+    End-to-End Testing
+
+
+Example:
+
+    POST /users
+
+
+Test:
+
+    Valid user
+    Missing name
+    Invalid email
+    Duplicate email
+    Very long input
+    Unauthorized request
+    Database failure
+
+
+Tools:
+
+    Postman
+    cURL
+    pytest
+    JUnit
+    REST Assured
+    k6
+    JMeter
+
+
+====================================================================
+41. API DEPLOYMENT
+====================================================================
+
+After testing:
+
+    API → Deployment Environment
+
+
+Possible environments:
+
+    Development
+    Testing
+    Staging
+    Production
+
+
+Example:
+
+    Developer
+        |
+        ↓
+    Git
+        |
+        ↓
+    CI/CD
+        |
+        ↓
+    Docker
+        |
+        ↓
+    Kubernetes/Cloud
+        |
+        ↓
+    Production API
+
+
+====================================================================
+42. API MONITORING
+====================================================================
+
+Production APIs must be monitored.
+
+Important metrics:
+
+    Request count
+    Error rate
+    Latency
+    Throughput
+    CPU
+    Memory
+    Database performance
+
+
+Example:
+
+    API:
+
+    1,000,000 requests/day
+
+    Error rate:
+
+    0.2%
+
+    Average latency:
+
+    120 ms
+
+
+Monitoring helps detect problems.
+
+
+====================================================================
+43. API VERSIONING
+====================================================================
+
+APIs evolve.
+
+Suppose version 1 returns:
+
+    {
+        "name": "Apoorv"
+    }
+
+
+Later version 2 returns:
+
+    {
+        "firstName": "Apoorv",
+        "lastName": "Singh"
+    }
+
+
+Changing the contract can break existing consumers.
+
+Therefore APIs may use versioning.
+
+Example:
+
+    /api/v1/users
+
+    /api/v2/users
+
+
+Other versioning strategies also exist and will be studied later.
+
+
+====================================================================
+44. API DEPRECATION
+====================================================================
+
+Sometimes an API version becomes old.
+
+Example:
+
+    v1
+       ↓
+    deprecated
+       ↓
+    v2
+       ↓
+    v3
+
+
+Deprecation means:
+
+    "This API is still available for now, but consumers should
+     migrate to the newer interface."
+
+
+Eventually:
+
+    Deprecated API
+         ↓
+    Retirement
+         ↓
+    Removed
+
+
+Professional API providers communicate deprecation clearly.
+
+
+====================================================================
+45. REAL-WORLD EXAMPLE — LOGIN API
+====================================================================
+
+Suppose a mobile application has:
+
+    Login Screen
+
+
+User enters:
+
+    Email
+    Password
+
+
+Mobile app sends:
+
+    POST /api/login
+
+
+Request:
+
+    {
+        "email": "user@example.com",
+        "password": "********"
+    }
+
+
+Server:
+
+    1. Validate input
+    2. Find user
+    3. Verify password
+    4. Create authentication result
+    5. Return response
+
+
+Response may contain an access token:
+
+    {
+        "access_token": "eyJ...",
+        "token_type": "Bearer"
+    }
+
+
+Flow:
+
+    Mobile App
+        |
+        | POST /api/login
+        ↓
+    Authentication API
+        |
+        ↓
+    User Database
+        |
+        ↓
+    Authentication API
+        |
+        | Token
+        ↓
+    Mobile App
+
+
+This token can then be used for authorized API requests.
+
+
+====================================================================
+46. REAL-WORLD EXAMPLE — E-COMMERCE
+====================================================================
+
+Suppose you open an online shopping application.
+
+The application may use APIs such as:
+
+    GET /products
+    GET /products/100
+    POST /cart/items
+    GET /cart
+    POST /orders
+    POST /payments
+    GET /orders/500
+
+
+Architecture:
+
+    Mobile App
+         |
+         ↓
+    API Gateway
+         |
+    +----+----+---------+
+    |    |    |         |
+    ↓    ↓    ↓         ↓
+   User Product Order Payment
+ Service Service Service Service
+    |    |    |         |
+    +----+----+---------+
+              |
+              ↓
+          Databases
+
+
+The user sees one application.
+
+Behind the scenes, many APIs and services may communicate.
+
+
+====================================================================
+47. REAL-WORLD EXAMPLE — PAYMENT API
+====================================================================
+
+A payment provider may expose operations such as:
+
+    POST /payments
+    GET /payments/{id}
+    POST /payments/{id}/refund
+
+
+Example:
+
+    POST /payments
+
+
+Request:
+
+    {
+        "amount": 50000,
+        "currency": "INR"
+    }
+
+
+Response:
+
+    {
+        "payment_id": "PAY123",
+        "status": "pending"
+    }
+
+
+Then the provider may process the payment asynchronously.
+
+Later:
+
+    status = "success"
+
+
+Payment APIs require advanced concepts such as:
+
+    Idempotency
+    Authentication
+    Authorization
+    Encryption
+    Webhooks
+    Retry handling
+    Audit logging
+    Reconciliation
+
+
+These topics will be covered later.
+
+
+====================================================================
+48. REAL-WORLD EXAMPLE — WEATHER API
+====================================================================
+
+Client:
+
+    Weather Application
+
+
+Request:
+
+    GET /weather?city=Indore
+
+
+Server response:
+
+    {
+        "city": "Indore",
+        "temperature": 30,
+        "humidity": 60
+    }
+
+
+Architecture:
+
+    Weather App
+         |
+         ↓
+    Weather API
+         |
+         ↓
+    Weather Data
+         |
+         ↓
+    Response
+
+
+The mobile app does not need to know how weather data is collected
+internally.
+
+
+====================================================================
+49. API AND MICROSERVICES
+====================================================================
+
+Microservices architecture commonly uses APIs for communication.
+
+Example:
+
+    +-------------+
+    | User Service|
+    +------+------+
+           |
+           ↓ API
+    +-------------+
+    | Order       |
+    | Service     |
+    +------+------+
+           |
+           ↓ API
+    +-------------+
+    | Payment     |
+    | Service     |
+    +-------------+
+
+
+Each service may expose APIs.
+
+Communication can be:
+
+    REST
+    gRPC
+    Messaging
+    Events
+
+
+API engineering therefore becomes a major part of microservices
+engineering.
+
+
+====================================================================
+50. API AND DATABASE
+====================================================================
+
+Typical architecture:
+
+    Client
+       |
+       ↓
+      API
+       |
+       ↓
+    Service
+       |
+       ↓
+    Repository
+       |
+       ↓
+    Database
+
+
+The API should not blindly expose database structure.
+
+For example, database table:
+
+    users
+
+might contain:
+
+    id
+    password_hash
+    internal_flags
+    created_at
+    updated_at
+
+
+The public API might return:
+
+    id
+    name
+    email
+
+
+Sensitive/internal fields should not automatically be exposed.
+
+
+====================================================================
+51. API DATA TRANSFER OBJECT
+====================================================================
+
+DTO = Data Transfer Object.
+
+A DTO defines the data structure transferred between components,
+especially across application boundaries.
+
+Example internal database object:
+
+    UserEntity:
+
+    id
+    name
+    email
+    password_hash
+    internal_status
+
+
+API response DTO:
+
+    UserResponse:
+
+    id
+    name
+    email
+
+
+This prevents internal database representation from being directly
+exposed as an external API contract.
+
+
+====================================================================
+52. API SECURITY BOUNDARY
+====================================================================
+
+An API is often a security boundary.
+
+Example:
+
+    Internet
+       |
+       ↓
+    Authentication
+       |
+       ↓
+    Authorization
+       |
+       ↓
+    Validation
+       |
+       ↓
+    Business Logic
+       |
+       ↓
+    Database
+
+
+Never assume:
+
+    "The client will send correct data."
+
+
+The server must validate and enforce rules.
+
+The client is NOT trusted.
+
+
+====================================================================
+53. API CONTRACT-FIRST APPROACH
+====================================================================
+
+There are two common approaches.
+
+CODE-FIRST:
+
+    Write implementation
+          ↓
+    Generate/document contract
+
+
+CONTRACT-FIRST:
+
+    Design API contract
+          ↓
+    Review contract
+          ↓
+    Implement API
+
+
+Contract-first development can improve communication between:
+
+    Frontend
+    Backend
+    QA
+    Product
+    External Consumers
+
+
+Tools:
+
+    OpenAPI
+    Swagger
+
+
+====================================================================
+54. API-FIRST ARCHITECTURE
+====================================================================
+
+API-first means treating APIs as first-class products/interfaces.
+
+Instead of:
+
+    Build backend
+       ↓
+    Add API later
+
+
+Think:
+
+    Define interface
+       ↓
+    Validate design
+       ↓
+    Implement
+       ↓
+    Test
+       ↓
+    Document
+       ↓
+    Deploy
+
+
+This is especially useful for organizations with many API consumers.
+
+
+====================================================================
+55. API AS A PRODUCT
+====================================================================
+
+A mature organization may treat an API as a product.
+
+An API product has:
+
+    Users
+    Documentation
+    Versioning
+    Support
+    Monitoring
+    Security
+    SLAs/SLOs
+    Lifecycle
+    Analytics
+
+
+Example:
+
+    Payment API
+
+Consumers may include:
+
+    E-commerce
+    Mobile apps
+    SaaS companies
+    Partners
+
+
+The API needs product-level quality.
+
+
+====================================================================
+56. API SLA / SLO CONCEPT
+====================================================================
+
+Production APIs may have reliability targets.
+
+Example:
+
+    Availability target:
+        99.9%
+
+    Latency target:
+        95% requests under 200 ms
+
+
+SLA:
+
+    Service Level Agreement
+
+SLO:
+
+    Service Level Objective
+
+
+These become important in production API engineering and
+distributed systems.
+
+
+====================================================================
+57. API RATE LIMITING
+====================================================================
+
+A provider may limit how many requests a client can make.
+
+Example:
+
+    100 requests/minute
+
+
+If the client exceeds the limit:
+
+    HTTP 429 Too Many Requests
+
+
+Purpose:
+
+    Prevent abuse
+    Protect resources
+    Maintain fairness
+    Control costs
+
+
+Example:
+
+    Client
+      |
+      | 1000 requests
+      ↓
+    API Gateway
+      |
+      X
+    Rate Limit
+
+
+Rate limiting will be studied deeply later.
+
+
+====================================================================
+58. API OBSERVABILITY
+====================================================================
+
+Production APIs should allow engineers to understand what is
+happening.
+
+Three major pillars:
+
+    Logs
+    Metrics
+    Traces
+
+
+Logs:
+
+    What happened?
+
+
+Metrics:
+
+    How much/how often?
+
+
+Traces:
+
+    Where did the request travel?
+
+
+Example:
+
+    Client
+      ↓
+    Gateway
+      ↓
+    Order Service
+      ↓
+    Payment Service
+      ↓
+    Database
+
+
+Distributed tracing can show the entire request path.
+
+
+====================================================================
+59. API RELIABILITY
+====================================================================
+
+APIs must handle failures.
+
+Possible failures:
+
+    Database unavailable
+    Network timeout
+    Service unavailable
+    High traffic
+    Duplicate request
+    Dependency failure
+
+
+Techniques:
+
+    Timeout
+    Retry
+    Backoff
+    Circuit Breaker
+    Bulkhead
+    Idempotency
+    Queue
+    Cache
+    Failover
+
+
+These are advanced API engineering concepts.
+
+
+====================================================================
+60. API ARCHITECTURE MATURITY
+====================================================================
+
+BEGINNER:
+
+    Client
+       ↓
+    API
+       ↓
+    Database
+
+
+INTERMEDIATE:
+
+    Client
+       ↓
+    API
+       ↓
+    Cache
+       ↓
+    Database
+
+
+ADVANCED:
+
+    Client
+       ↓
+    CDN
+       ↓
+    Load Balancer
+       ↓
+    API Gateway
+       ↓
+    Microservices
+       ↓
+    Cache / Database / Queue
+
+
+MASTER LEVEL:
+
+    Clients
+       |
+       ↓
+    CDN
+       |
+       ↓
+    WAF
+       |
+       ↓
+    Load Balancer
+       |
+       ↓
+    API Gateway
+       |
+       +----------+----------+
+       |          |          |
+       ↓          ↓          ↓
+    Service A  Service B  Service C
+       |          |          |
+       +----------+----------+
+                  |
+        +---------+---------+
+        |         |         |
+        ↓         ↓         ↓
+      Redis    Kafka     Databases
+        |
+        ↓
+    Observability
+        |
+        +--> Logs
+        +--> Metrics
+        +--> Traces
+
+
+This is the direction in which your API engineering skills will
+progress throughout this course.
+
+
+====================================================================
+61. COMPLETE API COMMUNICATION MODEL
+====================================================================
+
+    +----------------------+
+    |      API Consumer    |
+    |                      |
+    | Browser/Mobile/App   |
+    +----------+-----------+
+               |
+               | API Request
+               ↓
+    +----------------------+
+    |      API Gateway     |
+    +----------+-----------+
+               |
+               | Routing
+               ↓
+    +----------------------+
+    |     API Provider     |
+    |                      |
+    | Controller           |
+    | Service              |
+    | Repository           |
+    +----------+-----------+
+               |
+        +------+------+
+        |             |
+        ↓             ↓
+      Cache        Database
+        |
+        ↓
+      Response
+        |
+        ↓
+    API Consumer
+
+
+====================================================================
+62. MASTER-LEVEL MENTAL MODEL
+====================================================================
+
+Remember this:
+
+    API = Interface
+
+    Consumer = Caller/User of API
+
+    Provider = System exposing API
+
+    Request = What the consumer sends
+
+    Response = What the provider returns
+
+    Endpoint = Address/operation exposed by an API
+
+    Resource = Thing/data represented by the API
+
+    Operation = Interaction performed on a resource
+
+    Contract = Agreement about how communication works
+
+    Schema = Structure of exchanged data
+
+    Documentation = Instructions for consumers
+
+    Lifecycle = Plan → Design → Build → Test → Deploy →
+                Monitor → Version → Deprecate → Retire
+
+
+====================================================================
+63. COMMON BEGINNER MISTAKES
+====================================================================
+
+MISTAKE 1:
+
+    "API means REST API."
+
+CORRECT:
+
+    REST is one way of designing Web APIs.
+
+
+MISTAKE 2:
+
+    "API is a database."
+
+CORRECT:
+
+    API is an interface; database is a data storage system.
+
+
+MISTAKE 3:
+
+    "API means URL."
+
+CORRECT:
+
+    A Web API may expose URLs/endpoints, but an API is the complete
+    interface/contract, not merely a URL.
+
+
+MISTAKE 4:
+
+    "HTTPS makes an API completely secure."
+
+CORRECT:
+
+    HTTPS protects communication, but application security still
+    requires authentication, authorization, validation, etc.
+
+
+MISTAKE 5:
+
+    "The client can be trusted."
+
+CORRECT:
+
+    The server must validate and enforce security rules.
+
+
+MISTAKE 6:
+
+    "API only means communication between frontend and backend."
+
+CORRECT:
+
+    APIs can connect:
+
+        Frontend ↔ Backend
+        Service ↔ Service
+        Company ↔ Partner
+        Application ↔ Cloud Service
+        Program ↔ Library
+
+
+====================================================================
+64. CHAPTER 2 INTERVIEW QUESTIONS
+====================================================================
+
+BEGINNER:
+
+Q1. What is an API?
+
+Q2. What does API stand for?
+
+Q3. Why are APIs needed?
+
+Q4. What is an API consumer?
+
+Q5. What is an API provider?
+
+Q6. What is an API request?
+
+Q7. What is an API response?
+
+Q8. What is an endpoint?
+
+Q9. What is a resource?
+
+Q10. What is an API contract?
+
+
+INTERMEDIATE:
+
+Q11. What is the difference between API and REST?
+
+Q12. Is every API a Web API?
+
+Q13. What is the difference between API and database?
+
+Q14. What is the difference between API and UI?
+
+Q15. What is API versioning?
+
+Q16. Why is API documentation important?
+
+Q17. What is API lifecycle management?
+
+Q18. What is the purpose of an API Gateway?
+
+Q19. What is an internal API?
+
+Q20. What is a public API?
+
+
+ADVANCED:
+
+Q21. Why should APIs hide internal implementation details?
+
+Q22. How does an API reduce coupling?
+
+Q23. Why is an API contract important?
+
+Q24. What is contract-first API development?
+
+Q25. What is API-first development?
+
+Q26. How would you design an API for an e-commerce application?
+
+Q27. How can an API be treated as a product?
+
+Q28. How would you design an API that supports millions of requests?
+
+Q29. How would you secure a public API?
+
+Q30. How would you evolve an API without breaking consumers?
+
+
+====================================================================
+65. PRACTICAL EXERCISE — POSTMAN
+====================================================================
+
+Install/open:
+
+    Postman
+
+
+Send:
+
+    GET https://jsonplaceholder.typicode.com/users/1
+
+
+Observe:
+
+    Request URL
+    Method
+    Headers
+    Status Code
+    Response Body
+    Response Headers
+    Response Time
+
+
+You have now acted as an:
+
+    API CONSUMER
+
+
+The remote system is the:
+
+    API PROVIDER
+
+
+====================================================================
+66. PRACTICAL EXERCISE — cURL
+====================================================================
+
+Run:
+
+    curl https://jsonplaceholder.typicode.com/users/1
+
+
+For detailed HTTP information:
+
+    curl -i https://jsonplaceholder.typicode.com/users/1
+
+
+For verbose networking information:
+
+    curl -v https://jsonplaceholder.typicode.com/users/1
+
+
+Observe:
+
+    HTTP method
+    URL
+    Response status
+    Headers
+    JSON response
+
+
+====================================================================
+67. PRACTICAL API DESIGN EXERCISE
+====================================================================
+
+Design a simple Student API.
+
+Resources:
+
+    Student
+
+
+Possible operations:
+
+    GET    /students
+    GET    /students/{id}
+    POST   /students
+    PATCH  /students/{id}
+    DELETE /students/{id}
+
+
+Example:
+
+    POST /students
+
+
+Request:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com",
+        "course": "M.Tech"
+    }
+
+
+Response:
+
+    201 Created
+
+    {
+        "id": 1,
+        "name": "Apoorv",
+        "email": "apoorv@example.com",
+        "course": "M.Tech"
+    }
+
+
+This small exercise teaches:
+
+    Resource
+    Endpoint
+    Request
+    Response
+    HTTP method
+    Schema
+    Contract
+
+
+====================================================================
+68. CHAPTER 2 KEY TAKEAWAYS
+====================================================================
+
+1. API means Application Programming Interface.
+
+2. An API provides a defined interface for software interaction.
+
+3. API is broader than REST.
+
+4. REST is an architectural style for designing networked APIs.
+
+5. An API consumer uses an API.
+
+6. An API provider exposes an API.
+
+7. A request goes from consumer to provider.
+
+8. A response goes from provider to consumer.
+
+9. A resource represents a conceptual entity/data.
+
+10. An endpoint exposes an API operation.
+
+11. An API contract defines how consumers and providers communicate.
+
+12. Schema defines the structure of exchanged data.
+
+13. Documentation teaches consumers how to use the API.
+
+14. APIs provide abstraction.
+
+15. APIs can reduce unnecessary coupling.
+
+16. APIs can connect frontend and backend systems.
+
+17. APIs can connect microservices.
+
+18. APIs can connect organizations and partners.
+
+19. APIs can be internal, partner-facing or public.
+
+20. APIs need security, testing, monitoring and lifecycle management.
+
+21. A production API is much more than:
+
+        URL + JSON
+
+22. Master-level API engineering includes:
+
+        Design
+        Security
+        Performance
+        Scalability
+        Reliability
+        Testing
+        Observability
+        Deployment
+        Governance
+
+
+====================================================================
+69. CHAPTER 2 FINAL CONCEPT MAP
+====================================================================
+
+                         API
+                          |
+          +---------------+---------------+
+          |               |               |
+          ↓               ↓               ↓
+      Consumer         Contract        Provider
+          |               |               |
+          ↓               ↓               ↓
+       Request          Schema        Processing
+          |               |               |
+          ↓               ↓               ↓
+       Endpoint      Documentation    Business Logic
+          |                               |
+          ↓                               ↓
+      Resource                         Database
+          |                               |
+          +---------------+---------------+
+                          |
+                          ↓
+                       Response
+
+
+API ENGINEERING:
+
+    API
+     |
+     +--> Design
+     |
+     +--> Development
+     |
+     +--> Security
+     |
+     +--> Testing
+     |
+     +--> Performance
+     |
+     +--> Scalability
+     |
+     +--> Documentation
+     |
+     +--> Monitoring
+     |
+     +--> Versioning
+     |
+     +--> Governance
+     |
+     +--> Lifecycle
+
+
+====================================================================
+CHAPTER 2 COMPLETE
+====================================================================
+
+You now have the conceptual foundation required for:
+
+    REST APIs
+    API Design
+    API Development
+    Authentication
+    Authorization
+    API Security
+    OpenAPI/Swagger
+    API Testing
+    API Gateway
+    Microservices
+    GraphQL
+    gRPC
+    WebSockets
+    Webhooks
+    Distributed Systems
+    API System Design
+
+
+NEXT:
+
+    CHAPTER 3 — TYPES OF APIs
+
+Topics will include:
+
+    Web APIs
+    REST APIs
+    SOAP APIs
+    GraphQL APIs
+    gRPC APIs
+    WebSocket APIs
+    Webhooks
+    Library APIs
+    Operating System APIs
+    Database APIs
+    Internal APIs
+    External APIs
+    Partner APIs
+    Open APIs
+    Private APIs
+
+Type:
+
+    NEXT
+
+to continue.
+====================================================================
