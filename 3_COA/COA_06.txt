@@ -1,2121 +1,1622 @@
-============================================================
-CHAPTER 5 — FLOATING-POINT REPRESENTATION
-============================================================
-
-LEVEL:
-B.Tech 1st Year | Absolute Beginner
-
-OBJECTIVE:
-Understand how computers represent fractional, very large,
-and very small real numbers using floating-point notation.
-
+Below is Chapter 6 — Digital Logic Fundamentals, explained from basic to M.Tech/GATE level in a structured format.
 
 ============================================================
-5.1 WHY FLOATING-POINT REPRESENTATION?
+        CHAPTER 6 — DIGITAL LOGIC FUNDAMENTALS
 ============================================================
 
-Computers need to represent numbers such as:
+6.0 CHAPTER OBJECTIVES
+----------------------
+After completing this chapter, you should be able to:
 
-    25
-    -100
-    3.14
-    0.001
-    123456789
-    0.00000000045
+1. Understand analog and digital systems.
+2. Differentiate analog and digital signals.
+3. Explain advantages and limitations of digital systems.
+4. Understand all fundamental and universal logic gates.
+5. Construct and analyze truth tables.
+6. Apply Boolean algebra and Boolean identities.
+7. Apply De Morgan's laws.
+8. Analyze basic logic circuits.
+9. Differentiate combinational and sequential circuits.
+10. Simplify Boolean expressions for circuit implementation.
 
-Integer representation works well for whole numbers, but it
-cannot conveniently represent arbitrary fractions.
+
+============================================================
+6.1 DIGITAL vs ANALOG SYSTEMS
+============================================================
+
+6.1.1 Analog System
+-------------------
+An analog system processes signals that can take a CONTINUOUS
+range of values.
+
+Example:
+
+Temperature:
+       20.0°C
+       20.1°C
+       20.2°C
+       20.3°C
+       ...
+       20.999°C
+
+The signal can have theoretically infinite possible values
+within a range.
+
+Examples:
+    • Traditional thermometer
+    • Analog clock
+    • Microphone
+    • Analog radio
+    • Vinyl audio system
+
+
+6.1.2 Digital System
+--------------------
+A digital system processes information using DISCRETE values.
+
+Most digital systems use binary values:
+
+        0 → LOW / FALSE
+        1 → HIGH / TRUE
+
+Example:
+
+        0 1 0 1 1 0 1
+
+Computers, smartphones and digital circuits primarily use
+binary representation.
+
+
+6.1.3 Analog vs Digital
+-----------------------
+
++----------------------+----------------------+
+| Analog               | Digital              |
++----------------------+----------------------+
+| Continuous           | Discrete             |
+| Infinite values      | Finite values        |
+| More noise-sensitive | More noise-tolerant  |
+| Difficult to store   | Easy to store        |
+| Difficult to process | Easy to process      |
+| Analog circuits      | Digital circuits     |
++----------------------+----------------------+
+
+
+IMPORTANT:
+-----------
+Real-world information is often analog, but computers process
+information digitally.
+
+Example:
+
+Sound
+  ↓
+Microphone
+  ↓
+Analog electrical signal
+  ↓
+ADC (Analog-to-Digital Converter)
+  ↓
+Digital data
+  ↓
+Computer processing
+  ↓
+DAC
+  ↓
+Analog signal
+  ↓
+Speaker
+
+
+============================================================
+6.2 ANALOG AND DIGITAL SIGNALS
+============================================================
+
+6.2.1 Analog Signal
+-------------------
+
+An analog signal changes continuously with time.
+
+Example:
+
+Voltage
+  |
+  |       /\
+  |      /  \       /\
+  |     /    \     /  \
+  |____/      \___/    \____ Time
+
+
+Characteristics:
+    • Continuous amplitude
+    • Continuous time
+    • Sensitive to noise
+    • Small variations may affect information
+
+
+6.2.2 Digital Signal
+--------------------
+
+A digital signal generally uses discrete levels.
+
+For binary logic:
+
+    HIGH → 1
+    LOW  → 0
+
+Example:
+
+Voltage
+  |
+  |      ┌───────┐       ┌───────┐
+  |      │       │       │       │
+  |______│       └───────┴───────┘____ Time
+         1       0       1
+
+A practical digital signal is not perfectly square, but digital
+logic interprets voltage ranges as logical 0 or 1.
+
+
+6.2.3 Digital Signal Parameters
+-------------------------------
+
+Important parameters include:
+
+1. Amplitude
+2. Time period
+3. Frequency
+4. Pulse width
+5. Duty cycle
+6. Rise time
+7. Fall time
+
+Frequency:
+
+        f = 1/T
+
+where:
+
+    f = frequency
+    T = time period
+
+
+Duty Cycle:
+
+        Duty Cycle = (T_ON / T) × 100%
+
+
+Example:
+
+If:
+
+    T = 10 μs
+    T_ON = 4 μs
+
+Then:
+
+    Duty Cycle = (4/10) × 100
+               = 40%
+
+
+============================================================
+6.3 ADVANTAGES OF DIGITAL SYSTEMS
+============================================================
+
+Major advantages:
+
+1. HIGH NOISE IMMUNITY
+----------------------
+
+Digital systems can tolerate small noise variations.
 
 For example:
 
-    3.14
-    0.5
-    0.125
-    0.000001
+    Actual LOW voltage ≈ 0 V
+    Actual HIGH voltage ≈ 5 V
+
+A small disturbance may still be interpreted correctly.
 
 
-Floating-point representation solves this problem by
-representing a number using:
+2. EASY DATA STORAGE
+--------------------
 
-    SIGN × SIGNIFICAND × BASE^EXPONENT
+Digital information can be stored using:
 
-
-Real-world analogy:
-
-Think about scientific notation.
-
-    6,000,000 = 6 × 10^6
-
-    0.000006 = 6 × 10^-6
-
-The decimal point effectively "moves" according to the
-exponent.
-
-That is the basic idea behind floating-point numbers.
+    • Memory
+    • SSD
+    • HDD
+    • Flash memory
+    • RAM
+    • ROM
 
 
-============================================================
-5.2 INTEGER LIMITATION
-============================================================
+3. EASY PROCESSING
+------------------
 
-Suppose a computer uses 8 bits for an unsigned integer.
+Digital information can be processed using:
 
-Maximum value:
-
-    11111111₂
-
-    = 255₁₀
-
-Therefore values greater than 255 cannot be represented.
-
-Fractions are another problem.
-
-An integer cannot directly represent:
-
-    3.14
-    0.25
-    0.001
+    • Logic gates
+    • Microprocessors
+    • Microcontrollers
+    • CPUs
+    • GPUs
 
 
-Floating point provides both:
+4. HIGH RELIABILITY
+-------------------
 
-    LARGE RANGE
-    +
-    FRACTIONAL REPRESENTATION
+Digital circuits can be designed to provide reliable operation
+despite small noise disturbances.
 
 
-============================================================
-5.3 FIXED-POINT VS FLOATING-POINT
-============================================================
+5. EASY ERROR DETECTION
+-----------------------
 
-FIXED-POINT:
+Digital systems can use:
 
-The position of the binary point is fixed.
+    • Parity
+    • Checksum
+    • CRC
+    • Error-correcting codes
+
+
+6. PROGRAMMABILITY
+------------------
+
+Digital hardware can implement programmable operations.
 
 Example:
 
-    1011.1010
-
-Suppose 4 bits are reserved after the binary point.
-
-The point always remains there.
+    CPU + Software
+          ↓
+    Different Applications
 
 
-FLOATING-POINT:
+7. EASY REPRODUCTION
+--------------------
 
-The number is represented using a significand and exponent.
-
-Example:
-
-    1011.101₂
-
-can be written as:
-
-    1.011101 × 2^3
+Digital information can be copied without continuously
+accumulating analog-style degradation.
 
 
-The exponent controls the position of the binary point.
+8. SECURITY
+-----------
+
+Digital information can be encrypted.
+
+Examples:
+
+    AES
+    RSA
+    ECC
+
+
+LIMITATIONS:
+------------
+
+Digital systems also have disadvantages:
+
+    • Quantization error
+    • Conversion requirements
+    • Clock requirements
+    • Switching power consumption
+    • More complex digital hardware in some applications
+
+
+============================================================
+6.4 LOGIC GATES
+============================================================
+
+A logic gate is an electronic circuit that performs a Boolean
+operation.
+
+Basic gates:
+
+    AND
+    OR
+    NOT
+
+Derived/universal gates:
+
+    NAND
+    NOR
+
+Exclusive gates:
+
+    XOR
+    XNOR
 
 
 ------------------------------------------------------------
-REAL-WORLD ANALOGY
+6.4.1 AND GATE
 ------------------------------------------------------------
 
-Fixed point:
+Boolean expression:
 
-    A ruler with a fixed decimal position.
+        Y = A · B
 
-Floating point:
+Meaning:
 
-    Scientific notation where the decimal point can
-    effectively move according to the exponent.
+Output is 1 ONLY when BOTH inputs are 1.
 
 
-============================================================
-5.4 SCIENTIFIC NOTATION
-============================================================
+Truth Table:
 
-Scientific notation represents a number as:
-
-    Significand × Base^Exponent
-
-
-Example:
-
-    6250
-
-    = 6.25 × 10^3
-
-
-Example:
-
-    0.00625
-
-    = 6.25 × 10^-3
-
-
-Here:
-
-    6.25 → Significand
-    10   → Base
-    3/-3 → Exponent
-
-
-Computers use the same idea, but normally with:
-
-    Base = 2
-
-
-============================================================
-5.5 BINARY SCIENTIFIC NOTATION
-============================================================
-
-General form:
-
-    Significand × 2^Exponent
-
-
-Example:
-
-    101.101₂
-
-
-Move the binary point until only one digit is present
-to the left:
-
-    1.01101₂ × 2^2
-
-
-Therefore:
-
-    101.101₂
-    =
-    1.01101₂ × 2^2
-
-
-Another example:
-
-    0.001101₂
-
-Move the point right:
-
-    1.101₂ × 2^-3
-
-
-Therefore:
-
-    0.001101₂
-    =
-    1.101₂ × 2^-3
-
-
-============================================================
-5.6 MAIN COMPONENTS
-============================================================
-
-A floating-point number has three major components:
-
-    1. SIGN
-    2. SIGNIFICAND
-    3. EXPONENT
-
-
-Conceptually:
-
-    +--------------------------------+
-    | Sign | Significand | Exponent |
-    +--------------------------------+
-
-
-The BASE is normally fixed by the floating-point format.
-
-
-============================================================
-5.7 SIGN
-============================================================
-
-The sign tells whether the number is positive or negative.
-
-Usually:
-
-    Sign = 0 → Positive
-
-    Sign = 1 → Negative
-
-
-Example:
-
-    +5.5
-
-    Sign = 0
-
-
-    -5.5
-
-    Sign = 1
-
-
-The sign field stores a binary value, not the characters
-"+" or "-".
-
-
-============================================================
-5.8 SIGNIFICAND
-============================================================
-
-The significand contains the significant digits of the
-number.
-
-It is traditionally also called:
-
-    MANTISSA
-
-
-Modern terminology generally prefers:
-
-    SIGNIFICAND
-
-
-Example:
-
-    6.25 × 10^3
-
-    Significand = 6.25
-
-
-Binary:
-
-    1.101 × 2^2
-
-    Significand = 1.101
-
-
-============================================================
-5.9 EXPONENT
-============================================================
-
-The exponent determines the scale of the number.
-
-Example:
-
-    1.101 × 2^3
-
-Exponent:
-
-    3
-
-
-Example:
-
-    1.101 × 2^-3
-
-Exponent:
-
-    -3
-
-
-The exponent provides a very large numerical range.
-
-
-============================================================
-5.10 BASE
-============================================================
-
-The base is the radix used by the representation.
-
-Decimal scientific notation:
-
-    Base = 10
-
-
-Binary floating point:
-
-    Base = 2
-
-
-Example:
-
-    1.101 × 2^4
-
-
-In IEEE 754 binary floating point, the base is implicit;
-there is no separate base field.
-
-
-============================================================
-5.11 NORMALIZATION
-============================================================
-
-Normalization means putting a floating-point number into a
-standard form.
-
-For binary normalized numbers:
-
-    1.xxxxx × 2^E
-
-
-Example:
-
-    101.101₂
-
-Move the binary point left:
-
-    1.01101₂ × 2^2
-
-
-Therefore:
-
-    101.101₂
-    =
-    1.01101₂ × 2^2
-
-
-Example:
-
-    0.001101₂
-
-Move the binary point right:
-
-    1.101₂ × 2^-3
-
-
-Therefore:
-
-    0.001101₂
-    =
-    1.101₂ × 2^-3
-
-
-============================================================
-5.12 WHY NORMALIZATION?
-============================================================
-
-Normalization gives a standard representation.
-
-For a nonzero normalized binary number:
-
-    1.xxxxx × 2^E
-
-
-The first digit is always:
-
-    1
-
-
-IEEE 754 takes advantage of this fact.
-
-For normalized numbers, the leading 1 does not need to be
-stored explicitly.
-
-It is called:
-
-    IMPLIED LEADING 1
-
-or
-
-    HIDDEN LEADING 1
-
-
-============================================================
-5.13 IEEE 754
-============================================================
-
-IEEE 754 is a widely used standard for floating-point
-representation and arithmetic.
-
-It defines:
-
-    • Floating-point formats
-    • Arithmetic rules
-    • Rounding
-    • Zero
-    • Infinity
-    • NaN
-    • Subnormal numbers
-
-
-The two most important formats are:
-
-    SINGLE PRECISION
-    DOUBLE PRECISION
-
-
-============================================================
-5.14 IEEE 754 SINGLE PRECISION
-============================================================
-
-Single precision uses:
-
-    32 bits
-
-
-Format:
-
-    +-----+----------+-----------------------+
-    |  S  | Exponent |       Fraction        |
-    | 1   |  8 bits  |        23 bits        |
-    +-----+----------+-----------------------+
-
-Therefore:
-
-    Sign     = 1 bit
-    Exponent = 8 bits
-    Fraction = 23 bits
-
-Total:
-
-    1 + 8 + 23 = 32 bits
-
-
-Important:
-
-The fraction FIELD contains 23 stored bits.
-
-For normalized values, the hidden leading 1 gives:
-
-    23 + 1 = 24 bits
-
-of significand precision.
-
-
-============================================================
-5.15 IEEE 754 DOUBLE PRECISION
-============================================================
-
-Double precision uses:
-
-    64 bits
-
-
-Format:
-
-    +-----+-------------+--------------------------+
-    |  S  |  Exponent   |        Fraction          |
-    | 1   |   11 bits   |         52 bits          |
-    +-----+-------------+--------------------------+
-
-Therefore:
-
-    Sign     = 1 bit
-    Exponent = 11 bits
-    Fraction = 52 bits
-
-Total:
-
-    1 + 11 + 52 = 64 bits
-
-
-Normalized significand precision:
-
-    52 + 1 = 53 bits
-
-
-============================================================
-5.16 SINGLE VS DOUBLE PRECISION
-============================================================
-
-    +----------------+----------------+----------------+
-    | Feature        | Single         | Double         |
-    +----------------+----------------+----------------+
-    | Total bits     | 32             | 64             |
-    | Sign           | 1              | 1              |
-    | Exponent       | 8              | 11             |
-    | Fraction       | 23             | 52             |
-    | Precision      | 24 bits*      | 53 bits*      |
-    | Bias           | 127            | 1023           |
-    +----------------+----------------+----------------+
-
-*For normalized binary values.
-
-
-============================================================
-5.17 IEEE 754 FIELD STRUCTURE
-============================================================
-
-SINGLE PRECISION:
-
-    Bit 31
-      |
-      v
-
-    +---+--------+-----------------------+
-    | S |   E    |           F           |
-    +---+--------+-----------------------+
-      1     8             23
-
-
-DOUBLE PRECISION:
-
-    +---+-----------+-----------------------------+
-    | S |     E     |             F               |
-    +---+-----------+-----------------------------+
-      1      11                52
-
-
-Where:
-
-    S = Sign
-    E = Exponent field
-    F = Fraction field
-
-
-============================================================
-5.18 EXPONENT BIAS
-============================================================
-
-The actual exponent can be positive or negative.
-
-IEEE 754 uses a biased exponent.
-
-Formula:
-
-    Stored Exponent
-    =
-    Actual Exponent + Bias
-
-
-Therefore:
-
-    Actual Exponent
-    =
-    Stored Exponent - Bias
-
-
-This allows the exponent to be stored as an unsigned
-binary field.
-
-
-============================================================
-5.19 SINGLE-PRECISION BIAS
-============================================================
-
-Single precision:
-
-    Exponent bits = 8
-
-Bias:
-
-    127
-
-
-Formula:
-
-    Stored exponent
-    =
-    Actual exponent + 127
-
-
-Example:
-
-    Actual exponent = 2
-
-    Stored exponent:
-
-        2 + 127
-        = 129
-
-
-129 in binary:
-
-    10000001
-
-
-Therefore:
-
-    Actual exponent = 2
-    Stored exponent = 10000001
-
-
-============================================================
-5.20 DOUBLE-PRECISION BIAS
-============================================================
-
-Double precision:
-
-    Exponent bits = 11
-
-Bias:
-
-    1023
-
-
-Formula:
-
-    Stored exponent
-    =
-    Actual exponent + 1023
-
-
-Example:
-
-    Actual exponent = 5
-
-    Stored exponent:
-
-        5 + 1023
-        = 1028
-
-
-============================================================
-5.21 WHY BIAS?
-============================================================
-
-Exponent values can be:
-
-    Negative
-    Zero
-    Positive
-
-
-Example:
-
-    -3
-    -2
-    -1
-     0
-     1
-     2
-     3
-
-
-Instead of storing a signed exponent directly, IEEE 754
-adds a bias.
-
-Example for single precision:
-
-    Actual exponent = -3
-
-    Stored:
-        -3 + 127
-        = 124
-
-
-    Actual exponent = +5
-
-    Stored:
-        5 + 127
-        = 132
-
-
-============================================================
-5.22 IEEE 754 NORMALIZED VALUE
-============================================================
-
-For a normalized number:
-
-    Value =
-    (-1)^S × (1.F) × 2^(E-Bias)
-
-
-For SINGLE precision:
-
-    Value =
-    (-1)^S × (1.F) × 2^(E-127)
-
-
-For DOUBLE precision:
-
-    Value =
-    (-1)^S × (1.F) × 2^(E-1023)
-
-
-Where:
-
-    S = sign bit
-    E = stored exponent
-    F = fraction
-
-
-============================================================
-5.23 HIDDEN LEADING 1
-============================================================
-
-Suppose:
-
-    Fraction field = 101000...
-
-
-For a normalized number:
-
-    Actual significand = 1.101000...
-
-
-The first 1 is not stored.
-
-Therefore:
-
-    Stored:
-        101000...
-
-
-    Interpreted as:
-        1.101000...
-
-
-This provides one extra bit of precision.
-
-
-============================================================
-5.24 IEEE 754 EXAMPLE — +5.5
-============================================================
-
-Represent:
-
-    +5.5
-
-
-STEP 1:
-Convert to binary.
-
-    5 = 101₂
-
-    0.5 = 0.1₂
-
-
-Therefore:
-
-    5.5 = 101.1₂
-
-
-STEP 2:
-Normalize.
-
-    101.1
-    =
-    1.011 × 2^2
-
-
-STEP 3:
-Sign.
-
-Positive:
-
-    S = 0
-
-
-STEP 4:
-Actual exponent:
-
-    2
-
-
-STEP 5:
-Add bias.
-
-    2 + 127
-    = 129
-
-
-129 in binary:
-
-    10000001
-
-
-STEP 6:
-Fraction.
-
-From:
-
-    1.011
-
-Remove the hidden leading 1:
-
-    011
-
-
-Pad to 23 bits:
-
-    01100000000000000000000
-
-
-STEP 7:
-Combine.
-
-    Sign:
-        0
-
-    Exponent:
-        10000001
-
-    Fraction:
-        01100000000000000000000
-
-
-FINAL:
-
-    0 10000001 01100000000000000000000
-
-
-============================================================
-5.25 IEEE 754 EXAMPLE — -5.5
-============================================================
-
-For:
-
-    -5.5
-
-
-The magnitude is unchanged.
-
-Only the sign bit changes.
-
-    +5.5:
-
-    0 10000001 01100000000000000000000
-
-
-    -5.5:
-
-    1 10000001 01100000000000000000000
-
-
-============================================================
-5.26 DECODING IEEE 754
-============================================================
-
-Given:
-
-    0 10000001 01100000000000000000000
-
-
-STEP 1:
-Sign:
-
-    0 → Positive
-
-
-STEP 2:
-Exponent:
-
-    10000001₂
-
-    = 129
-
-
-Actual exponent:
-
-    129 - 127
-    = 2
-
-
-STEP 3:
-Fraction:
-
-    011...
-
-
-Add hidden leading 1:
-
-    1.011
-
-
-STEP 4:
-
-    1.011₂ × 2^2
-
-
-Convert:
-
-    1.011₂
-    =
-    1 + 0/2 + 1/4 + 1/8
-
-    = 1.375
-
-
-Therefore:
-
-    1.375 × 4
-    = 5.5
-
-
-Answer:
-
-    +5.5
-
-
-============================================================
-5.27 SPECIAL IEEE 754 VALUES
-============================================================
-
-IEEE 754 reserves special bit patterns.
-
-Important values:
-
-    • +0
-    • -0
-    • +∞
-    • -∞
-    • NaN
-    • Subnormal numbers
-
-
-The most important exam table is:
-
-
-    +----------------+----------------+----------------+
-    | Exponent       | Fraction       | Meaning        |
-    +----------------+----------------+----------------+
-    | All 0          | All 0          | Zero           |
-    | All 0          | Non-zero       | Subnormal      |
-    | All 1          | All 0          | Infinity       |
-    | All 1          | Non-zero       | NaN            |
-    +----------------+----------------+----------------+
-
-
-If exponent is neither all 0 nor all 1:
-
-    → Normalized finite number
-
-
-============================================================
-5.28 ZERO
-============================================================
-
-IEEE 754 supports:
-
-    +0
-    -0
-
-
-For zero:
-
-    Exponent = all 0
-    Fraction = all 0
-
-
-Positive zero:
-
-    S = 0
-    E = 00000000
-    F = 00000000000000000000000
-
-
-Negative zero:
-
-    S = 1
-    E = 00000000
-    F = 00000000000000000000000
-
-
-============================================================
-5.29 INFINITY
-============================================================
-
-Infinity represents a value beyond the finite range.
-
-Positive infinity:
-
-    S = 0
-    E = all 1
-    F = all 0
-
-
-Negative infinity:
-
-    S = 1
-    E = all 1
-    F = all 0
-
-
-Example concept:
-
-    Very large positive result
-              ↓
-             +∞
-
-
-============================================================
-5.30 NaN
-============================================================
-
-NaN:
-
-    Not a Number
-
-
-It represents an invalid or undefined numerical result.
-
-Example:
-
-    0 / 0
-
-
-IEEE 754:
-
-    Exponent = all 1
-    Fraction ≠ 0
-
-
-Therefore:
-
-    All-1 exponent
-    +
-    Nonzero fraction
-
-    = NaN
-
-
-============================================================
-5.31 SUBNORMAL NUMBERS
-============================================================
-
-Subnormal numbers represent very small values near zero.
-
-For a subnormal:
-
-    Exponent = all 0
-    Fraction ≠ 0
-
-
-There is NO hidden leading 1.
-
-The effective significand is based on:
-
-    0.F
-
-
-Subnormal numbers provide:
-
-    GRADUAL UNDERFLOW
-
-
-Without subnormal numbers, there would be a sudden jump:
-
-    Smallest normal number
-            ↓
-            0
-
-
-Subnormal numbers fill the gap.
-
-
-============================================================
-5.32 NORMAL VS SUBNORMAL
-============================================================
-
-NORMAL:
-
-    Exponent:
-        neither all 0 nor all 1
-
-    Significand:
-
-        1.F
-
-
-SUBNORMAL:
-
-    Exponent:
-
-        all 0
-
-    Fraction:
-
-        nonzero
-
-    Significand behaves like:
-
-        0.F
-
-
-============================================================
-5.33 PRECISION
-============================================================
-
-Precision means how accurately significant digits can be
-represented.
-
-
-Single precision:
-
-    24 bits of significand precision
-    for normalized numbers.
-
-
-Double precision:
-
-    53 bits of significand precision
-    for normalized numbers.
-
-
-Higher precision generally means:
-
-    Lower rounding error.
-
-
-============================================================
-5.34 RANGE VS PRECISION
-============================================================
-
-RANGE:
-
-    How large or small the representable values can be.
-
-
-PRECISION:
-
-    How accurately significant digits are represented.
-
-
-Main relationship:
-
-    EXPONENT → RANGE
-
-    FRACTION → PRECISION
-
-
-Remember:
-
-    More exponent bits
-        → generally larger range
-
-
-    More fraction bits
-        → generally greater precision
-
-
-============================================================
-5.35 ROUNDING
-============================================================
-
-A finite floating-point format cannot represent every real
-number exactly.
-
-Therefore the exact result may need to be approximated.
-
-This process is:
-
-    ROUNDING
-
-
-Example:
-
-    Exact value:
-
-        3.1415926535...
-
-
-    Stored approximation:
-
-        approximately 3.141592...
-
-
-The exact stored result depends on the format and rounding
-mode.
-
-
-============================================================
-5.36 ROUND-TO-NEAREST
-============================================================
-
-A common IEEE 754 rounding mode is:
-
-    Round to nearest, ties to even
-
-
-Basic idea:
-
-    Choose the representable value closest to the exact
-    result.
-
-
-If exactly halfway between two possibilities:
-
-    Choose the one with an even last retained bit.
-
-
-This reduces systematic rounding bias.
-
-
-============================================================
-5.37 TRUNCATION
-============================================================
-
-Truncation simply discards extra bits.
-
-Example:
-
-    Original:
-
-        3.141592
-
-
-    Truncated:
-
-        3.141
-
-
-Rounding and truncation are different.
-
-Rounding examines the discarded portion.
-
-Truncation simply removes it.
-
-
-============================================================
-5.38 FLOATING-POINT OVERFLOW
-============================================================
-
-Overflow occurs when the result is too large to represent
-as a finite number in the selected format.
+    A   B   Y = A·B
+    ----------------
+    0   0     0
+    0   1     0
+    1   0     0
+    1   1     1
 
 
 Concept:
 
-    Maximum finite value
-          ↓
-       operation
-          ↓
-    Result too large
-          ↓
-      Infinity
-
-
-============================================================
-5.39 FLOATING-POINT UNDERFLOW
-============================================================
-
-Underflow occurs when a result becomes extremely small.
-
-It may become:
-
-    • Subnormal
-    • Zero
-
-
-IEEE 754 uses subnormal numbers to provide gradual underflow.
-
-
-============================================================
-5.40 REPRESENTATION ERROR
-============================================================
-
-Some decimal fractions cannot be represented exactly in
-finite binary floating point.
-
-Example:
-
-    0.1₁₀
-
-
-Its binary representation continues indefinitely:
-
-    0.000110011001100110011...
-
-
-Therefore a finite floating-point format stores an
-approximation.
-
-
-============================================================
-5.41 WHY 0.1 + 0.2 MAY NOT EQUAL EXACTLY 0.3
-============================================================
-
-In decimal mathematics:
-
-    0.1 + 0.2 = 0.3
-
-
-But in binary floating point:
-
-    0.1
-    → approximate binary value
-
-    0.2
-    → approximate binary value
-
-Adding them can produce:
-
-    approximately 0.3
-
-
-but not necessarily the exact binary representation of
-0.3.
-
-
-This is a representation issue, not a basic arithmetic
-mistake.
-
-
-============================================================
-5.42 LOSS OF SIGNIFICANCE
-============================================================
-
-Consider subtracting two very close values:
-
-    1.234567
-  - 1.234566
-  -----------
-    0.000001
-
-
-Many significant digits cancel.
-
-This can cause:
-
-    LOSS OF SIGNIFICANCE
-
-also called:
-
-    CANCELLATION
-
-
-This is an important source of numerical error.
-
-
-============================================================
-5.43 FLOATING-POINT ADDITION
-============================================================
-
-Floating-point addition generally follows:
-
-    1. ALIGN EXPONENTS
-    2. ADD SIGNIFICANDS
-    3. NORMALIZE
-    4. ROUND
+        A ───┐
+             AND ─── Y
+        B ───┘
 
 
 Example:
 
-    1.01 × 2^3
-    +
-    1.10 × 2^1
+    A = 1
+    B = 0
+
+    Y = 1·0
+      = 0
 
 
-Align exponents:
+------------------------------------------------------------
+6.4.2 OR GATE
+------------------------------------------------------------
 
-    1.01 × 2^3
-    +
-    0.011 × 2^3
+Boolean expression:
 
+        Y = A + B
 
-Add:
-
-      1.010
-    + 0.011
-    -------
-      1.101
+Output is 1 when AT LEAST ONE input is 1.
 
 
-Result:
+Truth Table:
 
-    1.101 × 2^3
-
-
-============================================================
-5.44 FLOATING-POINT SUBTRACTION
-============================================================
-
-General procedure:
-
-    ALIGN
-       ↓
-    SUBTRACT
-       ↓
-    NORMALIZE
-       ↓
-    ROUND
-
-
-============================================================
-5.45 FLOATING-POINT MULTIPLICATION
-============================================================
-
-For:
-
-    A × B
-
-
-General procedure:
-
-    1. Multiply significands.
-    2. Add exponents.
-    3. Determine sign.
-    4. Normalize.
-    5. Round.
+    A   B   Y = A+B
+    ----------------
+    0   0     0
+    0   1     1
+    1   0     1
+    1   1     1
 
 
 Example:
 
-    (1.1 × 2^3) × (1.01 × 2^2)
-
-
-Exponent:
-
-    3 + 2
-    = 5
-
-
-Then multiply the significands and normalize.
-
-
-============================================================
-5.46 FLOATING-POINT DIVISION
-============================================================
-
-For:
-
-    A ÷ B
-
-
-General procedure:
-
-    1. Divide significands.
-    2. Subtract exponents.
-    3. Determine sign.
-    4. Normalize.
-    5. Round.
-
-
-Example:
-
-    (1.1 × 2^5) ÷ (1.01 × 2^2)
-
-
-Exponent:
-
-    5 - 2
-    = 3
-
-
-============================================================
-5.47 FLOATING-POINT UNIT (FPU)
-============================================================
-
-FPU:
-
-    Floating-Point Unit
-
-
-It is hardware designed to perform floating-point
-operations efficiently.
-
-Typical operations:
-
-    • Addition
-    • Subtraction
-    • Multiplication
-    • Division
-    • Comparison
-
-
-Conceptual CPU:
-
-        +-----------------------+
-        |          CPU          |
-        |                       |
-        |  +-------+  +------+ |
-        |  |  ALU  |  | FPU  | |
-        |  +-------+  +------+ |
-        +-----------------------+
-
-    ALU → integer/logic operations
-    FPU → floating-point operations
-
-
-============================================================
-5.48 IMPORTANT NUMERICAL PROBLEM
-============================================================
-
-QUESTION:
-
-Represent +13.25 in IEEE 754 single precision.
-
-
-STEP 1:
-Convert 13.25 to binary.
-
-    13 = 1101₂
-
-    0.25 = 0.01₂
-
-
-Therefore:
-
-    13.25 = 1101.01₂
-
-
-STEP 2:
-Normalize:
-
-    1101.01
-    =
-    1.10101 × 2^3
-
-
-STEP 3:
-Sign:
-
-    Positive
-
-    S = 0
-
-
-STEP 4:
-Actual exponent:
-
-    3
-
-
-STEP 5:
-Stored exponent:
-
-    3 + 127
-    = 130
-
-
-130 in binary:
-
-    10000010
-
-
-STEP 6:
-Fraction:
-
-    10101
-
-Pad to 23 bits:
-
-    10101000000000000000000
-
-
-STEP 7:
-Combine:
-
-    0
-    10000010
-    10101000000000000000000
-
-
-FINAL:
-
-    01000001010101000000000000000000
-
-
-============================================================
-5.49 DECODING THE ABOVE NUMBER
-============================================================
-
-Given:
-
-    01000001010101000000000000000000
-
-
-Separate:
-
-    S = 0
-
-    E = 10000010
-
-    F = 10101000000000000000000
-
-
-Exponent:
-
-    10000010₂ = 130
-
-
-Actual exponent:
-
-    130 - 127
-    = 3
-
-
-Significand:
-
-    1.10101₂
-
-
-Convert:
-
-    1.10101₂
-
-    = 1
-    + 1/2
-    + 0/4
-    + 1/8
-    + 0/16
-    + 1/32
-
-    = 1 + 0.5 + 0.125 + 0.03125
-
-    = 1.65625
-
-
-Multiply:
-
-    1.65625 × 2^3
-
-    = 1.65625 × 8
-
-    = 13.25
-
-
-Answer:
-
-    13.25
-
-
-============================================================
-5.50 EXAM FORMULA SHEET
-============================================================
-
-SINGLE PRECISION:
-
-    Total bits = 32
-
-    Sign = 1
-
-    Exponent = 8
-
-    Fraction = 23
-
-    Bias = 127
-
-    Effective precision = 24 bits
-
-
-DOUBLE PRECISION:
-
-    Total bits = 64
-
-    Sign = 1
-
-    Exponent = 11
-
-    Fraction = 52
-
-    Bias = 1023
-
-    Effective precision = 53 bits
-
-
-NORMALIZED VALUE:
-
-    (-1)^S × (1.F) × 2^(E-Bias)
-
-
-SINGLE:
-
-    (-1)^S × (1.F) × 2^(E-127)
-
-
-DOUBLE:
-
-    (-1)^S × (1.F) × 2^(E-1023)
-
-
-BIAS:
-
-    Bias = 2^(k-1) - 1
-
-where:
-
-    k = number of exponent bits
-
-
-Therefore:
-
-    8 exponent bits:
-
-    2^7 - 1
-    = 127
-
-
-    11 exponent bits:
-
-    2^10 - 1
-    = 1023
-
-
-============================================================
-5.51 SPECIAL VALUE TABLE
-============================================================
-
-    +----------------+----------------+----------------+
-    | Exponent       | Fraction       | Result         |
-    +----------------+----------------+----------------+
-    | All 0          | All 0          | Zero           |
-    | All 0          | Non-zero       | Subnormal      |
-    | Neither all 0  | Any            | Normal         |
-    | nor all 1      |                |                |
-    | All 1          | All 0          | Infinity       |
-    | All 1          | Non-zero       | NaN            |
-    +----------------+----------------+----------------+
-
-
-============================================================
-5.52 COMMON MISTAKES
-============================================================
-
-MISTAKE 1:
-
-    "Fraction field = complete significand."
-
-CORRECT:
-
-    For normalized values:
-
-        Significand = 1.F
-
-
-MISTAKE 2:
-
-    "Single precision has 23 bits of precision."
-
-CORRECT:
-
-    23 stored fraction bits,
-    but 24-bit effective significand precision for
-    normalized numbers.
-
-
-MISTAKE 3:
-
-    Forgetting the bias.
-
-    Single → 127
-    Double → 1023
-
-
-MISTAKE 4:
-
-    Treating the exponent field as the actual exponent.
-
-CORRECT:
-
-    Actual exponent =
-    Stored exponent - Bias
-
-
-MISTAKE 5:
-
-    "Exponent all 1 means infinity."
-
-CORRECT:
-
-    All 1 + zero fraction → Infinity
-
-    All 1 + nonzero fraction → NaN
-
-
-MISTAKE 6:
-
-    "Exponent all 0 means zero."
-
-CORRECT:
-
-    All 0 + zero fraction → Zero
-
-    All 0 + nonzero fraction → Subnormal
-
-
-MISTAKE 7:
-
-    Confusing precision with range.
-
-CORRECT:
-
-    Exponent → Range
-
-    Fraction → Precision
-
-
-============================================================
-5.53 B.TECH IMPORTANT QUESTIONS
-============================================================
-
-1. Why is floating-point representation required?
-
-2. Explain fixed-point and floating-point representation.
-
-3. Explain scientific notation.
-
-4. Define sign, significand, exponent and base.
-
-5. What is normalization?
-
-6. Explain IEEE 754 floating-point representation.
-
-7. Explain IEEE 754 single precision.
-
-8. Explain IEEE 754 double precision.
-
-9. What is exponent bias?
-
-10. Why is exponent bias used?
-
-11. Find the IEEE 754 representation of a given number.
-
-12. Decode a given IEEE 754 number.
-
-13. Explain hidden leading 1.
-
-14. Explain zero, infinity and NaN.
-
-15. Explain subnormal numbers.
-
-16. Explain floating-point overflow.
-
-17. Explain floating-point underflow.
-
-18. Explain floating-point rounding.
-
-19. Explain precision and range.
-
-20. Explain floating-point addition and multiplication.
-
-
-============================================================
-5.54 COMPETITIVE-EXAM MCQs
-============================================================
-
-Q1. IEEE 754 single precision contains:
-
-A. 16 bits
-B. 32 bits
-C. 64 bits
-D. 128 bits
-
-
-Q2. Number of exponent bits in single precision:
-
-A. 7
-B. 8
-C. 11
-D. 23
-
-
-Q3. Number of fraction bits in single precision:
-
-A. 8
-B. 11
-C. 23
-D. 24
-
-
-Q4. Bias for single precision:
-
-A. 63
-B. 127
-C. 128
-D. 255
-
-
-Q5. Bias for double precision:
-
-A. 127
-B. 255
-C. 1023
-D. 2047
-
-
-Q6. Effective significand precision of normalized
-single precision is:
-
-A. 23 bits
-B. 24 bits
-C. 32 bits
-D. 8 bits
-
-
-Q7. Exponent all 1 and fraction all 0 represents:
-
-A. Zero
-B. NaN
-C. Infinity
-D. Subnormal
-
-
-Q8. Exponent all 1 and fraction nonzero represents:
-
-A. Infinity
-B. NaN
-C. Zero
-D. Normal number
-
-
-Q9. Exponent all 0 and fraction nonzero represents:
-
-A. Infinity
-B. NaN
-C. Subnormal
-D. Normal number
-
-
-Q10. Which field primarily controls floating-point range?
-
-A. Sign
-B. Exponent
-C. Fraction
-D. Significand
-
-
-ANSWERS:
-
-    Q1 → B
-    Q2 → B
-    Q3 → C
-    Q4 → B
-    Q5 → C
-    Q6 → B
-    Q7 → C
-    Q8 → B
-    Q9 → C
-    Q10 → B
-
-
-============================================================
-5.55 QUICK REVISION
-============================================================
-
-FLOATING POINT:
-
-    Sign × Significand × Base^Exponent
-
-
-NORMALIZED BINARY:
-
-    1.xxxxx × 2^E
-
-
-SINGLE:
-
-    32 bits
-    1 sign
-    8 exponent
-    23 fraction
-    Bias = 127
-    Precision = 24 bits
-
-
-DOUBLE:
-
-    64 bits
-    1 sign
-    11 exponent
-    52 fraction
-    Bias = 1023
-    Precision = 53 bits
+    A = 1
+    B = 0
+
+    Y = 1 + 0
+      = 1
 
 
 IMPORTANT:
+-----------
+In Boolean algebra:
 
-    Exponent → RANGE
+    + means OR
+    · means AND
 
-    Fraction → PRECISION
-
-
-SPECIAL VALUES:
-
-    E = 0, F = 0
-        → Zero
-
-    E = 0, F ≠ 0
-        → Subnormal
-
-    E = all 1, F = 0
-        → Infinity
-
-    E = all 1, F ≠ 0
-        → NaN
+It does NOT represent normal arithmetic addition/multiplication.
 
 
-NORMALIZED FORM:
+------------------------------------------------------------
+6.4.3 NOT GATE
+------------------------------------------------------------
 
-    (-1)^S × (1.F) × 2^(E-Bias)
+NOT gate has one input.
 
+Boolean expression:
 
-FLOATING-POINT ADDITION:
+        Y = A'
 
-    ALIGN
-      ↓
-    ADD
-      ↓
-    NORMALIZE
-      ↓
-    ROUND
+Read as:
 
-
-FLOATING-POINT MULTIPLICATION:
-
-    Multiply significands
-    +
-    Add exponents
-    +
-    Normalize
-    +
-    Round
+    "NOT A"
 
 
-COMMON ERRORS:
+Truth Table:
 
-    • Rounding
-    • Representation error
-    • Precision loss
-    • Cancellation
-    • Overflow
-    • Underflow
+    A   Y = A'
+    ----------
+    0     1
+    1     0
+
+
+The NOT operation complements the input.
+
+
+------------------------------------------------------------
+6.4.4 NAND GATE
+------------------------------------------------------------
+
+NAND = NOT + AND
+
+Boolean expression:
+
+        Y = (A·B)'
+
+
+Truth Table:
+
+    A   B   A·B   Y
+    ----------------
+    0   0    0    1
+    0   1    0    1
+    1   0    0    1
+    1   1    1    0
+
+
+NAND is a UNIVERSAL GATE.
+
+It can be used to implement:
+
+    • NOT
+    • AND
+    • OR
+    • Any Boolean function
+
+
+NAND as NOT:
+
+        A NAND A
+
+        Y = (A·A)'
+          = A'
+
+
+------------------------------------------------------------
+6.4.5 NOR GATE
+------------------------------------------------------------
+
+NOR = NOT + OR
+
+Boolean expression:
+
+        Y = (A+B)'
+
+
+Truth Table:
+
+    A   B   A+B   Y
+    ----------------
+    0   0    0    1
+    0   1    1    0
+    1   0    1    0
+    1   1    1    0
+
+
+NOR is also a UNIVERSAL GATE.
+
+
+NOR as NOT:
+
+        A NOR A
+
+        Y = (A+A)'
+          = A'
+
+
+------------------------------------------------------------
+6.4.6 XOR GATE
+------------------------------------------------------------
+
+XOR = Exclusive OR
+
+Boolean expression:
+
+        Y = A ⊕ B
+
+For two inputs:
+
+    Y = A'B + AB'
+
+
+Output is 1 when the inputs are DIFFERENT.
+
+
+Truth Table:
+
+    A   B   Y
+    ---------
+    0   0   0
+    0   1   1
+    1   0   1
+    1   1   0
+
+
+Therefore:
+
+    Same inputs → 0
+    Different inputs → 1
+
+
+Important applications:
+
+    • Half adder
+    • Full adder
+    • Parity generation
+    • Parity checking
+    • Comparators
+
+
+------------------------------------------------------------
+6.4.7 XNOR GATE
+------------------------------------------------------------
+
+XNOR = Exclusive NOR
+
+Boolean expression:
+
+        Y = (A ⊕ B)'
+
+
+Equivalent expression:
+
+        Y = AB + A'B'
+
+
+Output is 1 when inputs are SAME.
+
+
+Truth Table:
+
+    A   B   Y
+    ---------
+    0   0   1
+    0   1   0
+    1   0   0
+    1   1   1
+
+
+Applications:
+
+    • Equality comparator
+    • Digital comparison
+    • Error detection
 
 
 ============================================================
-5.56 MASTER CHECKPOINT
+6.4.8 COMPLETE GATE TRUTH TABLE
 ============================================================
 
-Before considering Chapter 5 mastered, you should be able to:
+For two inputs:
 
-[ ] Explain why floating point is needed.
-[ ] Explain fixed-point representation.
-[ ] Explain floating-point representation.
-[ ] Explain scientific notation.
-[ ] Identify sign, significand and exponent.
-[ ] Convert binary numbers to normalized form.
-[ ] Explain IEEE 754.
-[ ] Explain single precision.
-[ ] Explain double precision.
-[ ] Remember field sizes.
-[ ] Calculate exponent bias.
-[ ] Encode simple numbers.
-[ ] Decode IEEE 754 values.
-[ ] Explain hidden leading 1.
-[ ] Explain zero.
-[ ] Explain infinity.
-[ ] Explain NaN.
-[ ] Explain subnormal numbers.
-[ ] Explain precision.
-[ ] Explain rounding.
-[ ] Explain overflow.
-[ ] Explain underflow.
-[ ] Solve IEEE 754 numerical problems.
-[ ] Solve B.Tech-level questions.
-[ ] Solve competitive-exam MCQs.
+    A B | AND OR NAND NOR XOR XNOR
+    --------------------------------
+    0 0 |  0   0   1    1   0   1
+    0 1 |  0   1   1    0   1   0
+    1 0 |  0   1   1    0   1   0
+    1 1 |  1   1   0    0   0   1
 
 
 ============================================================
-END OF CHAPTER 5
+6.5 BOOLEAN ALGEBRA
 ============================================================
 
-NEXT:
+Boolean algebra is a mathematical system used to represent and
+simplify logical operations.
 
-CHAPTER 6 — DIGITAL LOGIC FUNDAMENTALS
+Boolean variables can have only two values:
 
-    6.1 Digital vs Analog Systems
-    6.2 Analog and Digital Signals
-    6.3 Advantages of Digital Systems
-    6.4 Logic Gates
-        • AND
-        • OR
-        • NOT
-        • NAND
-        • NOR
-        • XOR
-        • XNOR
-    6.5 Boolean Algebra
-    6.6 Boolean Identities
-    6.7 De Morgan's Laws
-    6.8 Truth Tables
-    6.9 Logic Circuits
-    6.10 Combinational Circuits
-    6.11 Sequential Circuits
+        0 or 1
+
+
+Basic Boolean operations:
+
+        AND → A·B
+        OR  → A+B
+        NOT → A'
+
+
+Example:
+
+        F = A·B + C
+
+
+Meaning:
+
+    F = (A AND B) OR C
+
+
+------------------------------------------------------------
+6.5.1 Boolean Expression
+------------------------------------------------------------
+
+Example:
+
+        F = AB + A'C
+
+This expression contains:
+
+    AB   → AND operation
+    A'C  → AND operation
+    +    → OR operation
+
+
+Circuit structure:
+
+        A ──┬── AND ──┐
+        B ──┘         │
+                      OR ── F
+        A ── NOT ─┐   │
+                  AND ─┘
+        C ────────┘
+
+
 ============================================================
+6.6 BOOLEAN IDENTITIES
+============================================================
+
+Boolean identities are rules used to simplify Boolean
+expressions.
+
+
+1. IDENTITY LAW
+---------------
+
+    A + 0 = A
+
+    A · 1 = A
+
+
+2. NULL / DOMINANCE LAW
+-----------------------
+
+    A + 1 = 1
+
+    A · 0 = 0
+
+
+3. IDEMPOTENT LAW
+-----------------
+
+    A + A = A
+
+    A · A = A
+
+
+4. COMPLEMENT LAW
+-----------------
+
+    A + A' = 1
+
+    A · A' = 0
+
+
+5. INVOLUTION LAW
+-----------------
+
+    (A')' = A
+
+
+6. COMMUTATIVE LAW
+------------------
+
+    A + B = B + A
+
+    AB = BA
+
+
+7. ASSOCIATIVE LAW
+------------------
+
+    A + (B + C)
+      = (A + B) + C
+
+    A(BC)
+      = (AB)C
+
+
+8. DISTRIBUTIVE LAW
+-------------------
+
+    A(B+C) = AB + AC
+
+Also:
+
+    A + BC = (A+B)(A+C)
+
+
+The second form is particularly important in Boolean algebra.
+
+
+9. ABSORPTION LAW
+-----------------
+
+    A + AB = A
+
+    A(A+B) = A
+
+
+10. REDUNDANCY THEOREM
+----------------------
+
+    A + A'B = A + B
+
+Similarly:
+
+    A(A' + B) = AB
+
+
+11. CONSENSUS THEOREM
+---------------------
+
+    AB + A'C + BC
+      = AB + A'C
+
+
+These identities are extremely useful for circuit
+simplification.
+
+
+============================================================
+6.7 DE MORGAN'S LAWS
+============================================================
+
+De Morgan's laws are fundamental rules for converting between
+AND and OR operations.
+
+
+LAW 1:
+------
+
+        (A + B)' = A' · B'
+
+
+Meaning:
+
+    NOT(OR)
+       =
+    AND of NOTs
+
+
+LAW 2:
+------
+
+        (A · B)' = A' + B'
+
+
+Meaning:
+
+    NOT(AND)
+       =
+    OR of NOTs
+
+
+------------------------------------------------------------
+Example 1
+------------------------------------------------------------
+
+Simplify:
+
+        (A+B)'
+
+Using De Morgan:
+
+        (A+B)' = A'B'
+
+
+------------------------------------------------------------
+Example 2
+------------------------------------------------------------
+
+Simplify:
+
+        (AB)'
+
+Using De Morgan:
+
+        (AB)' = A'+B'
+
+
+------------------------------------------------------------
+For three variables
+------------------------------------------------------------
+
+        (A+B+C)'
+          = A'B'C'
+
+
+and:
+
+        (ABC)'
+          = A'+B'+C'
+
+
+------------------------------------------------------------
+Important Memory Rule
+------------------------------------------------------------
+
+When complement is applied to a group:
+
+    AND ↔ OR
+
+    A  ↔ A'
+
+
+Therefore:
+
+    (A+B)' = A'B'
+
+    (AB)' = A'+B'
+
+
+============================================================
+6.8 TRUTH TABLES
+============================================================
+
+A truth table represents the output of a logic circuit for
+every possible input combination.
+
+
+6.8.1 Number of Rows
+--------------------
+
+For n binary inputs:
+
+        Number of combinations = 2^n
+
+
+Examples:
+
+    n = 1 → 2 rows
+    n = 2 → 4 rows
+    n = 3 → 8 rows
+    n = 4 → 16 rows
+    n = 5 → 32 rows
+
+
+6.8.2 Two-Input Truth Table
+---------------------------
+
+    A B | Y
+    -------
+    0 0 | ?
+    0 1 | ?
+    1 0 | ?
+    1 1 | ?
+
+
+6.8.3 Example
+
+Given:
+
+        Y = AB + C
+
+
+Create intermediate columns:
+
+    A B C | AB | Y
+    ----------------
+    0 0 0 |  0 | 0
+    0 0 1 |  0 | 1
+    0 1 0 |  0 | 0
+    0 1 1 |  0 | 1
+    1 0 0 |  0 | 0
+    1 0 1 |  0 | 1
+    1 1 0 |  1 | 1
+    1 1 1 |  1 | 1
+
+
+Therefore:
+
+    Y = 1 for:
+        001
+        011
+        101
+        110
+        111
+
+
+============================================================
+6.9 LOGIC CIRCUITS
+============================================================
+
+A logic circuit is an interconnection of logic gates that
+performs a particular Boolean function.
+
+
+Example:
+
+        F = AB + C
+
+
+Circuit:
+
+        A ───┐
+             AND ───┐
+        B ───┘      │
+                    OR ─── F
+        C ──────────┘
+
+
+Steps for designing the circuit:
+
+    1. Identify inputs.
+    2. Write Boolean expression.
+    3. Break expression into operations.
+    4. Select required gates.
+    5. Connect gates.
+    6. Verify using truth table.
+
+
+------------------------------------------------------------
+Example
+------------------------------------------------------------
+
+Expression:
+
+        F = A'B + C
+
+
+Implementation:
+
+    Step 1:
+        A → NOT → A'
+
+    Step 2:
+        A' and B → AND
+
+    Step 3:
+        Result and C → OR
+
+Therefore:
+
+        A ── NOT ──┐
+                   AND ──┐
+        B ─────────┘     │
+                         OR ── F
+        C ───────────────┘
+
+
+============================================================
+6.10 COMBINATIONAL CIRCUITS
+============================================================
+
+A combinational circuit is a digital circuit whose output
+depends ONLY on the PRESENT INPUTS.
+
+
+General form:
+
+        Inputs
+          ↓
+    Combinational
+       Circuit
+          ↓
+        Output
+
+
+Mathematically:
+
+        Output = f(Current Inputs)
+
+
+There is NO memory element.
+
+
+Examples:
+
+    • Half Adder
+    • Full Adder
+    • Half Subtractor
+    • Full Subtractor
+    • Multiplexer
+    • Demultiplexer
+    • Encoder
+    • Decoder
+    • Comparator
+
+
+------------------------------------------------------------
+6.10.1 Half Adder
+------------------------------------------------------------
+
+Inputs:
+
+    A, B
+
+Outputs:
+
+    Sum (S)
+    Carry (C)
+
+
+Equations:
+
+        S = A ⊕ B
+
+        C = AB
+
+
+Truth table:
+
+    A B | S C
+    -----------
+    0 0 | 0 0
+    0 1 | 1 0
+    1 0 | 1 0
+    1 1 | 0 1
+
+
+------------------------------------------------------------
+6.10.2 Full Adder
+------------------------------------------------------------
+
+Inputs:
+
+    A
+    B
+    Cin
+
+Outputs:
+
+    Sum
+    Cout
+
+
+Equations:
+
+        Sum = A ⊕ B ⊕ Cin
+
+
+        Cout = AB + ACin + BCin
+
+
+Full adder has:
+
+    3 inputs
+    2 outputs
+
+
+------------------------------------------------------------
+6.10.3 Multiplexer
+------------------------------------------------------------
+
+A multiplexer (MUX) selects ONE input from multiple inputs.
+
+Example:
+
+    4:1 MUX
+
+        D0 ──┐
+        D1 ──┤
+        D2 ──┤ MUX ── Y
+        D3 ──┘
+             ↑
+           S1 S0
+
+
+For n select lines:
+
+        Number of inputs = 2^n
+
+
+Examples:
+
+    1 select line  → 2 inputs
+    2 select lines → 4 inputs
+    3 select lines → 8 inputs
+    4 select lines → 16 inputs
+
+
+------------------------------------------------------------
+6.10.4 Decoder
+------------------------------------------------------------
+
+A decoder converts n input lines into up to 2^n output lines.
+
+Example:
+
+    2-to-4 Decoder
+
+    Inputs:
+        A, B
+
+    Outputs:
+        Y0, Y1, Y2, Y3
+
+
+Only one output is normally active for each input
+combination in an active-high decoder.
+
+
+------------------------------------------------------------
+6.10.5 Encoder
+------------------------------------------------------------
+
+An encoder performs the reverse operation of a decoder.
+
+Example:
+
+    4-to-2 Encoder
+
+        4 inputs
+           ↓
+        Encoder
+           ↓
+        2 outputs
+
+
+============================================================
+6.11 SEQUENTIAL CIRCUITS
+============================================================
+
+A sequential circuit is a digital circuit whose output depends
+on:
+
+    1. Present inputs
+    2. Previous state
+
+Therefore:
+
+        Output = f(Present Input, Previous State)
+
+
+Sequential circuits contain MEMORY.
+
+
+General structure:
+
+              ┌───────────────┐
+    Input ───→ │ Combinational │ ───→ Output
+              │    Logic      │
+              └───────┬───────┘
+                      ↓
+                   Memory
+                      │
+                      └────────── feedback
+
+
+------------------------------------------------------------
+6.11.1 Examples
+------------------------------------------------------------
+
+Sequential circuits include:
+
+    • Latches
+    • Flip-flops
+    • Registers
+    • Counters
+    • Shift registers
+    • Memory circuits
+    • Finite State Machines
+
+
+------------------------------------------------------------
+6.11.2 Latch
+------------------------------------------------------------
+
+A latch is a basic memory element.
+
+It is generally LEVEL-TRIGGERED.
+
+
+Examples:
+
+    • SR latch
+    • D latch
+
+
+------------------------------------------------------------
+6.11.3 Flip-Flop
+------------------------------------------------------------
+
+A flip-flop is a memory element commonly controlled by a
+clock edge.
+
+Types:
+
+    1. SR Flip-Flop
+    2. JK Flip-Flop
+    3. D Flip-Flop
+    4. T Flip-Flop
+
+
+D Flip-Flop:
+
+        D ─────→ [ D FF ] ─────→ Q
+                    ↑
+                  Clock
+
+
+The D flip-flop is widely used for storing one bit.
+
+
+------------------------------------------------------------
+6.11.4 Register
+------------------------------------------------------------
+
+A register is a group of flip-flops used to store multiple bits.
+
+Example:
+
+    4-bit register:
+
+        FF0 → stores bit 0
+        FF1 → stores bit 1
+        FF2 → stores bit 2
+        FF3 → stores bit 3
+
+
+Therefore:
+
+        4 Flip-Flops → 4-bit storage
+
+
+------------------------------------------------------------
+6.11.5 Counter
+------------------------------------------------------------
+
+A counter is a sequential circuit that progresses through a
+sequence of states according to clock pulses.
+
+Example: 2-bit binary counter
+
+    00
+    ↓
+    01
+    ↓
+    10
+    ↓
+    11
+    ↓
+    00
+    ↓
+    ...
+
+
+============================================================
+6.12 COMBINATIONAL vs SEQUENTIAL CIRCUITS
+============================================================
+
++----------------------+----------------------------+
+| Combinational        | Sequential                |
++----------------------+----------------------------+
+| No memory            | Has memory                |
+| Present input only   | Present + previous state  |
+| Usually no feedback  | Feedback is common        |
+| Faster/simple        | More complex              |
+| No clock required    | Often clock-controlled    |
+| Adder                | Counter                   |
+| MUX                  | Register                  |
+| Decoder              | Flip-flop                 |
+| Encoder              | Shift register            |
++----------------------+----------------------------+
+
+
+============================================================
+6.13 IMPORTANT CONCEPT: UNIVERSAL GATES
+============================================================
+
+NAND and NOR are called UNIVERSAL GATES because any Boolean
+function can be implemented using only NAND gates or only NOR
+gates.
+
+
+Using NAND:
+
+NOT:
+
+        A' = A NAND A
+
+
+AND:
+
+        AB = (A NAND B) NAND (A NAND B)
+
+
+OR:
+
+        A+B = (A NAND A) NAND (B NAND B)
+
+
+Using NOR:
+
+NOT:
+
+        A' = A NOR A
+
+
+OR:
+
+        A+B = (A NOR B) NOR (A NOR B)
+
+
+AND:
+
+        AB = (A NOR A) NOR (B NOR B)
+
+
+This topic is very important for digital logic examinations.
+
+
+============================================================
+6.14 IMPORTANT CONCEPT: XOR vs OR
+============================================================
+
+OR:
+
+        A+B
+
+Output is 1 when:
+
+    At least one input is 1.
+
+
+XOR:
+
+        A⊕B
+
+Output is 1 when:
+
+    Inputs are different.
+
+
+Comparison:
+
+    A B | OR | XOR
+    ----------------
+    0 0 |  0 |  0
+    0 1 |  1 |  1
+    1 0 |  1 |  1
+    1 1 |  1 |  0
+
+
+The difference occurs at:
+
+        A = 1, B = 1
+
+
+============================================================
+6.15 IMPORTANT BOOLEAN SIMPLIFICATION EXAMPLES
+============================================================
+
+Example 1:
+
+        F = A + AB
+
+Using absorption law:
+
+        A + AB = A
+
+Therefore:
+
+        F = A
+
+
+------------------------------------------------------------
+
+Example 2:
+
+        F = A(A+B)
+
+Using absorption law:
+
+        F = A
+
+
+------------------------------------------------------------
+
+Example 3:
+
+        F = A + A'B
+
+Using the identity:
+
+        A + A'B = A+B
+
+Therefore:
+
+        F = A+B
+
+
+------------------------------------------------------------
+
+Example 4:
+
+        F = AB + AB'
+
+Factor A:
+
+        F = A(B+B')
+
+Since:
+
+        B+B' = 1
+
+Therefore:
+
+        F = A
+
+
+------------------------------------------------------------
+
+Example 5:
+
+        F = (A+B)'
+
+Using De Morgan:
+
+        F = A'B'
+
+
+============================================================
+6.16 KEY CONCEPTS TO REMEMBER
+============================================================
+
+1. Digital systems use discrete values.
+
+2. Binary digital logic uses:
+
+        0 and 1
+
+
+3. AND:
+
+        Y = AB
+
+    Output 1 only if all inputs are 1.
+
+
+4. OR:
+
+        Y = A+B
+
+    Output 1 if at least one input is 1.
+
+
+5. NOT:
+
+        Y = A'
+
+    Output is complement of input.
+
+
+6. NAND:
+
+        Y = (AB)'
+
+
+7. NOR:
+
+        Y = (A+B)'
+
+
+8. XOR:
+
+        Y = A⊕B = A'B + AB'
+
+
+9. XNOR:
+
+        Y = AB + A'B'
+
+
+10. NAND and NOR are universal gates.
+
+
+11. De Morgan:
+
+        (A+B)' = A'B'
+
+        (AB)' = A'+B'
+
+
+12. n binary inputs produce:
+
+        2^n
+
+    possible combinations.
+
+
+13. Combinational circuit:
+
+        Output = f(Present Input)
+
+
+14. Sequential circuit:
+
+        Output = f(Present Input, Previous State)
+
+
+15. Sequential circuits contain memory.
+
+
+============================================================
+6.17 EXAM / GATE-LEVEL IMPORTANT POINTS
+============================================================
+
+HIGH PRIORITY TOPICS:
+
+    ★ Boolean identities
+    ★ De Morgan's laws
+    ★ NAND/NOR universal gates
+    ★ XOR/XNOR
+    ★ Truth-table construction
+    ★ Boolean expression simplification
+    ★ Combinational vs sequential circuits
+    ★ Number of truth-table rows = 2^n
+    ★ Half adder and full adder
+    ★ Multiplexer and decoder
+    ★ Latch and flip-flop basics
+
+
+============================================================
+6.18 CHAPTER SUMMARY
+============================================================
+
+Digital Logic Fundamentals can be viewed as:
+
+                DIGITAL LOGIC
+                     │
+       ┌─────────────┴─────────────┐
+       ↓                           ↓
+   Boolean Logic              Digital Signals
+       │                           │
+       ↓                           ↓
+   Logic Gates                Binary 0/1
+       │
+       ├── AND
+       ├── OR
+       ├── NOT
+       ├── NAND
+       ├── NOR
+       ├── XOR
+       └── XNOR
+       │
+       ↓
+ Boolean Algebra
+       │
+       ├── Identities
+       ├── Simplification
+       └── De Morgan's Laws
+       │
+       ↓
+ Logic Circuits
+       │
+       ├── Combinational
+       │      ├── Adder
+       │      ├── MUX
+       │      ├── Decoder
+       │      └── Encoder
+       │
+       └── Sequential
+              ├── Latch
+              ├── Flip-Flop
+              ├── Register
+              └── Counter
+
+
+============================================================
+END OF CHAPTER 6
+============================================================
+
+NEXT RECOMMENDED STEP:
+
+Chapter 7 — Boolean Algebra & Logic Simplification
+
+Suggested topics:
+    7.1 Boolean Functions
+    7.2 SOP and POS
+    7.3 Minterms
+    7.4 Maxterms
+    7.5 Canonical SOP
+    7.6 Canonical POS
+    7.7 K-Map
+    7.8 2-variable K-Map
+    7.9 3-variable K-Map
+    7.10 4-variable K-Map
+    7.11 Don't-Care Conditions
+    7.12 NAND/NOR Implementation
+    7.13 Quine-McCluskey Method
+    7.14 GATE-Level Boolean Simplification
+============================================================
+
