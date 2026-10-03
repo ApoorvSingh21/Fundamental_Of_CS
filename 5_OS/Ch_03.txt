@@ -1,0 +1,2116 @@
+============================================================
+OPERATING SYSTEMS — CHAPTER 03
+PROCESS MANAGEMENT
+Zero → Advanced | M.Tech | GATE | Interview | Job Ready
+============================================================
+
+1. INTRODUCTION TO PROCESS MANAGEMENT
+------------------------------------------------------------
+
+A process is a program in execution.
+
+Program:
+    Passive entity
+    Stored on disk
+    Contains instructions
+
+Process:
+    Active entity
+    Program currently executing
+    Has CPU state, memory, resources, etc.
+
+Example:
+
+    program.exe
+         |
+         | execution
+         v
+      PROCESS
+
+A single program can create multiple processes.
+
+Example:
+    Browser program
+        |
+        +---- Process 1
+        +---- Process 2
+        +---- Process 3
+
+
+2. PROGRAM VS PROCESS
+------------------------------------------------------------
+
++----------------+----------------------------+
+| Program        | Process                    |
++----------------+----------------------------+
+| Passive        | Active                     |
+| Stored on disk | Loaded into memory        |
+| No execution   | Currently executing       |
+| Static         | Dynamic                    |
++----------------+----------------------------+
+
+Example:
+
+    Chrome executable = Program
+
+    Running Chrome = Process
+
+
+3. PROCESS MEMORY LAYOUT
+------------------------------------------------------------
+
+A typical process has the following memory sections:
+
+             High Address
+    +-------------------------+
+    |          Stack          |
+    | Local variables         |
+    | Function calls          |
+    +-------------------------+
+    |           ↓             |
+    |                         |
+    |           ↑             |
+    +-------------------------+
+    |          Heap           |
+    | Dynamic memory          |
+    +-------------------------+
+    |          Data           |
+    | Global/static variables |
+    +-------------------------+
+    |          Text           |
+    | Program instructions    |
+    +-------------------------+
+             Low Address
+
+
+Text:
+    Machine instructions / executable code
+
+Data:
+    Initialized global/static variables
+
+BSS:
+    Uninitialized global/static variables
+
+Heap:
+    Dynamically allocated memory
+
+Stack:
+    Function calls
+    Local variables
+    Return addresses
+
+
+4. PROCESS STATES
+------------------------------------------------------------
+
+A process does not continuously execute on the CPU.
+
+It moves between different states.
+
+Basic process states:
+
+    +-------+
+    |  New  |
+    +---+---+
+        |
+        v
+    +-------+
+    | Ready |
+    +---+---+
+        |
+        | scheduler dispatch
+        v
+   +----------+
+   | Running  |
+   +----+-----+
+        |
+        +------------------+
+        |                  |
+        | I/O request      | exit
+        v                  v
+   +---------+         +-----------+
+   | Waiting |         | Terminated|
+   +----+----+         +-----------+
+        |
+        | I/O complete
+        v
+     Ready
+
+
+5. NEW STATE
+------------------------------------------------------------
+
+A process is in the NEW state when it is being created.
+
+Example:
+
+    User starts a program.
+
+    OS creates:
+        - Process ID
+        - Address space
+        - PCB
+        - Required resources
+
+Then the process moves to READY.
+
+
+6. READY STATE
+------------------------------------------------------------
+
+A process is ready to execute but is waiting for CPU.
+
+Example:
+
+    P1 is running.
+
+    P2 and P3 are ready.
+
+              CPU
+               |
+               v
+              P1
+
+    Ready Queue:
+        P2 -> P3 -> P4
+
+
+7. RUNNING STATE
+------------------------------------------------------------
+
+A process is currently executing instructions on a CPU.
+
+Important:
+
+    On a single-core CPU:
+
+    Only ONE process can execute at a time.
+
+    On a multi-core CPU:
+
+    Multiple processes can execute simultaneously,
+    up to the number of available CPU cores.
+
+
+8. WAITING / BLOCKED STATE
+------------------------------------------------------------
+
+A process enters WAITING when it cannot continue until
+some event occurs.
+
+Examples:
+
+    - Waiting for disk I/O
+    - Waiting for keyboard input
+    - Waiting for network data
+    - Waiting for another process
+    - Waiting for a resource
+
+Example:
+
+    P1:
+        read(file)
+
+    Disk operation is slow.
+
+    CPU should not remain idle.
+
+    Therefore:
+
+        P1 -> Waiting
+
+    CPU executes:
+
+        P2
+
+
+9. TERMINATED STATE
+------------------------------------------------------------
+
+A process enters TERMINATED state when execution finishes
+or the process is explicitly terminated.
+
+Reasons:
+
+    - Normal completion
+    - Error
+    - Parent termination
+    - kill/termination signal
+    - Fatal exception
+
+
+10. PROCESS STATE TRANSITIONS
+------------------------------------------------------------
+
+Important transitions:
+
+    NEW -> READY
+
+        Process creation completed.
+
+    READY -> RUNNING
+
+        CPU scheduler selects process.
+
+    RUNNING -> READY
+
+        Time quantum expires
+        or process is preempted.
+
+    RUNNING -> WAITING
+
+        Process requests I/O/resource.
+
+    WAITING -> READY
+
+        Required event/I/O completes.
+
+    RUNNING -> TERMINATED
+
+        Process finishes.
+
+
+11. FIVE-STATE MODEL
+------------------------------------------------------------
+
+The standard five-state model:
+
+    1. New
+    2. Ready
+    3. Running
+    4. Waiting/Blocked
+    5. Terminated
+
+
+Diagram:
+
+                  +------+
+                  | New  |
+                  +--+---+
+                     |
+                     v
+                  +------+
+           +----->|Ready |<-----+
+           |      +--+---+      |
+           |         |          |
+           |         v          |
+           |      +-------+     |
+           |      |Running|     |
+           |      +--+----+     |
+           |         |          |
+           |    +----+----+     |
+           |    |         |     |
+           |    v         v     |
+           | Waiting   Terminated
+           |    |
+           +----+
+            I/O complete
+
+
+12. PROCESS CONTROL BLOCK (PCB)
+------------------------------------------------------------
+
+PCB is one of the most important OS concepts.
+
+PCB = Process Control Block
+
+The OS maintains a PCB for every process.
+
+PCB contains information required to manage a process.
+
+
+Typical PCB:
+
+    +--------------------------------+
+    | Process ID (PID)               |
+    +--------------------------------+
+    | Process State                  |
+    +--------------------------------+
+    | Program Counter                |
+    +--------------------------------+
+    | CPU Registers                  |
+    +--------------------------------+
+    | CPU Scheduling Information     |
+    +--------------------------------+
+    | Memory Management Information  |
+    +--------------------------------+
+    | Accounting Information         |
+    +--------------------------------+
+    | I/O Status Information         |
+    +--------------------------------+
+
+
+13. PROCESS ID (PID)
+------------------------------------------------------------
+
+Every process generally has a unique process identifier.
+
+Linux example:
+
+    $ ps
+
+Example output:
+
+    PID     COMMAND
+    1001    bash
+    1050    vim
+    1100    python
+
+
+14. PROGRAM COUNTER
+------------------------------------------------------------
+
+Program Counter (PC) stores the address of the next
+instruction to execute.
+
+Example:
+
+    Instruction 100
+    Instruction 104
+    Instruction 108
+    Instruction 112
+
+If PC = 108
+
+Next instruction:
+
+    Instruction at address 108
+
+
+15. CPU REGISTERS IN PCB
+------------------------------------------------------------
+
+When a process is interrupted, CPU register information
+must be saved.
+
+Examples:
+
+    - General purpose registers
+    - Stack pointer
+    - Program counter
+    - Status/flags register
+
+
+16. CPU SCHEDULING INFORMATION
+------------------------------------------------------------
+
+PCB can contain:
+
+    - Process priority
+    - Scheduling queue pointers
+    - Scheduling parameters
+    - CPU burst information
+
+
+17. MEMORY MANAGEMENT INFORMATION
+------------------------------------------------------------
+
+May include:
+
+    - Page table information
+    - Segment table information
+    - Base/limit information
+    - Address-space information
+
+
+18. I/O STATUS INFORMATION
+------------------------------------------------------------
+
+Contains information such as:
+
+    - Open files
+    - Allocated devices
+    - I/O requests
+    - File descriptors
+
+
+19. ACCOUNTING INFORMATION
+------------------------------------------------------------
+
+May include:
+
+    - CPU time used
+    - Process creation time
+    - User ID
+    - Resource usage
+
+
+20. PROCESS TABLE
+------------------------------------------------------------
+
+The OS maintains a process table.
+
+Conceptually:
+
+    Process Table
+
+    +------+----------+---------+---------+
+    | PID  | State    | PC      | Memory  |
+    +------+----------+---------+---------+
+    | 101  | Ready    | 2048    | ...     |
+    | 102  | Running  | 4096    | ...     |
+    | 103  | Waiting  | 8192    | ...     |
+    +------+----------+---------+---------+
+
+
+21. PROCESS SCHEDULING
+------------------------------------------------------------
+
+If multiple processes are ready, the OS must decide:
+
+    "Which process should get the CPU?"
+
+This is called CPU scheduling.
+
+The scheduler selects a process from the READY queue.
+
+
+22. READY QUEUE
+------------------------------------------------------------
+
+Processes waiting for CPU are maintained in a ready queue.
+
+Example:
+
+    READY QUEUE
+
+    P1 -> P4 -> P2 -> P5
+
+The scheduler selects one process according to
+the scheduling algorithm.
+
+
+23. SCHEDULER
+------------------------------------------------------------
+
+The scheduler selects processes for execution.
+
+Important scheduler types:
+
+    1. Long-term scheduler
+    2. Short-term scheduler
+    3. Medium-term scheduler
+
+
+24. LONG-TERM SCHEDULER
+------------------------------------------------------------
+
+Also called:
+
+    Job Scheduler
+
+Responsible for selecting processes from secondary storage
+and loading them into memory.
+
+Controls:
+
+    Degree of multiprogramming
+
+
+25. SHORT-TERM SCHEDULER
+------------------------------------------------------------
+
+Also called:
+
+    CPU Scheduler
+
+Selects a process from the ready queue and allocates CPU.
+
+It runs very frequently.
+
+Therefore:
+
+    Must be very fast.
+
+
+26. MEDIUM-TERM SCHEDULER
+------------------------------------------------------------
+
+Medium-term scheduler is associated with swapping.
+
+It may temporarily remove a process from memory and later
+bring it back.
+
+Concept:
+
+    Main Memory
+         |
+         | swap out
+         v
+    Secondary Storage
+
+         |
+         | swap in
+         v
+
+    Main Memory
+
+
+27. DISPATCHER
+------------------------------------------------------------
+
+The dispatcher gives CPU control to the process selected
+by the short-term scheduler.
+
+Dispatcher performs tasks such as:
+
+    1. Context switch
+    2. Switch to user mode
+    3. Jump to proper program location
+
+
+28. DISPATCH LATENCY
+------------------------------------------------------------
+
+The time required by the dispatcher to stop one process
+and start another is called:
+
+    Dispatch latency
+
+
+29. CONTEXT SWITCH
+------------------------------------------------------------
+
+Context switch occurs when CPU changes from one process
+to another.
+
+Example:
+
+    Before:
+
+        CPU -> P1
+
+    OS saves P1 context into PCB.
+
+    OS loads P2 context from PCB.
+
+    After:
+
+        CPU -> P2
+
+
+30. WHAT IS A PROCESS CONTEXT?
+------------------------------------------------------------
+
+Process context contains the CPU state required to
+resume a process.
+
+Examples:
+
+    - Program Counter
+    - CPU registers
+    - Stack pointer
+    - Processor status
+    - Scheduling state
+
+
+31. CONTEXT SWITCHING
+------------------------------------------------------------
+
+Suppose:
+
+    P1 is running.
+
+    Timer interrupt occurs.
+
+    OS decides to execute P2.
+
+Steps:
+
+    1. Interrupt occurs.
+    2. CPU enters kernel mode.
+    3. Save P1 CPU state.
+    4. Update P1 PCB.
+    5. Select P2.
+    6. Load P2 CPU state.
+    7. Update P2 state.
+    8. Return to execution.
+    9. P2 runs.
+
+
+32. CONTEXT SWITCH DIAGRAM
+------------------------------------------------------------
+
+        CPU
+         |
+         v
+       P1 Running
+         |
+         | timer interrupt
+         v
+    Kernel / Scheduler
+         |
+         | save P1 context
+         v
+       PCB(P1)
+         |
+         | load P2 context
+         v
+       PCB(P2)
+         |
+         v
+       P2 Running
+
+
+33. CONTEXT SWITCH OVERHEAD
+------------------------------------------------------------
+
+Context switching does not perform useful application work.
+
+It consumes CPU time.
+
+Therefore:
+
+    More context switches
+            =
+    More overhead
+
+
+34. PROCESS CREATION
+------------------------------------------------------------
+
+A process can create another process.
+
+The creating process is called:
+
+    Parent process
+
+The newly created process is called:
+
+    Child process
+
+Example:
+
+    Parent
+      |
+      +---- Child 1
+      |
+      +---- Child 2
+      |
+      +---- Child 3
+
+
+35. PROCESS TREE
+------------------------------------------------------------
+
+Processes can form a hierarchy.
+
+Example:
+
+                P1
+              /    \
+            P2      P3
+           /  \
+         P4    P5
+
+P1 = parent of P2 and P3
+
+P2 = parent of P4 and P5
+
+P4 and P5 = descendants of P1
+
+
+36. UNIX PROCESS CREATION
+------------------------------------------------------------
+
+Unix/Linux commonly uses:
+
+    fork()
+
+fork() creates a new process.
+
+Example:
+
+    pid_t pid = fork();
+
+
+37. FORK()
+------------------------------------------------------------
+
+fork() creates a child process.
+
+After successful fork():
+
+    Parent continues execution.
+
+    Child also continues execution.
+
+Therefore:
+
+    One process
+         |
+       fork()
+         |
+         +-----------+
+         |           |
+       Parent      Child
+
+
+38. RETURN VALUE OF FORK()
+------------------------------------------------------------
+
+fork() returns different values.
+
+In parent:
+
+    fork() returns child's PID
+
+In child:
+
+    fork() returns 0
+
+On failure:
+
+    fork() returns -1
+
+
+Example:
+
+    pid_t pid = fork();
+
+    if (pid == 0)
+        printf("Child\n");
+    else if (pid > 0)
+        printf("Parent\n");
+    else
+        printf("Fork failed\n");
+
+
+39. IMPORTANT FORK CONCEPT
+------------------------------------------------------------
+
+Consider:
+
+    printf("A\n");
+
+    fork();
+
+    printf("B\n");
+
+
+Before fork:
+
+    One process
+
+After fork:
+
+    Two processes
+
+Therefore:
+
+    "B" may be printed twice.
+
+
+40. FORK() EXAMPLE
+------------------------------------------------------------
+
+Code:
+
+    #include <stdio.h>
+    #include <unistd.h>
+
+    int main()
+    {
+        printf("A\n");
+
+        fork();
+
+        printf("B\n");
+
+        return 0;
+    }
+
+Output conceptually:
+
+    A
+    B
+    B
+
+Note:
+
+Output ordering can depend on scheduling and buffering.
+
+
+41. EXEC FAMILY
+------------------------------------------------------------
+
+fork() creates a new process.
+
+exec() replaces the current process image with another
+program.
+
+Concept:
+
+    fork()
+       |
+       v
+    Child process
+       |
+       v
+    exec()
+       |
+       v
+    New program
+
+
+42. FORK + EXEC
+------------------------------------------------------------
+
+A common Unix process creation pattern is:
+
+    Parent
+       |
+       | fork()
+       v
+    Child
+       |
+       | exec()
+       v
+    Execute another program
+
+
+Example:
+
+    Parent creates child.
+
+    Child executes:
+
+        ls
+
+The child process image is replaced by the ls program.
+
+
+43. WAIT()
+------------------------------------------------------------
+
+A parent may wait for a child process.
+
+Example:
+
+    wait(NULL);
+
+Purpose:
+
+    Parent waits until a child terminates.
+
+This helps synchronize parent and child processes.
+
+
+44. EXIT()
+------------------------------------------------------------
+
+A process can terminate using:
+
+    exit()
+
+Example:
+
+    exit(0);
+
+Typically:
+
+    0 = successful termination
+
+Non-zero values often indicate an error/status.
+
+
+45. PROCESS TERMINATION
+------------------------------------------------------------
+
+A process may terminate because:
+
+    1. It completes execution.
+    2. It calls exit().
+    3. Parent terminates it.
+    4. An error occurs.
+    5. A signal terminates it.
+
+
+46. ORPHAN PROCESS
+------------------------------------------------------------
+
+An orphan process is a child process whose parent has
+terminated while the child continues running.
+
+Example:
+
+    Parent
+       |
+       +---- Child
+
+Parent terminates.
+
+Child continues.
+
+Therefore:
+
+    Child becomes orphaned.
+
+Modern Unix-like systems re-parent such processes to a
+system process.
+
+
+47. ZOMBIE PROCESS
+------------------------------------------------------------
+
+A zombie is a terminated child whose parent has not yet
+collected its termination status.
+
+Concept:
+
+    Child terminates
+          |
+          v
+    Exit status stored
+          |
+          v
+    Parent has not called wait()
+          |
+          v
+       ZOMBIE
+
+
+48. ORPHAN VS ZOMBIE
+------------------------------------------------------------
+
++----------------+-------------------------------+
+| Orphan         | Zombie                       |
++----------------+-------------------------------+
+| Parent dies    | Child has already terminated |
+| Child running  | Child no longer executing    |
+| Child continues| Exit status remains          |
++----------------+-------------------------------+
+
+Important:
+
+    Orphan != Zombie
+
+
+49. PROCESS IDENTIFIERS
+------------------------------------------------------------
+
+Linux provides identifiers such as:
+
+    PID
+        Process ID
+
+    PPID
+        Parent Process ID
+
+Example:
+
+    getpid()
+
+returns current process ID.
+
+    getppid()
+
+returns parent process ID.
+
+
+50. PRACTICAL PROGRAM
+------------------------------------------------------------
+
+    #include <stdio.h>
+    #include <unistd.h>
+
+    int main()
+    {
+        printf("PID  = %d\n", getpid());
+        printf("PPID = %d\n", getppid());
+
+        return 0;
+    }
+
+
+51. PROCESS CREATION PRACTICAL
+------------------------------------------------------------
+
+    #include <stdio.h>
+    #include <unistd.h>
+
+    int main()
+    {
+        pid_t pid = fork();
+
+        if (pid == 0)
+        {
+            printf("Child Process\n");
+            printf("PID = %d\n", getpid());
+        }
+        else if (pid > 0)
+        {
+            printf("Parent Process\n");
+            printf("PID = %d\n", getpid());
+        }
+        else
+        {
+            printf("fork failed\n");
+        }
+
+        return 0;
+    }
+
+
+52. MULTIPLE FORK CONCEPT
+------------------------------------------------------------
+
+Consider:
+
+    fork();
+    fork();
+
+Each fork can double the number of processes, assuming
+all processes successfully execute both fork calls.
+
+Initial:
+
+    1 process
+
+After first fork:
+
+    2 processes
+
+After second fork:
+
+    4 processes
+
+General form:
+
+    Number of processes = 2^n
+
+where n = number of fork() calls executed by every
+resulting process.
+
+For n = 3:
+
+    2^3 = 8 processes
+
+
+53. PROCESS VS THREAD
+------------------------------------------------------------
+
+Process:
+
+    Independent execution environment.
+
+Thread:
+
+    Smaller execution unit within a process.
+
+A process can contain multiple threads.
+
+Example:
+
+    Process
+       |
+       +--- Thread 1
+       +--- Thread 2
+       +--- Thread 3
+
+
+54. PROCESS RESOURCE OWNERSHIP
+------------------------------------------------------------
+
+Processes generally have their own:
+
+    - Address space
+    - Resources
+    - Process state
+    - PCB
+
+Threads within a process commonly share:
+
+    - Code
+    - Data
+    - Heap
+    - Open resources
+
+but each thread has its own:
+
+    - Stack
+    - Registers
+    - Program counter
+
+
+55. MULTIPROGRAMMING
+------------------------------------------------------------
+
+Multiprogramming keeps multiple processes in memory.
+
+Goal:
+
+    Keep CPU busy.
+
+Example:
+
+    P1 -> waiting for I/O
+    P2 -> CPU execution
+    P3 -> ready
+
+
+56. MULTITASKING
+------------------------------------------------------------
+
+Multitasking allows multiple tasks to make progress
+through CPU scheduling.
+
+Example:
+
+    P1 -> P2 -> P3 -> P1 -> P2
+
+The CPU switches rapidly among processes.
+
+
+57. MULTIPROCESSING
+------------------------------------------------------------
+
+Multiprocessing means using multiple CPUs/cores.
+
+Example:
+
+    Core 1 -> P1
+    Core 2 -> P2
+    Core 3 -> P3
+    Core 4 -> P4
+
+This allows true parallel execution.
+
+
+58. CONCURRENCY VS PARALLELISM
+------------------------------------------------------------
+
+Concurrency:
+
+    Multiple tasks make progress during overlapping
+    periods, not necessarily at exactly the same time.
+
+Parallelism:
+
+    Multiple tasks execute simultaneously on multiple
+    CPU cores.
+
+
+Example:
+
+    Single core:
+        P1 <-> P2 <-> P3
+
+    This can provide concurrency.
+
+    Multiple cores:
+        P1 || P2 || P3
+
+    This can provide parallelism.
+
+
+59. PROCESS COMMUNICATION
+------------------------------------------------------------
+
+Processes sometimes need to communicate.
+
+This is called:
+
+    IPC
+    Inter-Process Communication
+
+
+Common IPC mechanisms:
+
+    1. Pipes
+    2. Named pipes
+    3. Message queues
+    4. Shared memory
+    5. Sockets
+    6. Signals
+
+
+60. SHARED MEMORY
+------------------------------------------------------------
+
+Processes can communicate through a shared memory region.
+
+Concept:
+
+    Process A
+        |
+        +--------+
+                 |
+            Shared Memory
+                 |
+        +--------+
+        |
+    Process B
+
+Advantage:
+
+    Very fast communication.
+
+Challenge:
+
+    Synchronization is required.
+
+
+61. PIPE
+------------------------------------------------------------
+
+A pipe provides a communication channel between processes.
+
+Concept:
+
+    Process A
+       |
+       | write
+       v
+    +------+
+    | Pipe |
+    +------+
+       |
+       | read
+       v
+    Process B
+
+
+62. MESSAGE QUEUE
+------------------------------------------------------------
+
+Processes communicate by sending messages.
+
+Concept:
+
+    P1
+     |
+     | message
+     v
+    Queue
+     |
+     | message
+     v
+    P2
+
+
+63. SOCKET
+------------------------------------------------------------
+
+Sockets can provide communication:
+
+    - Between processes on same machine
+    - Between processes on different machines
+
+Commonly used in:
+
+    Client-server applications
+    Network applications
+
+
+64. SIGNAL
+------------------------------------------------------------
+
+Signals provide asynchronous notifications to processes.
+
+Examples:
+
+    SIGINT
+    SIGTERM
+    SIGKILL
+    SIGSTOP
+    SIGCHLD
+
+
+65. SIGINT
+------------------------------------------------------------
+
+SIGINT is commonly generated when the user presses:
+
+    Ctrl + C
+
+It requests interruption of a process.
+
+
+66. SIGTERM
+------------------------------------------------------------
+
+SIGTERM requests process termination.
+
+It allows a process an opportunity to perform cleanup
+if it handles the signal.
+
+
+67. SIGKILL
+------------------------------------------------------------
+
+SIGKILL forces termination.
+
+Important:
+
+    SIGKILL cannot be caught or ignored by the target
+    process.
+
+
+68. PROCESS SYNCHRONIZATION
+------------------------------------------------------------
+
+When multiple processes access shared resources,
+synchronization may be required.
+
+Example:
+
+    Process A ---> Shared variable X
+                       ^
+                       |
+    Process B ---------+
+
+Without proper synchronization:
+
+    Race condition can occur.
+
+
+69. RACE CONDITION
+------------------------------------------------------------
+
+A race condition occurs when the result depends on the
+timing/order of concurrent operations.
+
+Example:
+
+    Shared X = 10
+
+    Process A:
+        X = X + 1
+
+    Process B:
+        X = X + 1
+
+Expected:
+
+    X = 12
+
+Without synchronization, result may incorrectly become:
+
+    X = 11
+
+
+70. CRITICAL SECTION
+------------------------------------------------------------
+
+A critical section is a part of a program where shared
+resources are accessed.
+
+Example:
+
+    lock();
+
+    // critical section
+
+    shared_counter++;
+
+    unlock();
+
+
+Only an appropriate number of processes/threads should
+execute the protected critical section according to the
+synchronization design.
+
+
+71. PROCESS CONTROL SYSTEM CALLS
+------------------------------------------------------------
+
+Important Linux/Unix process-related calls:
+
+    fork()
+    exec()
+    wait()
+    exit()
+    getpid()
+    getppid()
+    kill()
+
+
+72. PROCESS HIERARCHY COMMANDS
+------------------------------------------------------------
+
+Linux commands:
+
+    ps
+
+Shows processes.
+
+    ps aux
+
+Shows detailed process information.
+
+    pstree
+
+Shows process hierarchy.
+
+    top
+
+Shows dynamic process information.
+
+    htop
+
+Interactive process viewer on systems where installed.
+
+
+73. PROCESS STATUS PRACTICAL
+------------------------------------------------------------
+
+Run:
+
+    ps
+
+Then:
+
+    ps -ef
+
+You can inspect:
+
+    PID
+    PPID
+    process state
+    command
+
+
+74. PROCESS TREE PRACTICAL
+------------------------------------------------------------
+
+Run:
+
+    pstree
+
+Conceptual output:
+
+    system
+     ├── bash
+     │    ├── vim
+     │    └── python
+     └── ...
+
+This helps visualize parent-child relationships.
+
+
+75. PROCESS PRIORITY
+------------------------------------------------------------
+
+Processes may have different scheduling priorities.
+
+Linux provides:
+
+    nice
+    renice
+
+Example:
+
+    nice -n 10 command
+
+
+Priority handling depends on the scheduler and operating
+system implementation.
+
+
+76. PROCESS STATES IN LINUX
+------------------------------------------------------------
+
+Linux process state letters commonly include:
+
+    R = Running/runnable
+    S = Interruptible sleep
+    D = Uninterruptible sleep
+    T = Stopped
+    Z = Zombie
+
+
+77. PROCESS ACCOUNTING
+------------------------------------------------------------
+
+The OS may track:
+
+    - CPU time
+    - Memory usage
+    - I/O
+    - Process lifetime
+    - Resource consumption
+
+This information is useful for:
+
+    Monitoring
+    Debugging
+    Performance analysis
+
+
+78. PROCESS MANAGEMENT RESPONSIBILITIES OF OS
+------------------------------------------------------------
+
+The OS is responsible for:
+
+    1. Process creation
+    2. Process termination
+    3. Process scheduling
+    4. Context switching
+    5. Process synchronization
+    6. IPC
+    7. Deadlock handling
+    8. Resource allocation
+
+
+79. PROCESS LIFE CYCLE
+------------------------------------------------------------
+
+Complete conceptual lifecycle:
+
+    Program
+       |
+       v
+    Process Creation
+       |
+       v
+      NEW
+       |
+       v
+     READY
+       |
+       v
+    RUNNING
+       |
+       +------------+
+       |            |
+       | I/O        | exit
+       v            v
+    WAITING      TERMINATED
+       |
+       | event complete
+       v
+     READY
+
+
+80. IMPORTANT INTERVIEW QUESTIONS
+------------------------------------------------------------
+
+Q1. What is a process?
+
+A:
+A process is a program in execution.
+
+Q2. What is PCB?
+
+A:
+Process Control Block is an OS data structure containing
+information needed to manage a process.
+
+Q3. What is a process state?
+
+A:
+It represents the current condition of a process such as
+Ready, Running, Waiting, etc.
+
+Q4. What is context switching?
+
+A:
+Saving the state of one process and loading the state of
+another process.
+
+Q5. What is a process scheduler?
+
+A:
+A component that selects processes for CPU execution.
+
+Q6. What is the difference between ready and waiting?
+
+A:
+Ready means waiting for CPU.
+
+Waiting means waiting for an event/resource such as I/O.
+
+Q7. What is fork()?
+
+A:
+A Unix/Linux system call that creates a child process.
+
+Q8. What does fork() return to the child?
+
+A:
+0.
+
+Q9. What does fork() return to the parent?
+
+A:
+The child's PID.
+
+Q10. What does exec() do?
+
+A:
+It replaces the current process image with a new program.
+
+Q11. What is a zombie?
+
+A:
+A terminated child whose exit status has not yet been
+collected by its parent.
+
+Q12. What is an orphan?
+
+A:
+A child process whose parent has terminated while the child
+continues running.
+
+Q13. What is dispatch latency?
+
+A:
+Time required by the dispatcher to stop one process and
+start another.
+
+Q14. What is a ready queue?
+
+A:
+A queue containing processes ready to execute but waiting
+for CPU.
+
+Q15. What is IPC?
+
+A:
+Inter-Process Communication.
+
+
+============================================================
+GATE-LEVEL CONCEPTS
+============================================================
+
+81. READY VS RUNNING
+
+Ready:
+    Process has everything except CPU.
+
+Running:
+    Process currently owns CPU execution.
+
+Therefore:
+
+    Ready -> Running
+
+requires CPU scheduling/dispatch.
+
+
+82. RUNNING VS WAITING
+
+Running -> Waiting typically occurs when the process:
+
+    requests I/O
+    waits for an event
+    waits for a resource
+
+
+83. WAITING VS READY
+
+Waiting -> Ready occurs when the event/resource required
+by the process becomes available.
+
+Important:
+
+    I/O completion does NOT directly mean:
+
+        Waiting -> Running
+
+Usually:
+
+        Waiting -> Ready
+
+Then scheduler selects it.
+
+
+84. CONTEXT SWITCH AND PCB
+
+During context switch:
+
+    Current process:
+        CPU state -> PCB
+
+    Next process:
+        PCB -> CPU state
+
+Therefore PCB is essential for process management.
+
+
+85. FORK PROCESS COUNT
+
+If every process executes n fork() calls:
+
+    Number of processes = 2^n
+
+Examples:
+
+    n = 1 -> 2
+    n = 2 -> 4
+    n = 3 -> 8
+    n = 4 -> 16
+
+Number of newly created child processes:
+
+    2^n - 1
+
+
+86. IMPORTANT FORK WARNING
+
+The formula:
+
+    2^n
+
+is valid only when every resulting process executes
+every fork().
+
+Example:
+
+    if (condition)
+        fork();
+
+Process count depends on which processes execute fork().
+
+
+87. CPU UTILIZATION CONCEPT
+
+If a process spends significant time waiting for I/O,
+multiprogramming can improve CPU utilization by running
+another ready process.
+
+Concept:
+
+    P1 -> I/O wait
+    P2 -> CPU
+    P3 -> CPU
+
+This is one of the fundamental reasons operating systems
+support multiprogramming.
+
+
+88. THROUGHPUT
+
+Throughput is the amount of work completed per unit time.
+
+For processes:
+
+    Throughput =
+    completed processes / unit time
+
+
+89. TURNAROUND TIME
+
+Turnaround time:
+
+    Completion Time - Arrival Time
+
+It represents the total time from process submission
+to completion.
+
+
+90. WAITING TIME
+
+Waiting time is the time a process spends waiting in the
+ready queue for CPU.
+
+Conceptually:
+
+    Waiting Time =
+    Turnaround Time - CPU Burst Time
+
+
+91. RESPONSE TIME
+
+Response time:
+
+    Time from process submission/request
+    until the first response/first CPU service.
+
+This is especially important for interactive systems.
+
+
+92. CPU BURST
+
+CPU burst:
+
+    Time during which a process executes on CPU before
+    requiring I/O or another blocking event.
+
+Typical pattern:
+
+    CPU Burst -> I/O Burst -> CPU Burst -> I/O Burst ...
+
+
+93. CPU-I/O BURST CYCLE
+
+A process commonly alternates between:
+
+    CPU burst
+         |
+         v
+    I/O burst
+         |
+         v
+    CPU burst
+         |
+         v
+    I/O burst
+
+
+94. CPU-BOUND PROCESS
+
+A CPU-bound process spends more time performing CPU work.
+
+Examples:
+
+    Mathematical computation
+    Data processing
+    Scientific computation
+
+
+95. I/O-BOUND PROCESS
+
+An I/O-bound process spends significant time waiting for
+I/O operations.
+
+Examples:
+
+    File-intensive application
+    Network-intensive application
+
+
+96. PROCESS SCHEDULING OBJECTIVE
+
+A scheduler may try to improve:
+
+    - CPU utilization
+    - Throughput
+    - Turnaround time
+    - Waiting time
+    - Response time
+    - Fairness
+
+
+97. PREEMPTIVE CONCEPT
+
+In preemptive scheduling, the OS can take CPU away from
+a running process.
+
+Example:
+
+    P1 running
+       |
+       | timer interrupt
+       v
+    Scheduler
+       |
+       v
+    P2 running
+
+
+98. NON-PREEMPTIVE CONCEPT
+
+In non-preemptive scheduling, once a process gets CPU,
+it generally keeps it until:
+
+    - It terminates
+    - It blocks/waits
+
+depending on the scheduling algorithm.
+
+
+99. PROCESS MANAGEMENT AND SECURITY
+------------------------------------------------------------
+
+The OS must control:
+
+    - Which process can access resources
+    - Which files can be accessed
+    - Which processes can signal others
+    - Which privileges a process has
+
+This is related to:
+
+    Protection
+    Authentication
+    Authorization
+    Privilege management
+
+
+100. JOB-READY DEBUGGING SCENARIO
+------------------------------------------------------------
+
+Problem:
+
+    "My application appears frozen."
+
+Possible process-level reasons:
+
+    1. Process is waiting for I/O.
+    2. Process is blocked on a resource.
+    3. Process is deadlocked.
+    4. Process is consuming excessive CPU.
+    5. Process is stopped.
+    6. Process has become unresponsive.
+
+Linux investigation:
+
+    ps aux
+
+    top
+
+    pstree
+
+    strace -p PID
+
+Check:
+
+    CPU usage
+    Memory usage
+    Process state
+    Parent process
+    System calls
+    I/O waits
+
+
+============================================================
+PRACTICAL LAB
+============================================================
+
+Practice 1:
+    Display PID and PPID.
+
+Practice 2:
+    Create a child using fork().
+
+Practice 3:
+    Print different messages from parent and child.
+
+Practice 4:
+    Use wait() so parent waits for child.
+
+Practice 5:
+    Use exec() to run another program.
+
+Practice 6:
+    Create multiple child processes.
+
+Practice 7:
+    Observe processes using:
+
+        ps
+        top
+        pstree
+
+Practice 8:
+    Create an intentional zombie and observe it.
+
+Practice 9:
+    Observe parent-child relationships.
+
+Practice 10:
+    Trace process-related system calls using:
+
+        strace
+
+
+============================================================
+IMPORTANT COMMANDS
+============================================================
+
+    ps
+    ps -ef
+    ps aux
+    pstree
+    top
+    htop
+    kill
+    nice
+    renice
+    jobs
+    bg
+    fg
+
+
+============================================================
+CHAPTER 03 — QUICK REVISION
+============================================================
+
+Process:
+    Program in execution.
+
+PCB:
+    Data structure containing process-management information.
+
+Process states:
+    New
+    Ready
+    Running
+    Waiting
+    Terminated
+
+Scheduler:
+    Selects processes for CPU execution.
+
+Dispatcher:
+    Transfers CPU control to selected process.
+
+Context switch:
+    Save old process state + load new process state.
+
+fork():
+    Creates child process.
+
+exec():
+    Replaces current process image.
+
+wait():
+    Allows parent to wait for child.
+
+exit():
+    Terminates process.
+
+Zombie:
+    Terminated child whose status has not been collected.
+
+Orphan:
+    Running child whose parent has terminated.
+
+IPC:
+    Communication between processes.
+
+Race condition:
+    Result depends on timing/order of concurrent operations.
+
+Critical section:
+    Code section accessing shared resources.
+
+Concurrency:
+    Multiple tasks make progress over overlapping periods.
+
+Parallelism:
+    Multiple tasks execute simultaneously on multiple cores.
+
+
+============================================================
+CHAPTER 03 COMPLETE
+============================================================
+
+Next logical chapter:
+
+    CHAPTER 04 — THREADS
+
+Topics:
+    - Thread fundamentals
+    - Process vs Thread
+    - Multithreading
+    - User-level threads
+    - Kernel-level threads
+    - Thread models
+    - Thread libraries
+    - POSIX pthreads
+    - Thread creation
+    - Thread termination
+    - Thread synchronization
+    - Thread pools
+    - Multicore programming
+    - Concurrency problems
+    - Thread scheduling
+    - GATE-level problems
+    - Interview questions
+    - Practical C/C++ programs
+============================================================
