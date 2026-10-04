@@ -1,0 +1,1568 @@
+====================================================================
+        SOFTWARE TESTING / QA ENGINEER — CHAPTER 15
+                  BLACK BOX TEST DESIGN TECHNIQUES
+====================================================================
+
+LEVEL:
+------
+M.Tech 1st Year → Job Ready → Interview Ready
+
+PREVIOUS:
+---------
+Chapter 14 — Test Case Design
+
+CURRENT:
+--------
+Chapter 15 — Black Box Test Design Techniques
+
+NEXT:
+-----
+Chapter 16 — Advanced Test Case Design
+
+
+====================================================================
+1. INTRODUCTION TO BLACK BOX TEST DESIGN
+====================================================================
+
+Black Box Test Design is a testing approach in which test cases
+are designed based on the software's requirements, inputs and
+expected outputs without requiring knowledge of the internal
+implementation/code.
+
+In simple words:
+
+    Tester knows:
+        INPUT
+        +
+        EXPECTED BEHAVIOR
+
+    Tester does not need to know:
+        INTERNAL CODE
+        INTERNAL ALGORITHM
+        INTERNAL IMPLEMENTATION
+
+
+Example:
+
+Login page:
+
+    Input:
+        Username
+        Password
+
+    Output:
+        Login successful
+        OR
+        Error message
+
+
+The tester can design tests based on the requirements without
+knowing how authentication is implemented internally.
+
+
+====================================================================
+2. BLACK BOX TESTING — BASIC MODEL
+====================================================================
+
+                    BLACK BOX
+
+       INPUT ────────→ [ APPLICATION ] ────────→ OUTPUT
+                            |
+                            |
+                     Internal logic
+                     is not required
+                     for test design
+
+
+Example:
+
+Input:
+    Age = 25
+
+Application:
+    Eligibility calculation
+
+Output:
+    Eligible
+
+
+The tester focuses on:
+
+    Input
+       ↓
+    Expected behavior
+       ↓
+    Actual behavior
+
+
+====================================================================
+3. WHY BLACK BOX TEST DESIGN IS IMPORTANT
+====================================================================
+
+Black box techniques help testers design effective tests without
+testing every possible input.
+
+Benefits:
+
+    1. Better test coverage
+    2. Fewer unnecessary test cases
+    3. Focus on requirements
+    4. Identification of boundary defects
+    5. Better negative testing
+    6. Better business-rule validation
+    7. Efficient test design
+    8. Useful for manual testing
+    9. Useful for automation
+   10. Useful even when source code is unavailable
+
+
+====================================================================
+4. BLACK BOX TEST DESIGN TECHNIQUES
+====================================================================
+
+Important techniques in this chapter:
+
+    1. Equivalence Partitioning
+    2. Boundary Value Analysis
+    3. Decision Table Testing
+    4. State Transition Testing
+    5. Use Case Testing
+    6. Error Guessing
+    7. Pairwise Testing
+    8. Cause-Effect Graphing
+
+
+Each technique targets a different kind of problem.
+
+
+====================================================================
+5. EQUIVALENCE PARTITIONING
+====================================================================
+
+Equivalence Partitioning divides input data into groups/classes
+where values are expected to behave similarly.
+
+These groups are called:
+
+    Equivalence Partitions
+
+
+Instead of testing every possible value, select representative
+values from each partition.
+
+
+Example:
+
+Requirement:
+
+    Age must be between 18 and 60.
+
+
+Possible partitions:
+
+    Partition 1:
+        Age < 18
+        INVALID
+
+    Partition 2:
+        18–60
+        VALID
+
+    Partition 3:
+        Age > 60
+        INVALID
+
+
+Instead of testing:
+
+    1, 2, 3, 4, ... 100
+
+we can select representative values:
+
+    17 → Invalid partition
+    30 → Valid partition
+    61 → Invalid partition
+
+
+====================================================================
+6. EQUIVALENCE PARTITIONING — STEP BY STEP
+====================================================================
+
+Step 1:
+    Read the requirement.
+
+Step 2:
+    Identify input conditions.
+
+Step 3:
+    Divide inputs into logical classes.
+
+Step 4:
+    Identify valid and invalid partitions.
+
+Step 5:
+    Select representative values.
+
+Step 6:
+    Create test cases.
+
+
+Example:
+
+Requirement:
+
+    Username must contain 5–15 characters.
+
+
+Partitions:
+
+    < 5 characters
+        → Invalid
+
+    5–15 characters
+        → Valid
+
+    > 15 characters
+        → Invalid
+
+
+Representative values:
+
+    4 characters
+    10 characters
+    16 characters
+
+
+====================================================================
+7. EQUIVALENCE PARTITIONING EXAMPLE
+====================================================================
+
+Requirement:
+
+    Product quantity must be 1–10.
+
+
+Partitions:
+
+    P1:
+        Quantity <= 0
+        Invalid
+
+    P2:
+        Quantity 1–10
+        Valid
+
+    P3:
+        Quantity > 10
+        Invalid
+
+
+Representative tests:
+
+    0   → Invalid
+    5   → Valid
+    11  → Invalid
+
+
+This reduces the number of tests while maintaining meaningful
+coverage.
+
+
+====================================================================
+8. VALID AND INVALID EQUIVALENCE CLASSES
+====================================================================
+
+Example:
+
+Requirement:
+
+    Discount percentage = 0–50.
+
+
+Valid partition:
+
+    0–50
+
+
+Invalid partitions:
+
+    Less than 0
+    Greater than 50
+
+
+Tests:
+
+    -1
+     25
+     51
+
+
+Important:
+
+Equivalence Partitioning does NOT mean testing only valid data.
+
+Both valid and invalid partitions should be considered.
+
+
+====================================================================
+9. BOUNDARY VALUE ANALYSIS
+====================================================================
+
+Boundary Value Analysis (BVA) focuses on values at or around the
+boundaries of an input range.
+
+Why?
+
+Many defects occur at boundaries.
+
+
+Example:
+
+Requirement:
+
+    Age = 18–60
+
+
+Important boundary values:
+
+    17
+    18
+    19
+    59
+    60
+    61
+
+
+These represent:
+
+    Minimum - 1
+    Minimum
+    Minimum + 1
+    Maximum - 1
+    Maximum
+    Maximum + 1
+
+
+====================================================================
+10. BVA — BASIC FORMULA
+====================================================================
+
+For a range:
+
+    MIN ----------- MAX
+
+
+Test:
+
+    MIN - 1
+    MIN
+    MIN + 1
+
+    MAX - 1
+    MAX
+    MAX + 1
+
+
+Example:
+
+    1 -------- 100
+
+
+Test:
+
+    0
+    1
+    2
+
+    99
+    100
+    101
+
+
+====================================================================
+11. BVA VS EQUIVALENCE PARTITIONING
+====================================================================
+
+Equivalence Partitioning:
+
+    Divides input into classes.
+
+Boundary Value Analysis:
+
+    Focuses on edges of those classes.
+
+
+Example:
+
+Requirement:
+
+    Marks = 0–100
+
+
+Equivalence classes:
+
+    < 0      → Invalid
+    0–100    → Valid
+    > 100    → Invalid
+
+
+BVA:
+
+    -1
+     0
+     1
+    99
+    100
+    101
+
+
+Memory:
+
+    EP = Classes
+
+    BVA = Boundaries
+
+
+====================================================================
+12. BVA EXAMPLE — PASSWORD LENGTH
+====================================================================
+
+Requirement:
+
+    Password must contain 8–20 characters.
+
+
+BVA values:
+
+    7
+    8
+    9
+    19
+    20
+    21
+
+
+Expected:
+
+    7  → Invalid
+    8  → Valid
+    9  → Valid
+    19 → Valid
+    20 → Valid
+    21 → Invalid
+
+
+====================================================================
+13. DECISION TABLE TESTING
+====================================================================
+
+Decision Table Testing is useful when application behavior
+depends on combinations of conditions.
+
+It represents:
+
+    CONDITIONS
+        +
+    ACTIONS
+
+
+Example:
+
+Login requires:
+
+    Condition 1:
+        Valid username?
+
+    Condition 2:
+        Valid password?
+
+
+Possible combinations:
+
+    Valid username + Valid password
+    Valid username + Invalid password
+    Invalid username + Valid password
+    Invalid username + Invalid password
+
+
+Decision table:
+
++------+----------+----------+------------------+
+| Rule | Username | Password | Expected         |
++------+----------+----------+------------------+
+| R1   | Valid    | Valid    | Login successful |
+| R2   | Valid    | Invalid  | Error            |
+| R3   | Invalid  | Valid    | Error            |
+| R4   | Invalid  | Invalid  | Error            |
++------+----------+----------+------------------+
+
+
+====================================================================
+14. DECISION TABLE — E-COMMERCE EXAMPLE
+====================================================================
+
+Suppose free shipping is available when:
+
+    Condition 1:
+        Order amount >= 1000
+
+    Condition 2:
+        User is a premium member
+
+
+Possible behavior:
+
++------+------------+---------+------------------+
+| Rule | Amount     | Premium | Shipping         |
++------+------------+---------+------------------+
+| R1   | >= 1000    | Yes     | Free             |
+| R2   | >= 1000    | No      | Free             |
+| R3   | < 1000     | Yes     | Free             |
+| R4   | < 1000     | No      | Charged          |
++------+------------+---------+------------------+
+
+
+The exact business rules must come from the requirement.
+
+
+====================================================================
+15. WHEN TO USE DECISION TABLE TESTING
+====================================================================
+
+Use it when:
+
+    - Multiple conditions exist.
+    - Business rules are complex.
+    - Different combinations produce different results.
+    - Rules depend on AND/OR combinations.
+    - Insurance/finance/e-commerce rules are involved.
+
+
+Common examples:
+
+    - Discounts
+    - Loan eligibility
+    - Login rules
+    - Shipping charges
+    - Tax calculation
+    - Account permissions
+    - Subscription plans
+
+
+====================================================================
+16. STATE TRANSITION TESTING
+====================================================================
+
+State Transition Testing verifies how a system behaves when it
+moves from one state to another based on events or actions.
+
+
+Basic model:
+
+    STATE
+      |
+    EVENT
+      |
+      ↓
+    NEW STATE
+
+
+Example:
+
+ATM/Card:
+
+    Card Inserted
+         ↓
+    PIN Entry
+         ↓
+    Authenticated
+         ↓
+    Transaction
+         ↓
+    Completed
+
+
+The tester verifies valid and invalid state transitions.
+
+
+====================================================================
+17. STATE TRANSITION EXAMPLE — LOGIN LOCKOUT
+====================================================================
+
+Suppose an account is locked after 3 failed login attempts.
+
+States:
+
+    S1 = Account Active
+    S2 = 1 Failed Attempt
+    S3 = 2 Failed Attempts
+    S4 = Account Locked
+
+
+Transitions:
+
+    Active
+       |
+    Wrong Password
+       ↓
+    1 Failed Attempt
+       |
+    Wrong Password
+       ↓
+    2 Failed Attempts
+       |
+    Wrong Password
+       ↓
+    Account Locked
+
+
+Test cases should verify:
+
+    - Correct transition after first failure.
+    - Correct transition after second failure.
+    - Lock after third failure.
+    - Valid login before lock.
+    - Behavior after account is locked.
+
+
+====================================================================
+18. STATE TRANSITION — PRACTICAL EXAMPLE
+====================================================================
+
+Online order states:
+
+    New
+     ↓
+    Confirmed
+     ↓
+    Shipped
+     ↓
+    Delivered
+
+
+Possible additional states:
+
+    Cancelled
+    Returned
+
+
+Valid transitions:
+
+    New → Confirmed
+    Confirmed → Shipped
+    Shipped → Delivered
+
+
+Invalid transitions might include:
+
+    Delivered → New
+
+if the business rules do not allow such a transition.
+
+
+Testing should verify both:
+
+    Valid transitions
+    Invalid transitions
+
+
+====================================================================
+19. USE CASE TESTING
+====================================================================
+
+Use Case Testing derives test scenarios from user interactions
+with the system.
+
+It focuses on:
+
+    Actor
+       ↓
+    Action
+       ↓
+    System Response
+
+
+Example:
+
+Use Case:
+    Purchase Product
+
+
+Actor:
+    Customer
+
+
+Flow:
+
+    1. Login
+    2. Search product
+    3. Open product
+    4. Add to cart
+    5. Checkout
+    6. Make payment
+    7. Receive order confirmation
+
+
+Test cases can be derived from the complete user workflow.
+
+
+====================================================================
+20. USE CASE — ALTERNATIVE FLOWS
+====================================================================
+
+A good use case is not limited to the successful path.
+
+Example:
+
+Purchase Product:
+
+Main flow:
+
+    Search
+      ↓
+    Add to Cart
+      ↓
+    Checkout
+      ↓
+    Payment
+      ↓
+    Order Created
+
+
+Alternative flows:
+
+    Product unavailable
+    Payment failure
+    Invalid address
+    Session expired
+    Network failure
+    Cart item removed
+
+
+This helps create realistic end-to-end test coverage.
+
+
+====================================================================
+21. ERROR GUESSING
+====================================================================
+
+Error Guessing is a test design technique where testers use
+experience, intuition and knowledge of common failure patterns
+to identify likely defects.
+
+It is based on:
+
+    "Where is this system likely to fail?"
+
+
+Examples:
+
+For a login page, a tester may try:
+
+    - Blank username
+    - Blank password
+    - Very long input
+    - Special characters
+    - Copy/paste
+    - Multiple rapid clicks
+    - Invalid credentials
+    - Session expiration
+
+
+Error Guessing is especially useful when combined with
+formal test design techniques.
+
+
+====================================================================
+22. COMMON ERROR-GUESSING AREAS
+====================================================================
+
+Testers often consider:
+
+    - Empty values
+    - Null values
+    - Very large values
+    - Very small values
+    - Special characters
+    - Duplicate data
+    - Invalid formats
+    - Unexpected sequences
+    - Rapid repeated actions
+    - Network interruption
+    - Session expiration
+    - Missing permissions
+    - Incorrect configuration
+
+
+This is experience-driven testing.
+
+
+====================================================================
+23. PAIRWISE TESTING
+====================================================================
+
+Pairwise Testing is useful when there are many input parameters
+and combinations.
+
+Instead of testing every possible combination, test combinations
+so that important pairs of parameter values are covered.
+
+
+Example parameters:
+
+    Browser:
+        Chrome
+        Firefox
+        Edge
+
+    OS:
+        Windows
+        Linux
+        macOS
+
+    Language:
+        English
+        Hindi
+
+
+Testing every combination:
+
+    3 × 3 × 2 = 18 combinations
+
+
+Pairwise testing aims to reduce the number of combinations while
+covering interactions between pairs of parameter values.
+
+
+====================================================================
+24. WHY PAIRWISE TESTING IS USEFUL
+====================================================================
+
+Suppose an application supports:
+
+    4 browsers
+    3 operating systems
+    3 languages
+    2 user types
+
+
+Full combination testing:
+
+    4 × 3 × 3 × 2
+    = 72 combinations
+
+
+Testing every combination may require significant effort.
+
+Pairwise techniques can reduce the number of tests while
+providing coverage of important parameter pairs.
+
+The exact reduction depends on the parameters and test design.
+
+
+====================================================================
+25. PAIRWISE TESTING EXAMPLE
+====================================================================
+
+Parameters:
+
+    Browser:
+        Chrome
+        Firefox
+
+    OS:
+        Windows
+        Linux
+
+    User:
+        Admin
+        Customer
+
+
+Full combinations:
+
+    Chrome + Windows + Admin
+    Chrome + Windows + Customer
+    Chrome + Linux + Admin
+    Chrome + Linux + Customer
+    Firefox + Windows + Admin
+    Firefox + Windows + Customer
+    Firefox + Linux + Admin
+    Firefox + Linux + Customer
+
+
+Pairwise design attempts to ensure important pairs such as:
+
+    Browser + OS
+    Browser + User
+    OS + User
+
+
+are adequately represented.
+
+
+====================================================================
+26. CAUSE-EFFECT GRAPHING
+====================================================================
+
+Cause-Effect Graphing is a systematic technique for identifying
+relationships between input conditions (causes) and output
+conditions (effects).
+
+It is useful when:
+
+    Multiple conditions
+        +
+    Logical relationships
+        ↓
+    Determine system behavior
+
+
+Example:
+
+Causes:
+
+    C1 = Valid username
+    C2 = Valid password
+
+
+Effect:
+
+    E1 = Login successful
+
+
+Relationship:
+
+    C1 AND C2
+         ↓
+    E1
+
+
+If either condition is false:
+
+    Login should fail.
+
+
+====================================================================
+27. CAUSE-EFFECT — E-COMMERCE EXAMPLE
+====================================================================
+
+Suppose an order can be placed only when:
+
+    C1 = User is logged in
+    C2 = Cart is not empty
+    C3 = Payment is successful
+
+
+Effect:
+
+    E1 = Order created
+
+
+Logical relationship:
+
+    C1 AND C2 AND C3
+            ↓
+       Order Created
+
+
+If one condition fails:
+
+    Order should not be created.
+
+
+This type of analysis can help derive test cases.
+
+
+====================================================================
+28. COMPARISON OF BLACK BOX TECHNIQUES
+====================================================================
+
++-------------------------+----------------------------------+
+| Technique               | Main Focus                       |
++-------------------------+----------------------------------+
+| Equivalence Partition  | Input classes                   |
+| Boundary Value         | Input boundaries                |
+| Decision Table         | Condition combinations          |
+| State Transition       | State changes                   |
+| Use Case Testing       | User workflows                  |
+| Error Guessing         | Experience/common failures      |
+| Pairwise               | Parameter combinations          |
+| Cause-Effect Graph     | Logical cause-effect relations  |
++-------------------------+----------------------------------+
+
+
+====================================================================
+29. EQUIVALENCE PARTITIONING VS BVA
+====================================================================
+
+Requirement:
+
+    Age = 18–60
+
+
+EP:
+
+    <18      → Invalid
+    18–60    → Valid
+    >60      → Invalid
+
+
+BVA:
+
+    17
+    18
+    19
+    59
+    60
+    61
+
+
+Memory:
+
+    EP asks:
+        "What groups exist?"
+
+    BVA asks:
+        "What happens at the edges?"
+
+
+====================================================================
+30. DECISION TABLE VS STATE TRANSITION
+====================================================================
+
+Decision Table:
+
+    Focuses on combinations of conditions.
+
+
+Example:
+
+    Valid username?
+    Valid password?
+    ↓
+    Login result
+
+
+State Transition:
+
+    Focuses on changes from one state to another.
+
+
+Example:
+
+    Active
+      ↓
+    Failed attempt
+      ↓
+    Locked
+
+
+Memory:
+
+    Decision Table = RULES
+
+    State Transition = STATES
+
+
+====================================================================
+31. USE CASE VS STATE TRANSITION
+====================================================================
+
+Use Case:
+
+    Focuses on complete user/business interaction.
+
+Example:
+
+    Customer purchases product.
+
+
+State Transition:
+
+    Focuses on state changes.
+
+Example:
+
+    Order:
+        New → Confirmed → Shipped → Delivered
+
+
+A single use case can involve multiple state transitions.
+
+
+====================================================================
+32. COMBINING TECHNIQUES
+====================================================================
+
+In real projects, testers often combine techniques.
+
+Example:
+
+Requirement:
+
+    User can purchase products.
+
+
+Use Case Testing:
+    Complete purchase workflow.
+
+
+Equivalence Partitioning:
+    Valid/invalid product quantity.
+
+
+BVA:
+    Quantity = 1–10.
+
+
+Decision Table:
+    Discount rules.
+
+
+State Transition:
+    Order lifecycle.
+
+
+Error Guessing:
+    Payment failure, network interruption.
+
+
+Pairwise:
+    Browser + OS + device combinations.
+
+
+This provides stronger coverage.
+
+
+====================================================================
+33. PRACTICAL E-COMMERCE EXAMPLE
+====================================================================
+
+FEATURE:
+
+    Product Quantity
+
+
+Requirement:
+
+    Quantity must be between 1 and 10.
+
+
+EQUIVALENCE PARTITIONING:
+
+    <=0       → Invalid
+    1–10      → Valid
+    >10       → Invalid
+
+
+BVA:
+
+    0
+    1
+    2
+    9
+    10
+    11
+
+
+ERROR GUESSING:
+
+    - Blank
+    - Decimal value
+    - Negative number
+    - Very large number
+    - Special characters
+    - Alphabetic input
+
+
+====================================================================
+34. PRACTICAL LOGIN EXAMPLE
+====================================================================
+
+FEATURE:
+
+    Login
+
+
+Techniques:
+
+    Equivalence Partitioning:
+        Valid credentials
+        Invalid credentials
+
+
+    Decision Table:
+        Valid username/password combinations.
+
+
+    State Transition:
+        Active → Failed → Locked
+
+
+    Error Guessing:
+        Blank fields
+        Special characters
+        Long input
+
+
+    Use Case:
+        Login → Dashboard
+
+
+Multiple techniques provide broader coverage.
+
+
+====================================================================
+35. PRACTICAL PAYMENT EXAMPLE
+====================================================================
+
+Payment conditions:
+
+    C1 = Valid card
+    C2 = Sufficient balance
+    C3 = Authentication successful
+
+
+Decision Table:
+
+    C1   C2   C3       Result
+    --------------------------------
+    Y    Y    Y        Payment Success
+    Y    Y    N        Payment Failure
+    Y    N    Y        Payment Failure
+    N    Y    Y        Payment Failure
+    N    N    N        Payment Failure
+
+
+Additional testing:
+
+    Error Guessing:
+        Network interruption
+        Double click
+        Session timeout
+
+
+    State Transition:
+        Initiated → Processing → Success/Failure
+
+
+====================================================================
+36. ADVANTAGES OF BLACK BOX TEST DESIGN
+====================================================================
+
+Advantages:
+
+    1. Does not require source-code knowledge.
+    2. Focuses on requirements.
+    3. Useful for functional testing.
+    4. Helps identify missing scenarios.
+    5. Supports manual testing.
+    6. Supports automation.
+    7. Helps reduce redundant testing.
+    8. Useful for business-rule validation.
+
+
+====================================================================
+37. LIMITATIONS
+====================================================================
+
+Possible limitations:
+
+    1. Internal code paths may not be directly covered.
+    2. Test coverage depends heavily on requirement quality.
+    3. Poor requirements can lead to missed scenarios.
+    4. Complex combinations may require significant test design.
+    5. Experience-based techniques can vary by tester.
+
+
+====================================================================
+38. INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is Black Box Testing?
+
+Answer:
+
+    Testing in which test design is based on requirements,
+    inputs and expected outputs without requiring knowledge
+    of internal implementation.
+
+
+Q2. What is Equivalence Partitioning?
+
+Answer:
+
+    A technique that divides input values into logical classes
+    and selects representative values from those classes.
+
+
+Q3. What is Boundary Value Analysis?
+
+Answer:
+
+    A technique that focuses on values at and around input
+    boundaries.
+
+
+Q4. What is Decision Table Testing?
+
+Answer:
+
+    A technique used to test combinations of conditions and
+    corresponding actions/results.
+
+
+Q5. What is State Transition Testing?
+
+Answer:
+
+    A technique used to verify system behavior as it moves
+    between states due to events or actions.
+
+
+Q6. What is Error Guessing?
+
+Answer:
+
+    A technique based on tester experience and knowledge of
+    common error-prone conditions.
+
+
+Q7. What is Pairwise Testing?
+
+Answer:
+
+    A technique used to reduce large combinations while
+    covering important pairs of parameter values.
+
+
+Q8. What is Use Case Testing?
+
+Answer:
+
+    Testing derived from user/business interaction workflows.
+
+
+Q9. What is Cause-Effect Graphing?
+
+Answer:
+
+    A technique used to model relationships between input
+    conditions and resulting outputs.
+
+
+====================================================================
+39. SCENARIO-BASED INTERVIEW QUESTIONS
+====================================================================
+
+Q1.
+
+A field accepts values from 1 to 100.
+
+What test values would you choose using BVA?
+
+Answer:
+
+    0
+    1
+    2
+    99
+    100
+    101
+
+
+Q2.
+
+A field accepts age from 18 to 60.
+
+How would you apply Equivalence Partitioning?
+
+Answer:
+
+    <18       → Invalid
+    18–60     → Valid
+    >60       → Invalid
+
+
+Q3.
+
+A system locks an account after 3 failed attempts.
+
+Which technique is useful?
+
+Answer:
+
+    State Transition Testing.
+
+
+Q4.
+
+A discount depends on membership type and order amount.
+
+Which technique is useful?
+
+Answer:
+
+    Decision Table Testing.
+
+
+Q5.
+
+An application supports many browsers, operating systems and
+devices.
+
+Which technique can reduce combinations?
+
+Answer:
+
+    Pairwise Testing.
+
+
+Q6.
+
+You know from experience that users often enter blank values
+and very large values.
+
+Which technique can help?
+
+Answer:
+
+    Error Guessing.
+
+
+Q7.
+
+A purchase requires login, a non-empty cart and successful
+payment.
+
+Which technique can model the logical relationship?
+
+Answer:
+
+    Cause-Effect Graphing.
+
+
+====================================================================
+40. JOB-READY CHECKLIST
+====================================================================
+
+[ ] Understand Black Box Test Design
+[ ] Understand Equivalence Partitioning
+[ ] Create valid partitions
+[ ] Create invalid partitions
+[ ] Understand Boundary Value Analysis
+[ ] Identify minimum/maximum boundaries
+[ ] Use MIN-1, MIN, MIN+1
+[ ] Use MAX-1, MAX, MAX+1
+[ ] Understand Decision Tables
+[ ] Create condition/action combinations
+[ ] Understand State Transition Testing
+[ ] Identify states and transitions
+[ ] Test valid transitions
+[ ] Test invalid transitions
+[ ] Understand Use Case Testing
+[ ] Test main and alternative flows
+[ ] Understand Error Guessing
+[ ] Understand Pairwise Testing
+[ ] Understand Cause-Effect Graphing
+[ ] Know when to use each technique
+[ ] Combine multiple techniques
+
+
+====================================================================
+41. QUICK REVISION
+====================================================================
+
+EQUIVALENCE PARTITIONING
+    =
+    Divide inputs into logical classes.
+
+
+BOUNDARY VALUE ANALYSIS
+    =
+    Test values around boundaries.
+
+
+DECISION TABLE
+    =
+    Test combinations of conditions and actions.
+
+
+STATE TRANSITION
+    =
+    Test changes between states.
+
+
+USE CASE TESTING
+    =
+    Test complete user/business workflows.
+
+
+ERROR GUESSING
+    =
+    Use experience to predict likely errors.
+
+
+PAIRWISE TESTING
+    =
+    Test important pairs of parameter values.
+
+
+CAUSE-EFFECT GRAPHING
+    =
+    Model relationships between conditions and outcomes.
+
+
+====================================================================
+42. MEMORY MAP
+====================================================================
+
+                 BLACK BOX TEST DESIGN
+                         |
+        +----------------+----------------+
+        |                |                |
+       INPUT            RULES            FLOW
+        |                |                |
+        ↓                ↓                ↓
+       EP             Decision         State
+        |               Table          Transition
+        ↓
+       BVA
+        |
+        +----------------+
+        |
+    Other techniques
+        |
+    +---+----+----------+
+    |        |          |
+ Use Case Error      Pairwise
+          Guessing
+               |
+               ↓
+        Cause-Effect
+
+
+====================================================================
+                    CHAPTER 15 COMPLETE
+====================================================================
+
+NEXT:
+------
+CHAPTER 16 — ADVANCED TEST CASE DESIGN
+
+Topics:
+    - Positive Testing
+    - Negative Testing
+    - Edge Cases
+    - Corner Cases
+    - Business Rule Testing
+    - Data Validation
+    - Cross-Browser Testing
+    - Cross-Platform Testing
+    - Advanced Test Coverage
+    - Practical QA Scenarios
+    - Interview Questions
+    - Scenario-Based Questions
+
+====================================================================

@@ -1,0 +1,1752 @@
+====================================================================
+        SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER COURSE
+====================================================================
+CHAPTER 16 — ADVANCED TEST CASE DESIGN
+====================================================================
+
+GOAL
+----
+Learn advanced test-case design techniques that help a QA Engineer
+find defects beyond normal positive/negative testing.
+
+This chapter focuses on:
+
+1. Positive Testing
+2. Negative Testing
+3. Edge Cases
+4. Corner Cases
+5. Business Rule Testing
+6. Data Validation Testing
+7. Cross-Browser Testing
+8. Cross-Platform Testing
+9. Advanced Test Coverage
+10. Practical QA Scenarios
+11. Interview Questions
+12. Scenario-Based Questions
+
+
+====================================================================
+1. INTRODUCTION TO ADVANCED TEST CASE DESIGN
+====================================================================
+
+Basic test cases verify whether the application works under normal
+conditions.
+
+Advanced test design goes further.
+
+A professional QA Engineer asks:
+
+    "What can go wrong?"
+
+    "What happens at the limits?"
+
+    "What happens when multiple conditions occur together?"
+
+    "What if the user provides invalid data?"
+
+    "What if the business rule is violated?"
+
+    "Does the application behave consistently on different browsers
+     and platforms?"
+
+Example:
+
+Suppose an application allows a user to enter age:
+
+    Allowed age = 18 to 60
+
+Basic testing:
+
+    25 → Pass
+
+Advanced testing:
+
+    17
+    18
+    19
+    59
+    60
+    61
+    0
+    -1
+    empty
+    alphabetic input
+    decimal input
+    extremely large value
+
+The objective is to maximize meaningful defect detection without
+creating unnecessary test cases.
+
+
+====================================================================
+2. POSITIVE TESTING
+====================================================================
+
+2.1 Definition
+---------------
+
+Positive testing verifies that the system works correctly when the
+user provides valid input and follows the expected workflow.
+
+It answers:
+
+    "Does the application work when used correctly?"
+
+Example:
+
+Login requires:
+
+    Email
+    Password
+
+Valid test:
+
+    Email    = user@example.com
+    Password = CorrectPassword123
+
+Expected:
+
+    User should successfully log in.
+
+
+--------------------------------------------------------------------
+2.2 Positive Testing Examples
+--------------------------------------------------------------------
+
+Example 1 — Login
+
+Valid username + valid password
+        ↓
+Successful login
+
+
+Example 2 — Registration
+
+Valid:
+
+    Name
+    Email
+    Password
+    Confirm Password
+
+Expected:
+
+    Account should be created.
+
+
+Example 3 — Shopping Cart
+
+Valid product
+    ↓
+Add to cart
+    ↓
+Product appears in cart
+
+
+Example 4 — Payment
+
+Valid card details
+    ↓
+Valid amount
+    ↓
+Valid authentication
+    ↓
+Payment succeeds
+
+
+--------------------------------------------------------------------
+2.3 Positive Test Case Structure
+--------------------------------------------------------------------
+
+Example:
+
+Test Case ID:
+    TC_LOGIN_001
+
+Title:
+    Login with valid credentials
+
+Precondition:
+    Registered user exists.
+
+Steps:
+    1. Open login page.
+    2. Enter valid email.
+    3. Enter valid password.
+    4. Click Login.
+
+Expected Result:
+    User should be successfully logged in.
+
+
+====================================================================
+3. NEGATIVE TESTING
+====================================================================
+
+3.1 Definition
+---------------
+
+Negative testing verifies how the application behaves when invalid,
+unexpected, incomplete, or unauthorized input is provided.
+
+It answers:
+
+    "Does the application handle incorrect usage safely and
+     correctly?"
+
+
+--------------------------------------------------------------------
+3.2 Examples
+--------------------------------------------------------------------
+
+Login:
+
+    Invalid username
+    Invalid password
+    Empty username
+    Empty password
+    Both fields empty
+    Invalid email format
+    Very long input
+    Unsupported characters
+
+
+Registration:
+
+    Existing email
+    Weak password
+    Password mismatch
+    Missing required field
+    Invalid phone number
+
+
+Payment:
+
+    Expired card
+    Invalid card
+    Insufficient balance
+    Invalid CVV
+    Cancelled transaction
+
+
+--------------------------------------------------------------------
+3.3 Negative Testing Example
+--------------------------------------------------------------------
+
+Input:
+
+    Email = abc
+    Password = 123
+
+Expected:
+
+    System should reject the input and display an appropriate
+    validation/error message.
+
+The application should not:
+
+    - Crash
+    - Freeze
+    - Accept invalid data
+    - Expose sensitive information
+    - Create corrupted records
+
+
+====================================================================
+4. POSITIVE VS NEGATIVE TESTING
+====================================================================
+
++----------------------+------------------------------------------+
+| Positive Testing     | Negative Testing                         |
++----------------------+------------------------------------------+
+| Valid input          | Invalid input                            |
+| Expected usage       | Unexpected/incorrect usage              |
+| Happy path           | Error path                               |
+| Verifies success     | Verifies rejection/handling              |
+| Normal conditions    | Abnormal conditions                      |
++----------------------+------------------------------------------+
+
+Professional QA requires BOTH.
+
+
+====================================================================
+5. EDGE CASE TESTING
+====================================================================
+
+5.1 Definition
+---------------
+
+An edge case occurs at or very close to the boundary of an allowed
+range or condition.
+
+Example:
+
+Allowed quantity:
+
+    1 to 10
+
+Edge values:
+
+    1
+    2
+    9
+    10
+
+Values outside the boundary:
+
+    0
+    11
+
+
+--------------------------------------------------------------------
+5.2 Example — Age
+--------------------------------------------------------------------
+
+Requirement:
+
+    Age must be between 18 and 60.
+
+Important tests:
+
+    17
+    18
+    19
+    59
+    60
+    61
+
+
+--------------------------------------------------------------------
+5.3 Example — Password Length
+--------------------------------------------------------------------
+
+Requirement:
+
+    Password must contain 8–20 characters.
+
+Tests:
+
+    7 characters
+    8 characters
+    9 characters
+    19 characters
+    20 characters
+    21 characters
+
+
+--------------------------------------------------------------------
+5.4 Example — Product Quantity
+--------------------------------------------------------------------
+
+Requirement:
+
+    Quantity = 1–100
+
+Test:
+
+    0
+    1
+    2
+    99
+    100
+    101
+
+
+====================================================================
+6. CORNER CASE TESTING
+====================================================================
+
+6.1 Definition
+---------------
+
+A corner case generally occurs under extreme or unusual combinations
+of conditions.
+
+Edge case:
+
+    One boundary condition.
+
+Corner case:
+
+    Multiple unusual/extreme conditions occurring together.
+
+
+--------------------------------------------------------------------
+6.2 Example
+--------------------------------------------------------------------
+
+Suppose:
+
+    Maximum file size = 10 MB
+    Supported format = PDF
+
+Edge testing:
+
+    10 MB PDF
+
+Corner testing:
+
+    10 MB PDF
+    + unusual filename
+    + slow network
+    + user session near expiry
+
+
+--------------------------------------------------------------------
+6.3 E-Commerce Example
+--------------------------------------------------------------------
+
+Suppose checkout has:
+
+    100 products
+    Maximum discount
+    Minimum shipping amount
+    Expiring session
+
+A corner case could combine several boundary conditions.
+
+The objective is to identify defects caused by interactions between
+multiple conditions.
+
+
+====================================================================
+7. EDGE CASE VS CORNER CASE
+====================================================================
+
++------------------+---------------------------------------------+
+| Edge Case        | Corner Case                                 |
++------------------+---------------------------------------------+
+| Near boundary    | Extreme/unusual combination                 |
+| Usually one      | Often multiple conditions interact          |
+| Boundary focused | Combination focused                         |
+| Example: 100     | Example: 100 + max discount + session end   |
++------------------+---------------------------------------------+
+
+
+====================================================================
+8. BUSINESS RULE TESTING
+====================================================================
+
+8.1 Definition
+---------------
+
+Business rules define how an application should behave according to
+business requirements.
+
+QA Engineers must verify that the software correctly implements these
+rules.
+
+
+--------------------------------------------------------------------
+8.2 Example — Discount
+--------------------------------------------------------------------
+
+Business rule:
+
+    If order amount >= ₹5000
+    → Customer gets 10% discount.
+
+Test cases:
+
+    ₹4999
+    ₹5000
+    ₹5001
+
+
+Expected:
+
+    ₹4999 → No discount
+    ₹5000 → 10% discount
+    ₹5001 → 10% discount
+
+
+--------------------------------------------------------------------
+8.3 Multiple Business Rules
+--------------------------------------------------------------------
+
+Example:
+
+    Order >= ₹5000
+        → 10% discount
+
+    Premium customer
+        → Additional 5% discount
+
+    Coupon applied
+        → Additional discount according to coupon rules
+
+
+Important testing:
+
+    Normal customer
+    Premium customer
+    Coupon + normal customer
+    Coupon + premium customer
+    Boundary order amount
+    Invalid coupon
+    Expired coupon
+
+
+--------------------------------------------------------------------
+8.4 Business Rule Test Checklist
+--------------------------------------------------------------------
+
+Check:
+
+    - Rules are implemented correctly
+    - Rules are applied consistently
+    - Boundary conditions work
+    - Conflicting rules are handled
+    - Invalid combinations are rejected
+    - Calculations are correct
+    - Rule changes do not break existing behavior
+
+
+====================================================================
+9. DATA VALIDATION TESTING
+====================================================================
+
+9.1 Definition
+---------------
+
+Data validation testing verifies that the application accepts,
+processes, stores, and displays correct data.
+
+Data can exist in:
+
+    UI
+    API
+    Database
+    Files
+    External systems
+
+
+--------------------------------------------------------------------
+9.2 UI Data Validation
+--------------------------------------------------------------------
+
+Example:
+
+Registration form:
+
+    Name
+    Email
+    Phone
+    Date of Birth
+
+Validate:
+
+    Required fields
+    Format
+    Length
+    Allowed characters
+    Boundary values
+    Duplicate values
+
+
+--------------------------------------------------------------------
+9.3 Database Validation
+--------------------------------------------------------------------
+
+Example:
+
+User enters:
+
+    Name = Apoorv
+    Email = user@example.com
+
+After registration:
+
+UI
+ ↓
+API
+ ↓
+Backend
+ ↓
+Database
+
+QA can verify that the correct values are stored.
+
+
+--------------------------------------------------------------------
+9.4 Data Validation Questions
+--------------------------------------------------------------------
+
+Check:
+
+    - Was the correct data submitted?
+    - Was it processed correctly?
+    - Was it stored correctly?
+    - Was it retrieved correctly?
+    - Was it displayed correctly?
+    - Was unwanted data rejected?
+    - Were relationships maintained?
+
+
+====================================================================
+10. DATA VALIDATION EXAMPLE
+====================================================================
+
+Requirement:
+
+    Age must be an integer between 18 and 60.
+
+Test data:
+
+    18
+    25
+    60
+    17
+    61
+    -1
+    0
+    18.5
+    "abc"
+    ""
+    NULL
+
+
+Expected:
+
+    Valid values:
+        18–60 integer values
+
+    Invalid:
+        <18
+        >60
+        decimal
+        text
+        empty
+        NULL
+
+
+====================================================================
+11. UI VALIDATION VS BACKEND VALIDATION
+====================================================================
+
+A professional QA Engineer should not assume that UI validation is
+enough.
+
+Example:
+
+UI blocks:
+
+    Age = "abc"
+
+But a tester may send a direct API request containing:
+
+    age = "abc"
+
+The backend should also validate the data.
+
+Therefore:
+
+    UI validation
+         +
+    API validation
+         +
+    Database validation
+
+can provide stronger coverage.
+
+
+====================================================================
+12. CROSS-BROWSER TESTING
+====================================================================
+
+12.1 Definition
+---------------
+
+Cross-browser testing verifies that the application behaves correctly
+across supported web browsers.
+
+Common browsers include:
+
+    Chrome
+    Firefox
+    Edge
+    Safari
+
+
+--------------------------------------------------------------------
+12.2 What to Test
+--------------------------------------------------------------------
+
+Check:
+
+    - UI layout
+    - Buttons
+    - Forms
+    - Navigation
+    - JavaScript behavior
+    - CSS rendering
+    - File upload/download
+    - Popups
+    - Authentication
+    - API-dependent functionality
+    - Responsive behavior
+
+
+--------------------------------------------------------------------
+12.3 Example
+--------------------------------------------------------------------
+
+Login page works in:
+
+    Chrome → Pass
+    Firefox → Pass
+    Edge → Pass
+    Safari → ?
+
+If Safari has a layout or functional issue, it may indicate a
+browser compatibility defect.
+
+
+====================================================================
+13. CROSS-PLATFORM TESTING
+====================================================================
+
+Cross-platform testing verifies application behavior across different
+operating systems or platforms.
+
+Examples:
+
+    Windows
+    macOS
+    Linux
+    Android
+    iOS
+
+
+--------------------------------------------------------------------
+13.1 Example Matrix
+--------------------------------------------------------------------
+
+             Chrome    Firefox    Edge    Safari
+-------------------------------------------------
+Windows         ✓         ✓         ✓        -
+macOS           ✓         ✓         -        ✓
+
+The actual matrix should be based on the application's supported
+browser/platform requirements.
+
+
+====================================================================
+14. RESPONSIVE TESTING
+====================================================================
+
+Responsive testing verifies that the application works correctly at
+different screen sizes.
+
+Examples:
+
+    Desktop
+    Laptop
+    Tablet
+    Mobile
+
+
+Check:
+
+    - Layout
+    - Menus
+    - Images
+    - Text
+    - Buttons
+    - Forms
+    - Tables
+    - Navigation
+    - Horizontal scrolling
+
+
+--------------------------------------------------------------------
+14.1 Example
+--------------------------------------------------------------------
+
+Desktop:
+
+    Product list → 4 columns
+
+Tablet:
+
+    Product list → 2 columns
+
+Mobile:
+
+    Product list → 1 column
+
+Verify that the interface remains usable and correctly rendered.
+
+
+====================================================================
+15. ADVANCED TEST COVERAGE
+====================================================================
+
+Test coverage means how thoroughly the application's requirements,
+features, conditions, and scenarios have been tested.
+
+Good coverage does NOT simply mean:
+
+    "I have written many test cases."
+
+The objective is:
+
+    Meaningful coverage
+        +
+    Risk coverage
+        +
+    Requirement coverage
+        +
+    Scenario coverage
+
+
+--------------------------------------------------------------------
+15.1 Requirement Coverage
+--------------------------------------------------------------------
+
+Every important requirement should have corresponding test coverage.
+
+Example:
+
+Requirement:
+
+    User can reset password.
+
+Test coverage:
+
+    Valid email
+    Invalid email
+    Unregistered email
+    Expired reset link
+    Used reset link
+    Password mismatch
+    Successful reset
+
+
+--------------------------------------------------------------------
+15.2 Functional Coverage
+--------------------------------------------------------------------
+
+Verify important application functionality.
+
+Example — E-commerce:
+
+    Login
+    Search
+    Product details
+    Cart
+    Checkout
+    Payment
+    Order
+    Cancellation
+    Refund
+
+
+--------------------------------------------------------------------
+15.3 Negative Coverage
+--------------------------------------------------------------------
+
+Verify invalid conditions:
+
+    Invalid input
+    Missing data
+    Unauthorized access
+    Duplicate data
+    Invalid state
+    Network failure
+    Server failure
+
+
+--------------------------------------------------------------------
+15.4 Boundary Coverage
+--------------------------------------------------------------------
+
+Test:
+
+    Minimum
+    Minimum + 1
+    Maximum - 1
+    Maximum
+    Outside boundary
+
+
+--------------------------------------------------------------------
+15.5 Browser/Platform Coverage
+--------------------------------------------------------------------
+
+Verify important combinations of:
+
+    Browser
+    Operating system
+    Device
+    Screen size
+
+
+====================================================================
+16. RISK-BASED ADVANCED TEST DESIGN
+====================================================================
+
+Not every feature has equal risk.
+
+High-risk functionality should receive greater testing attention.
+
+Example — E-commerce:
+
+HIGH RISK:
+
+    Payment
+    Login
+    Checkout
+    Order creation
+
+MEDIUM RISK:
+
+    Search
+    Product filtering
+
+LOWER RISK:
+
+    Static informational page
+
+
+Therefore testing effort can be prioritized according to business
+impact and risk.
+
+
+====================================================================
+17. TEST DATA DESIGN
+====================================================================
+
+Good test cases require good test data.
+
+Test data categories:
+
+    1. Valid data
+    2. Invalid data
+    3. Boundary data
+    4. Empty data
+    5. Duplicate data
+    6. Large data
+    7. Special-character data
+    8. Null data
+    9. Existing data
+    10. Non-existing data
+
+
+--------------------------------------------------------------------
+17.1 Example — Username
+--------------------------------------------------------------------
+
+Requirement:
+
+    5–20 characters
+    Alphanumeric
+
+Test data:
+
+    abc              → Invalid
+    abcde            → Valid
+    abcdef           → Valid
+    12345            → Valid
+    abc@12            → Invalid
+    20-character     → Valid
+    21-character     → Invalid
+
+
+====================================================================
+18. SPECIAL CHARACTER TESTING
+====================================================================
+
+Fields should be tested with appropriate special characters.
+
+Examples:
+
+    @
+    #
+    $
+    %
+    &
+    *
+    -
+    _
+    '
+    "
+
+Also consider:
+
+    spaces
+    leading spaces
+    trailing spaces
+    multiple spaces
+
+
+Expected behavior should be determined by the requirement.
+
+Do not automatically assume every special character should be
+accepted or rejected.
+
+
+====================================================================
+19. EMPTY / NULL / MISSING DATA TESTING
+====================================================================
+
+Test:
+
+    Empty string
+    Null value
+    Missing field
+    Whitespace
+    Missing JSON property
+    Missing API parameter
+
+
+Example:
+
+API request:
+
+    {
+        "name": "Apoorv"
+    }
+
+If email is required, the API should return appropriate validation
+behavior rather than incorrectly processing incomplete data.
+
+
+====================================================================
+20. DUPLICATE DATA TESTING
+====================================================================
+
+Test duplicate values where uniqueness is expected.
+
+Examples:
+
+    Duplicate email
+    Duplicate username
+    Duplicate order
+    Duplicate transaction
+    Duplicate record
+
+
+Example:
+
+Existing:
+
+    user@example.com
+
+Attempt:
+
+    Register user@example.com again.
+
+Expected:
+
+    Registration should be rejected according to the application's
+    uniqueness rule.
+
+
+====================================================================
+21. FILE VALIDATION TESTING
+====================================================================
+
+Suppose an application accepts PDF files up to 10 MB.
+
+Test:
+
+    Valid PDF
+    Invalid extension
+    0-byte file
+    Maximum-size file
+    File larger than maximum
+    Corrupted file
+    Unusual filename
+    Special characters in filename
+    Duplicate file
+
+
+Also verify:
+
+    Upload
+    Progress
+    Error handling
+    Download
+    File integrity
+
+
+====================================================================
+22. DATE VALIDATION TESTING
+====================================================================
+
+Dates are common sources of defects.
+
+Test:
+
+    Valid date
+    Invalid date
+    Leap year
+    Non-leap year
+    Minimum date
+    Maximum date
+    Past date
+    Future date
+    Date format
+    Time-zone differences
+
+
+Example:
+
+    29-Feb-2028 → valid
+    29-Feb-2027 → invalid
+
+
+====================================================================
+23. COMBINED TEST DESIGN
+====================================================================
+
+Advanced QA often combines multiple techniques.
+
+Example requirement:
+
+    Age = 18–60
+    Country = India
+    Premium users get discount
+    Discount applies only to orders >= ₹5000
+
+
+Possible test dimensions:
+
+    Age boundary
+    Country
+    User type
+    Order amount
+    Discount condition
+
+
+A strong test strategy considers interactions between these
+conditions instead of testing each field only in isolation.
+
+
+====================================================================
+24. PRACTICAL E-COMMERCE EXAMPLE
+====================================================================
+
+Feature:
+
+    Apply Coupon
+
+Requirement:
+
+    Coupon provides 10% discount when:
+        - Coupon is valid
+        - Coupon is not expired
+        - Order amount >= ₹1000
+        - User is eligible
+
+
+Test scenarios:
+
+1. Valid coupon + eligible user + ₹1000
+2. Valid coupon + eligible user + ₹999
+3. Expired coupon
+4. Invalid coupon
+5. Empty coupon
+6. Coupon with spaces
+7. Ineligible user
+8. Minimum order boundary
+9. Maximum discount boundary
+10. Coupon already used
+11. Multiple coupon attempts
+12. Coupon applied then cart modified
+13. Coupon applied then item removed
+14. Session expires after coupon application
+15. Payment fails after discount application
+
+
+This demonstrates advanced test design because several conditions
+interact.
+
+
+====================================================================
+25. PRACTICAL LOGIN EXAMPLE
+====================================================================
+
+Feature:
+
+    User Login
+
+Test categories:
+
+POSITIVE:
+
+    Valid username + valid password
+
+NEGATIVE:
+
+    Invalid username
+    Invalid password
+    Both invalid
+    Empty username
+    Empty password
+
+BOUNDARY:
+
+    Minimum username length
+    Maximum username length
+    Minimum password length
+    Maximum password length
+
+EDGE:
+
+    Maximum allowed input
+
+CORNER:
+
+    Long username + long password + slow network
+
+SECURITY-RELATED:
+
+    Unauthorized access
+    Session handling
+    Account lock behavior
+
+BROWSER:
+
+    Chrome
+    Firefox
+    Edge
+    Safari
+
+RESPONSIVE:
+
+    Desktop
+    Tablet
+    Mobile
+
+
+====================================================================
+26. PRACTICAL PAYMENT EXAMPLE
+====================================================================
+
+Payment functionality is generally high-risk.
+
+Test:
+
+    Valid payment
+    Invalid card
+    Expired card
+    Invalid CVV
+    Insufficient balance
+    Cancel payment
+    Network interruption
+    Payment timeout
+    Duplicate payment attempt
+    Browser refresh
+    Back button
+    Session expiry
+    Payment success but order creation failure
+    Order creation success but confirmation delay
+
+
+Important objective:
+
+    Avoid duplicate transactions
+    Avoid incorrect order status
+    Avoid incorrect balance
+    Maintain transaction consistency
+
+
+====================================================================
+27. ADVANCED TEST CASE TEMPLATE
+====================================================================
+
+Test Case ID:
+    TC_xxx
+
+Title:
+    Clear test objective
+
+Requirement:
+    Related requirement
+
+Priority:
+    High / Medium / Low
+
+Severity:
+    Critical / High / Medium / Low
+
+Preconditions:
+    Required setup
+
+Test Data:
+    Input data
+
+Steps:
+    1. Step one
+    2. Step two
+    3. Step three
+
+Expected Result:
+    Expected behavior
+
+Actual Result:
+    Actual observed behavior
+
+Status:
+    Pass / Fail / Blocked
+
+Environment:
+    Browser / OS / Device
+
+Evidence:
+    Screenshot / Video / Logs
+
+
+====================================================================
+28. ADVANCED TEST CASE DESIGN CHECKLIST
+====================================================================
+
+For each feature, ask:
+
+[ ] Did I test the happy path?
+
+[ ] Did I test invalid input?
+
+[ ] Did I test empty input?
+
+[ ] Did I test boundary values?
+
+[ ] Did I test edge cases?
+
+[ ] Did I test corner cases?
+
+[ ] Did I test business rules?
+
+[ ] Did I test duplicate data?
+
+[ ] Did I test special characters?
+
+[ ] Did I test large data?
+
+[ ] Did I test different browsers?
+
+[ ] Did I test supported platforms?
+
+[ ] Did I test responsive behavior?
+
+[ ] Did I validate important backend/API data?
+
+[ ] Did I consider high-risk scenarios?
+
+[ ] Did I test interactions between conditions?
+
+
+====================================================================
+29. COMMON QA MISTAKES
+====================================================================
+
+Mistake 1:
+    Testing only valid inputs.
+
+Solution:
+    Always include meaningful negative cases.
+
+
+Mistake 2:
+    Testing only middle values.
+
+Example:
+
+    Requirement = 1–100
+
+Only testing:
+
+    50
+
+Solution:
+
+    Test boundaries and nearby values.
+
+
+Mistake 3:
+    Writing many duplicate test cases.
+
+Solution:
+
+    Use effective test design techniques.
+
+
+Mistake 4:
+    Ignoring business rules.
+
+Solution:
+
+    Convert business requirements into testable scenarios.
+
+
+Mistake 5:
+    Testing only UI.
+
+Solution:
+
+    Where applicable, validate API/database behavior as well.
+
+
+Mistake 6:
+    Testing only one browser.
+
+Solution:
+
+    Test the supported browser/platform matrix.
+
+
+Mistake 7:
+    Ignoring combinations.
+
+Solution:
+
+    Identify important interactions between conditions.
+
+
+====================================================================
+30. INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is positive testing?
+
+Answer:
+Positive testing verifies that the application works correctly with
+valid input and expected user behavior.
+
+
+Q2. What is negative testing?
+
+Answer:
+Negative testing verifies how the application behaves when invalid,
+unexpected, incomplete, or unauthorized input is provided.
+
+
+Q3. What is an edge case?
+
+Answer:
+An edge case occurs at or near a boundary or limit of a condition.
+
+
+Q4. What is a corner case?
+
+Answer:
+A corner case involves unusual or extreme conditions, often involving
+a combination of conditions.
+
+
+Q5. What is business rule testing?
+
+Answer:
+It verifies that application behavior correctly follows the business
+rules defined by the requirements.
+
+
+Q6. What is data validation testing?
+
+Answer:
+It verifies that data is correctly accepted, processed, stored, and
+displayed.
+
+
+Q7. Why is cross-browser testing required?
+
+Answer:
+Different browsers may render or execute application behavior
+differently, so supported browser compatibility must be verified.
+
+
+Q8. What is cross-platform testing?
+
+Answer:
+It verifies application behavior across supported operating systems,
+devices, or platforms.
+
+
+Q9. What is responsive testing?
+
+Answer:
+It verifies that the application's interface remains usable and
+correct across different screen sizes and device types.
+
+
+Q10. Should we test every possible combination?
+
+Answer:
+Exhaustive testing is generally impractical. Important combinations
+should be selected based on requirements, risk, boundaries, and
+meaningful interactions.
+
+
+====================================================================
+31. SCENARIO-BASED INTERVIEW QUESTIONS
+====================================================================
+
+SCENARIO 1
+----------
+
+Requirement:
+
+    Age must be between 18 and 60.
+
+Question:
+
+    What test cases will you create?
+
+Answer:
+
+    17
+    18
+    19
+    59
+    60
+    61
+
+Also consider:
+
+    Empty
+    Negative
+    Decimal
+    Text
+    Very large value
+
+
+--------------------------------------------------------------------
+SCENARIO 2
+----------
+
+Requirement:
+
+    Password length = 8–20 characters.
+
+Question:
+
+    What values will you test?
+
+Answer:
+
+    7
+    8
+    9
+    19
+    20
+    21
+
+Also test:
+
+    Empty
+    Spaces
+    Special characters
+    Valid/invalid format according to requirements
+
+
+--------------------------------------------------------------------
+SCENARIO 3
+----------
+
+A payment works in Chrome but fails in Safari.
+
+Question:
+
+    What would you investigate?
+
+Answer:
+
+    1. Browser version
+    2. Console errors
+    3. Network requests
+    4. JavaScript behavior
+    5. UI rendering
+    6. Browser-specific behavior
+    7. Reproducibility
+    8. Supported-browser requirements
+
+
+--------------------------------------------------------------------
+SCENARIO 4
+----------
+
+A registration form rejects invalid email format in the UI.
+
+Question:
+
+    Is UI validation enough?
+
+Answer:
+
+    No.
+
+Where applicable, backend/API validation should also be verified
+because requests can potentially bypass the UI.
+
+
+--------------------------------------------------------------------
+SCENARIO 5
+----------
+
+An e-commerce coupon works for ₹999 even though the requirement says
+minimum order amount is ₹1000.
+
+Question:
+
+    What kind of defect is this?
+
+Answer:
+
+    It is a business-rule/functional defect involving a boundary
+    condition.
+
+
+====================================================================
+32. JOB-READY PRACTICAL EXERCISE
+====================================================================
+
+Choose an e-commerce application.
+
+Feature:
+
+    Product Search
+
+Create test cases for:
+
+1. Valid product name
+2. Invalid product name
+3. Empty search
+4. Partial search
+5. Uppercase/lowercase
+6. Special characters
+7. Very long search
+8. No-result search
+9. Multiple-word search
+10. Search with spaces
+11. Search on Chrome
+12. Search on Firefox
+13. Search on Edge
+14. Search on mobile
+15. Slow network
+16. Pagination
+17. Sorting
+18. Filtering
+19. Search + filter combination
+20. Search + sorting + pagination combination
+
+
+====================================================================
+33. ADVANCED QA MINDSET
+====================================================================
+
+A beginner tester asks:
+
+    "Does this feature work?"
+
+An advanced QA Engineer asks:
+
+    "Under what conditions does it work?"
+
+    "When does it fail?"
+
+    "What are the boundaries?"
+
+    "What invalid data can be provided?"
+
+    "What business rules apply?"
+
+    "What happens when conditions interact?"
+
+    "Does it work across supported browsers and platforms?"
+
+    "Is the data correct throughout the system?"
+
+    "What happens when the environment changes?"
+
+This mindset is extremely important for professional QA work.
+
+
+====================================================================
+34. CHAPTER 16 — FINAL SUMMARY
+====================================================================
+
+Advanced test design includes:
+
+    1. Positive Testing
+    2. Negative Testing
+    3. Edge Case Testing
+    4. Corner Case Testing
+    5. Business Rule Testing
+    6. Data Validation
+    7. Cross-Browser Testing
+    8. Cross-Platform Testing
+    9. Responsive Testing
+    10. Advanced Test Coverage
+    11. Risk-Based Thinking
+    12. Combination Testing
+
+The key objective is not to create the maximum number of test cases.
+
+The objective is to create EFFECTIVE test cases that provide strong
+coverage and are capable of finding important defects.
+
+A professional QA Engineer thinks in terms of:
+
+    Valid
+    Invalid
+    Boundary
+    Extreme
+    Combination
+    Business Rule
+    Data
+    Environment
+    Risk
+
+
+====================================================================
+35. JOB-READY CHECKLIST
+====================================================================
+
+You should now be able to explain:
+
+[✓] Positive testing
+[✓] Negative testing
+[✓] Edge cases
+[✓] Corner cases
+[✓] Business rule testing
+[✓] Data validation
+[✓] UI vs backend validation
+[✓] Cross-browser testing
+[✓] Cross-platform testing
+[✓] Responsive testing
+[✓] Advanced test coverage
+[✓] Risk-based test thinking
+[✓] Combination scenarios
+[✓] Advanced test case structure
+[✓] Practical e-commerce scenarios
+
+
+====================================================================
+NEXT
+====================================================================
+
+CHAPTER 17 — DEFECT FUNDAMENTALS
+
+Topics:
+
+    1. What is a defect?
+    2. Error vs Defect vs Bug vs Failure
+    3. Defect lifecycle
+    4. New
+    5. Assigned
+    6. Open
+    7. Fixed
+    8. Retest
+    9. Reopened
+    10. Closed
+    11. Rejected
+    12. Duplicate
+    13. Deferred
+    14. Cannot Reproduce
+    15. Defect workflow
+    16. Practical bug examples
+    17. Bug-report scenarios
+    18. Interview questions
+====================================================================

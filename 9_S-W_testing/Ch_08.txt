@@ -1,0 +1,1292 @@
+============================================================
+CHAPTER 8 — LEVELS OF SOFTWARE TESTING
+============================================================
+
+Goal:
+Understand where testing is performed in the software development
+lifecycle and how Unit, Integration, System, Acceptance, Alpha,
+and Beta testing differ.
+
+============================================================
+1. WHAT ARE TESTING LEVELS?
+============================================================
+
+Testing levels define the stages at which software is tested.
+
+A large software system is not tested only at the end.
+
+Instead, testing can happen at different levels:
+
+    Unit
+      ↓
+    Integration
+      ↓
+    System
+      ↓
+    Acceptance
+
+Additional release-oriented testing includes:
+
+    Alpha Testing
+    Beta Testing
+
+Simple idea:
+
+    Smallest component
+          ↓
+    Multiple components together
+          ↓
+    Complete system
+          ↓
+    Customer/business acceptance
+
+
+============================================================
+2. WHY DO WE NEED DIFFERENT TESTING LEVELS?
+============================================================
+
+A modern application contains many components.
+
+Example: E-Commerce Application
+
+    Login
+    Product Search
+    Product Details
+    Cart
+    Payment
+    Order
+    Notification
+    Database
+    APIs
+
+Testing everything together from the beginning makes debugging
+difficult.
+
+Therefore, testing is performed progressively.
+
+Example:
+
+    Unit Testing
+        ↓
+    Test individual functions/components
+
+    Integration Testing
+        ↓
+    Test communication between components
+
+    System Testing
+        ↓
+    Test the complete application
+
+    Acceptance Testing
+        ↓
+    Check whether business requirements are satisfied
+
+
+============================================================
+3. UNIT TESTING
+============================================================
+
+Definition:
+
+Unit Testing is testing the smallest testable unit of software
+independently.
+
+A unit can be:
+
+    - Function
+    - Method
+    - Class
+    - Small module
+    - Component
+
+The exact meaning of "unit" depends on the application and
+development approach.
+
+
+Example:
+
+Suppose we have:
+
+    calculateTotal(price, quantity)
+
+    price = 100
+    quantity = 2
+
+Expected:
+
+    total = 200
+
+A unit test checks this function independently.
+
+------------------------------------------------------------
+Example
+------------------------------------------------------------
+
+Function:
+
+    calculateDiscount(amount)
+
+Test cases:
+
+    amount = 1000
+    expected discount = 100
+
+    amount = 500
+    expected discount = 50
+
+    amount = 0
+    expected discount = 0
+
+Each test focuses on the individual unit.
+
+
+============================================================
+4. PURPOSE OF UNIT TESTING
+============================================================
+
+Main objectives:
+
+1. Verify individual components.
+2. Detect defects early.
+3. Make debugging easier.
+4. Verify business logic at component level.
+5. Support safe code changes.
+6. Reduce defects reaching later testing levels.
+
+
+============================================================
+5. WHO PERFORMS UNIT TESTING?
+============================================================
+
+Unit testing is commonly performed by:
+
+    Developers
+
+However, QA/SDET engineers may also work with unit-level tests,
+especially in automation and quality engineering environments.
+
+
+============================================================
+6. UNIT TESTING EXAMPLE
+============================================================
+
+Suppose an application has:
+
+    LoginService
+    PaymentService
+    OrderService
+
+Unit-level tests could be:
+
+    LoginService
+        → validateUsername()
+        → validatePassword()
+
+    PaymentService
+        → calculateAmount()
+        → validatePayment()
+
+    OrderService
+        → calculateTotal()
+        → calculateTax()
+
+
+Each component can be tested independently.
+
+
+============================================================
+7. UNIT TESTING ADVANTAGES
+============================================================
+
+Advantages:
+
+    - Early defect detection
+    - Fast execution
+    - Easier debugging
+    - Helps maintain code quality
+    - Supports refactoring
+    - Reduces cost of fixing defects later
+
+
+============================================================
+8. INTEGRATION TESTING
+============================================================
+
+Definition:
+
+Integration Testing verifies whether multiple software components
+work correctly together.
+
+Unit testing asks:
+
+    "Does this component work?"
+
+Integration testing asks:
+
+    "Do these components communicate correctly?"
+
+
+============================================================
+9. WHY INTEGRATION TESTING IS REQUIRED
+============================================================
+
+Individual components may work correctly but fail when connected.
+
+Example:
+
+    Login Service
+          ↓
+    User Database
+
+Both may work independently.
+
+But problems may occur when:
+
+    Login Service → Database
+
+Possible issues:
+
+    - Incorrect API request
+    - Wrong data format
+    - Incorrect database query
+    - Incorrect field mapping
+    - Authentication problems
+    - Communication failure
+
+
+============================================================
+10. INTEGRATION TESTING EXAMPLE
+============================================================
+
+E-commerce application:
+
+    Product Service
+          ↓
+    Cart Service
+          ↓
+    Order Service
+          ↓
+    Payment Service
+
+Each service may pass its unit tests.
+
+Integration testing checks whether:
+
+    Product → Cart
+
+    Cart → Order
+
+    Order → Payment
+
+work correctly together.
+
+
+============================================================
+11. COMMON INTEGRATION TESTING AREAS
+============================================================
+
+Test:
+
+    - API communication
+    - Database communication
+    - Service-to-service communication
+    - Data transfer
+    - Interface behavior
+    - Authentication between services
+    - Error handling
+    - Message exchange
+
+
+============================================================
+12. SYSTEM TESTING
+============================================================
+
+Definition:
+
+System Testing tests the complete integrated software system
+against specified requirements.
+
+Instead of testing one component, we test the application as
+a complete system.
+
+
+Example:
+
+E-commerce application:
+
+    User
+      ↓
+    Login
+      ↓
+    Search Product
+      ↓
+    Product Details
+      ↓
+    Add to Cart
+      ↓
+    Checkout
+      ↓
+    Payment
+      ↓
+    Order Confirmation
+
+
+The complete flow can be tested as a system.
+
+
+============================================================
+13. PURPOSE OF SYSTEM TESTING
+============================================================
+
+System testing verifies:
+
+    - Functional requirements
+    - End-to-end behavior
+    - Business workflows
+    - System interactions
+    - Error handling
+    - User-facing behavior
+    - Non-functional characteristics where applicable
+
+
+============================================================
+14. EXAMPLE OF SYSTEM TESTING
+============================================================
+
+Scenario:
+
+    User purchases a product.
+
+Steps:
+
+    1. Open application.
+    2. Login.
+    3. Search for product.
+    4. Open product.
+    5. Add product to cart.
+    6. Open cart.
+    7. Checkout.
+    8. Enter address.
+    9. Select payment method.
+    10. Complete payment.
+    11. Verify order confirmation.
+
+This tests the complete application flow.
+
+
+============================================================
+15. SYSTEM TESTING AND END-TO-END TESTING
+============================================================
+
+System testing can include complete business workflows.
+
+End-to-end testing focuses on validating a complete user/business
+flow across the relevant system components.
+
+Example:
+
+    Login
+      ↓
+    Search
+      ↓
+    Cart
+      ↓
+    Checkout
+      ↓
+    Payment
+      ↓
+    Order
+
+
+============================================================
+16. ACCEPTANCE TESTING
+============================================================
+
+Definition:
+
+Acceptance Testing verifies whether the software satisfies the
+business requirements and is acceptable for delivery/use.
+
+Main question:
+
+    "Is the system acceptable to the customer/business?"
+
+
+============================================================
+17. PURPOSE OF ACCEPTANCE TESTING
+============================================================
+
+Acceptance testing verifies:
+
+    - Business requirements
+    - User expectations
+    - Acceptance criteria
+    - Business workflows
+    - Readiness for release
+
+
+============================================================
+18. USER ACCEPTANCE TESTING — UAT
+============================================================
+
+UAT = User Acceptance Testing
+
+UAT is performed to determine whether the system meets the needs
+of its intended users/business.
+
+Example:
+
+An e-commerce company wants to verify:
+
+    Can customers successfully:
+
+        Login
+        Search products
+        Add products to cart
+        Checkout
+        Pay
+        Receive order confirmation?
+
+
+If the business accepts the behavior, the software can proceed
+toward release.
+
+
+============================================================
+19. ACCEPTANCE CRITERIA
+============================================================
+
+Acceptance testing is strongly connected with acceptance criteria.
+
+Example User Story:
+
+    "As a customer,
+     I want to reset my password,
+     so that I can access my account if I forget it."
+
+Acceptance Criteria:
+
+    1. User can request password reset.
+    2. Reset link is sent.
+    3. Link expires after the defined period.
+    4. User can create a new password.
+    5. User can login using the new password.
+
+
+These criteria can be verified during acceptance testing.
+
+
+============================================================
+20. WHO PERFORMS ACCEPTANCE TESTING?
+============================================================
+
+Depending on the organization, acceptance testing may involve:
+
+    - Customer
+    - Business users
+    - Product Owner
+    - Client representatives
+    - QA team
+    - Other authorized stakeholders
+
+
+============================================================
+21. ALPHA TESTING
+============================================================
+
+Definition:
+
+Alpha testing is testing performed before wider external release,
+usually in a controlled environment.
+
+It is commonly conducted at the organization's side before the
+software is made available to a wider group of external users.
+
+
+Example:
+
+A company develops a new banking application.
+
+Before releasing it publicly:
+
+    Internal testers
+          ↓
+    Controlled testing
+          ↓
+    Defects identified
+          ↓
+    Fixes
+          ↓
+    Further validation
+
+
+============================================================
+22. PURPOSE OF ALPHA TESTING
+============================================================
+
+Objectives:
+
+    - Find defects before wider release
+    - Validate major functionality
+    - Identify usability problems
+    - Evaluate product stability
+    - Improve release quality
+
+
+============================================================
+23. BETA TESTING
+============================================================
+
+Definition:
+
+Beta testing is testing performed by selected external users or
+a limited user group before wider/public release.
+
+The software is exposed to real or representative users in a
+realistic environment.
+
+
+Example:
+
+A company develops a mobile application.
+
+Before public release:
+
+    Selected users
+          ↓
+    Install application
+          ↓
+    Use real features
+          ↓
+    Report problems
+          ↓
+    Company analyzes feedback
+          ↓
+    Final improvements
+
+
+============================================================
+24. PURPOSE OF BETA TESTING
+============================================================
+
+Objectives:
+
+    - Collect real-user feedback
+    - Discover environment-specific problems
+    - Identify usability issues
+    - Validate real-world behavior
+    - Improve product before broad release
+
+
+============================================================
+25. ALPHA vs BETA TESTING
+============================================================
+
++----------------------+---------------------------+
+| Alpha Testing       | Beta Testing              |
++----------------------+---------------------------+
+| Controlled setting  | Realistic user setting   |
+| Usually before beta | Usually after alpha      |
+| Internal/controlled | Selected external users |
+| Early feedback      | Real-world feedback     |
+| Controlled users    | Limited real users      |
++----------------------+---------------------------+
+
+
+============================================================
+26. TESTING LEVELS — COMPLETE FLOW
+============================================================
+
+Typical progression:
+
+    UNIT
+      ↓
+    INTEGRATION
+      ↓
+    SYSTEM
+      ↓
+    ACCEPTANCE
+
+Release-oriented validation may also include:
+
+    ALPHA
+      ↓
+    BETA
+      ↓
+    WIDER/PUBLIC RELEASE
+
+
+Important:
+
+These levels are related, but Alpha and Beta are not simply
+"higher versions" of Unit, Integration, or System testing.
+They describe different stages/contexts of product validation.
+
+
+============================================================
+27. UNIT vs INTEGRATION
+============================================================
+
+UNIT TESTING:
+
+    Focus:
+        Individual unit
+
+    Example:
+        calculateTotal()
+
+    Question:
+        Does this component work correctly?
+
+
+INTEGRATION TESTING:
+
+    Focus:
+        Interaction between components
+
+    Example:
+        Order Service ↔ Payment Service
+
+    Question:
+        Do these components work correctly together?
+
+
+============================================================
+28. INTEGRATION vs SYSTEM
+============================================================
+
+INTEGRATION:
+
+    Focuses on interactions between integrated components.
+
+SYSTEM:
+
+    Focuses on the complete integrated application.
+
+Example:
+
+    Integration:
+        Cart → Order
+
+    System:
+        Login → Search → Cart → Checkout → Payment → Order
+
+
+============================================================
+29. SYSTEM vs ACCEPTANCE
+============================================================
+
+SYSTEM TESTING:
+
+    Main focus:
+        Complete software behavior against requirements.
+
+ACCEPTANCE TESTING:
+
+    Main focus:
+        Whether the software is acceptable from business/user
+        perspective.
+
+
+Simple memory:
+
+    SYSTEM:
+        "Does the complete system work?"
+
+    ACCEPTANCE:
+        "Is the system acceptable for business/user use?"
+
+
+============================================================
+30. ACCEPTANCE vs ALPHA vs BETA
+============================================================
+
+ACCEPTANCE:
+
+    Determines whether software satisfies business/user
+    acceptance requirements.
+
+ALPHA:
+
+    Controlled pre-release testing, commonly at the organization's
+    side.
+
+BETA:
+
+    Limited external/real-user pre-release testing.
+
+
+============================================================
+31. EXAMPLE — E-COMMERCE APPLICATION
+============================================================
+
+Suppose we build:
+
+    Amazon-like shopping application
+
+
+UNIT TESTING
+------------
+
+Test:
+
+    calculateCartTotal()
+    calculateDiscount()
+    validateEmail()
+
+
+INTEGRATION TESTING
+-------------------
+
+Test:
+
+    Cart → Order Service
+
+    Order → Payment Service
+
+    Payment → Database
+
+
+SYSTEM TESTING
+--------------
+
+Test:
+
+    Login
+      ↓
+    Search Product
+      ↓
+    Add to Cart
+      ↓
+    Checkout
+      ↓
+    Payment
+      ↓
+    Order Confirmation
+
+
+ACCEPTANCE TESTING
+------------------
+
+Business verifies:
+
+    - Customers can purchase products.
+    - Payment works according to business rules.
+    - Order is created correctly.
+    - Required acceptance criteria are satisfied.
+
+
+ALPHA TESTING
+-------------
+
+Controlled/internal users test the pre-release product.
+
+
+BETA TESTING
+------------
+
+Selected external users test the product in realistic
+environments and provide feedback.
+
+
+============================================================
+32. TESTING LEVELS vs TESTING TYPES
+============================================================
+
+This is an important interview concept.
+
+TESTING LEVELS:
+
+    Where/at what stage is software tested?
+
+Examples:
+
+    Unit
+    Integration
+    System
+    Acceptance
+
+
+TESTING TYPES:
+
+    What kind of testing is being performed?
+
+Examples:
+
+    Functional
+    Non-functional
+    Regression
+    Smoke
+    Sanity
+    Exploratory
+    Security
+    Performance
+
+
+Example:
+
+A tester can perform:
+
+    System Level
+        +
+    Functional Testing
+
+or:
+
+    System Level
+        +
+    Regression Testing
+
+
+============================================================
+33. TESTING LEVELS vs TESTING TYPES — MEMORY
+============================================================
+
+LEVEL = WHERE / STAGE
+
+TYPE = WHAT / NATURE
+
+Example:
+
+    System Testing
+        ↓
+    Level
+
+    Regression Testing
+        ↓
+    Type
+
+
+============================================================
+34. ROLE OF QA ENGINEER AT DIFFERENT LEVELS
+============================================================
+
+UNIT:
+
+    - Understand unit test coverage
+    - Collaborate with developers
+    - Review failures when applicable
+
+
+INTEGRATION:
+
+    - Validate interfaces
+    - Test APIs
+    - Verify data exchange
+    - Validate service interactions
+
+
+SYSTEM:
+
+    - Create test scenarios
+    - Execute functional tests
+    - Perform regression
+    - Perform end-to-end testing
+    - Validate complete workflows
+
+
+ACCEPTANCE:
+
+    - Validate business requirements
+    - Verify acceptance criteria
+    - Support UAT
+    - Report business-impacting defects
+
+
+ALPHA/BETA:
+
+    - Support release validation
+    - Analyze feedback
+    - Reproduce reported issues
+    - Validate fixes
+
+
+============================================================
+35. DEFECT DISCOVERY AT DIFFERENT LEVELS
+============================================================
+
+UNIT:
+
+    Logic errors
+
+INTEGRATION:
+
+    Interface/data communication problems
+
+SYSTEM:
+
+    Workflow/functionality problems
+
+ACCEPTANCE:
+
+    Business requirement or user expectation problems
+
+BETA:
+
+    Real-world/environment/usability problems
+
+
+============================================================
+36. EARLY DEFECT DETECTION
+============================================================
+
+Finding defects earlier is generally beneficial.
+
+Example:
+
+    Developer introduces calculation defect
+                 ↓
+    Unit test finds it
+                 ↓
+    Fix immediately
+
+Instead of:
+
+    Defect
+      ↓
+    Integration
+      ↓
+    System
+      ↓
+    Production
+      ↓
+    Customer discovers it
+
+
+Early detection can reduce debugging effort and downstream impact.
+
+
+============================================================
+37. REAL-WORLD QA FLOW
+============================================================
+
+Requirement
+     ↓
+Development
+     ↓
+Unit Testing
+     ↓
+Integration Testing
+     ↓
+System Testing
+     ↓
+Acceptance/UAT
+     ↓
+Release
+     ↓
+Alpha/Beta or controlled pre-release validation
+     ↓
+Production/Wider Release
+
+
+Note:
+
+Actual organizational workflows can vary.
+
+
+============================================================
+38. INTERVIEW QUESTIONS
+============================================================
+
+Q1. What are testing levels?
+
+Answer:
+
+Testing levels are stages at which software is tested.
+Common levels include Unit, Integration, System, and Acceptance
+Testing.
+
+
+Q2. What is Unit Testing?
+
+Answer:
+
+Unit testing verifies an individual testable component such as a
+function, method, class, or small module.
+
+
+Q3. Who usually performs Unit Testing?
+
+Answer:
+
+Developers commonly perform unit testing, although QA/SDET teams
+may also work with unit-level automated tests.
+
+
+Q4. What is Integration Testing?
+
+Answer:
+
+Integration testing verifies that multiple components or services
+work correctly together.
+
+
+Q5. What is System Testing?
+
+Answer:
+
+System testing evaluates the complete integrated software system
+against specified requirements.
+
+
+Q6. What is Acceptance Testing?
+
+Answer:
+
+Acceptance testing verifies whether the software satisfies
+business/user requirements and is acceptable for delivery or use.
+
+
+Q7. What is UAT?
+
+Answer:
+
+UAT stands for User Acceptance Testing. It validates whether the
+software meets the needs and expectations of its intended users
+or business.
+
+
+Q8. What is Alpha Testing?
+
+Answer:
+
+Alpha testing is controlled pre-release testing, commonly
+performed within or under the control of the organization before
+wider external release.
+
+
+Q9. What is Beta Testing?
+
+Answer:
+
+Beta testing involves selected external users testing the
+software in realistic environments before wider release.
+
+
+Q10. Difference between System and Acceptance Testing?
+
+Answer:
+
+System testing focuses on the complete integrated software
+system, while acceptance testing focuses on whether the software
+satisfies business/user acceptance requirements.
+
+
+============================================================
+39. SCENARIO-BASED INTERVIEW QUESTIONS
+============================================================
+
+Q1.
+
+A login function is tested independently.
+
+Which level?
+
+    Answer: Unit Testing
+
+
+Q2.
+
+Login service communicates with the user database.
+
+Which level?
+
+    Answer: Integration Testing
+
+
+Q3.
+
+A tester verifies:
+
+    Login
+    Search
+    Cart
+    Checkout
+    Payment
+
+Which level?
+
+    Answer: System Testing
+
+
+Q4.
+
+The business owner verifies that all acceptance criteria
+are satisfied before release.
+
+Which level?
+
+    Answer: Acceptance Testing
+
+
+Q5.
+
+Selected external users test a pre-release product.
+
+Which testing?
+
+    Answer: Beta Testing
+
+
+============================================================
+40. IMPORTANT INTERVIEW DIFFERENCES
+============================================================
+
+UNIT
+    ↓
+Individual component
+
+INTEGRATION
+    ↓
+Interaction between components
+
+SYSTEM
+    ↓
+Complete integrated system
+
+ACCEPTANCE
+    ↓
+Business/user acceptance
+
+ALPHA
+    ↓
+Controlled pre-release validation
+
+BETA
+    ↓
+Selected external/real-world user validation
+
+
+============================================================
+41. QUICK MEMORY TRICK
+============================================================
+
+Think about building a CAR:
+
+    UNIT
+        → Test engine component
+
+    INTEGRATION
+        → Engine + transmission work together
+
+    SYSTEM
+        → Complete car works
+
+    ACCEPTANCE
+        → Customer/business accepts the car
+
+    ALPHA
+        → Controlled pre-release testing
+
+    BETA
+        → Selected users drive/test it in realistic conditions
+
+
+============================================================
+42. JOB-READY QA CHECKLIST
+============================================================
+
+You should be able to explain:
+
+[✓] What testing levels are
+[✓] Unit Testing
+[✓] Integration Testing
+[✓] System Testing
+[✓] Acceptance Testing
+[✓] UAT
+[✓] Alpha Testing
+[✓] Beta Testing
+[✓] Unit vs Integration
+[✓] Integration vs System
+[✓] System vs Acceptance
+[✓] Acceptance vs Alpha/Beta
+[✓] Testing levels vs testing types
+[✓] QA role at different levels
+[✓] Real-world e-commerce example
+[✓] Scenario-based questions
+
+
+============================================================
+43. ONE-PAGE REVISION
+============================================================
+
+                TESTING LEVELS
+
+                    UNIT
+                      |
+             Individual component
+                      |
+                 INTEGRATION
+                      |
+              Components together
+                      |
+                   SYSTEM
+                      |
+              Complete application
+                      |
+                ACCEPTANCE
+                      |
+             Business/User approval
+
+          Pre-release validation:
+                      |
+             +--------+--------+
+             |                 |
+           ALPHA             BETA
+             |                 |
+       Controlled          Selected external
+       environment         real-world users
+
+
+============================================================
+44. FINAL KEY TAKEAWAYS
+============================================================
+
+1. Testing is performed at multiple levels.
+
+2. Unit Testing focuses on individual components.
+
+3. Integration Testing focuses on communication between
+   components.
+
+4. System Testing evaluates the complete integrated application.
+
+5. Acceptance Testing checks business/user acceptance.
+
+6. UAT means User Acceptance Testing.
+
+7. Alpha testing is controlled pre-release testing.
+
+8. Beta testing involves selected external users in realistic
+   environments.
+
+9. Testing levels are different from testing types.
+
+10. A QA engineer should understand how testing progresses from
+    individual components to complete business validation.
+
+
+============================================================
+END OF CHAPTER 8
+============================================================
+
+NEXT:
+CHAPTER 9 — TYPES OF SOFTWARE TESTING
+
+Topics:
+    - Functional Testing
+    - Non-Functional Testing
+    - Manual Testing
+    - Automation Testing
+    - Black Box Testing
+    - White Box Testing
+    - Grey Box Testing
+    - Positive Testing
+    - Negative Testing
+    - Exploratory Testing
+    - Ad-Hoc Testing
+    - Real-world examples
+    - Interview questions
+    - Scenario-based questions
+============================================================

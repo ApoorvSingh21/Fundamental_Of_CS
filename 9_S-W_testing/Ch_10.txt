@@ -1,0 +1,1415 @@
+============================================================
+CHAPTER 10 — COMMON SOFTWARE TESTING TYPES
+============================================================
+
+Goal:
+Understand the most commonly used testing types in real QA
+projects, especially Smoke, Sanity, Regression, Retesting,
+Functional, Integration, End-to-End, Compatibility, Usability,
+Accessibility, Localization, Internationalization, Installation,
+Recovery, and Reliability Testing.
+
+============================================================
+1. WHY ARE THESE TESTING TYPES IMPORTANT?
+============================================================
+
+In a real project, a QA engineer does not simply "test the
+software."
+
+Different situations require different testing approaches.
+
+Examples:
+
+    New build received
+        → Smoke Testing
+
+    Small change made
+        → Sanity Testing
+
+    Bug fixed
+        → Retesting
+
+    New version released
+        → Regression Testing
+
+    Complete business workflow
+        → End-to-End Testing
+
+    Multiple browsers/devices
+        → Compatibility Testing
+
+    User experience
+        → Usability Testing
+
+    Accessibility requirements
+        → Accessibility Testing
+
+    Different languages/regions
+        → Localization Testing
+
+    Software installation
+        → Installation Testing
+
+    System recovery after failure
+        → Recovery Testing
+
+    Long-term stable operation
+        → Reliability Testing
+
+
+============================================================
+2. SMOKE TESTING
+============================================================
+
+Definition:
+
+Smoke Testing is a preliminary set of tests performed on a new
+build to determine whether the build is stable enough for more
+detailed testing.
+
+Simple question:
+
+    "Is this build good enough to test further?"
+
+
+============================================================
+3. SMOKE TESTING EXAMPLE
+============================================================
+
+E-commerce application receives Build 1.5.
+
+QA quickly verifies:
+
+    [✓] Application opens
+    [✓] Login works
+    [✓] Product search works
+    [✓] Product details open
+    [✓] Add to cart works
+    [✓] Checkout page opens
+
+If critical functionality is broken:
+
+    Build → Smoke FAIL
+
+QA may reject the build for detailed testing.
+
+If critical functionality works:
+
+    Build → Smoke PASS
+          ↓
+    Detailed testing can begin
+
+
+============================================================
+4. CHARACTERISTICS OF SMOKE TESTING
+============================================================
+
+    - Broad but shallow
+    - Quick
+    - Checks critical functionality
+    - Performed on a new build
+    - Determines build stability
+    - Prevents wasting time on an obviously broken build
+
+
+============================================================
+5. SANITY TESTING
+============================================================
+
+Definition:
+
+Sanity Testing is focused testing performed after changes or
+fixes to verify that the relevant functionality works and the
+change has not introduced obvious issues in the affected area.
+
+Simple question:
+
+    "Does the changed/fixed functionality work correctly enough
+     to continue testing?"
+
+
+============================================================
+6. SANITY TESTING EXAMPLE
+============================================================
+
+Suppose:
+
+    Login password-reset functionality was fixed.
+
+QA focuses on:
+
+    - Request password reset
+    - Receive reset mechanism
+    - Open reset flow
+    - Set new password
+    - Login with new password
+
+The goal is to quickly verify the changed area rather than
+performing a full regression of the entire application.
+
+
+============================================================
+7. SMOKE vs SANITY
+============================================================
+
+SMOKE:
+
+    Purpose:
+        Check whether the build is stable enough for testing.
+
+    Scope:
+        Broad but shallow.
+
+    Usually:
+        New build.
+
+    Question:
+        "Can we test this build?"
+
+
+SANITY:
+
+    Purpose:
+        Check whether a specific change/fix works correctly.
+
+    Scope:
+        Narrow and focused.
+
+    Usually:
+        After changes/fixes.
+
+    Question:
+        "Does this changed area work?"
+
+
+Memory:
+
+    SMOKE  = BUILD CHECK
+
+    SANITY = CHANGE/FIX CHECK
+
+
+============================================================
+8. REGRESSION TESTING
+============================================================
+
+Definition:
+
+Regression Testing verifies that changes or fixes have not
+adversely affected existing functionality.
+
+Main question:
+
+    "Did the new change break something that was already working?"
+
+
+============================================================
+9. REGRESSION TESTING EXAMPLE
+============================================================
+
+Suppose:
+
+    Developer changes payment functionality.
+
+QA tests:
+
+    Payment
+    Cart
+    Order
+    Login
+    Product search
+    Discounts
+    Order history
+
+Why?
+
+Because changes in one area can affect related or existing
+functionality.
+
+
+============================================================
+10. WHY REGRESSION TESTING IS REQUIRED
+============================================================
+
+Software is interconnected.
+
+Example:
+
+    Change Payment
+         ↓
+    Payment Service
+         ↓
+    Order Creation
+         ↓
+    Invoice
+         ↓
+    Notification
+
+A change in one component may unexpectedly affect another.
+
+Regression testing helps detect such unintended effects.
+
+
+============================================================
+11. RETESTING
+============================================================
+
+Definition:
+
+Retesting is testing a previously failed test or defect after
+the reported defect has been fixed.
+
+Main question:
+
+    "Does the specific defect now work correctly after the fix?"
+
+
+============================================================
+12. RETESTING EXAMPLE
+============================================================
+
+Bug:
+
+    User cannot reset password.
+
+Developer:
+
+    Fixes password reset.
+
+QA:
+
+    Repeats the steps that previously failed.
+
+Expected:
+
+    Password reset should now work.
+
+
+This is Retesting.
+
+
+============================================================
+13. RETESTING vs REGRESSION
+============================================================
+
+RETESTING:
+
+    Focus:
+        Specific defect/failure.
+
+    Purpose:
+        Verify that the defect has been fixed.
+
+
+REGRESSION:
+
+    Focus:
+        Existing functionality affected by changes.
+
+    Purpose:
+        Verify that changes did not break previously working
+        functionality.
+
+
+Memory:
+
+    RETEST
+        = Test the FIX
+
+
+    REGRESSION
+        = Test the IMPACT of the CHANGE
+
+
+============================================================
+14. IMPORTANT EXAMPLE
+============================================================
+
+Original bug:
+
+    Checkout crashes when applying coupon.
+
+Developer fixes it.
+
+QA performs:
+
+    1. Retesting:
+       Apply coupon again and verify the original bug is fixed.
+
+    2. Regression:
+       Verify checkout, payment, order creation, cart, discounts,
+       and related functionality still work.
+
+
+============================================================
+15. FUNCTIONAL TESTING
+============================================================
+
+Functional Testing verifies that application functions satisfy
+specified requirements.
+
+Examples:
+
+    - Login
+    - Registration
+    - Search
+    - Cart
+    - Payment
+    - Order
+    - Refund
+
+
+Example:
+
+Requirement:
+
+    "User should be able to add a product to cart."
+
+Test:
+
+    Login
+    Open product
+    Click Add to Cart
+
+Expected:
+
+    Product appears in cart.
+
+
+============================================================
+16. INTEGRATION TESTING
+============================================================
+
+Integration Testing verifies interactions between integrated
+components, modules, systems, or services.
+
+Example:
+
+    Shopping Cart
+          ↓
+    Order Service
+          ↓
+    Payment Service
+
+
+Tests can verify:
+
+    - Correct data transfer
+    - API communication
+    - Error handling
+    - Authentication
+    - Database interactions
+
+
+============================================================
+17. END-TO-END TESTING
+============================================================
+
+Definition:
+
+End-to-End Testing validates a complete business/user workflow
+from beginning to end across the relevant application components.
+
+Example:
+
+    Open website
+        ↓
+    Login
+        ↓
+    Search product
+        ↓
+    Select product
+        ↓
+    Add to cart
+        ↓
+    Checkout
+        ↓
+    Payment
+        ↓
+    Order confirmation
+
+
+============================================================
+18. WHY E2E TESTING IS IMPORTANT
+============================================================
+
+It verifies that multiple parts of the system work together to
+support a complete real-world workflow.
+
+It can uncover:
+
+    - Integration problems
+    - Workflow defects
+    - Data problems
+    - Authentication problems
+    - Payment/order issues
+    - UI-to-backend problems
+
+
+============================================================
+19. FUNCTIONAL vs INTEGRATION vs E2E
+============================================================
+
+FUNCTIONAL:
+
+    "Does this feature work?"
+
+INTEGRATION:
+
+    "Do these components communicate correctly?"
+
+END-TO-END:
+
+    "Does the complete business workflow work from start to finish?"
+
+
+============================================================
+20. COMPATIBILITY TESTING
+============================================================
+
+Definition:
+
+Compatibility Testing verifies that software works correctly
+across supported environments.
+
+Possible environments:
+
+    - Browsers
+    - Operating systems
+    - Devices
+    - Screen sizes
+    - Hardware configurations
+    - Network environments
+    - Software versions
+
+
+============================================================
+21. BROWSER COMPATIBILITY
+============================================================
+
+Example:
+
+    Chrome
+    Firefox
+    Edge
+    Safari
+
+QA verifies:
+
+    Login
+    Search
+    Checkout
+    Buttons
+    Forms
+    Layout
+    JavaScript behavior
+
+
+============================================================
+22. DEVICE COMPATIBILITY
+============================================================
+
+For mobile/web applications:
+
+    Android phone
+    iPhone
+    Tablet
+    Desktop
+
+Verify:
+
+    - Layout
+    - Touch interaction
+    - Navigation
+    - Forms
+    - Performance
+    - Screen adaptation
+
+
+============================================================
+23. RESPONSIVE COMPATIBILITY
+============================================================
+
+Test different screen sizes:
+
+    Mobile
+    Tablet
+    Laptop
+    Desktop
+
+Verify:
+
+    - No overlapping elements
+    - Buttons remain usable
+    - Text is readable
+    - Menus work
+    - Images scale correctly
+
+
+============================================================
+24. USABILITY TESTING
+============================================================
+
+Definition:
+
+Usability Testing evaluates how easily and effectively users can
+learn and use the software.
+
+Main question:
+
+    "Can users use the application easily?"
+
+
+============================================================
+25. USABILITY TESTING EXAMPLE
+============================================================
+
+E-commerce checkout:
+
+    Is checkout easy to understand?
+
+    Can users easily:
+        - Find cart?
+        - Change quantity?
+        - Enter address?
+        - Select payment?
+        - Understand errors?
+        - Complete order?
+
+
+A technically correct system can still have poor usability.
+
+
+============================================================
+26. COMMON USABILITY FACTORS
+============================================================
+
+Check:
+
+    - Ease of learning
+    - Navigation
+    - Clarity
+    - Consistency
+    - Readability
+    - Error messages
+    - User workflow
+    - Ease of completing tasks
+
+
+============================================================
+27. ACCESSIBILITY TESTING
+============================================================
+
+Definition:
+
+Accessibility Testing evaluates whether software can be used by
+people with disabilities and whether accessibility requirements
+are satisfied.
+
+Examples of considerations:
+
+    - Keyboard navigation
+    - Screen reader support
+    - Text alternatives
+    - Color/contrast
+    - Focus visibility
+    - Form labels
+    - Accessible error messages
+
+
+============================================================
+28. ACCESSIBILITY EXAMPLE
+============================================================
+
+Login page:
+
+    Username field
+    Password field
+    Login button
+
+Accessibility checks may include:
+
+    [✓] Fields have meaningful labels
+    [✓] Keyboard can reach controls
+    [✓] Focus is visible
+    [✓] Screen reader can understand controls
+    [✓] Errors are communicated accessibly
+
+
+============================================================
+29. USABILITY vs ACCESSIBILITY
+============================================================
+
+USABILITY:
+
+    Focus:
+        Ease of use for users generally.
+
+
+ACCESSIBILITY:
+
+    Focus:
+        Ability of people with disabilities to use the software.
+
+
+Example:
+
+    A button may be visually easy to understand.
+
+But if a keyboard-only user cannot reach it:
+
+    Usability may appear acceptable
+    Accessibility has a problem.
+
+
+============================================================
+30. LOCALIZATION TESTING
+============================================================
+
+Definition:
+
+Localization Testing verifies that software works correctly for
+a specific language, region, or locale.
+
+It can include:
+
+    - Language
+    - Date format
+    - Time format
+    - Currency
+    - Number format
+    - Address format
+    - Regional conventions
+
+
+============================================================
+31. LOCALIZATION EXAMPLE
+============================================================
+
+For India:
+
+    Currency:
+        ₹
+
+    Possible date format:
+        04/10/2026
+
+For another locale, formatting may differ.
+
+QA verifies that the application displays information correctly
+for the target locale.
+
+
+============================================================
+32. INTERNATIONALIZATION TESTING
+============================================================
+
+Definition:
+
+Internationalization Testing evaluates whether the software has
+been designed to support multiple languages, regions, and
+localization requirements.
+
+Simple idea:
+
+    Internationalization
+        → Build software ready for multiple locales.
+
+    Localization
+        → Validate/customize it for a specific locale.
+
+
+============================================================
+33. LOCALIZATION vs INTERNATIONALIZATION
+============================================================
+
+LOCALIZATION:
+
+    Specific locale.
+
+    Example:
+        Validate Hindi/India-specific formatting.
+
+
+INTERNATIONALIZATION:
+
+    Product capability to support multiple locales.
+
+    Example:
+        Ensure architecture supports English, Hindi, Japanese,
+        Arabic, etc., without requiring major redesign.
+
+
+Memory:
+
+    i18n = Internationalization
+
+    l10n = Localization
+
+
+The numbers represent the number of letters between the first
+and last letters.
+
+
+============================================================
+34. INSTALLATION TESTING
+============================================================
+
+Definition:
+
+Installation Testing verifies that software can be installed,
+configured, upgraded, or uninstalled correctly in supported
+environments.
+
+
+============================================================
+35. INSTALLATION TESTING EXAMPLES
+============================================================
+
+Verify:
+
+    - Fresh installation
+    - Upgrade
+    - Reinstallation
+    - Uninstallation
+    - Configuration
+    - Required dependencies
+    - Installation failure handling
+    - Different supported environments
+
+
+Example:
+
+Desktop application:
+
+    Download installer
+        ↓
+    Install
+        ↓
+    Launch application
+        ↓
+    Verify functionality
+
+
+============================================================
+36. UPGRADE TESTING
+============================================================
+
+Suppose:
+
+    Version 1.0
+        ↓
+    Upgrade to Version 2.0
+
+Verify:
+
+    - Installation succeeds
+    - Existing data is preserved
+    - Settings are preserved where required
+    - Application starts correctly
+    - Existing functionality still works
+
+
+============================================================
+37. RECOVERY TESTING
+============================================================
+
+Definition:
+
+Recovery Testing verifies whether a system can recover from
+failures and return to an acceptable state.
+
+Possible failures:
+
+    - Server crash
+    - Network failure
+    - Database failure
+    - Power interruption
+    - Application crash
+    - Service failure
+
+
+============================================================
+38. RECOVERY TESTING EXAMPLE
+============================================================
+
+Online banking transaction:
+
+    Transaction begins
+        ↓
+    System failure occurs
+        ↓
+    System recovers
+        ↓
+    Verify transaction state
+
+
+Questions:
+
+    - Was money deducted correctly?
+    - Was duplicate processing avoided?
+    - Was transaction state preserved?
+    - Can the system continue safely?
+
+
+============================================================
+39. RECOVERY TESTING GOALS
+============================================================
+
+Verify:
+
+    - Recovery process
+    - Data integrity
+    - Backup restoration
+    - Failure handling
+    - Restart behavior
+    - Service restoration
+    - Prevention of inconsistent state
+
+
+============================================================
+40. RELIABILITY TESTING
+============================================================
+
+Definition:
+
+Reliability Testing evaluates whether software can perform
+consistently and correctly over a specified period and under
+expected conditions.
+
+Main question:
+
+    "Can the system continue operating reliably?"
+
+
+============================================================
+41. RELIABILITY EXAMPLE
+============================================================
+
+Suppose an application is expected to operate continuously.
+
+QA may monitor:
+
+    - Failures
+    - Crashes
+    - Error rates
+    - Successful transactions
+    - Service availability
+    - Recovery behavior
+
+
+============================================================
+42. RELIABILITY vs RECOVERY
+============================================================
+
+RELIABILITY:
+
+    Focus:
+        Consistent operation over time.
+
+
+RECOVERY:
+
+    Focus:
+        Ability to recover after failure.
+
+
+Example:
+
+    Reliability:
+        Application runs continuously without unexpected failure.
+
+
+    Recovery:
+        Application restarts correctly after a server failure.
+
+
+============================================================
+43. COMMON TESTING TYPES — COMPLETE MAP
+============================================================
+
+                    TESTING
+                       |
+      +----------------+----------------+
+      |                                 |
+    BUILD                            CHANGE
+      |                                 |
+   SMOKE                            SANITY
+                                        |
+                                        |
+                                  RETESTING
+                                        |
+                                  REGRESSION
+                                        |
+      +---------------------------------+
+      |
+   FUNCTIONAL
+      |
+   Feature behavior
+
+      +---------------------------------+
+      |
+   INTEGRATION
+      |
+   Component interaction
+
+      +---------------------------------+
+      |
+   END-TO-END
+      |
+   Complete business flow
+
+      +---------------------------------+
+      |
+   COMPATIBILITY
+      |
+   Browser/OS/device/environment
+
+      +---------------------------------+
+      |
+   USABILITY
+      |
+   Ease of use
+
+      +---------------------------------+
+      |
+   ACCESSIBILITY
+      |
+   Accessibility for users with disabilities
+
+      +---------------------------------+
+      |
+   LOCALIZATION
+      |
+   Specific locale
+
+      +---------------------------------+
+      |
+   INTERNATIONALIZATION
+      |
+   Multi-locale readiness
+
+      +---------------------------------+
+      |
+   INSTALLATION
+      |
+   Install/upgrade/uninstall
+
+      +---------------------------------+
+      |
+   RECOVERY
+      |
+   Failure recovery
+
+      +---------------------------------+
+      |
+   RELIABILITY
+      |
+   Consistent operation
+
+
+============================================================
+44. SMOKE vs SANITY vs REGRESSION vs RETESTING
+============================================================
+
++-------------+-----------------------------+
+| Type        | Main Purpose                |
++-------------+-----------------------------+
+| Smoke       | Build stability             |
+| Sanity      | Focused change validation   |
+| Retesting   | Verify specific fix        |
+| Regression  | Check impact of changes    |
++-------------+-----------------------------+
+
+
+Example:
+
+New build arrives:
+    → Smoke
+
+Specific feature changed:
+    → Sanity
+
+Bug fixed:
+    → Retesting
+
+After changes:
+    → Regression
+
+
+============================================================
+45. SMOKE vs SANITY — INTERVIEW EXAMPLE
+============================================================
+
+Question:
+
+"Build received. Login, search, and checkout are completely
+broken. Should you start executing 500 detailed test cases?"
+
+Answer:
+
+    No.
+
+First perform Smoke Testing.
+
+If critical functionality fails, the build may not be suitable
+for detailed testing.
+
+
+Question:
+
+"Developer fixed password reset. What should you do first?"
+
+Answer:
+
+    Perform focused validation/sanity checking and then retest
+    the reported defect as appropriate.
+
+
+============================================================
+46. RETESTING vs REGRESSION — INTERVIEW EXAMPLE
+============================================================
+
+Question:
+
+Bug:
+
+    "Checkout crashes when coupon is applied."
+
+Developer fixes it.
+
+Retesting:
+
+    Apply the coupon again and verify the original failure is
+    fixed.
+
+
+Regression:
+
+    Verify checkout and related existing functionality such as:
+
+        Cart
+        Payment
+        Order
+        Discounts
+        Order history
+
+
+============================================================
+47. E-COMMERCE REAL-WORLD TEST PLAN
+============================================================
+
+NEW BUILD:
+
+    Smoke:
+        Login
+        Search
+        Product details
+        Cart
+        Checkout
+
+
+FEATURE CHANGE:
+
+    Sanity:
+        Changed feature and nearby functionality
+
+
+BUG FIX:
+
+    Retesting:
+        Original failed scenario
+
+
+AFTER CHANGE:
+
+    Regression:
+        Existing critical workflows
+
+
+COMPLETE PURCHASE:
+
+    E2E:
+        Login → Search → Cart → Payment → Order
+
+
+BROWSER CHECK:
+
+    Compatibility:
+        Chrome / Firefox / Edge / Safari
+
+
+USER EXPERIENCE:
+
+    Usability:
+        Easy checkout
+
+
+ACCESSIBILITY:
+
+    Keyboard + screen reader + accessible controls
+
+
+REGION:
+
+    Localization:
+        Currency/date/language formats
+
+
+PRODUCT DESIGN:
+
+    Internationalization:
+        Support multiple locales
+
+
+DEPLOYMENT:
+
+    Installation:
+        Install/upgrade/uninstall
+
+
+SERVER FAILURE:
+
+    Recovery:
+        Restore service/data safely
+
+
+LONG RUN:
+
+    Reliability:
+        Stable operation over time
+
+
+============================================================
+48. INTERVIEW QUESTIONS
+============================================================
+
+Q1. What is Smoke Testing?
+
+Answer:
+
+Smoke testing is preliminary testing of a new build to determine
+whether it is stable enough for detailed testing.
+
+
+Q2. What is Sanity Testing?
+
+Answer:
+
+Sanity testing is focused testing of changed or fixed
+functionality to determine whether the relevant area works
+correctly enough for further testing.
+
+
+Q3. What is Regression Testing?
+
+Answer:
+
+Regression testing verifies that changes or fixes have not
+adversely affected existing functionality.
+
+
+Q4. What is Retesting?
+
+Answer:
+
+Retesting verifies a previously failed test or defect after the
+reported issue has been fixed.
+
+
+Q5. Difference between Smoke and Sanity?
+
+Answer:
+
+Smoke testing broadly checks build stability, while sanity
+testing focuses on a specific changed or fixed area.
+
+
+Q6. Difference between Retesting and Regression?
+
+Answer:
+
+Retesting verifies that a specific defect has been fixed.
+Regression testing checks whether changes have affected existing
+functionality.
+
+
+Q7. What is End-to-End Testing?
+
+Answer:
+
+E2E testing validates a complete business/user workflow across
+the relevant system components.
+
+
+Q8. What is Compatibility Testing?
+
+Answer:
+
+Compatibility testing verifies software behavior across
+supported browsers, devices, operating systems, screen sizes,
+or other environments.
+
+
+Q9. What is Usability Testing?
+
+Answer:
+
+Usability testing evaluates how easily users can understand and
+use the software.
+
+
+Q10. What is Accessibility Testing?
+
+Answer:
+
+Accessibility testing evaluates whether software can be used by
+people with disabilities and whether accessibility requirements
+are satisfied.
+
+
+Q11. What is Localization Testing?
+
+Answer:
+
+Localization testing verifies software behavior and presentation
+for a specific language, region, or locale.
+
+
+Q12. What is Internationalization Testing?
+
+Answer:
+
+Internationalization testing evaluates whether software is
+designed to support multiple languages, regions, and localization
+requirements.
+
+
+Q13. What is Installation Testing?
+
+Answer:
+
+Installation testing verifies installation, configuration,
+upgrade, and uninstallation behavior.
+
+
+Q14. What is Recovery Testing?
+
+Answer:
+
+Recovery testing verifies whether a system can recover correctly
+from failures and return to an acceptable state.
+
+
+Q15. What is Reliability Testing?
+
+Answer:
+
+Reliability testing evaluates whether software can operate
+consistently and correctly over a specified period under expected
+conditions.
+
+
+============================================================
+49. SCENARIO-BASED INTERVIEW QUESTIONS
+============================================================
+
+Q1.
+
+A new build is received. You check only the most critical
+features before detailed testing.
+
+Answer:
+
+    Smoke Testing
+
+
+Q2.
+
+A developer changes the login password validation logic.
+You quickly verify the changed functionality.
+
+Answer:
+
+    Sanity Testing
+
+
+Q3.
+
+A bug is marked Fixed. You execute the same steps that previously
+failed.
+
+Answer:
+
+    Retesting
+
+
+Q4.
+
+After a payment change, you test login, cart, order, and payment.
+
+Answer:
+
+    Regression Testing
+
+
+Q5.
+
+You test the complete flow from login to successful order.
+
+Answer:
+
+    End-to-End Testing
+
+
+Q6.
+
+You test the website in Chrome, Firefox, Edge, and Safari.
+
+Answer:
+
+    Compatibility Testing
+
+
+Q7.
+
+You verify whether a visually impaired user can navigate the
+application using accessibility features.
+
+Answer:
+
+    Accessibility Testing
+
+
+Q8.
+
+You verify whether checkout is easy for a new user to understand.
+
+Answer:
+
+    Usability Testing
+
+
+Q9.
+
+You verify Indian currency and locale-specific formatting.
+
+Answer:
+
+    Localization Testing
+
+
+Q10.
+
+You verify that the software architecture supports multiple
+languages and locales.
+
+Answer:
+
+    Internationalization Testing
+
+
+Q11.
+
+You intentionally stop a service and verify the system recovers
+correctly

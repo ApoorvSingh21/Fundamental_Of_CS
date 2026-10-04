@@ -1,0 +1,1755 @@
+====================================================================
+        SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER COURSE
+====================================================================
+CHAPTER 19 — PROFESSIONAL BUG REPORTS
+====================================================================
+
+GOAL
+----
+Learn how to create clear, complete, reproducible, and professional
+bug reports that developers, QA engineers, and other stakeholders can
+understand and act upon.
+
+This chapter covers:
+
+    1. What is a bug report?
+    2. Why professional bug reporting matters
+    3. Bug title
+    4. Environment
+    5. Preconditions
+    6. Steps to reproduce
+    7. Test data
+    8. Expected result
+    9. Actual result
+    10. Severity
+    11. Priority
+    12. Screenshots
+    13. Videos
+    14. Logs
+    15. Reproducibility
+    16. Good vs bad bug reports
+    17. Complete real-world bug reports
+    18. Jira-style bug reporting
+    19. Interview questions
+    20. Scenario-based practice
+
+
+====================================================================
+1. WHAT IS A BUG REPORT?
+====================================================================
+
+A bug report is a structured description of a software defect.
+
+It communicates:
+
+    WHAT is wrong?
+    WHERE does it happen?
+    HOW can it be reproduced?
+    WHAT should happen?
+    WHAT actually happens?
+
+A professional bug report should provide enough information for the
+development team to understand and reproduce the issue.
+
+
+Basic structure:
+
+    Bug
+      ↓
+    Description
+      ↓
+    Reproduction steps
+      ↓
+    Expected result
+      ↓
+    Actual result
+      ↓
+    Evidence
+      ↓
+    Severity/Priority
+      ↓
+    Tracking
+
+
+====================================================================
+2. WHY PROFESSIONAL BUG REPORTING MATTERS
+====================================================================
+
+A poorly written bug report can create unnecessary communication:
+
+    QA:
+        "Login is not working."
+
+    Developer:
+        "What is not working?"
+
+    QA:
+        "Login."
+
+    Developer:
+        "How?"
+
+    QA:
+        "It gives an error."
+
+    Developer:
+        "Which error?"
+
+This wastes time.
+
+A good bug report provides the required information from the
+beginning.
+
+Example:
+
+    "Login fails with valid credentials on Chrome after password
+     reset."
+
+The developer immediately has useful information.
+
+
+====================================================================
+3. CHARACTERISTICS OF A GOOD BUG REPORT
+====================================================================
+
+A good bug report should be:
+
+    CLEAR
+    -----
+    Easy to understand.
+
+    SPECIFIC
+    --------
+    Describes the exact problem.
+
+    REPRODUCIBLE
+    ------------
+    Provides steps that can reproduce the issue.
+
+    COMPLETE
+    --------
+    Contains required information.
+
+    OBJECTIVE
+    ---------
+    Describes facts rather than emotions.
+
+    TRACEABLE
+    ---------
+    Can be linked to requirements, test cases, builds, or other
+    defects when appropriate.
+
+
+====================================================================
+4. BASIC BUG REPORT STRUCTURE
+====================================================================
+
+A professional bug report may contain:
+
+    Bug ID
+    Title/Summary
+    Description
+    Environment
+    Build/Version
+    Preconditions
+    Steps to Reproduce
+    Test Data
+    Expected Result
+    Actual Result
+    Severity
+    Priority
+    Reproducibility
+    Attachments
+    Logs
+    Additional Notes
+
+
+The exact fields depend on the team's defect-management system.
+
+
+====================================================================
+5. BUG ID
+====================================================================
+
+A Bug ID uniquely identifies a defect in a defect-tracking system.
+
+Examples:
+
+    BUG-101
+    BUG-102
+    BUG-103
+
+In Jira, an issue may receive an identifier such as:
+
+    QA-101
+
+
+Purpose:
+
+    - Easy tracking
+    - Easy communication
+    - Easy searching
+    - Easy reference in meetings
+    - Traceability
+
+
+Example:
+
+    "Please check BUG-101."
+
+
+====================================================================
+6. BUG TITLE / SUMMARY
+====================================================================
+
+The title is one of the most important parts of a bug report.
+
+It should quickly communicate:
+
+    Feature + Problem + Important condition
+
+
+--------------------------------------------------------------------
+BAD TITLE
+--------------------------------------------------------------------
+
+    "Login issue"
+
+
+Problem:
+
+    Too vague.
+
+
+--------------------------------------------------------------------
+BAD TITLE
+--------------------------------------------------------------------
+
+    "Not working"
+
+
+Problem:
+
+    Does not explain what is not working.
+
+
+--------------------------------------------------------------------
+BETTER
+--------------------------------------------------------------------
+
+    "Login fails with valid credentials"
+
+
+--------------------------------------------------------------------
+MORE SPECIFIC
+--------------------------------------------------------------------
+
+    "Login fails with valid credentials after password reset"
+
+
+The title should remain concise.
+
+
+====================================================================
+7. GOOD BUG TITLE FORMULA
+====================================================================
+
+A useful pattern:
+
+    [Feature] + [Observed problem] + [Important condition]
+
+
+Example:
+
+    "Checkout fails when applying a valid coupon"
+
+    "Product image is not displayed on product details page"
+
+    "Payment remains pending after successful transaction"
+
+    "Login fails on Safari with valid credentials"
+
+
+Avoid unnecessary words.
+
+
+====================================================================
+8. DESCRIPTION
+====================================================================
+
+The description provides additional context.
+
+Example:
+
+    The login functionality fails for registered users after their
+    password has been reset. The issue is reproducible on Chrome
+    using the latest test build.
+
+
+The description should help the reader understand the issue before
+following the detailed steps.
+
+
+====================================================================
+9. ENVIRONMENT
+====================================================================
+
+Environment information tells the team where the defect occurred.
+
+Possible information:
+
+    Operating System
+    Browser
+    Browser version
+    Device
+    Application version
+    Build number
+    Test environment
+
+
+Example:
+
+    OS:
+        Windows 11
+
+    Browser:
+        Chrome
+
+    Browser Version:
+        Current supported version used by the project
+
+    Environment:
+        QA
+
+    Build:
+        2.4.1
+
+
+The exact information should match the project.
+
+
+====================================================================
+10. PRECONDITIONS
+====================================================================
+
+A precondition is something that must already be true before the
+test steps begin.
+
+Example:
+
+    - User is registered.
+    - User is logged out.
+    - Product exists.
+    - Product is in stock.
+    - User has sufficient balance.
+
+
+Example for login:
+
+    Preconditions:
+        1. Registered user exists.
+        2. User is currently logged out.
+
+
+Example for checkout:
+
+    Preconditions:
+        1. User is logged in.
+        2. Product is available.
+        3. Product has been added to cart.
+
+
+====================================================================
+11. STEPS TO REPRODUCE
+====================================================================
+
+Steps to reproduce explain exactly how to trigger the defect.
+
+Good steps should be:
+
+    Numbered
+    Sequential
+    Clear
+    Specific
+    Repeatable
+
+
+Example:
+
+    1. Open the application.
+    2. Navigate to Login.
+    3. Enter a registered email.
+    4. Enter the correct password.
+    5. Click Login.
+    6. Observe the result.
+
+
+Avoid:
+
+    "Login normally and check."
+
+
+This is too vague.
+
+
+====================================================================
+12. TEST DATA
+====================================================================
+
+Test data is the specific input used to reproduce the issue.
+
+Examples:
+
+    Email:
+        test@example.com
+
+    Password:
+        Valid test password
+
+    Product:
+        Product ABC
+
+    Quantity:
+        10
+
+    Coupon:
+        SAVE10
+
+
+For sensitive information:
+
+    Never include real passwords, payment credentials, tokens, or
+    other sensitive secrets in a bug report.
+
+Use appropriate test data according to the project.
+
+
+====================================================================
+13. EXPECTED RESULT
+====================================================================
+
+Expected Result describes what SHOULD happen according to the
+requirement or intended behavior.
+
+
+Example:
+
+    User should be redirected to the dashboard after entering valid
+    credentials.
+
+
+Another:
+
+    The selected product should be added to the shopping cart.
+
+
+Another:
+
+    The payment should be completed once and the order status should
+    be updated correctly.
+
+
+====================================================================
+14. ACTUAL RESULT
+====================================================================
+
+Actual Result describes what ACTUALLY happened during testing.
+
+
+Example:
+
+    User remains on the login page and an "Invalid credentials"
+    message is displayed.
+
+
+Another:
+
+    The product is not added to the cart.
+
+
+Another:
+
+    Payment succeeds but the order status remains "Payment Failed."
+
+
+Expected and Actual should be clearly separated.
+
+
+====================================================================
+15. EXPECTED VS ACTUAL
+====================================================================
+
+Example:
+
+    EXPECTED:
+        User should receive a successful login response.
+
+    ACTUAL:
+        User receives an "Invalid credentials" error.
+
+
+Another:
+
+    EXPECTED:
+        10% discount should be applied for an eligible order.
+
+    ACTUAL:
+        20% discount is applied.
+
+
+This difference is the heart of the defect report.
+
+
+====================================================================
+16. SEVERITY
+====================================================================
+
+Severity describes the impact of the defect.
+
+Common levels from the course:
+
+    Critical
+    High
+    Medium
+    Low
+
+
+Example:
+
+    Payment system completely unavailable.
+
+Possible:
+
+    Severity = Critical/High
+
+
+Example:
+
+    Minor UI alignment problem.
+
+Possible:
+
+    Severity = Low
+
+
+Severity should follow the project's defined classification rules.
+
+
+====================================================================
+17. PRIORITY
+====================================================================
+
+Priority describes how urgently the defect should be fixed.
+
+Common levels:
+
+    High
+    Medium
+    Low
+
+
+Example:
+
+    Typo on a major public homepage before a major release.
+
+Possible:
+
+    Severity = Low
+    Priority = High
+
+
+Remember:
+
+    Severity ≠ Priority
+
+
+====================================================================
+18. REPRODUCIBILITY
+====================================================================
+
+Reproducibility tells how consistently the defect occurs.
+
+Examples:
+
+    Always
+    Frequently
+    Sometimes
+    Rarely
+    Unable to reproduce
+
+
+Example:
+
+    Reproducibility:
+        10/10 attempts
+
+
+Another:
+
+    Reproducibility:
+        2/10 attempts
+
+
+For intermittent defects, provide as much additional evidence as
+possible.
+
+
+====================================================================
+19. SCREENSHOTS
+====================================================================
+
+Screenshots can provide visual evidence.
+
+Useful for:
+
+    - UI problems
+    - Incorrect messages
+    - Incorrect values
+    - Layout issues
+    - Unexpected screens
+    - Validation messages
+
+
+Example:
+
+    Screenshot:
+        Login-error.png
+
+
+A screenshot should show enough context to understand the issue.
+
+
+====================================================================
+20. SCREEN RECORDINGS / VIDEOS
+====================================================================
+
+Videos are especially useful for:
+
+    - Intermittent problems
+    - Animation issues
+    - Multi-step workflows
+    - Timing issues
+    - Dynamic UI behavior
+    - Reproduction sequences
+
+
+Example:
+
+    login_failure.mp4
+
+
+A short, focused recording is usually more useful than a very long
+video.
+
+
+====================================================================
+21. LOGS
+====================================================================
+
+Logs can help developers investigate technical problems.
+
+Potential evidence:
+
+    Application logs
+    Browser console logs
+    Server logs
+    Network information
+    Error stack traces
+
+
+Example:
+
+    Console:
+        JavaScript error occurs when clicking Submit.
+
+
+QA does not necessarily need to determine the root cause before
+reporting the defect.
+
+The important thing is to provide useful evidence.
+
+
+====================================================================
+22. BROWSER DEVTOOLS EVIDENCE
+====================================================================
+
+For web applications, useful information may come from:
+
+    Console
+    Network
+    Application
+    Elements
+
+
+Example:
+
+    User clicks "Submit".
+
+    Network request:
+        POST /api/orders
+
+    Response:
+        HTTP 500
+
+
+This information can significantly improve the bug report.
+
+
+====================================================================
+23. BUILD / VERSION INFORMATION
+====================================================================
+
+Always identify the relevant application version when applicable.
+
+Example:
+
+    Application:
+        E-Commerce Web App
+
+    Build:
+        1.8.3
+
+Why?
+
+Because the defect may:
+
+    Exist in one build
+    Be fixed in another
+    Be introduced by a new release
+
+
+====================================================================
+24. COMPLETE BUG REPORT — LOGIN
+====================================================================
+
+BUG ID:
+    BUG-101
+
+TITLE:
+    Login fails with valid credentials after password reset
+
+DESCRIPTION:
+    Registered users are unable to log in using the newly reset
+    password.
+
+ENVIRONMENT:
+    OS: Windows
+    Browser: Chrome
+    Environment: QA
+    Build: 2.4.1
+
+PRECONDITIONS:
+    1. Registered user exists.
+    2. User has completed password reset.
+
+TEST DATA:
+    Registered test account with the newly reset password.
+
+STEPS TO REPRODUCE:
+    1. Open the application.
+    2. Navigate to Login.
+    3. Enter the registered email.
+    4. Enter the newly reset password.
+    5. Click Login.
+
+EXPECTED RESULT:
+    User should successfully log in and be redirected to the
+    dashboard.
+
+ACTUAL RESULT:
+    Login fails and the application displays an invalid credentials
+    message.
+
+SEVERITY:
+    High
+
+PRIORITY:
+    High
+
+REPRODUCIBILITY:
+    100%
+
+EVIDENCE:
+    Screenshot attached.
+
+
+====================================================================
+25. COMPLETE BUG REPORT — E-COMMERCE CART
+====================================================================
+
+BUG ID:
+    BUG-102
+
+TITLE:
+    Product is not added to cart after clicking Add to Cart
+
+PRECONDITIONS:
+    1. User is logged in.
+    2. Product is available.
+
+STEPS:
+    1. Open product details.
+    2. Click "Add to Cart".
+    3. Open the cart.
+
+EXPECTED:
+    Selected product should appear in the cart.
+
+ACTUAL:
+    Cart remains empty.
+
+ENVIRONMENT:
+    Chrome / Windows / QA environment
+
+SEVERITY:
+    High
+
+PRIORITY:
+    High
+
+REPRODUCIBILITY:
+    100%
+
+EVIDENCE:
+    Screen recording attached.
+
+
+====================================================================
+26. COMPLETE BUG REPORT — COUPON
+====================================================================
+
+Requirement:
+
+    Coupon should apply only when order amount is at least ₹1000.
+
+
+BUG ID:
+    BUG-103
+
+TITLE:
+    Coupon applies when order amount is below minimum requirement
+
+PRECONDITION:
+    Valid coupon exists.
+
+STEPS:
+    1. Add products worth ₹999 to cart.
+    2. Proceed to cart.
+    3. Enter valid coupon.
+    4. Apply coupon.
+
+EXPECTED:
+    Coupon should not be applied because order amount is below
+    ₹1000.
+
+ACTUAL:
+    Coupon is successfully applied.
+
+SEVERITY:
+    High
+
+PRIORITY:
+    High
+
+REPRODUCIBILITY:
+    100%
+
+
+====================================================================
+27. COMPLETE BUG REPORT — UI
+====================================================================
+
+BUG ID:
+    BUG-104
+
+TITLE:
+    Login button is misaligned on mobile screen
+
+ENVIRONMENT:
+    Mobile browser
+
+STEPS:
+    1. Open login page on a supported mobile screen size.
+    2. Observe the Login button.
+
+EXPECTED:
+    Login button should be correctly aligned within the form.
+
+ACTUAL:
+    Login button is partially outside the expected layout.
+
+SEVERITY:
+    Low
+
+PRIORITY:
+    Medium/Low depending on project context
+
+EVIDENCE:
+    Screenshot attached.
+
+
+====================================================================
+28. COMPLETE BUG REPORT — PAYMENT
+====================================================================
+
+BUG ID:
+    BUG-105
+
+TITLE:
+    Customer is charged twice after a single payment attempt
+
+PRECONDITIONS:
+    1. User is logged in.
+    2. Product is available.
+    3. User has valid payment method.
+
+STEPS:
+    1. Add product to cart.
+    2. Proceed to checkout.
+    3. Select valid payment method.
+    4. Click Pay once.
+    5. Check transaction history.
+
+EXPECTED:
+    Customer should be charged exactly once.
+
+ACTUAL:
+    Customer is charged twice for the same order.
+
+SEVERITY:
+    Critical/High
+
+PRIORITY:
+    High
+
+REPRODUCIBILITY:
+    Record exact reproduction rate and conditions.
+
+EVIDENCE:
+    Payment/order logs and appropriate screenshots or recordings.
+
+
+====================================================================
+29. GOOD BUG REPORT vs BAD BUG REPORT
+====================================================================
+
+BAD:
+
+    Title:
+        Login broken
+
+    Description:
+        Login doesn't work.
+
+    Steps:
+        Login normally.
+
+    Expected:
+        Should work.
+
+    Actual:
+        Error.
+
+
+Problems:
+
+    - Vague title
+    - No environment
+    - No test data
+    - No exact steps
+    - No error message
+    - No reproducibility
+    - No evidence
+
+
+--------------------------------------------------------------------
+GOOD:
+--------------------------------------------------------------------
+
+Title:
+
+    Login fails with valid credentials on Chrome after password reset
+
+Steps:
+
+    1. Open login page.
+    2. Enter registered email.
+    3. Enter newly reset password.
+    4. Click Login.
+
+Expected:
+
+    User should be redirected to dashboard.
+
+Actual:
+
+    Invalid credentials message is displayed.
+
+Environment:
+
+    Chrome / Windows / QA / Build X
+
+Reproducibility:
+
+    5/5 attempts
+
+Evidence:
+
+    Screenshot + console information
+
+
+====================================================================
+30. OBJECTIVE BUG WRITING
+====================================================================
+
+A QA Engineer should avoid emotional or judgmental language.
+
+BAD:
+
+    "The developer completely broke the login page."
+
+
+GOOD:
+
+    "Login fails with valid credentials."
+
+
+BAD:
+
+    "This feature is useless."
+
+
+GOOD:
+
+    "The checkout process cannot be completed when a valid coupon is
+     applied."
+
+
+BAD:
+
+    "Payment is terrible."
+
+
+GOOD:
+
+    "Payment request returns an error after clicking Pay."
+
+
+Professional bug reports describe OBSERVATIONS.
+
+
+====================================================================
+31. REPRODUCING AN INTERMITTENT DEFECT
+====================================================================
+
+Suppose:
+
+    Login fails only occasionally.
+
+Do not simply report:
+
+    "Sometimes login fails."
+
+Investigate:
+
+    Browser
+    User account
+    Network
+    Time
+    Build
+    Number of attempts
+    Input data
+    Application state
+
+
+Example:
+
+    Reproduction:
+        3 out of 20 attempts
+
+    Environment:
+        Chrome / Windows
+
+    Condition:
+        Failure occurs after session remains idle for several minutes.
+
+This is much more useful.
+
+
+====================================================================
+32. BUG REPORT FOR CANNOT REPRODUCE CASE
+====================================================================
+
+If the developer cannot reproduce the issue, provide:
+
+    Exact steps
+    Test data
+    Environment
+    Build
+    Browser/version
+    Device
+    Timestamp
+    Screenshot
+    Video
+    Logs
+    Reproduction frequency
+
+
+Example:
+
+    Reproducibility:
+        2/10 attempts
+
+    Last occurrence:
+        14:35 IST
+
+    Browser:
+        Chrome
+
+    Evidence:
+        Screen recording and console log attached.
+
+
+====================================================================
+33. DUPLICATE DEFECT HANDLING
+====================================================================
+
+Before reporting a defect, where required by team process, search for
+existing issues.
+
+If the same issue already exists:
+
+    New report
+        ↓
+    Compare with existing defect
+        ↓
+    Same issue?
+        ↓
+      Yes
+        ↓
+    Mark/link as duplicate according to workflow
+
+
+This prevents unnecessary duplicate defects.
+
+
+====================================================================
+34. DEFECT TRACEABILITY
+====================================================================
+
+A defect can be connected to:
+
+    Requirement
+        ↓
+    Test Scenario
+        ↓
+    Test Case
+        ↓
+    Test Execution
+        ↓
+    Defect
+
+
+Example:
+
+Requirement:
+
+    User can apply coupon.
+
+Test Case:
+
+    TC_COUPON_010
+
+Execution:
+
+    FAIL
+
+Defect:
+
+    BUG-103
+
+
+This creates traceability between testing artifacts.
+
+
+====================================================================
+35. JIRA-STYLE BUG REPORT
+====================================================================
+
+A Jira-style issue may look like:
+
+------------------------------------------------------------
+PROJECT:
+    E-Commerce
+
+ISSUE TYPE:
+    Bug
+
+SUMMARY:
+    Coupon applies below minimum order amount
+
+DESCRIPTION:
+    Coupon is applied when order amount is below the required
+    minimum of ₹1000.
+
+ENVIRONMENT:
+    QA / Chrome / Windows
+
+PRECONDITION:
+    Valid coupon exists.
+
+STEPS:
+    1. Add products worth ₹999.
+    2. Open cart.
+    3. Enter valid coupon.
+    4. Click Apply.
+
+EXPECTED:
+    Coupon should not be applied.
+
+ACTUAL:
+    Coupon is applied.
+
+SEVERITY:
+    High
+
+PRIORITY:
+    High
+
+ATTACHMENT:
+    Screenshot
+
+REPRODUCIBILITY:
+    100%
+------------------------------------------------------------
+
+
+====================================================================
+36. BUG REPORT QUALITY CHECKLIST
+====================================================================
+
+Before submitting a bug:
+
+[ ] Is the title clear?
+
+[ ] Is the problem specific?
+
+[ ] Are preconditions included?
+
+[ ] Are reproduction steps numbered?
+
+[ ] Is test data included?
+
+[ ] Is expected behavior clear?
+
+[ ] Is actual behavior clear?
+
+[ ] Is environment specified?
+
+[ ] Is application build/version specified?
+
+[ ] Is severity assigned according to project rules?
+
+[ ] Is priority assigned according to project process?
+
+[ ] Is reproducibility mentioned?
+
+[ ] Is evidence attached where useful?
+
+[ ] Have duplicate defects been checked where required?
+
+[ ] Is the language objective and professional?
+
+
+====================================================================
+37. COMMON BUG REPORTING MISTAKES
+====================================================================
+
+MISTAKE 1:
+    Vague title.
+
+MISTAKE 2:
+    Missing reproduction steps.
+
+MISTAKE 3:
+    Missing expected result.
+
+MISTAKE 4:
+    Missing actual result.
+
+MISTAKE 5:
+    Missing environment.
+
+MISTAKE 6:
+    No evidence for visual/intermittent issues.
+
+MISTAKE 7:
+    Reporting assumptions instead of observations.
+
+MISTAKE 8:
+    Writing emotional comments.
+
+MISTAKE 9:
+    Not checking existing defects.
+
+MISTAKE 10:
+    Including sensitive credentials or secrets.
+
+
+====================================================================
+38. WHAT QA SHOULD NOT PUT IN A BUG REPORT
+====================================================================
+
+Avoid including:
+
+    Real user passwords
+    Authentication tokens
+    API secrets
+    Private credentials
+    Unnecessary personal information
+    Sensitive production data
+
+
+Use approved test accounts and sanitized data wherever possible.
+
+
+====================================================================
+39. BUG REPORT COMMUNICATION
+====================================================================
+
+A professional QA Engineer should be able to communicate defects
+without blaming individuals.
+
+BAD:
+
+    "Developer made a mistake."
+
+GOOD:
+
+    "The application calculates the discount as 20% instead of the
+     expected 10%."
+
+
+BAD:
+
+    "Backend is broken."
+
+GOOD:
+
+    "POST /api/order returns HTTP 500 when the request contains a
+     valid order payload."
+
+
+Focus on:
+
+    Behavior
+    Evidence
+    Reproduction
+    Expected result
+
+
+====================================================================
+40. INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is a bug report?
+
+Answer:
+
+A bug report is a structured description of an observed software
+defect, including reproduction information, expected and actual
+results, environment, and other relevant details.
+
+
+Q2. What makes a good bug report?
+
+Answer:
+
+It should be clear, specific, reproducible, complete, objective, and
+contain enough information for the team to investigate.
+
+
+Q3. What should a bug title contain?
+
+Answer:
+
+It should concisely identify the affected feature and the observed
+problem, including an important condition when useful.
+
+
+Q4. Why are reproduction steps important?
+
+Answer:
+
+They allow developers and other testers to reproduce and investigate
+the defect.
+
+
+Q5. What is the difference between expected and actual result?
+
+Answer:
+
+Expected result describes what should happen; actual result describes
+what happened during execution.
+
+
+Q6. Why is environment important?
+
+Answer:
+
+Some defects may depend on browser, OS, device, build, or other
+environment conditions.
+
+
+Q7. What evidence can be attached to a bug?
+
+Answer:
+
+Screenshots, videos, logs, console information, network information,
+and other relevant evidence.
+
+
+Q8. What should you do if a developer says the bug cannot be
+reproduced?
+
+Answer:
+
+Provide exact steps, environment, test data, build, reproducibility
+information, timestamps, and available evidence, then investigate
+the conditions under which it occurs.
+
+
+Q9. Should QA always determine the root cause?
+
+Answer:
+
+Not necessarily. QA should clearly document the observed behavior
+and useful evidence. Root-cause investigation can involve the
+development and technical teams.
+
+
+Q10. Why should you avoid emotional language in bug reports?
+
+Answer:
+
+Because professional bug reports should communicate objective,
+reproducible facts rather than blame or personal opinions.
+
+
+====================================================================
+41. SCENARIO-BASED INTERVIEW QUESTIONS
+====================================================================
+
+SCENARIO 1
+----------
+
+Developer says:
+
+    "I cannot reproduce this bug."
+
+What should you do?
+
+Answer:
+
+    1. Verify the issue again.
+    2. Provide exact steps.
+    3. Provide environment.
+    4. Provide build/version.
+    5. Provide test data.
+    6. Provide reproduction frequency.
+    7. Attach evidence.
+    8. Provide logs when available.
+
+
+--------------------------------------------------------------------
+SCENARIO 2
+----------
+
+Your bug title is:
+
+    "Website broken."
+
+Question:
+
+    Is this a good title?
+
+Answer:
+
+    No.
+
+It is too vague.
+
+Better:
+
+    "Checkout fails when applying a valid coupon."
+
+
+--------------------------------------------------------------------
+SCENARIO 3
+----------
+
+A bug occurs only once in ten attempts.
+
+How should you report it?
+
+Answer:
+
+    Clearly mention that it is intermittent.
+
+Example:
+
+    Reproducibility:
+        1/10 attempts
+
+Also provide exact conditions and available evidence.
+
+
+--------------------------------------------------------------------
+SCENARIO 4
+----------
+
+A screenshot contains a real user's password.
+
+What should you do?
+
+Answer:
+
+    Do not share sensitive credentials.
+
+Use approved test data, sanitize the evidence, and follow the
+project's security/data-handling process.
+
+
+--------------------------------------------------------------------
+SCENARIO 5
+----------
+
+A developer says:
+
+    "This is not a bug."
+
+What should QA do?
+
+Answer:
+
+    Refer to the requirement, acceptance criteria, or expected
+    behavior and communicate the observed difference with evidence.
+
+If disagreement remains, follow the project's escalation/triage
+process.
+
+
+====================================================================
+42. PRACTICAL QA EXERCISE
+====================================================================
+
+APPLICATION:
+
+    E-Commerce Website
+
+FEATURE:
+
+    Product Checkout
+
+
+REQUIREMENT:
+
+    A customer should be able to complete checkout after entering
+    valid shipping and payment information.
+
+
+Suppose:
+
+    User enters valid information.
+    User clicks "Place Order".
+    Payment succeeds.
+    Order is not created.
+
+
+Create a professional bug report containing:
+
+    Bug ID
+    Title
+    Description
+    Environment
+    Preconditions
+    Steps
+    Test Data
+    Expected Result
+    Actual Result
+    Severity
+    Priority
+    Reproducibility
+    Evidence
+
+
+A strong QA Engineer should be able to produce this report without
+writing vague statements such as:
+
+    "Checkout is broken."
+
+
+====================================================================
+43. PROFESSIONAL BUG REPORT TEMPLATE
+====================================================================
+
+BUG ID:
+    BUG-XXX
+
+TITLE:
+    [Feature] + [Problem] + [Condition]
+
+DESCRIPTION:
+    Short explanation of the issue.
+
+ENVIRONMENT:
+    OS:
+    Browser:
+    Browser Version:
+    Device:
+    Application Version:
+    Build:
+    Environment:
+
+PRECONDITIONS:
+    1.
+    2.
+    3.
+
+TEST DATA:
+    ...
+
+STEPS TO REPRODUCE:
+    1.
+    2.
+    3.
+    4.
+
+EXPECTED RESULT:
+    ...
+
+ACTUAL RESULT:
+    ...
+
+SEVERITY:
+    Critical / High / Medium / Low
+
+PRIORITY:
+    High / Medium / Low
+
+REPRODUCIBILITY:
+    Always / Frequently / Sometimes / Rarely / Cannot Reproduce
+
+ATTACHMENTS:
+    Screenshot / Video / Logs
+
+ADDITIONAL INFORMATION:
+    ...
+
+
+====================================================================
+44. CHAPTER 19 — FINAL SUMMARY
+====================================================================
+
+A professional bug report should make it easy for another person to
+understand and reproduce the problem.
+
+Core structure:
+
+    BUG ID
+       ↓
+    TITLE
+       ↓
+    DESCRIPTION
+       ↓
+    ENVIRONMENT
+       ↓
+    PRECONDITIONS
+       ↓
+    TEST DATA
+       ↓
+    STEPS
+       ↓
+    EXPECTED RESULT
+       ↓
+    ACTUAL RESULT
+       ↓
+    SEVERITY
+       ↓
+    PRIORITY
+       ↓
+    REPRODUCIBILITY
+       ↓
+    EVIDENCE
+
+
+The most important principles are:
+
+    Be clear.
+    Be specific.
+    Be objective.
+    Provide exact steps.
+    Separate expected and actual behavior.
+    Provide environment information.
+    Attach useful evidence.
+    Protect sensitive information.
+    Avoid blame.
+    Make the defect reproducible whenever possible.
+
+
+====================================================================
+45. JOB-READY CHECKLIST
+====================================================================
+
+[✓] Understand bug reports
+[✓] Write clear bug titles
+[✓] Write descriptions
+[✓] Document environment
+[✓] Define preconditions
+[✓] Write reproduction steps
+[✓] Provide test data
+[✓] Write expected results
+[✓] Write actual results
+[✓] Assign severity
+[✓] Assign priority
+[✓] Document reproducibility
+[✓] Use screenshots
+[✓] Use videos
+[✓] Use logs
+[✓] Write Jira-style defects
+[✓] Avoid duplicate reports
+[✓] Protect sensitive information
+[✓] Communicate objectively
+[✓] Handle "Cannot Reproduce"
+[✓] Handle developer disagreements
+[✓] Create professional real-world bug reports
+
+
+====================================================================
+NEXT
+====================================================================
+
+CHAPTER 20 — JIRA FOR QA ENGINEERS
+
+Topics:
+
+    1. What is Jira?
+    2. Jira in Software Testing
+    3. Jira Projects
+    4. Issues
+    5. Bug Creation
+    6. Bug Assignment
+    7. Status
+    8. Labels
+    9. Components
+    10. Priority
+    11. Sprint
+    12. Backlog
+    13. JQL
+    14. Filters
+    15. Dashboards
+    16. QA workflow in Jira
+    17. Practical bug management
+    18. Jira interview questions
+    19. Scenario-based questions
+====================================================================

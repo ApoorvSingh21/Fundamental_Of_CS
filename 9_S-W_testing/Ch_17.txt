@@ -1,0 +1,1827 @@
+====================================================================
+        SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER COURSE
+====================================================================
+CHAPTER 17 — DEFECT FUNDAMENTALS
+====================================================================
+
+GOAL
+----
+Understand defects from discovery to closure and learn how a
+professional QA Engineer identifies, reports, tracks, retests, and
+closes software defects.
+
+This chapter covers:
+
+1. What is a defect?
+2. Error vs Defect vs Bug vs Failure
+3. Defect lifecycle
+4. New
+5. Assigned
+6. Open
+7. Fixed
+8. Retest
+9. Reopened
+10. Closed
+11. Rejected
+12. Duplicate
+13. Deferred
+14. Cannot Reproduce
+15. Defect workflow
+16. Practical bug examples
+17. Professional defect reporting
+18. Interview questions
+19. Scenario-based questions
+20. Job-ready checklist
+
+
+====================================================================
+1. WHAT IS A DEFECT?
+====================================================================
+
+A defect is a problem in software where the actual behavior of the
+application differs from the expected behavior.
+
+In simple words:
+
+    Expected Result
+          ≠
+    Actual Result
+          ↓
+       Defect
+
+
+Example:
+
+Requirement:
+
+    User should be able to log in using valid credentials.
+
+Actual behavior:
+
+    User enters valid credentials but login fails.
+
+Therefore:
+
+    Expected → Login successful
+    Actual   → Login fails
+
+This difference represents a defect.
+
+
+====================================================================
+2. WHY DEFECTS MATTER
+====================================================================
+
+Defects can cause:
+
+    - Incorrect functionality
+    - Poor user experience
+    - Data loss
+    - Security problems
+    - Financial loss
+    - Application crashes
+    - Performance problems
+    - Business rule violations
+    - Customer dissatisfaction
+
+For a QA Engineer, finding the defect is only one part of the job.
+
+A professional QA Engineer must also:
+
+    Identify
+       ↓
+    Reproduce
+       ↓
+    Document
+       ↓
+    Report
+       ↓
+    Track
+       ↓
+    Retest
+       ↓
+    Verify
+       ↓
+    Close
+
+
+====================================================================
+3. ERROR vs DEFECT vs BUG vs FAILURE
+====================================================================
+
+These terms are related but can be understood as different points
+in the software problem chain.
+
+
+--------------------------------------------------------------------
+3.1 ERROR
+--------------------------------------------------------------------
+
+An error is a human mistake.
+
+Example:
+
+Developer misunderstands:
+
+    "Discount should be 10%."
+
+Developer implements:
+
+    "Discount should be 15%."
+
+The developer's mistake is an error.
+
+
+--------------------------------------------------------------------
+3.2 DEFECT
+--------------------------------------------------------------------
+
+The incorrect implementation in the software is a defect.
+
+Example:
+
+Requirement:
+
+    10% discount
+
+Application:
+
+    15% discount
+
+The incorrect implementation is a defect.
+
+
+--------------------------------------------------------------------
+3.3 BUG
+--------------------------------------------------------------------
+
+"Bug" is a commonly used practical term for a software defect.
+
+In everyday QA work:
+
+    Bug ≈ Defect
+
+
+--------------------------------------------------------------------
+3.4 FAILURE
+--------------------------------------------------------------------
+
+A failure occurs when the software actually produces incorrect
+behavior during execution.
+
+Example:
+
+    User places an order.
+
+Expected:
+
+    Order total = ₹1000
+
+Actual:
+
+    Order total = ₹1100
+
+The incorrect runtime behavior is a failure.
+
+
+--------------------------------------------------------------------
+3.5 Simple Relationship
+--------------------------------------------------------------------
+
+Human mistake
+      ↓
+    ERROR
+      ↓
+Incorrect implementation
+      ↓
+   DEFECT/BUG
+      ↓
+Software executes incorrectly
+      ↓
+   FAILURE
+
+
+====================================================================
+4. DEFECT EXAMPLE
+====================================================================
+
+Requirement:
+
+    Password must contain at least 8 characters.
+
+Developer implements:
+
+    Minimum length = 6
+
+Tester enters:
+
+    Password = "abcdef"
+
+Application accepts it.
+
+Expected:
+
+    Reject password
+
+Actual:
+
+    Accept password
+
+Therefore:
+
+    Requirement
+         ↓
+    Incorrect implementation
+         ↓
+       Defect
+         ↓
+    Incorrect behavior
+         ↓
+      Failure
+
+
+====================================================================
+5. DEFECT LIFECYCLE
+====================================================================
+
+The defect lifecycle describes the states a defect can move through
+from discovery until resolution.
+
+Typical lifecycle from the syllabus:
+
+    NEW
+      ↓
+   ASSIGNED
+      ↓
+     OPEN
+      ↓
+    FIXED
+      ↓
+   RETEST
+      ↓
+   CLOSED
+
+If the defect still exists:
+
+    RETEST
+      ↓
+   REOPENED
+      ↓
+    ASSIGNED / OPEN
+      ↓
+    FIXED
+      ↓
+   RETEST
+      ↓
+    CLOSED
+
+
+Other possible states include:
+
+    REJECTED
+    DUPLICATE
+    DEFERRED
+    CANNOT REPRODUCE
+
+
+====================================================================
+6. DEFECT LIFECYCLE — COMPLETE FLOW
+====================================================================
+
+                   ┌─────────────┐
+                   │     NEW     │
+                   └──────┬──────┘
+                          ↓
+                   ┌─────────────┐
+                   │  ASSIGNED   │
+                   └──────┬──────┘
+                          ↓
+                   ┌─────────────┐
+                   │    OPEN     │
+                   └──────┬──────┘
+                          ↓
+                   ┌─────────────┐
+                   │    FIXED    │
+                   └──────┬──────┘
+                          ↓
+                   ┌─────────────┐
+                   │   RETEST    │
+                   └──────┬──────┘
+                          ↓
+                  ┌───────┴────────┐
+                  │                │
+                 PASS             FAIL
+                  │                │
+                  ↓                ↓
+             ┌─────────┐    ┌───────────┐
+             │  CLOSED │    │ REOPENED  │
+             └─────────┘    └─────┬─────┘
+                                  ↓
+                                FIXED
+                                  ↓
+                                RETEST
+
+
+====================================================================
+7. STATE 1 — NEW
+====================================================================
+
+NEW means the tester has identified and reported a defect.
+
+Example:
+
+Tester discovers:
+
+    Login fails with valid credentials.
+
+Tester creates a bug report.
+
+Initial status:
+
+    NEW
+
+
+Typical information:
+
+    Bug ID
+    Title
+    Description
+    Steps
+    Expected result
+    Actual result
+    Environment
+    Severity
+    Priority
+    Evidence
+
+
+====================================================================
+8. STATE 2 — ASSIGNED
+====================================================================
+
+ASSIGNED means the defect has been assigned to a responsible person,
+usually a developer or development team.
+
+Example:
+
+    QA reports BUG-101
+
+Team assigns it to:
+
+    Developer A
+
+Status:
+
+    ASSIGNED
+
+
+Purpose:
+
+    Make ownership clear.
+
+
+====================================================================
+9. STATE 3 — OPEN
+====================================================================
+
+OPEN indicates that the defect is accepted/being worked on.
+
+Example:
+
+    Developer reviews BUG-101
+        ↓
+    Confirms the issue
+        ↓
+    Starts investigation/fix
+
+Status:
+
+    OPEN
+
+
+Depending on the organization's workflow, ASSIGNED and OPEN may be
+used differently.
+
+
+====================================================================
+10. STATE 4 — FIXED
+====================================================================
+
+FIXED means the developer has implemented a fix.
+
+Important:
+
+    FIXED does NOT automatically mean CLOSED.
+
+Why?
+
+Because QA must verify the fix.
+
+Example:
+
+Developer changes:
+
+    Password minimum length
+    6 → 8
+
+Bug status:
+
+    FIXED
+
+QA now needs to test it.
+
+
+====================================================================
+11. STATE 5 — RETEST
+====================================================================
+
+RETEST means QA verifies whether the reported defect has actually
+been fixed.
+
+Example:
+
+Original defect:
+
+    6-character password was accepted.
+
+Requirement:
+
+    Minimum = 8 characters.
+
+After fix:
+
+    Test with 6 characters → rejected
+    Test with 8 characters → accepted
+
+If behavior is correct:
+
+    RETEST → CLOSED
+
+
+====================================================================
+12. STATE 6 — CLOSED
+====================================================================
+
+CLOSED means QA has verified that the defect has been resolved and
+the issue can be considered complete.
+
+Example:
+
+    Developer fixes defect
+          ↓
+    QA retests
+          ↓
+    Expected behavior confirmed
+          ↓
+        CLOSED
+
+
+Important:
+
+    QA should not close a defect merely because the developer says
+    it is fixed.
+
+The fix should be verified according to the team's process.
+
+
+====================================================================
+13. STATE 7 — REOPENED
+====================================================================
+
+REOPENED means the defect was marked as fixed, but QA found that:
+
+    - The defect still exists
+    - The fix is incomplete
+    - The same issue occurs again
+    - The fix introduced related incorrect behavior
+
+Example:
+
+Original:
+
+    Login fails with valid credentials.
+
+Developer fixes it.
+
+QA retests:
+
+    Login still fails.
+
+Status:
+
+    REOPENED
+
+
+Flow:
+
+    FIXED
+      ↓
+    RETEST
+      ↓
+    FAIL
+      ↓
+    REOPENED
+
+
+====================================================================
+14. STATE 8 — REJECTED
+====================================================================
+
+REJECTED means the reported issue is not considered a valid defect
+according to the team's evaluation.
+
+Possible reasons include:
+
+    - Expected behavior
+    - Requirement does not support the reported behavior
+    - Not a valid issue
+    - Environment/configuration issue
+    - Working as designed
+
+
+Example:
+
+Tester reports:
+
+    "Password field does not display the actual password."
+
+Requirement:
+
+    Password must be masked.
+
+Team determines:
+
+    This is expected behavior.
+
+The issue may be marked:
+
+    REJECTED
+
+
+Important:
+
+The exact reason should be documented.
+
+
+====================================================================
+15. STATE 9 — DUPLICATE
+====================================================================
+
+DUPLICATE means the same defect has already been reported.
+
+Example:
+
+BUG-101:
+
+    Login fails with valid credentials.
+
+Tester creates:
+
+BUG-125:
+
+    Valid user cannot log in.
+
+If BUG-125 represents the same underlying issue:
+
+    BUG-125 → DUPLICATE of BUG-101
+
+
+Benefits:
+
+    - Avoid duplicate tracking
+    - Keep defect information centralized
+    - Reduce confusion
+
+
+====================================================================
+16. STATE 10 — DEFERRED
+====================================================================
+
+DEFERRED means the defect is accepted or recognized but will not be
+fixed immediately.
+
+Reasons may include:
+
+    - Low priority
+    - Low business impact
+    - Limited release time
+    - Fix planned for a future release
+    - Business decision
+
+
+Example:
+
+A minor UI alignment issue is found two days before a major release.
+
+Team decides:
+
+    Fix in next release.
+
+Status:
+
+    DEFERRED
+
+
+Important:
+
+Deferred does NOT necessarily mean:
+
+    "The defect does not exist."
+
+It means:
+
+    "The defect is postponed."
+
+
+====================================================================
+17. STATE 11 — CANNOT REPRODUCE
+====================================================================
+
+CANNOT REPRODUCE means the development/QA team cannot reproduce the
+reported problem using the available information/environment.
+
+Example:
+
+Tester reports:
+
+    Clicking Submit crashes the application.
+
+Developer tries:
+
+    Same browser
+    Same build
+    Same steps
+
+Result:
+
+    Cannot reproduce.
+
+
+The QA Engineer should provide more information such as:
+
+    - Exact steps
+    - Test data
+    - Environment
+    - Browser/version
+    - Device
+    - Screenshots
+    - Video
+    - Logs
+    - Timestamp
+    - Network information when relevant
+
+
+====================================================================
+18. DEFECT LIFECYCLE — PRACTICAL EXAMPLE
+====================================================================
+
+Requirement:
+
+    User should be able to log in using valid credentials.
+
+
+STEP 1 — Discovery
+------------------
+
+QA enters:
+
+    Username = valid_user
+    Password = valid_password
+
+Actual:
+
+    Login fails.
+
+
+STEP 2 — Report
+---------------
+
+QA creates:
+
+    BUG-101
+
+Status:
+
+    NEW
+
+
+STEP 3 — Assignment
+-------------------
+
+Bug assigned to developer.
+
+Status:
+
+    ASSIGNED
+
+
+STEP 4 — Investigation
+----------------------
+
+Developer investigates.
+
+Status:
+
+    OPEN
+
+
+STEP 5 — Fix
+------------
+
+Developer fixes authentication logic.
+
+Status:
+
+    FIXED
+
+
+STEP 6 — QA Retest
+------------------
+
+QA executes the same steps.
+
+Login succeeds.
+
+Status:
+
+    RETEST → CLOSED
+
+
+====================================================================
+19. REOPENED DEFECT EXAMPLE
+====================================================================
+
+Original requirement:
+
+    User should be able to log in with valid credentials.
+
+
+QA:
+
+    Login fails.
+
+BUG-200:
+
+    NEW
+      ↓
+    ASSIGNED
+      ↓
+    OPEN
+      ↓
+    FIXED
+      ↓
+    RETEST
+
+
+QA tests again:
+
+    Login still fails.
+
+Therefore:
+
+    RETEST
+       ↓
+    REOPENED
+
+
+Developer works on it again:
+
+    REOPENED
+       ↓
+    OPEN
+       ↓
+    FIXED
+       ↓
+    RETEST
+       ↓
+    CLOSED
+
+
+====================================================================
+20. DEFECT REPORT — PROFESSIONAL STRUCTURE
+====================================================================
+
+A professional bug report should clearly explain:
+
+    WHAT happened?
+    WHERE did it happen?
+    HOW can it be reproduced?
+    WHAT was expected?
+    WHAT actually happened?
+
+
+Important fields:
+
+    1. Bug ID
+    2. Title
+    3. Environment
+    4. Preconditions
+    5. Steps to reproduce
+    6. Test data
+    7. Expected result
+    8. Actual result
+    9. Severity
+    10. Priority
+    11. Attachments
+    12. Reproducibility
+
+
+====================================================================
+21. BUG TITLE
+====================================================================
+
+A good bug title should be:
+
+    Clear
+    Short
+    Specific
+    Reproducible in meaning
+
+
+BAD:
+
+    "Login problem"
+
+
+BETTER:
+
+    "Login fails with valid credentials"
+
+
+EVEN MORE SPECIFIC:
+
+    "Login fails with valid credentials on Chrome after password reset"
+
+
+Avoid vague titles such as:
+
+    "Not working"
+    "Bug"
+    "Issue"
+    "Error"
+
+
+====================================================================
+22. STEPS TO REPRODUCE
+====================================================================
+
+Steps should be precise.
+
+Example:
+
+1. Open the login page.
+2. Enter a registered email.
+3. Enter the correct password.
+4. Click "Login".
+5. Observe the result.
+
+
+The developer should ideally be able to reproduce the defect by
+following these steps.
+
+
+====================================================================
+23. EXPECTED VS ACTUAL RESULT
+====================================================================
+
+EXPECTED:
+
+    User should be redirected to the dashboard.
+
+
+ACTUAL:
+
+    User remains on the login page and receives
+    "Invalid credentials" even though the credentials are valid.
+
+
+This distinction is one of the most important parts of a bug report.
+
+
+====================================================================
+24. ENVIRONMENT
+====================================================================
+
+Environment may include:
+
+    Application version/build
+    Browser
+    Browser version
+    Operating system
+    Device
+    Environment
+
+Examples:
+
+    Chrome
+    Firefox
+    Edge
+    Windows
+    macOS
+    Android
+    iOS
+
+
+Environment information helps developers reproduce the issue.
+
+
+====================================================================
+25. ATTACHMENTS / EVIDENCE
+====================================================================
+
+Useful evidence can include:
+
+    Screenshots
+    Screen recordings
+    Logs
+    Error messages
+    Console information
+    Network information
+
+Evidence is especially useful for visual, intermittent, or
+environment-specific issues.
+
+
+====================================================================
+26. REPRODUCIBILITY
+====================================================================
+
+A defect may be:
+
+    Always reproducible
+    Sometimes reproducible
+    Rarely reproducible
+    Difficult to reproduce
+
+
+Example:
+
+    Steps reproduce the issue 10/10 times.
+
+Reproducibility:
+
+    100%
+
+
+Another example:
+
+    Issue occurs approximately 2 out of 10 attempts.
+
+Reproducibility:
+
+    20%
+
+
+When reporting intermittent defects, include as much evidence and
+environment information as possible.
+
+
+====================================================================
+27. PRACTICAL BUG REPORT EXAMPLE
+====================================================================
+
+BUG ID:
+    BUG-101
+
+TITLE:
+    Login fails with valid credentials
+
+ENVIRONMENT:
+    Chrome
+    Windows
+
+PRECONDITION:
+    Registered user exists.
+
+STEPS:
+    1. Open login page.
+    2. Enter registered email.
+    3. Enter correct password.
+    4. Click Login.
+
+EXPECTED:
+    User should be redirected to the dashboard.
+
+ACTUAL:
+    User remains on the login page and an invalid credentials
+    message is displayed.
+
+SEVERITY:
+    High
+
+PRIORITY:
+    High
+
+REPRODUCIBILITY:
+    100%
+
+EVIDENCE:
+    Screenshot/video attached.
+
+
+====================================================================
+28. DEFECT WORKFLOW IN JIRA
+====================================================================
+
+A typical workflow can look like:
+
+    QA discovers defect
+            ↓
+    Create Jira issue
+            ↓
+        NEW
+            ↓
+       ASSIGNED
+            ↓
+          OPEN
+            ↓
+         FIXED
+            ↓
+         RETEST
+          /    \
+       PASS    FAIL
+        ↓        ↓
+     CLOSED   REOPENED
+                 ↓
+               FIXED
+
+
+Jira workflows can vary by organization.
+
+
+====================================================================
+29. DEFECT VS TEST CASE
+====================================================================
+
+TEST CASE:
+
+    Describes what should be tested and how.
+
+DEFECT:
+
+    Describes an observed deviation from expected behavior.
+
+
+Example:
+
+Test case:
+
+    Verify login with valid credentials.
+
+Execution:
+
+    Actual result = login fails.
+
+Then:
+
+    Test Case → discovers → Defect
+
+
+====================================================================
+30. DEFECT VS REQUIREMENT
+====================================================================
+
+Requirement:
+
+    User should receive an email after successful registration.
+
+Actual:
+
+    No email is sent.
+
+Difference:
+
+    Requirement
+        ≠
+    Actual behavior
+
+Therefore:
+
+    Defect
+
+
+====================================================================
+31. DEFECT CLUSTERING
+====================================================================
+
+Defects are often concentrated in certain modules.
+
+Example:
+
+    Payment module → 20 defects
+    Login module   → 5 defects
+    Static page    → 0 defects
+
+This may indicate that the payment module requires additional
+attention.
+
+This concept is related to the testing principle of defect clustering
+covered earlier.
+
+
+====================================================================
+32. DEFECT REPRODUCTION
+====================================================================
+
+Before reporting a defect, QA should try to reproduce it.
+
+Typical process:
+
+    Observe issue
+         ↓
+    Repeat steps
+         ↓
+    Confirm behavior
+         ↓
+    Identify conditions
+         ↓
+    Collect evidence
+         ↓
+    Report defect
+
+
+Questions:
+
+    Does it happen every time?
+    Which browser?
+    Which user?
+    Which data?
+    Which environment?
+    Which build?
+    What exact steps trigger it?
+
+
+====================================================================
+33. DEFECT ROOT CAUSE
+====================================================================
+
+The root cause is the underlying reason a defect occurred.
+
+Example:
+
+Observed:
+
+    Incorrect discount calculated.
+
+Possible root cause:
+
+    Incorrect discount calculation logic.
+
+
+Another example:
+
+Observed:
+
+    Login fails.
+
+Possible root cause:
+
+    Incorrect authentication condition.
+
+
+QA may report the symptom while developers investigate and identify
+the root cause.
+
+
+====================================================================
+34. DEFECT IMPACT
+====================================================================
+
+A defect should be understood in terms of its impact.
+
+Example:
+
+Minor:
+
+    Small visual alignment issue.
+
+Major:
+
+    Important feature does not work.
+
+Critical:
+
+    Critical business operation is severely affected.
+
+The exact classification depends on the organization's severity and
+priority definitions.
+
+
+====================================================================
+35. COMMON DEFECT CATEGORIES
+====================================================================
+
+Defects may involve:
+
+    Functional behavior
+    UI
+    Validation
+    Data
+    Integration
+    Performance
+    Compatibility
+    Security
+    Usability
+    Business rules
+
+
+Example:
+
+Functional:
+
+    Login does not work.
+
+UI:
+
+    Button is incorrectly aligned.
+
+Data:
+
+    Wrong value stored in database.
+
+Compatibility:
+
+    Feature fails in a supported browser.
+
+
+====================================================================
+36. PRACTICAL E-COMMERCE DEFECT EXAMPLES
+====================================================================
+
+Example 1:
+
+    Cart total is incorrect.
+
+Expected:
+
+    ₹2000
+
+Actual:
+
+    ₹2500
+
+
+Example 2:
+
+    Coupon applies below required minimum amount.
+
+
+Example 3:
+
+    Product disappears from cart after page refresh.
+
+
+Example 4:
+
+    Payment succeeds but order remains "Payment Failed".
+
+
+Example 5:
+
+    User is charged twice after clicking Pay once.
+
+
+Example 6:
+
+    Refund amount is incorrect.
+
+
+Each should be analyzed, reproduced, documented, and tracked through
+the defect lifecycle.
+
+
+====================================================================
+37. COMMON DEFECT REPORTING MISTAKES
+====================================================================
+
+MISTAKE 1:
+
+    "Application is not working."
+
+Problem:
+
+    Too vague.
+
+Better:
+
+    Explain exact functionality and behavior.
+
+
+MISTAKE 2:
+
+    Missing reproduction steps.
+
+Problem:
+
+    Developer cannot reproduce.
+
+
+MISTAKE 3:
+
+    No expected result.
+
+Problem:
+
+    It is unclear what the application should do.
+
+
+MISTAKE 4:
+
+    No environment.
+
+Problem:
+
+    Environment-specific defects become difficult to reproduce.
+
+
+MISTAKE 5:
+
+    Emotional language.
+
+Avoid:
+
+    "This feature is completely useless."
+
+
+Use:
+
+    "The application fails to complete the expected operation."
+
+
+MISTAKE 6:
+
+    Reporting duplicates.
+
+Solution:
+
+    Search existing defects before creating a new one when the team's
+    process requires it.
+
+
+====================================================================
+38. DEFECT LIFECYCLE — QUICK REFERENCE
+====================================================================
+
+NEW
+----
+Defect has been reported.
+
+
+ASSIGNED
+--------
+Defect has been assigned to an owner.
+
+
+OPEN
+----
+Defect is being investigated/worked on.
+
+
+FIXED
+-----
+Developer has implemented a fix.
+
+
+RETEST
+------
+QA verifies the fix.
+
+
+REOPENED
+--------
+Defect still exists or has returned after being marked fixed.
+
+
+CLOSED
+------
+QA verifies that the defect is resolved.
+
+
+REJECTED
+--------
+Issue is not considered a valid defect according to the team's
+evaluation.
+
+
+DUPLICATE
+---------
+Same issue already exists in another defect.
+
+
+DEFERRED
+--------
+Defect is postponed for later.
+
+
+CANNOT REPRODUCE
+----------------
+Team cannot reproduce the reported behavior with available
+information/environment.
+
+
+====================================================================
+39. INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is a defect?
+
+Answer:
+A defect is a difference between expected and actual software
+behavior.
+
+
+Q2. What is a bug?
+
+Answer:
+Bug is a commonly used term for a software defect.
+
+
+Q3. What is the defect lifecycle?
+
+Answer:
+It is the sequence of states through which a defect moves from
+identification to resolution.
+
+
+Q4. What happens after a defect is fixed?
+
+Answer:
+QA retests the defect to verify the fix.
+
+
+Q5. Can a FIXED defect be CLOSED immediately?
+
+Answer:
+Normally, QA should verify the fix according to the team's workflow
+before the defect is closed.
+
+
+Q6. When do you reopen a defect?
+
+Answer:
+When the reported issue still exists or the fix does not correctly
+resolve the problem.
+
+
+Q7. What is a duplicate defect?
+
+Answer:
+A defect representing the same issue that has already been reported.
+
+
+Q8. What is a deferred defect?
+
+Answer:
+A defect that is postponed for a future release or later work.
+
+
+Q9. What does Cannot Reproduce mean?
+
+Answer:
+The team cannot reproduce the reported issue using the available
+steps, data, environment, or other information.
+
+
+Q10. What information should a bug report contain?
+
+Answer:
+
+    Title
+    Environment
+    Preconditions
+    Steps
+    Test data
+    Expected result
+    Actual result
+    Severity
+    Priority
+    Evidence
+    Reproducibility
+
+
+====================================================================
+40. SCENARIO-BASED INTERVIEW QUESTIONS
+====================================================================
+
+SCENARIO 1
+----------
+
+Developer marks a defect FIXED.
+
+QA retests it.
+
+The problem still exists.
+
+What should QA do?
+
+Answer:
+
+    Do not close it.
+    Reproduce the issue again.
+    Record the result.
+    Reopen the defect according to the workflow.
+    Provide evidence/details to the developer.
+
+
+--------------------------------------------------------------------
+SCENARIO 2
+----------
+
+You report a login defect.
+
+Developer says:
+
+    "It works on my machine."
+
+What should you provide?
+
+Answer:
+
+    Browser
+    Browser version
+    OS
+    Application build
+    Exact steps
+    Test data
+    Screenshots/video
+    Logs where applicable
+    Reproducibility information
+
+
+--------------------------------------------------------------------
+SCENARIO 3
+----------
+
+You find a UI defect one day before release.
+
+It does not affect functionality.
+
+What should you do?
+
+Answer:
+
+    Report it accurately and allow the team to determine priority and
+    release impact according to the project's process.
+
+Do not hide the defect merely because the release is close.
+
+
+--------------------------------------------------------------------
+SCENARIO 4
+----------
+
+You discover that another tester already reported the same issue.
+
+What should you do?
+
+Answer:
+
+    Avoid creating an unnecessary duplicate and follow the team's
+    process for linking/marking the issue as duplicate.
+
+
+--------------------------------------------------------------------
+SCENARIO 5
+----------
+
+A defect happens only once and cannot be reproduced.
+
+What should you do?
+
+Answer:
+
+    Record exact conditions, environment, time, data, logs, screenshots
+    or video if available, and investigate/retry according to the
+    team's process.
+
+
+====================================================================
+41. JOB-READY DEFECT REPORTING WORKFLOW
+====================================================================
+
+Professional QA workflow:
+
+    1. Understand requirement
+            ↓
+    2. Execute test case
+            ↓
+    3. Observe unexpected behavior
+            ↓
+    4. Verify expected behavior
+            ↓
+    5. Reproduce defect
+            ↓
+    6. Collect evidence
+            ↓
+    7. Check for duplicate
+            ↓
+    8. Create clear bug report
+            ↓
+    9. Assign/track
+            ↓
+    10. Developer investigates
+            ↓
+    11. Developer fixes
+            ↓
+    12. QA retests
+            ↓
+    13. Pass → Close
+        Fail → Reopen
+            ↓
+    14. Regression testing where applicable
+
+
+====================================================================
+42. REAL QA EXERCISE
+====================================================================
+
+APPLICATION:
+
+    E-Commerce Website
+
+FEATURE:
+
+    Shopping Cart
+
+
+Requirement:
+
+    User should be able to add a product to the cart.
+
+
+Execute:
+
+    1. Login
+    2. Open product
+    3. Click Add to Cart
+    4. Open cart
+
+
+Suppose:
+
+Expected:
+
+    Product appears in cart.
+
+Actual:
+
+    Cart remains empty.
+
+
+Create:
+
+    Bug ID:
+        BUG-CART-001
+
+Title:
+        Product is not added to cart after clicking Add to Cart
+
+Environment:
+        Chrome / Windows
+
+Steps:
+        1. Login
+        2. Open product
+        3. Click Add to Cart
+        4. Open cart
+
+Expected:
+        Selected product should appear in cart.
+
+Actual:
+        Cart remains empty.
+
+Then follow:
+
+    NEW
+      ↓
+    ASSIGNED
+      ↓
+    OPEN
+      ↓
+    FIXED
+      ↓
+    RETEST
+      ↓
+    CLOSED / REOPENED
+
+
+====================================================================
+43. CHAPTER 17 — FINAL SUMMARY
+====================================================================
+
+A defect represents incorrect behavior compared with expected
+behavior.
+
+Important concepts:
+
+    ERROR
+        ↓
+    Human mistake
+
+    DEFECT / BUG
+        ↓
+    Incorrect software condition
+
+    FAILURE
+        ↓
+    Incorrect behavior during execution
+
+
+Main lifecycle:
+
+    NEW
+      ↓
+    ASSIGNED
+      ↓
+    OPEN
+      ↓
+    FIXED
+      ↓
+    RETEST
+      ↓
+    CLOSED
+
+If the problem remains:
+
+    RETEST
+      ↓
+    REOPENED
+
+
+Other important statuses:
+
+    REJECTED
+    DUPLICATE
+    DEFERRED
+    CANNOT REPRODUCE
+
+
+A strong QA Engineer should be able to:
+
+    ✓ Identify defects
+    ✓ Reproduce defects
+    ✓ Write clear bug reports
+    ✓ Explain expected vs actual behavior
+    ✓ Provide evidence
+    ✓ Track defect status
+    ✓ Retest fixes
+    ✓ Reopen failed fixes
+    ✓ Understand defect impact
+    ✓ Communicate effectively with developers
+
+
+====================================================================
+44. JOB-READY CHECKLIST
+====================================================================
+
+[✓] Defect definition
+[✓] Error vs defect vs bug vs failure
+[✓] Defect lifecycle
+[✓] NEW
+[✓] ASSIGNED
+[✓] OPEN
+[✓] FIXED
+[✓] RETEST
+[✓] REOPENED
+[✓] CLOSED
+[✓] REJECTED
+[✓] DUPLICATE
+[✓] DEFERRED
+[✓] CANNOT REPRODUCE
+[✓] Bug report structure
+[✓] Reproduction steps
+[✓] Expected vs actual
+[✓] Environment
+[✓] Evidence
+[✓] Practical defect workflow
+[✓] E-commerce defect examples
+[✓] Interview questions
+[✓] Scenario-based questions
+
+
+====================================================================
+NEXT
+====================================================================
+
+CHAPTER 18 — SEVERITY & PRIORITY
+
+Topics:
+
+    1. What is Severity?
+    2. What is Priority?
+    3. Severity Levels
+    4. Critical
+    5. High
+    6. Medium
+    7. Low
+    8. Priority Levels
+    9. Severity vs Priority
+    10. High Severity + High Priority
+    11. High Severity + Low Priority
+    12. Low Severity + High Priority
+    13. Low Severity + Low Priority
+    14. Real-world examples
+    15. Practical QA scenarios
+    16. Interview questions
+====================================================================
