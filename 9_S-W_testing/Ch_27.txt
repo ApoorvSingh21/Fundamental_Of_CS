@@ -1,0 +1,1212 @@
+======================================================================
+       SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+======================================================================
+
+                         CHAPTER 27
+                    DATABASE FUNDAMENTALS
+======================================================================
+
+SOURCE TOPICS
+-------------
+• Database
+• DBMS
+• RDBMS
+• Tables
+• Rows
+• Columns
+• Primary Key
+• Foreign Key
+• Constraints
+• Relationships
+
+COURSE POSITION
+---------------
+Chapter 27 of 78
+Phase 9 → SQL / Database Testing
+
+Previous:
+Chapter 26 → Mobile Test Scenarios
+
+Current:
+Chapter 27 → Database Fundamentals
+
+Next:
+Chapter 28 → SQL for Testers
+======================================================================
+
+
+27.1 WHAT IS A DATABASE?
+========================
+
+A DATABASE is an organized collection of data that allows data to be
+stored, managed, retrieved, and maintained.
+
+Example:
+
+An e-commerce application may need to store:
+
+    Users
+    Products
+    Orders
+    Payments
+    Addresses
+    Reviews
+
+Instead of storing this information randomly, it is organized inside
+a database.
+
+
+Example User Data:
+
+    User ID    Name        Email
+    ----------------------------------------
+    101        Apoorv      apoorv@example.com
+    102        Rahul       rahul@example.com
+    103        Neha        neha@example.com
+
+
+WHY DATABASES ARE NEEDED
+------------------------
+
+Applications continuously create and use data.
+
+For example:
+
+    User registers
+         ↓
+    User information is stored
+         ↓
+    User logs in
+         ↓
+    User information is retrieved
+         ↓
+    User places order
+         ↓
+    Order is stored
+         ↓
+    Payment is recorded
+         ↓
+    Order status is updated
+
+
+Without a proper database system, managing large amounts of
+application data becomes difficult.
+
+
+----------------------------------------------------------------------
+27.2 DBMS — DATABASE MANAGEMENT SYSTEM
+----------------------------------------------------------------------
+
+DBMS stands for:
+
+    Database Management System
+
+
+A DBMS is software used to create, store, manage, retrieve, and
+manipulate data in a database.
+
+
+Basic flow:
+
+    Application
+         |
+         v
+       DBMS
+         |
+         v
+     Database
+
+
+Examples of database management systems include systems designed to
+manage and interact with stored application data.
+
+
+A DBMS generally provides capabilities for:
+
+    • Creating databases
+    • Storing data
+    • Retrieving data
+    • Updating data
+    • Deleting data
+    • Managing access
+    • Maintaining data consistency
+
+
+For a QA Engineer, an important point is:
+
+    Application → Database
+
+The QA engineer may need to verify that the data sent by the
+application is correctly stored and retrieved.
+
+
+----------------------------------------------------------------------
+27.3 RDBMS — RELATIONAL DATABASE MANAGEMENT SYSTEM
+----------------------------------------------------------------------
+
+RDBMS stands for:
+
+    Relational Database Management System
+
+
+An RDBMS stores data in related tables.
+
+For example:
+
+    USERS
+    PRODUCTS
+    ORDERS
+    PAYMENTS
+
+
+These tables can be connected through relationships.
+
+
+Example:
+
+    USERS
+       |
+       | user_id
+       v
+    ORDERS
+       |
+       | order_id
+       v
+    PAYMENTS
+
+
+The relational model is especially important for QA engineers because
+many enterprise applications use relational databases.
+
+
+----------------------------------------------------------------------
+27.4 DATABASE vs DBMS vs RDBMS
+----------------------------------------------------------------------
+
+DATABASE
+--------
+The actual organized collection of data.
+
+Example:
+
+    Customer information
+    Product information
+    Order information
+
+
+DBMS
+----
+Software used to manage databases.
+
+
+RDBMS
+-----
+A type of DBMS based on the relational model, where data is organized
+into related tables.
+
+
+Simple understanding:
+
+    Database
+        ↓
+    Contains data
+
+    DBMS
+        ↓
+    Manages database
+
+    RDBMS
+        ↓
+    Manages relational databases
+        ↓
+    Data organized into related tables
+
+
+----------------------------------------------------------------------
+27.5 TABLE
+----------------------------------------------------------------------
+
+A TABLE is a structured collection of related data.
+
+In an RDBMS, data is commonly organized into tables.
+
+
+Example:
+
+    USERS
+
+    +---------+---------+----------------------+
+    | user_id | name    | email                |
+    +---------+---------+----------------------+
+    | 101     | Apoorv  | apoorv@example.com   |
+    | 102     | Rahul   | rahul@example.com    |
+    | 103     | Neha    | neha@example.com     |
+    +---------+---------+----------------------+
+
+
+Here:
+
+    Table name = USERS
+
+    Columns:
+        user_id
+        name
+        email
+
+    Rows:
+        101, Apoorv, ...
+        102, Rahul, ...
+        103, Neha, ...
+
+
+A QA engineer frequently checks whether the application correctly
+creates and modifies records in tables.
+
+
+----------------------------------------------------------------------
+27.6 ROW
+----------------------------------------------------------------------
+
+A ROW represents one record in a table.
+
+Example:
+
+    USERS
+
+    user_id | name   | email
+    ------------------------------
+    101     | Apoorv | apoorv@example.com
+    102     | Rahul  | rahul@example.com
+
+
+The first row represents one user:
+
+    101 | Apoorv | apoorv@example.com
+
+
+Therefore:
+
+    1 Row = 1 Record
+
+
+In QA testing:
+
+If a user registers through the UI, the tester can verify whether
+the corresponding user record exists in the database.
+
+
+----------------------------------------------------------------------
+27.7 COLUMN
+----------------------------------------------------------------------
+
+A COLUMN represents a particular attribute or field of the data.
+
+
+Example:
+
+    USERS
+
+    user_id | name | email
+    --------+------+---------------------
+
+    user_id → identifies the user
+    name    → stores user's name
+    email   → stores user's email
+
+
+Therefore:
+
+    Column = Field / Attribute
+
+Example:
+
+    user_id
+    name
+    email
+    phone
+    address
+
+
+Each column generally has a defined purpose and expected type of data.
+
+
+----------------------------------------------------------------------
+27.8 PRIMARY KEY
+----------------------------------------------------------------------
+
+A PRIMARY KEY uniquely identifies each record in a table.
+
+
+Example:
+
+    USERS
+
+    +---------+---------+----------------------+
+    | user_id | name    | email                |
+    +---------+---------+----------------------+
+    | 101     | Apoorv  | apoorv@example.com   |
+    | 102     | Rahul   | rahul@example.com    |
+    | 103     | Neha    | neha@example.com     |
+    +---------+---------+----------------------+
+
+
+Here:
+
+    user_id
+
+can be used as the primary key.
+
+
+The important idea is:
+
+    Primary Key
+         ↓
+    Identifies a record uniquely
+
+
+Example:
+
+    user_id = 101
+
+identifies one particular user record.
+
+
+WHY PRIMARY KEY MATTERS IN QA
+-----------------------------
+
+Suppose a tester creates a new user through the application.
+
+The tester can verify:
+
+    UI user created
+           ↓
+    Database record created
+           ↓
+    Correct user_id generated
+           ↓
+    Correct user information stored
+
+
+A primary key helps identify the exact record being validated.
+
+
+----------------------------------------------------------------------
+27.9 FOREIGN KEY
+----------------------------------------------------------------------
+
+A FOREIGN KEY is used to establish a relationship between tables.
+
+
+Example:
+
+    USERS
+
+    user_id | name
+    ----------------
+    101     | Apoorv
+    102     | Rahul
+
+
+    ORDERS
+
+    order_id | user_id | amount
+    ----------------------------
+    5001     | 101     | 1500
+    5002     | 102     | 2200
+    5003     | 101     | 800
+
+
+Here:
+
+    USERS.user_id
+
+is related to:
+
+    ORDERS.user_id
+
+
+The user_id in ORDERS can act as a foreign key referring to the
+user_id in USERS.
+
+
+Concept:
+
+    USERS
+      |
+      | user_id
+      |
+      v
+    ORDERS
+
+
+WHY FOREIGN KEYS MATTER IN QA
+-----------------------------
+
+They help maintain relationships between related data.
+
+For example:
+
+    User 101 places Order 5001
+
+The database should maintain the relationship:
+
+    User 101
+       ↓
+    Order 5001
+
+
+A QA engineer can verify that the order belongs to the correct user.
+
+
+----------------------------------------------------------------------
+27.10 CONSTRAINTS
+----------------------------------------------------------------------
+
+Constraints are rules applied to data to maintain data correctness
+and integrity.
+
+
+Common constraints include:
+
+    • PRIMARY KEY
+    • FOREIGN KEY
+    • NOT NULL
+    • UNIQUE
+    • CHECK
+    • DEFAULT
+
+
+The source specifically identifies constraints as an important
+database-testing fundamental.
+
+
+Example:
+
+    USERS
+
+    user_id
+    name
+    email
+
+
+Possible rules:
+
+    user_id → Primary Key
+    email   → Unique
+    name    → Not Null
+
+
+This prevents invalid or inconsistent data from being stored.
+
+
+----------------------------------------------------------------------
+27.11 RELATIONSHIPS
+----------------------------------------------------------------------
+
+In relational databases, tables can be related to each other.
+
+
+For example:
+
+    USERS
+      |
+      |
+      v
+    ORDERS
+      |
+      |
+      v
+    PAYMENTS
+
+
+This allows related information to be stored in separate tables while
+maintaining logical connections between them.
+
+
+Example:
+
+    USERS
+
+    user_id | name
+    ----------------
+    101     | Apoorv
+    102     | Rahul
+
+
+    ORDERS
+
+    order_id | user_id | amount
+    ----------------------------
+    5001     | 101     | 1500
+    5002     | 101     | 800
+    5003     | 102     | 2200
+
+
+Here:
+
+    User 101
+       |
+       +---- Order 5001
+       |
+       +---- Order 5002
+
+
+    User 102
+       |
+       +---- Order 5003
+
+
+This represents a relationship between users and orders.
+
+
+----------------------------------------------------------------------
+27.12 COMMON DATABASE RELATIONSHIP CONCEPT
+----------------------------------------------------------------------
+
+For QA fundamentals, understand that relationships describe how
+records in different tables are associated.
+
+A common example:
+
+    ONE USER
+       |
+       +-------- MANY ORDERS
+
+
+Conceptually:
+
+    USERS
+      1
+      |
+      |
+      N
+    ORDERS
+
+
+This means one user can have multiple orders.
+
+
+Another example:
+
+    ORDERS
+       |
+       |
+       v
+    PAYMENTS
+
+
+An order can have associated payment information.
+
+
+The exact relationship depends on the application's database design.
+
+
+----------------------------------------------------------------------
+27.13 E-COMMERCE DATABASE EXAMPLE
+----------------------------------------------------------------------
+
+Consider an e-commerce application.
+
+
+TABLE 1: USERS
+--------------
+
+    user_id | name   | email
+    ------------------------------
+    101     | Apoorv | apoorv@example.com
+    102     | Rahul  | rahul@example.com
+
+
+TABLE 2: PRODUCTS
+-----------------
+
+    product_id | product_name | price
+    ---------------------------------
+    201        | Laptop       | 60000
+    202        | Mouse        | 1000
+    203        | Keyboard     | 2000
+
+
+TABLE 3: ORDERS
+---------------
+
+    order_id | user_id | amount
+    ----------------------------
+    5001     | 101     | 61000
+    5002     | 102     | 2000
+
+
+Relationships:
+
+    USERS.user_id
+          |
+          v
+    ORDERS.user_id
+
+
+This lets the application determine:
+
+    Which user placed the order?
+
+
+For example:
+
+    order_id = 5001
+
+    user_id = 101
+
+Therefore:
+
+    Order 5001 belongs to User 101.
+
+
+----------------------------------------------------------------------
+27.14 UI → API → DATABASE VALIDATION
+----------------------------------------------------------------------
+
+This is extremely important for a QA Engineer.
+
+
+Consider user registration.
+
+
+STEP 1 — USER INTERFACE
+-----------------------
+
+User enters:
+
+    Name:
+        Apoorv
+
+    Email:
+        apoorv@example.com
+
+    Password:
+        ********
+
+
+STEP 2 — APPLICATION / API
+--------------------------
+
+The frontend sends the information to the backend.
+
+
+    UI
+     |
+     v
+    API
+     |
+     v
+    Backend
+
+
+STEP 3 — DATABASE
+-----------------
+
+The backend stores the information.
+
+
+    Backend
+       |
+       v
+    Database
+       |
+       v
+    USERS table
+
+
+STEP 4 — QA VALIDATION
+----------------------
+
+Tester verifies:
+
+    UI data
+       ↓
+    API request
+       ↓
+    Database record
+
+
+Expected:
+
+    UI email
+        =
+    API email
+        =
+    DB email
+
+
+If the values differ, there may be a defect.
+
+
+Example:
+
+    UI:
+        apoorv@example.com
+
+    API:
+        apoorv@example.com
+
+    DB:
+        apoorrv@example.com
+
+
+This indicates a possible data-integrity problem.
+
+
+----------------------------------------------------------------------
+27.15 DATABASE TESTING — WHY QA NEEDS DATABASE FUNDAMENTALS
+----------------------------------------------------------------------
+
+A QA engineer does not test only the visible UI.
+
+Modern applications involve:
+
+    UI
+     ↓
+    API
+     ↓
+    Backend
+     ↓
+    Database
+
+
+A UI operation may cause multiple database changes.
+
+
+Example:
+
+    User places order
+           ↓
+    Order created
+           ↓
+    Order record inserted
+           ↓
+    Inventory updated
+           ↓
+    Payment information stored
+           ↓
+    Order status updated
+
+
+A tester may need to verify whether all expected database changes
+occurred correctly.
+
+
+DATABASE TESTING CAN INVOLVE VALIDATING:
+
+    • Data correctness
+    • Data consistency
+    • CRUD behavior
+    • Relationships
+    • Constraints
+    • Backend/UI data
+    • Referential integrity
+    • Stored procedures
+    • Data migration
+    • ETL-related data
+
+
+These topics become more detailed in later database-testing chapters.
+
+
+----------------------------------------------------------------------
+27.16 CRUD CONCEPT
+----------------------------------------------------------------------
+
+CRUD represents four basic database operations:
+
+    C → CREATE
+    R → READ
+    U → UPDATE
+    D → DELETE
+
+
+Example:
+
+    CREATE
+        Create a new user.
+
+    READ
+        Retrieve user information.
+
+    UPDATE
+        Change user's email.
+
+    DELETE
+        Remove a user.
+
+
+For QA:
+
+    UI operation
+        ↓
+    Database operation
+        ↓
+    Verify result
+
+
+Example:
+
+    Create user
+         ↓
+    Verify new record
+
+
+    Update user email
+         ↓
+    Verify updated record
+
+
+    Delete user
+         ↓
+    Verify expected database state
+
+
+Detailed SQL for these operations is covered in later chapters.
+
+
+----------------------------------------------------------------------
+27.17 PRACTICAL QA SCENARIO
+----------------------------------------------------------------------
+
+SCENARIO:
+---------
+A user changes their email address through the application.
+
+
+Before:
+
+    USERS
+
+    user_id | email
+    ----------------------------
+    101     | old@example.com
+
+
+User changes email to:
+
+    new@example.com
+
+
+Expected:
+
+    USERS
+
+    user_id | email
+    ----------------------------
+    101     | new@example.com
+
+
+QA VALIDATION:
+
+    1. Login to application.
+    2. Open profile.
+    3. Change email.
+    4. Save changes.
+    5. Verify UI.
+    6. Verify API response if applicable.
+    7. Verify database record.
+    8. Confirm correct user record was updated.
+
+
+Potential defect:
+
+    UI shows new@example.com
+
+but database still contains:
+
+    old@example.com
+
+
+This indicates a possible backend/data persistence problem.
+
+
+----------------------------------------------------------------------
+27.18 ANOTHER PRACTICAL SCENARIO — ORDER CREATION
+----------------------------------------------------------------------
+
+User:
+
+    Apoorv
+    user_id = 101
+
+
+Product:
+
+    Laptop
+    product_id = 201
+
+
+User places an order.
+
+
+Expected database state:
+
+    USERS
+       |
+       | 101
+       v
+    ORDERS
+       |
+       | order_id = 5001
+       |
+       +--> user_id = 101
+
+
+The QA engineer should conceptually verify:
+
+    • Correct user associated
+    • Correct product/order information
+    • Correct amount
+    • Correct relationships
+    • Correct order state
+
+
+This becomes especially important when testing APIs and backend
+functionality.
+
+
+----------------------------------------------------------------------
+27.19 IMPORTANT DATABASE TERMS
+----------------------------------------------------------------------
+
+DATABASE
+    Organized collection of data.
+
+DBMS
+    Software used to manage databases.
+
+RDBMS
+    Relational database management system.
+
+TABLE
+    Structured collection of related records.
+
+ROW
+    One record in a table.
+
+COLUMN
+    A field/attribute in a table.
+
+PRIMARY KEY
+    Uniquely identifies a record.
+
+FOREIGN KEY
+    Establishes a relationship with another table.
+
+CONSTRAINT
+    Rule that helps maintain data integrity.
+
+RELATIONSHIP
+    Logical association between tables.
+
+
+----------------------------------------------------------------------
+27.20 INTERVIEW QUESTIONS
+----------------------------------------------------------------------
+
+Q1. What is a database?
+
+Answer:
+    A database is an organized collection of data that can be stored,
+    managed, and retrieved.
+
+--------------------------------------------------
+
+Q2. What is DBMS?
+
+Answer:
+    DBMS is Database Management System, software used to manage
+    databases.
+
+--------------------------------------------------
+
+Q3. What is RDBMS?
+
+Answer:
+    RDBMS is a relational database management system that organizes
+    data into related tables.
+
+--------------------------------------------------
+
+Q4. What is a table?
+
+Answer:
+    A table is a structured collection of related data organized into
+    rows and columns.
+
+--------------------------------------------------
+
+Q5. What is a row?
+
+Answer:
+    A row represents one record in a table.
+
+--------------------------------------------------
+
+Q6. What is a column?
+
+Answer:
+    A column represents a field or attribute of the data.
+
+--------------------------------------------------
+
+Q7. What is a primary key?
+
+Answer:
+    A primary key uniquely identifies a record in a table.
+
+--------------------------------------------------
+
+Q8. What is a foreign key?
+
+Answer:
+    A foreign key establishes a relationship between tables.
+
+--------------------------------------------------
+
+Q9. Why are databases important for QA?
+
+Answer:
+    QA engineers may need to verify that application data is correctly
+    created, stored, updated, retrieved, and related in the database.
+
+--------------------------------------------------
+
+Q10. Give an example of UI-to-database validation.
+
+Answer:
+
+    User enters data in UI
+            ↓
+        API request
+            ↓
+        Backend processing
+            ↓
+        Database storage
+            ↓
+    QA verifies stored data
+
+--------------------------------------------------
+
+Q11. What does CRUD mean?
+
+Answer:
+
+    C → Create
+    R → Read
+    U → Update
+    D → Delete
+
+--------------------------------------------------
+
+Q12. What is a constraint?
+
+Answer:
+    A constraint is a rule applied to data to help maintain its
+    correctness and integrity.
+
+
+----------------------------------------------------------------------
+27.21 QUICK REVISION
+----------------------------------------------------------------------
+
+                    DATABASE FUNDAMENTALS
+                           |
+          +----------------+----------------+
+          |                |                |
+        DBMS             RDBMS           Tables
+          |                |                |
+      Manages DB      Related tables    Rows + Columns
+                                             |
+                         +-------------------+
+                         |
+                    Keys & Constraints
+                         |
+                 +-------+-------+
+                 |               |
+             Primary Key     Foreign Key
+                 |               |
+          Unique record      Table relationship
+
+
+Remember:
+
+    Database
+        → stores organized data
+
+    DBMS
+        → manages database
+
+    RDBMS
+        → manages relational databases
+
+    Table
+        → stores structured data
+
+    Row
+        → record
+
+    Column
+        → field/attribute
+
+    Primary Key
+        → uniquely identifies record
+
+    Foreign Key
+        → connects related tables
+
+    Constraints
+        → enforce data rules
+
+    Relationships
+        → connect tables logically
+
+
+----------------------------------------------------------------------
+27.22 JOB-READY CHECKLIST
+----------------------------------------------------------------------
+
+You should now be able to explain:
+
+[✓] What is a database?
+[✓] Why applications need databases
+[✓] What is DBMS?
+[✓] What is RDBMS?
+[✓] Difference between database, DBMS and RDBMS
+[✓] What is a table?
+[✓] What is a row?
+[✓] What is a column?
+[✓] What is a primary key?
+[✓] What is a foreign key?
+[✓] What are constraints?
+[✓] What are relationships?
+[✓] How tables can be related
+[✓] How UI data can be validated against database data
+[✓] Why database knowledge is important for QA
+[✓] Basic CRUD concept
+[✓] Basic database interview questions
+
+
+======================================================================
+                    CHAPTER 27 COMPLETE
+======================================================================
+
+NEXT → CHAPTER 28: SQL FOR TESTERS
+
+Topics:
+    • SELECT
+    • WHERE
+    • ORDER BY
+    • GROUP BY
+    • HAVING
+    • DISTINCT
+    • INSERT
+    • UPDATE
+    • DELETE
+    • LIKE
+    • IN
+    • BETWEEN
+    • NULL
+======================================================================

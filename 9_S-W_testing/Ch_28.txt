@@ -1,0 +1,1304 @@
+================================================================
+       SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+================================================================
+
+                    CHAPTER 28
+                  SQL FOR TESTERS
+================================================================
+
+SOURCE TOPICS
+-------------
+• SELECT
+• WHERE
+• ORDER BY
+• GROUP BY
+• HAVING
+• DISTINCT
+• INSERT
+• UPDATE
+• DELETE
+• LIKE
+• IN
+• BETWEEN
+• NULL
+
+
+================================================================
+28.1 WHY SQL IS IMPORTANT FOR A TESTER
+================================================================
+
+A software tester often needs to verify whether data shown in
+the application UI is correctly stored in the database.
+
+Typical flow:
+
+        USER
+          ↓
+     APPLICATION UI
+          ↓
+         API
+          ↓
+       DATABASE
+          ↓
+      TABLE / DATA
+
+A tester can validate both sides:
+
+        UI DATA
+           ↕
+     DATABASE DATA
+
+Example:
+
+UI shows:
+
+    Customer Name : Rahul
+    Email         : rahul@gmail.com
+    Status        : Active
+
+Tester can query the database and verify:
+
+    SELECT name, email, status
+    FROM customers
+    WHERE email = 'rahul@gmail.com';
+
+
+================================================================
+28.2 WHAT IS SQL?
+================================================================
+
+SQL = Structured Query Language
+
+SQL is used to communicate with relational databases.
+
+Common operations:
+
+    SELECT   → Read data
+    INSERT   → Add data
+    UPDATE   → Modify data
+    DELETE   → Remove data
+
+These are extremely important for QA/DB testing.
+
+
+================================================================
+28.3 SAMPLE DATABASE
+================================================================
+
+For this chapter, assume an e-commerce database.
+
+TABLE: customers
+
++----+----------+---------------------+--------+
+| id | name     | email               | status |
++----+----------+---------------------+--------+
+| 1  | Rahul    | rahul@gmail.com     | Active |
+| 2  | Priya    | priya@gmail.com     | Active |
+| 3  | Amit     | amit@gmail.com      | Inactive|
+| 4  | Neha     | neha@gmail.com      | Active |
++----+----------+---------------------+--------+
+
+
+TABLE: products
+
++----+-------------+-------+----------+
+| id | name        | price | stock    |
++----+-------------+-------+----------+
+| 1  | Laptop      | 60000 | 10       |
+| 2  | Mouse       | 1000  | 50       |
+| 3  | Keyboard    | 2500  | 25       |
++----+-------------+-------+----------+
+
+
+================================================================
+28.4 SELECT — READ DATA
+================================================================
+
+SELECT is used to retrieve data from a table.
+
+Syntax:
+
+    SELECT column_name
+    FROM table_name;
+
+
+Example:
+
+    SELECT name
+    FROM customers;
+
+
+Result:
+
+    Rahul
+    Priya
+    Amit
+    Neha
+
+
+To retrieve multiple columns:
+
+    SELECT name, email
+    FROM customers;
+
+
+To retrieve all columns:
+
+    SELECT *
+    FROM customers;
+
+
+IMPORTANT QA USE:
+
+SELECT is one of the most frequently used SQL commands by testers.
+
+It allows a tester to verify:
+
+    UI data
+        ↓
+    Database data
+
+
+================================================================
+28.5 WHERE — FILTER DATA
+================================================================
+
+WHERE is used to retrieve rows matching a condition.
+
+Syntax:
+
+    SELECT columns
+    FROM table
+    WHERE condition;
+
+
+Example:
+
+    SELECT *
+    FROM customers
+    WHERE status = 'Active';
+
+
+Only active customers are returned.
+
+
+Another example:
+
+    SELECT *
+    FROM customers
+    WHERE id = 1;
+
+
+Result:
+
+    Rahul
+    rahul@gmail.com
+    Active
+
+
+QA USE:
+
+Suppose a user changes their status through the UI.
+
+Tester can verify:
+
+    SELECT status
+    FROM customers
+    WHERE id = 1;
+
+
+Expected:
+
+    Active
+
+
+================================================================
+28.6 COMPARISON OPERATORS
+================================================================
+
+Common operators:
+
+    =       Equal
+    <>      Not equal
+    !=      Not equal
+    >       Greater than
+    <       Less than
+    >=      Greater than or equal
+    <=      Less than or equal
+
+
+Example:
+
+    SELECT *
+    FROM products
+    WHERE price > 5000;
+
+
+Returns products whose price is greater than 5000.
+
+
+Example:
+
+    SELECT *
+    FROM products
+    WHERE stock <= 10;
+
+
+Returns products having stock less than or equal to 10.
+
+
+================================================================
+28.7 AND / OR
+================================================================
+
+Multiple conditions can be combined.
+
+AND:
+
+    SELECT *
+    FROM customers
+    WHERE status = 'Active'
+    AND id > 1;
+
+
+Both conditions must be true.
+
+
+OR:
+
+    SELECT *
+    FROM customers
+    WHERE status = 'Active'
+    OR id = 3;
+
+
+At least one condition must be true.
+
+
+QA EXAMPLE:
+
+Verify customers who are active AND have a particular ID range.
+
+    SELECT *
+    FROM customers
+    WHERE status = 'Active'
+    AND id > 1;
+
+
+================================================================
+28.8 ORDER BY
+================================================================
+
+ORDER BY is used to sort query results.
+
+Ascending:
+
+    SELECT *
+    FROM products
+    ORDER BY price ASC;
+
+
+Descending:
+
+    SELECT *
+    FROM products
+    ORDER BY price DESC;
+
+
+ASC:
+
+    Small → Large
+    A → Z
+
+DESC:
+
+    Large → Small
+    Z → A
+
+
+QA EXAMPLE:
+
+If the application has:
+
+    Sort Products → Price High to Low
+
+Tester can validate:
+
+    SELECT *
+    FROM products
+    ORDER BY price DESC;
+
+
+The database ordering can then be compared with the UI.
+
+
+================================================================
+28.9 DISTINCT
+================================================================
+
+DISTINCT removes duplicate values from query results.
+
+Example:
+
+    SELECT DISTINCT status
+    FROM customers;
+
+
+Possible result:
+
+    Active
+    Inactive
+
+
+Without DISTINCT, Active may appear multiple times.
+
+QA USE:
+
+Useful when validating unique values displayed in:
+
+    • Dropdowns
+    • Filters
+    • Categories
+    • Status lists
+
+
+================================================================
+28.10 GROUP BY
+================================================================
+
+GROUP BY groups rows having the same value.
+
+Example:
+
+    SELECT status, COUNT(*)
+    FROM customers
+    GROUP BY status;
+
+
+Possible result:
+
+    Active      3
+    Inactive    1
+
+
+This is useful when the application displays summaries.
+
+Example UI:
+
+    Active Users   : 3
+    Inactive Users : 1
+
+Tester can verify the database using GROUP BY.
+
+
+================================================================
+28.11 HAVING
+================================================================
+
+HAVING filters grouped results.
+
+WHERE:
+
+    Filters individual rows.
+
+HAVING:
+
+    Filters groups.
+
+Example:
+
+    SELECT status, COUNT(*)
+    FROM customers
+    GROUP BY status
+    HAVING COUNT(*) > 1;
+
+
+This returns only groups whose count is greater than 1.
+
+
+IMPORTANT:
+
+    WHERE  → Before grouping
+    HAVING → After grouping
+
+
+QA INTERVIEW QUESTION:
+
+Q: What is the difference between WHERE and HAVING?
+
+Answer:
+
+WHERE filters rows before grouping.
+
+HAVING filters groups after GROUP BY.
+
+
+================================================================
+28.12 INSERT
+================================================================
+
+INSERT is used to add a new record.
+
+Syntax:
+
+    INSERT INTO table_name
+    (column1, column2, column3)
+    VALUES
+    (value1, value2, value3);
+
+
+Example:
+
+    INSERT INTO customers
+    (id, name, email, status)
+    VALUES
+    (5, 'Karan', 'karan@gmail.com', 'Active');
+
+
+A new customer is inserted.
+
+
+QA USE:
+
+Useful for preparing test data.
+
+Example:
+
+    Create test customer
+        ↓
+    INSERT database record
+        ↓
+    Login/application test
+        ↓
+    Verify behavior
+
+
+IMPORTANT:
+
+INSERT should be performed carefully in shared/test
+environments.
+
+
+================================================================
+28.13 UPDATE
+================================================================
+
+UPDATE modifies existing data.
+
+Syntax:
+
+    UPDATE table_name
+    SET column = value
+    WHERE condition;
+
+
+Example:
+
+    UPDATE customers
+    SET status = 'Inactive'
+    WHERE id = 1;
+
+
+Customer 1 is now inactive.
+
+
+CRITICAL RULE:
+
+Always be careful with WHERE.
+
+Correct:
+
+    UPDATE customers
+    SET status = 'Inactive'
+    WHERE id = 1;
+
+
+Dangerous:
+
+    UPDATE customers
+    SET status = 'Inactive';
+
+
+The second query may update every row.
+
+
+QA BEST PRACTICE:
+
+Before UPDATE:
+
+    SELECT *
+    FROM customers
+    WHERE id = 1;
+
+Then perform UPDATE.
+
+Then verify:
+
+    SELECT *
+    FROM customers
+    WHERE id = 1;
+
+
+================================================================
+28.14 DELETE
+================================================================
+
+DELETE removes records.
+
+Syntax:
+
+    DELETE FROM table_name
+    WHERE condition;
+
+
+Example:
+
+    DELETE FROM customers
+    WHERE id = 5;
+
+
+Customer 5 is removed.
+
+
+DANGEROUS:
+
+    DELETE FROM customers;
+
+
+This may delete all rows.
+
+
+QA BEST PRACTICE:
+
+Never execute UPDATE or DELETE carelessly.
+
+First identify the target records with SELECT.
+
+
+================================================================
+28.15 LIKE
+================================================================
+
+LIKE is used for pattern matching.
+
+Example:
+
+    SELECT *
+    FROM customers
+    WHERE name LIKE 'R%';
+
+
+Meaning:
+
+    Name starts with R.
+
+
+Common wildcards:
+
+    %   → Zero or more characters
+    _   → Exactly one character
+
+
+Examples:
+
+    'R%'
+        Starts with R
+
+    '%a'
+        Ends with a
+
+    '%ah%'
+        Contains "ah"
+
+    '_a%'
+        Second character is a
+
+
+QA USE:
+
+Useful for testing:
+
+    • Search functionality
+    • Partial name search
+    • Email search
+    • Product search
+    • Filtering
+
+
+Example:
+
+UI:
+
+    Search → "Lap"
+
+Database validation:
+
+    SELECT *
+    FROM products
+    WHERE name LIKE '%Lap%';
+
+
+================================================================
+28.16 IN
+================================================================
+
+IN checks whether a value belongs to a list.
+
+Example:
+
+    SELECT *
+    FROM customers
+    WHERE id IN (1, 2, 4);
+
+
+This returns customers with IDs:
+
+    1
+    2
+    4
+
+
+Instead of:
+
+    WHERE id = 1
+       OR id = 2
+       OR id = 4
+
+
+IN is cleaner for multiple possible values.
+
+
+QA EXAMPLE:
+
+Verify users belonging to selected statuses:
+
+    SELECT *
+    FROM customers
+    WHERE status IN ('Active', 'Inactive');
+
+
+================================================================
+28.17 BETWEEN
+================================================================
+
+BETWEEN checks whether a value falls within a range.
+
+Example:
+
+    SELECT *
+    FROM products
+    WHERE price BETWEEN 1000 AND 10000;
+
+
+Returns products within the specified price range.
+
+QA USE:
+
+Useful for testing:
+
+    • Price filters
+    • Date ranges
+    • Age ranges
+    • Numeric filters
+    • Report filters
+
+
+Example:
+
+UI:
+
+    Price:
+    ₹1,000 → ₹10,000
+
+Database:
+
+    SELECT *
+    FROM products
+    WHERE price BETWEEN 1000 AND 10000;
+
+
+================================================================
+28.18 NULL
+================================================================
+
+NULL represents the absence of a value.
+
+NULL is NOT the same as:
+
+    0
+    ''
+    'NULL'
+
+
+To find NULL values:
+
+    SELECT *
+    FROM customers
+    WHERE email IS NULL;
+
+
+To find non-NULL values:
+
+    SELECT *
+    FROM customers
+    WHERE email IS NOT NULL;
+
+
+Incorrect:
+
+    WHERE email = NULL
+
+
+Correct:
+
+    WHERE email IS NULL
+
+
+================================================================
+28.19 SQL COMMAND SUMMARY
+================================================================
+
++-------------+----------------------------------------+
+| Command     | Purpose                                |
++-------------+----------------------------------------+
+| SELECT      | Retrieve data                          |
+| WHERE       | Filter rows                            |
+| ORDER BY    | Sort results                           |
+| DISTINCT    | Remove duplicate results               |
+| GROUP BY    | Group rows                             |
+| HAVING      | Filter groups                          |
+| INSERT      | Add records                            |
+| UPDATE      | Modify records                         |
+| DELETE      | Remove records                         |
+| LIKE        | Pattern matching                       |
+| IN          | Match multiple values                  |
+| BETWEEN     | Match a range                          |
+| IS NULL     | Find missing values                    |
++-------------+----------------------------------------+
+
+
+================================================================
+28.20 IMPORTANT QA VALIDATION PATTERN
+================================================================
+
+A tester should understand this pattern:
+
+    STEP 1
+    Perform action in UI
+        ↓
+    STEP 2
+    Identify relevant record
+        ↓
+    STEP 3
+    Query database
+        ↓
+    STEP 4
+    Compare expected vs actual
+        ↓
+    STEP 5
+    Report defect if mismatch exists
+
+
+Example:
+
+Requirement:
+
+    User changes phone number.
+
+Test:
+
+    1. Login
+    2. Open Profile
+    3. Change phone number
+    4. Save
+    5. Verify success message
+
+Database validation:
+
+    SELECT phone
+    FROM customers
+    WHERE id = 101;
+
+
+Expected:
+
+    New phone number
+
+Actual:
+
+    Database value
+
+If they differ:
+
+    → Potential defect
+
+
+================================================================
+28.21 UI → API → DATABASE TESTING
+================================================================
+
+Modern applications often follow:
+
+    UI
+     ↓
+    API
+     ↓
+    Business Logic
+     ↓
+    DATABASE
+
+
+Example:
+
+User places an order.
+
+    User clicks "Place Order"
+             ↓
+        POST /orders
+             ↓
+      Backend processing
+             ↓
+       Orders table
+             ↓
+       Order created
+
+
+Tester can validate:
+
+    UI:
+        Order confirmation shown
+
+    API:
+        HTTP response is correct
+
+    DATABASE:
+        Order record exists
+
+
+Example query:
+
+    SELECT *
+    FROM orders
+    WHERE order_id = 1001;
+
+
+This is an important concept for QA automation and
+database testing.
+
+
+================================================================
+28.22 PRACTICAL QA SQL SCENARIOS
+================================================================
+
+SCENARIO 1 — VERIFY USER CREATION
+---------------------------------
+
+Action:
+
+    Create user through UI.
+
+Query:
+
+    SELECT *
+    FROM customers
+    WHERE email = 'test@gmail.com';
+
+
+Verify:
+
+    • User exists
+    • Name is correct
+    • Email is correct
+    • Status is correct
+
+
+SCENARIO 2 — VERIFY USER UPDATE
+--------------------------------
+
+Action:
+
+    Change user status.
+
+Query:
+
+    SELECT status
+    FROM customers
+    WHERE id = 10;
+
+
+Expected:
+
+    Updated status
+
+
+SCENARIO 3 — VERIFY DELETE
+---------------------------
+
+Action:
+
+    Delete customer.
+
+Query:
+
+    SELECT *
+    FROM customers
+    WHERE id = 10;
+
+
+Expected:
+
+    No matching record
+
+
+SCENARIO 4 — VERIFY SEARCH
+---------------------------
+
+UI:
+
+    Search "Lap"
+
+Database:
+
+    SELECT *
+    FROM products
+    WHERE name LIKE '%Lap%';
+
+
+Compare the expected search results.
+
+
+SCENARIO 5 — VERIFY SORTING
+---------------------------
+
+UI:
+
+    Sort by price descending.
+
+Database:
+
+    SELECT *
+    FROM products
+    ORDER BY price DESC;
+
+
+Compare ordering.
+
+
+SCENARIO 6 — VERIFY FILTER
+---------------------------
+
+UI:
+
+    Price: ₹1,000–₹10,000
+
+Database:
+
+    SELECT *
+    FROM products
+    WHERE price BETWEEN 1000 AND 10000;
+
+
+Compare results.
+
+
+================================================================
+28.23 COMMON SQL MISTAKES BY BEGINNERS
+================================================================
+
+1. Forgetting WHERE in UPDATE
+
+    UPDATE customers
+    SET status = 'Inactive';
+
+Potentially modifies all records.
+
+
+2. Forgetting WHERE in DELETE
+
+    DELETE FROM customers;
+
+Potentially deletes all records.
+
+
+3. Using = NULL
+
+Incorrect:
+
+    WHERE email = NULL
+
+Correct:
+
+    WHERE email IS NULL
+
+
+4. Confusing WHERE and HAVING
+
+    WHERE  → Rows
+    HAVING → Groups
+
+
+5. Forgetting quotes around string values
+
+Example:
+
+    WHERE status = 'Active'
+
+
+6. Not validating test data before modifying it.
+
+Always identify records first.
+
+
+================================================================
+28.24 SQL KNOWLEDGE REQUIRED FOR QA
+================================================================
+
+For a beginner QA role, become comfortable with:
+
+    ✓ SELECT
+    ✓ WHERE
+    ✓ AND / OR
+    ✓ ORDER BY
+    ✓ DISTINCT
+    ✓ GROUP BY
+    ✓ HAVING
+    ✓ INSERT
+    ✓ UPDATE
+    ✓ DELETE
+    ✓ LIKE
+    ✓ IN
+    ✓ BETWEEN
+    ✓ NULL
+
+
+Then progress toward:
+
+    → JOINs
+    → Subqueries
+    → Aggregate functions
+    → CASE
+    → Views
+    → Indexes
+    → Transactions
+
+These are covered later in the syllabus.
+
+
+================================================================
+28.25 INTERVIEW QUESTIONS
+================================================================
+
+Q1. What is SQL?
+----------------
+SQL is Structured Query Language used to communicate with
+relational databases.
+
+
+Q2. What is SELECT used for?
+----------------------------
+SELECT retrieves data from a database.
+
+
+Q3. What is WHERE?
+------------------
+WHERE filters rows according to a condition.
+
+
+Q4. What is ORDER BY?
+---------------------
+ORDER BY sorts query results.
+
+
+Q5. What is DISTINCT?
+---------------------
+DISTINCT removes duplicate values from the result.
+
+
+Q6. Difference between WHERE and HAVING?
+----------------------------------------
+WHERE filters rows.
+
+HAVING filters groups after GROUP BY.
+
+
+Q7. What is GROUP BY?
+---------------------
+GROUP BY groups rows having common values.
+
+
+Q8. What is LIKE?
+-----------------
+LIKE performs pattern matching.
+
+
+Q9. What is the difference between % and _ in LIKE?
+----------------------------------------------------
+% represents zero or more characters.
+
+_ represents one character.
+
+
+Q10. What is IN?
+----------------
+IN checks whether a value matches one of several specified
+values.
+
+
+Q11. What is BETWEEN?
+---------------------
+BETWEEN checks whether a value lies within a specified range.
+
+
+Q12. How do you check NULL?
+---------------------------
+Use:
+
+    IS NULL
+
+or:
+
+    IS NOT NULL
+
+
+Q13. What is INSERT?
+--------------------
+INSERT adds records.
+
+
+Q14. What is UPDATE?
+--------------------
+UPDATE modifies existing records.
+
+
+Q15. What is DELETE?
+--------------------
+DELETE removes records.
+
+
+================================================================
+28.26 QUICK REVISION
+================================================================
+
+SQL
+ ↓
+Database Query Language
+
+SELECT
+ ↓
+Read data
+
+WHERE
+ ↓
+Filter rows
+
+ORDER BY
+ ↓
+Sort data
+
+DISTINCT
+ ↓
+Remove duplicate results
+
+GROUP BY
+ ↓
+Create groups
+
+HAVING
+ ↓
+Filter groups
+
+INSERT
+ ↓
+Add data
+
+UPDATE
+ ↓
+Modify data
+
+DELETE
+ ↓
+Remove data
+
+LIKE
+ ↓
+Pattern matching
+
+IN
+ ↓
+Multiple possible values
+
+BETWEEN
+ ↓
+Range
+
+IS NULL
+ ↓
+Missing value
+
+
+================================================================
+28.27 QA JOB-READY CHECKLIST
+================================================================
+
+Before moving ahead, you should be able to:
+
+    [✓] Explain SQL
+    [✓] Write SELECT queries
+    [✓] Filter using WHERE
+    [✓] Use AND / OR
+    [✓] Sort using ORDER BY
+    [✓] Remove duplicates using DISTINCT
+    [✓] Group data using GROUP BY
+    [✓] Filter groups using HAVING
+    [✓] Insert test data
+    [✓] Update test data safely
+    [✓] Delete test data safely
+    [✓] Search using LIKE
+    [✓] Filter using IN
+    [✓] Filter ranges using BETWEEN
+    [✓] Handle NULL correctly
+    [✓] Validate UI data against database data
+    [✓] Explain SQL testing scenarios in interviews
+
+
+================================================================
+CHAPTER 28 — FINAL TAKEAWAY
+================================================================
+
+For a QA Engineer, SQL is not about becoming a database
+administrator.
+
+The important goal is:
+
+        APPLICATION
+             ↓
+        DATA CREATED
+             ↓
+        DATABASE
+             ↓
+        SQL QUERY
+             ↓
+        VERIFY DATA
+             ↓
+        EXPECTED vs ACTUAL
+             ↓
+        PASS / DEFECT
+
+
+Strong SQL skills allow a tester to verify what is happening
+behind the application's UI.
+
+================================================================
+
+NEXT → CHAPTER 29: ADVANCED SQL
+
+Topics:
+• JOINs
+• Self JOIN
+• Subqueries
+• Aggregate Functions
+• CASE
+• Views
+• Indexes
+• Transactions
+================================================================

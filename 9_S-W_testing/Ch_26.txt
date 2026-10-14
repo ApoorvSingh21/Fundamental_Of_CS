@@ -1,0 +1,1519 @@
+Worked for 4s
+
+======================================================================
+       SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+                         CHAPTER 26
+                    MOBILE TEST SCENARIOS
+======================================================================
+
+SOURCE:
+A_Overview.txt — Phase 8: Mobile Application Testing
+
+CHAPTER GOAL
+------------
+Learn the major real-world scenarios that a QA Engineer must
+test in mobile applications.
+
+TOPICS
+------
+26.1   Installation
+26.2   Uninstallation
+26.3   Upgrade
+26.4   Permissions
+26.5   Notifications
+26.6   Network Changes
+26.7   Battery
+26.8   Orientation
+26.9   Screen Sizes
+26.10  Interruptions
+26.11  Offline Mode
+26.12  App Background/Foreground
+
+
+======================================================================
+26.1 INSTALLATION
+======================================================================
+
+Installation testing verifies that the mobile application
+can be installed and launched correctly.
+
+Basic flow:
+
+    Download
+       ↓
+    Install
+       ↓
+    Launch
+       ↓
+    First-time setup
+       ↓
+    Application ready
+
+
+TEST SCENARIOS
+--------------
+
+[1] Fresh installation
+
+    Verify:
+        • Application installs successfully.
+        • Installation does not fail unexpectedly.
+        • Application icon is available.
+        • Application launches successfully.
+
+
+[2] First launch
+
+    Verify:
+        • Splash screen
+        • Welcome screen
+        • Login/registration
+        • Initial configuration
+        • Permission requests
+
+
+[3] Installation with required permissions
+
+    Verify that the application requests only the
+    permissions required by its functionality.
+
+
+[4] Installation failure handling
+
+    If installation fails, verify that the user receives
+    an appropriate indication according to requirements.
+
+
+--------------------------------------------------------------
+EXAMPLE TEST CASE
+--------------------------------------------------------------
+
+TEST:
+
+    Verify successful application installation.
+
+
+STEPS:
+
+    1. Download the application.
+    2. Install it.
+    3. Launch it.
+    4. Observe the first screen.
+
+
+EXPECTED:
+
+    Application installs and launches successfully.
+
+
+POSSIBLE DEFECT:
+
+    Application installs successfully but crashes
+    immediately after launch.
+
+
+======================================================================
+26.2 UNINSTALLATION
+======================================================================
+
+Uninstallation testing verifies that the application can
+be removed correctly.
+
+TEST SCENARIOS
+--------------
+
+    • Uninstall application.
+    • Verify application is removed.
+    • Reinstall application.
+    • Verify first-launch behavior.
+    • Verify stored state according to requirements.
+
+
+Example:
+
+    Install
+       ↓
+    Use application
+       ↓
+    Uninstall
+       ↓
+    Reinstall
+       ↓
+    Verify behavior
+
+
+Important question:
+
+    What should happen to application data after
+    uninstallation and reinstallation?
+
+
+The answer depends on the application's requirements
+and platform behavior.
+
+
+--------------------------------------------------------------
+TEST CASE
+--------------------------------------------------------------
+
+STEPS:
+
+    1. Install application.
+    2. Login.
+    3. Perform normal operations.
+    4. Uninstall application.
+    5. Reinstall application.
+    6. Launch.
+
+
+VERIFY:
+
+    • Installation succeeds.
+    • Application starts correctly.
+    • State/data behaves according to requirements.
+
+
+======================================================================
+26.3 UPGRADE
+======================================================================
+
+Upgrade testing verifies behavior when an existing
+application version is replaced with a newer version.
+
+
+Example:
+
+    Version 1.0
+        ↓
+    Upgrade
+        ↓
+    Version 2.0
+
+
+The tester should verify that the application continues
+to work correctly after the upgrade.
+
+
+TEST SCENARIOS
+--------------
+
+    • Upgrade from previous version.
+    • Verify application launches.
+    • Verify existing user data.
+    • Verify login/session behavior where applicable.
+    • Verify existing functionality.
+    • Verify new functionality.
+    • Verify important application state.
+
+
+--------------------------------------------------------------
+EXAMPLE
+--------------------------------------------------------------
+
+Before upgrade:
+
+    User has:
+        • Profile
+        • Saved preferences
+        • Application data
+
+
+After upgrade:
+
+    Verify that the application handles the existing
+    state correctly according to requirements.
+
+
+Possible defect:
+
+    User upgrades the application and saved application
+    data unexpectedly disappears.
+
+
+======================================================================
+26.4 PERMISSIONS
+======================================================================
+
+Mobile applications may request access to device
+capabilities.
+
+Examples:
+
+    • Camera
+    • Microphone
+    • Location
+    • Notifications
+    • Photos/files
+
+
+Permission testing should cover both:
+
+    ALLOW
+
+and:
+
+    DENY
+
+
+--------------------------------------------------------------
+PERMISSION FLOW
+--------------------------------------------------------------
+
+Application
+    ↓
+Requests permission
+    ↓
+    +----------------+
+    |                |
+  ALLOW             DENY
+    |                |
+    ↓                ↓
+Feature works     Application handles
+as expected       denial correctly
+
+
+--------------------------------------------------------------
+TEST SCENARIO — CAMERA
+--------------------------------------------------------------
+
+Requirement:
+
+    User can capture a profile photo.
+
+
+TEST:
+
+    1. Open profile.
+    2. Select change photo.
+    3. Camera permission appears.
+    4. Select Allow.
+    5. Capture photo.
+
+
+EXPECTED:
+
+    Camera opens and photo can be captured.
+
+
+--------------------------------------------------------------
+DENY SCENARIO
+--------------------------------------------------------------
+
+    1. Open profile.
+    2. Select change photo.
+    3. Select Deny.
+    4. Continue using the application.
+
+
+EXPECTED:
+
+    Application handles denied permission correctly.
+
+
+POSSIBLE DEFECT:
+
+    Application crashes after permission is denied.
+
+
+--------------------------------------------------------------
+IMPORTANT PERMISSION CASES
+--------------------------------------------------------------
+
+Test:
+
+    • First-time permission request
+    • Allow
+    • Deny
+    • Permission changed later
+    • Feature accessed after denial
+    • Permission-dependent functionality
+
+
+======================================================================
+26.5 NOTIFICATIONS
+======================================================================
+
+Mobile applications may send notifications to users.
+
+Examples:
+
+    • New message
+    • Order update
+    • Payment notification
+    • Reminder
+    • System/application alert
+
+
+Testing should verify both notification delivery and
+the behavior after interacting with the notification.
+
+
+--------------------------------------------------------------
+TEST SCENARIO
+--------------------------------------------------------------
+
+    Application generates notification
+             ↓
+    Notification appears
+             ↓
+    User taps notification
+             ↓
+    Application opens
+             ↓
+    Correct screen displayed
+
+
+VERIFY:
+
+    • Notification appears when expected.
+    • Notification content is correct.
+    • Notification can be opened.
+    • Tapping notification navigates correctly.
+    • Application behaves correctly in foreground.
+    • Application behaves correctly in background.
+
+
+--------------------------------------------------------------
+EXAMPLE
+--------------------------------------------------------------
+
+Requirement:
+
+    When an order is shipped, the user should receive
+    an order notification.
+
+
+Test:
+
+    1. Place order.
+    2. Trigger shipment state.
+    3. Wait for notification.
+    4. Tap notification.
+
+
+Expected:
+
+    Application opens the correct order/shipment page.
+
+
+Possible defect:
+
+    Notification opens the home page instead of
+    the relevant order.
+
+
+======================================================================
+26.6 NETWORK CHANGES
+======================================================================
+
+Mobile network conditions can change during application use.
+
+Examples:
+
+    Wi-Fi
+      ↓
+    Mobile Data
+
+
+    Connected
+      ↓
+    Disconnected
+
+
+    Strong network
+      ↓
+    Weak network
+
+
+The application should handle supported network changes
+appropriately.
+
+
+--------------------------------------------------------------
+IMPORTANT TEST SCENARIOS
+--------------------------------------------------------------
+
+[1] Wi-Fi → Mobile Data
+
+[2] Mobile Data → Wi-Fi
+
+[3] Network connected → disconnected
+
+[4] Network disconnected → connected
+
+[5] Weak network
+
+[6] Network change while API request is executing
+
+[7] Network recovery
+
+
+--------------------------------------------------------------
+EXAMPLE
+--------------------------------------------------------------
+
+User is submitting an order.
+
+    Submit
+      ↓
+    Network lost
+      ↓
+    Request interrupted
+
+
+Verify:
+
+    • Application state
+    • Error message
+    • Retry behavior
+    • Duplicate submission behavior
+    • Data handling
+
+
+--------------------------------------------------------------
+POSSIBLE DEFECT
+--------------------------------------------------------------
+
+User taps:
+
+    "Pay"
+
+Network becomes unavailable.
+
+Application displays:
+
+    "Payment failed"
+
+but the backend actually completed the payment.
+
+This type of scenario requires careful validation of
+application behavior and transaction state.
+
+
+======================================================================
+26.7 BATTERY
+======================================================================
+
+Mobile applications operate on battery-powered devices.
+
+Battery-related testing verifies that application behavior
+remains appropriate under relevant battery conditions.
+
+
+TEST SCENARIOS
+--------------
+
+    • Normal battery
+    • Low battery
+    • Charging
+    • Battery-saving conditions where relevant
+
+
+Example:
+
+    Battery:
+        100%
+          ↓
+        Normal operation
+
+
+    Battery:
+        Low
+          ↓
+        Application behavior
+
+
+The exact expected behavior depends on requirements.
+
+
+--------------------------------------------------------------
+QA QUESTIONS
+--------------------------------------------------------------
+
+    • Does the application remain stable?
+    • Does an active operation behave correctly?
+    • Does the application handle low-battery conditions?
+    • Does application behavior change unexpectedly?
+
+
+The goal is not simply to test "battery percentage";
+it is to verify application behavior under realistic
+device conditions.
+
+
+======================================================================
+26.8 ORIENTATION
+======================================================================
+
+Mobile devices can commonly operate in:
+
+    PORTRAIT
+
+and:
+
+    LANDSCAPE
+
+
+Orientation testing verifies that the application handles
+supported orientation changes correctly.
+
+
+--------------------------------------------------------------
+TEST FLOW
+--------------------------------------------------------------
+
+    Open screen
+       ↓
+    Enter data
+       ↓
+    Rotate device
+       ↓
+    Continue
+
+
+VERIFY:
+
+    • Layout
+    • Text
+    • Buttons
+    • Images
+    • Form fields
+    • Entered data
+    • Navigation
+    • Application state
+
+
+--------------------------------------------------------------
+EXAMPLE
+--------------------------------------------------------------
+
+User enters:
+
+    Name:
+        Apoorv
+
+    Email:
+        user@example.com
+
+
+Then:
+
+    Rotate device
+
+
+Expected:
+
+    Entered information remains available according
+    to application requirements.
+
+
+Possible defect:
+
+    All entered form data disappears after rotation.
+
+
+======================================================================
+26.9 SCREEN SIZES
+======================================================================
+
+Mobile devices have different screen sizes.
+
+Testing should verify that important application
+functionality remains usable across supported screen sizes.
+
+
+Consider:
+
+    Small screen
+       ↓
+    Medium screen
+       ↓
+    Large screen
+
+
+VERIFY:
+
+    • Text
+    • Images
+    • Buttons
+    • Forms
+    • Menus
+    • Navigation
+    • Dialogs
+    • Tables/content where applicable
+
+
+--------------------------------------------------------------
+COMMON SCREEN-SIZE DEFECTS
+--------------------------------------------------------------
+
+    • Text gets cut off.
+    • Button becomes inaccessible.
+    • Image overlaps text.
+    • Menu is partially hidden.
+    • Content extends outside screen.
+    • Horizontal scrolling appears unexpectedly.
+    • Form fields overlap.
+
+
+--------------------------------------------------------------
+EXAMPLE
+--------------------------------------------------------------
+
+Requirement:
+
+    "Checkout button must always be accessible."
+
+
+Test on:
+
+    Small screen
+    Medium screen
+    Large screen
+
+
+Possible result:
+
+    Small screen → FAIL
+    Medium screen → PASS
+    Large screen → PASS
+
+
+This may indicate a responsive/layout defect.
+
+
+======================================================================
+26.10 INTERRUPTIONS
+======================================================================
+
+Mobile applications can be interrupted by external events.
+
+Examples:
+
+    • Phone call
+    • Message
+    • Notification
+    • System dialog
+    • Switching to another application
+
+
+Interruption testing verifies how the application
+recovers from these events.
+
+
+--------------------------------------------------------------
+PHONE CALL SCENARIO
+--------------------------------------------------------------
+
+    User filling form
+         ↓
+    Incoming call
+         ↓
+    User answers call
+         ↓
+    User returns to application
+         ↓
+    Continue work
+
+
+VERIFY:
+
+    • Current screen
+    • Entered data
+    • Application state
+    • Session
+    • Navigation
+
+
+--------------------------------------------------------------
+NOTIFICATION INTERRUPTION
+--------------------------------------------------------------
+
+    User is using application
+         ↓
+    Notification appears
+         ↓
+    User interacts with notification
+         ↓
+    Returns to application
+
+
+Verify that application state behaves correctly.
+
+
+--------------------------------------------------------------
+POSSIBLE DEFECT
+--------------------------------------------------------------
+
+User enters payment details.
+
+An incoming call occurs.
+
+After returning:
+
+    Payment form is reset.
+
+If requirements expect the state to be preserved,
+this is a defect.
+
+
+======================================================================
+26.11 OFFLINE MODE
+======================================================================
+
+Offline testing verifies application behavior when
+network connectivity is unavailable.
+
+
+Basic flow:
+
+    Online
+      ↓
+    Network lost
+      ↓
+    Offline
+      ↓
+    User performs operation
+      ↓
+    Application handles condition
+      ↓
+    Network restored
+      ↓
+    Recovery
+
+
+The expected behavior depends on application requirements.
+
+
+--------------------------------------------------------------
+POSSIBLE OFFLINE BEHAVIORS
+--------------------------------------------------------------
+
+An application may:
+
+    • Show an offline message.
+    • Disable network-dependent functionality.
+    • Allow offline functionality.
+    • Queue an operation.
+    • Allow retry.
+    • Synchronize after reconnection.
+
+
+A QA Engineer should verify the specified behavior
+rather than assuming which behavior is correct.
+
+
+--------------------------------------------------------------
+OFFLINE TEST CASE
+--------------------------------------------------------------
+
+STEPS:
+
+    1. Open application.
+    2. Login if applicable.
+    3. Disable network.
+    4. Perform a network-dependent operation.
+
+
+VERIFY:
+
+    • Error handling
+    • User message
+    • Application stability
+    • Data handling
+    • Retry behavior
+
+
+Then:
+
+    5. Restore network.
+    6. Retry operation.
+
+
+VERIFY:
+
+    • Recovery
+    • Correct result
+    • No unexpected duplicate operation
+
+
+======================================================================
+26.12 APP BACKGROUND / FOREGROUND
+======================================================================
+
+A mobile application frequently moves between
+foreground and background states.
+
+
+Example:
+
+    Application
+         ↓
+    FOREGROUND
+         ↓
+    User opens another app
+         ↓
+    BACKGROUND
+         ↓
+    User returns
+         ↓
+    FOREGROUND
+
+
+Testing verifies whether the application preserves
+the expected state.
+
+
+--------------------------------------------------------------
+TEST SCENARIOS
+--------------------------------------------------------------
+
+[1] Simple background/foreground
+
+    Open application
+        ↓
+    Move to background
+        ↓
+    Return
+
+
+[2] Background for longer duration
+
+    Open application
+        ↓
+    Background
+        ↓
+    Wait
+        ↓
+    Return
+
+
+[3] Background during form entry
+
+    Enter data
+        ↓
+    Background
+        ↓
+    Return
+
+
+[4] Background during network operation
+
+    Start operation
+        ↓
+    Background
+        ↓
+    Return
+
+
+VERIFY:
+
+    • Current screen
+    • User data
+    • Session
+    • Navigation
+    • Pending operation
+    • Application stability
+
+
+--------------------------------------------------------------
+POSSIBLE DEFECT
+--------------------------------------------------------------
+
+User is filling a registration form.
+
+    ↓
+
+Application goes to background.
+
+    ↓
+
+User returns.
+
+    ↓
+
+Application unexpectedly returns to login
+and loses the form data.
+
+
+If this violates the expected behavior,
+report the issue.
+
+
+======================================================================
+26.13 COMPLETE MOBILE TEST SCENARIO MATRIX
+======================================================================
+
+    ---------------------------------------------------------------
+    Scenario             What to Verify
+    ---------------------------------------------------------------
+
+    Installation         Install + launch
+
+    Uninstallation       Remove + reinstall behavior
+
+    Upgrade              Existing state + new version
+
+    Permissions          Allow + deny behavior
+
+    Notifications        Delivery + navigation
+
+    Network Changes      Connectivity transitions
+
+    Battery              Behavior under battery conditions
+
+    Orientation          Portrait + landscape
+
+    Screen Sizes         UI + usability
+
+    Interruptions        Recovery after external events
+
+    Offline Mode         Error handling + recovery
+
+    Background           State preservation
+
+    Foreground           Correct return behavior
+
+    ---------------------------------------------------------------
+
+
+======================================================================
+26.14 END-TO-END MOBILE TESTING EXAMPLE
+======================================================================
+
+SCENARIO:
+
+    E-commerce mobile application.
+
+
+STEP 1 — INSTALL
+-----------------
+
+Install application.
+
+Verify launch.
+
+
+STEP 2 — PERMISSION
+-------------------
+
+Application requests notification permission.
+
+Test:
+
+    Allow
+    Deny
+
+
+STEP 3 — LOGIN
+--------------
+
+Login with valid credentials.
+
+
+STEP 4 — SCREEN SIZE
+--------------------
+
+Verify product screen on supported screen sizes.
+
+
+STEP 5 — ORIENTATION
+--------------------
+
+Rotate:
+
+    Portrait → Landscape
+
+
+Verify application state.
+
+
+STEP 6 — NETWORK
+----------------
+
+Disable network.
+
+Try to load product.
+
+
+Verify expected offline behavior.
+
+
+STEP 7 — RESTORE NETWORK
+------------------------
+
+Enable network.
+
+Retry operation.
+
+
+STEP 8 — BACKGROUND
+-------------------
+
+Move application to background.
+
+
+STEP 9 — NOTIFICATION
+---------------------
+
+Receive notification.
+
+
+STEP 10 — FOREGROUND
+--------------------
+
+Return to application.
+
+
+Verify:
+
+    • Correct screen
+    • Correct state
+    • Correct data
+    • No unexpected crash
+
+
+This represents realistic mobile QA rather than
+testing each feature only under ideal conditions.
+
+
+======================================================================
+26.15 INTERVIEW QUESTIONS
+======================================================================
+
+Q1. What scenarios do you test during mobile application
+testing?
+
+Answer:
+
+    • Installation
+    • Uninstallation
+    • Upgrade
+    • Permissions
+    • Notifications
+    • Network changes
+    • Battery
+    • Orientation
+    • Screen sizes
+    • Interruptions
+    • Offline mode
+    • Background/foreground
+
+
+Q2. What do you test during application installation?
+
+Answer:
+
+    • Successful installation
+    • Launch
+    • Initial screen
+    • Permission flow
+    • First-time behavior
+
+
+Q3. What is upgrade testing?
+
+Answer:
+
+Upgrade testing verifies that an existing application
+continues to behave correctly when upgraded to a newer
+version.
+
+
+Q4. What happens if a user denies a permission?
+
+Answer:
+
+The application should handle the denial according to
+requirements and should not unexpectedly crash.
+
+
+Q5. What is interruption testing?
+
+Answer:
+
+It verifies application behavior when events such as
+calls, notifications, or system events interrupt the
+application.
+
+
+Q6. What is offline testing?
+
+Answer:
+
+It verifies application behavior when network connectivity
+is unavailable.
+
+
+Q7. What do you test after restoring the network?
+
+Answer:
+
+    • Recovery
+    • Retry
+    • Data consistency
+    • Successful operation
+    • Duplicate-operation behavior where relevant
+
+
+Q8. Why is orientation testing important?
+
+Answer:
+
+Because users may rotate their devices, and the application
+must handle supported orientation changes without incorrect
+layout, lost state, or broken functionality.
+
+
+Q9. What is background/foreground testing?
+
+Answer:
+
+It verifies that the application behaves correctly when
+moved into the background and later returned to the
+foreground.
+
+
+Q10. What information should be recorded for a mobile defect?
+
+Answer:
+
+    • Device
+    • OS
+    • Application version
+    • Relevant network condition
+    • Steps
+    • Expected result
+    • Actual result
+    • Screenshot/video where useful
+
+
+======================================================================
+26.16 INTERVIEW SCENARIO
+======================================================================
+
+INTERVIEWER:
+
+    "What would you test if the network goes off while
+     a user is making a payment?"
+
+
+STRONG ANSWER:
+
+    "I would verify the application's handling of network
+     loss, including the message shown to the user, the
+     state of the transaction, retry behavior, and recovery
+     after the network is restored.
+
+     I would also verify that the application does not
+     accidentally create a duplicate transaction when the
+     user retries."
+
+
+This demonstrates:
+
+    • Mobile testing knowledge
+    • Negative testing
+    • Network testing
+    • Data/transaction awareness
+    • Recovery testing
+
+
+======================================================================
+26.17 SAMPLE MOBILE BUG REPORT
+======================================================================
+
+BUG TITLE
+---------
+
+    Registration form data is lost after application
+    returns from background
+
+
+ENVIRONMENT
+-----------
+
+    Platform:
+        Mobile
+
+    Device:
+        Supported device
+
+    OS:
+        Relevant OS version
+
+    Application:
+        Relevant application version
+
+
+PRECONDITION
+------------
+
+    Registration form is open.
+
+
+STEPS
+-----
+
+    1. Open registration form.
+    2. Enter required information.
+    3. Move application to background.
+    4. Return to application.
+
+
+EXPECTED
+--------
+
+    Entered information should behave according to
+    the specified background/foreground requirement.
+
+
+ACTUAL
+------
+
+    Entered information is lost.
+
+
+EVIDENCE
+--------
+
+    • Screenshot
+    • Screen recording
+    • Device information
+    • OS version
+    • Application version
+
+
+======================================================================
+26.18 MOBILE TESTING MINDSET
+======================================================================
+
+Do not test only:
+
+    "Does the feature work?"
+
+
+Also ask:
+
+    "What happens when the mobile environment changes?"
+
+
+Examples:
+
+    Feature works
+         ↓
+    Rotate device
+         ↓
+    Does it still work?
+
+
+    Feature works
+         ↓
+    Network lost
+         ↓
+    Does it recover correctly?
+
+
+    Feature works
+         ↓
+    Application backgrounded
+         ↓
+    Is state preserved?
+
+
+    Feature works
+         ↓
+    Permission denied
+         ↓
+    Does application handle it correctly?
+
+
+    Feature works
+         ↓
+    Incoming call
+         ↓
+    Can the user continue?
+
+
+This mindset is essential for strong mobile QA.
+
+
+======================================================================
+26.19 QUICK REVISION
+======================================================================
+
+INSTALLATION
+    → Can the app install and launch?
+
+
+UNINSTALLATION
+    → Can it be removed and reinstalled correctly?
+
+
+UPGRADE
+    → Does existing state behave correctly after upgrade?
+
+
+PERMISSIONS
+    → What happens when permission is allowed or denied?
+
+
+NOTIFICATIONS
+    → Does notification appear and navigate correctly?
+
+
+NETWORK CHANGES
+    → Does the application handle connectivity changes?
+
+
+BATTERY
+    → Does the application behave appropriately under
+      relevant battery conditions?
+
+
+ORIENTATION
+    → Does portrait/landscape work correctly?
+
+
+SCREEN SIZES
+    → Is the application usable across supported screens?
+
+
+INTERRUPTIONS
+    → Does the application recover from calls,
+      notifications, etc.?
+
+
+OFFLINE MODE
+    → Does the application handle no network correctly?
+
+
+BACKGROUND/FOREGROUND
+    → Is application state handled correctly?
+
+
+======================================================================
+26.20 JOB-READY CHECKLIST
+======================================================================
+
+[ ] Test fresh installation.
+
+[ ] Test first launch.
+
+[ ] Test uninstallation.
+
+[ ] Test reinstall behavior.
+
+[ ] Test application upgrade.
+
+[ ] Test existing data after upgrade.
+
+[ ] Test permissions.
+
+[ ] Test permission denial.
+
+[ ] Test notifications.
+
+[ ] Test notification navigation.
+
+[ ] Test Wi-Fi/mobile-data changes.
+
+[ ] Test network loss.
+
+[ ] Test network recovery.
+
+[ ] Test relevant battery conditions.
+
+[ ] Test portrait mode.
+
+[ ] Test landscape mode.
+
+[ ] Test different supported screen sizes.
+
+[ ] Test incoming-call interruption.
+
+[ ] Test notification interruption.
+
+[ ] Test application switching.
+
+[ ] Test offline mode.
+
+[ ] Test online recovery.
+
+[ ] Test background state.
+
+[ ] Test foreground recovery.
+
+[ ] Verify application state after interruptions.
+
+[ ] Record device and OS details.
+
+[ ] Create environment-specific bug reports.
+
+[ ] Collect screenshots/video evidence when useful.
+
+[ ] Test realistic combinations rather than only
+    ideal conditions.
+
+
+======================================================================
+CHAPTER 26 — FINAL TAKEAWAY
+======================================================================
+
+A mobile QA Engineer must test both:
+
+    APPLICATION FUNCTIONALITY
+
+and:
+
+    MOBILE ENVIRONMENT BEHAVIOR
+
+
+The complete mindset is:
+
+    INSTALL
+       ↓
+    USE
+       ↓
+    CHANGE PERMISSION
+       ↓
+    CHANGE NETWORK
+       ↓
+    ROTATE DEVICE
+       ↓
+    CHANGE SCREEN/DEVICE
+       ↓
+    RECEIVE NOTIFICATION
+       ↓
+    GET INTERRUPTED
+       ↓
+    GO OFFLINE
+       ↓
+    BACKGROUND
+       ↓
+    FOREGROUND
+       ↓
+    VERIFY STATE
+
+
+The goal is to ensure that the application remains
+correct, stable, and usable under realistic mobile
+conditions defined by the product requirements.
+
+======================================================================
+END OF CHAPTER 26
+
+NEXT → CHAPTER 27: DATABASE FUNDAMENTALS
+         • What is a Database?
+         • DBMS
+         • RDBMS
+         • Tables
+         • Rows
+         • Columns
+         • Primary Key
+         • Foreign Key
+         • Constraints
+         • Relationships
+======================================================================
+
+Source coverage for Chapter 26: the attached syllabus explicitly lists these 12 scenarios: Installation, Uninstallation, Upgrade, Permissions, Notifications, Network Changes, Battery, Orientation, Screen Sizes, Interruptions, Offline Mode, and App Background/Foreground. 

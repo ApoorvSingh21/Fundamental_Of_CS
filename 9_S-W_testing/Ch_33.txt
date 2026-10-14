@@ -1,0 +1,1288 @@
+=======================================================================
+        SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+=======================================================================
+
+                         CHAPTER 33
+                         POSTMAN
+=======================================================================
+
+OBJECTIVE
+---------
+Learn how to use Postman for API testing, organize API requests,
+manage environments and variables, validate responses, automate
+API checks, execute collections, and run them from the command line
+using Newman.
+
+SOURCE TOPICS
+-------------
+• Installing Postman
+• Collections
+• Environments
+• Variables
+• Headers
+• Authentication
+• Request Body
+• Sending Requests
+• Inspecting Responses
+• Response Validation
+• Tests
+• Pre-request Scripts
+• Collection Runner
+• Newman
+
+
+=======================================================================
+33.1 WHAT IS POSTMAN?
+=======================================================================
+
+Postman is a tool used to work with and test APIs.
+
+For a QA Engineer, Postman is mainly useful for:
+
+    • Sending API requests
+    • Inspecting API responses
+    • Testing different HTTP methods
+    • Testing headers
+    • Testing authentication
+    • Testing request bodies
+    • Validating response data
+    • Creating reusable API collections
+    • Running multiple API requests
+    • Automating API checks
+
+Instead of depending only on the application's UI, a tester can
+directly communicate with the backend API.
+
+Example:
+
+    UI
+     |
+     v
+    Login Page
+     |
+     v
+    POST /login
+     |
+     v
+    Backend API
+     |
+     v
+    Database
+
+
+With Postman, we can directly test:
+
+    POST https://example.com/api/login
+
+
+=======================================================================
+33.2 WHY POSTMAN IS USED
+=======================================================================
+
+Suppose an application has:
+
+    POST /login
+    GET  /users
+    GET  /users/{id}
+    POST /users
+    PUT  /users/{id}
+    DELETE /users/{id}
+
+A tester can test all these APIs directly.
+
+Advantages:
+
+    1. Test APIs without UI
+    2. Quickly send requests
+    3. Inspect complete responses
+    4. Test positive scenarios
+    5. Test negative scenarios
+    6. Test authentication
+    7. Validate response data
+    8. Organize requests
+    9. Execute multiple requests
+   10. Automate API checks
+
+
+=======================================================================
+33.3 POSTMAN BASIC WORKFLOW
+=======================================================================
+
+Typical workflow:
+
+    Open Postman
+         |
+         v
+    Create request
+         |
+         v
+    Select HTTP method
+         |
+         v
+    Enter URL
+         |
+         v
+    Add parameters
+         |
+         v
+    Add headers
+         |
+         v
+    Add authentication
+         |
+         v
+    Add request body
+         |
+         v
+    Send request
+         |
+         v
+    Inspect response
+         |
+         v
+    Validate response
+         |
+         v
+    Save request
+         |
+         v
+    Add to Collection
+         |
+         v
+    Automate / Run collection
+
+
+=======================================================================
+33.4 INSTALLING POSTMAN
+=======================================================================
+
+Postman can be installed as a desktop application.
+
+Basic process:
+
+    1. Download Postman
+    2. Install it
+    3. Open Postman
+    4. Create/open a workspace
+    5. Create an API request
+
+After opening Postman, the important areas include:
+
+    • Collections
+    • Requests
+    • Environments
+    • Request configuration
+    • Response section
+    • Test scripts
+
+
+=======================================================================
+33.5 CREATING AND SENDING A REQUEST
+=======================================================================
+
+Example API:
+
+    GET https://example.com/api/users
+
+
+Steps:
+
+    1. Open a new request
+    2. Select GET
+    3. Enter URL
+    4. Click Send
+    5. Inspect response
+
+
+Example:
+
+    Method:
+        GET
+
+    URL:
+        https://example.com/api/users
+
+
+Possible response:
+
+    Status:
+        200 OK
+
+    Body:
+
+    {
+        "users": [
+            {
+                "id": 1,
+                "name": "Apoorv"
+            }
+        ]
+    }
+
+
+The tester should check:
+
+    • Status code
+    • Response body
+    • Response headers
+    • Returned data
+    • Expected behavior
+
+
+=======================================================================
+33.6 POSTMAN COLLECTIONS
+=======================================================================
+
+A Collection is used to organize API requests.
+
+Suppose an application has:
+
+    Authentication APIs
+    User APIs
+    Product APIs
+    Order APIs
+    Payment APIs
+
+
+Instead of keeping requests separately, organize them:
+
+    E-Commerce API
+    |
+    +-- Authentication
+    |     +-- Login
+    |     +-- Logout
+    |
+    +-- Users
+    |     +-- Get Users
+    |     +-- Get User
+    |     +-- Create User
+    |     +-- Update User
+    |
+    +-- Products
+    |     +-- Get Products
+    |     +-- Get Product
+    |
+    +-- Orders
+          +-- Create Order
+          +-- Get Order
+
+
+Benefits:
+
+    • Better organization
+    • Reusability
+    • Easier execution
+    • Easier maintenance
+    • Collection-level testing
+    • Easier sharing with team
+
+
+=======================================================================
+33.7 ENVIRONMENTS
+=======================================================================
+
+The same API may exist in different environments.
+
+For example:
+
+    Development:
+        https://dev.example.com
+
+    Testing:
+        https://test.example.com
+
+    Production:
+        https://example.com
+
+
+Hardcoding URLs into every request creates maintenance problems.
+
+Instead, use an environment variable.
+
+Example:
+
+    {{base_url}}/api/users
+
+
+Development environment:
+
+    base_url = https://dev.example.com
+
+
+Testing environment:
+
+    base_url = https://test.example.com
+
+
+Production environment:
+
+    base_url = https://example.com
+
+
+Now the same request can work with different environments.
+
+
+=======================================================================
+33.8 VARIABLES
+=======================================================================
+
+Variables store values that may change.
+
+Example:
+
+    base_url
+    user_id
+    username
+    password
+    token
+
+
+Instead of:
+
+    https://test.example.com/api/users/101
+
+
+Use:
+
+    {{base_url}}/api/users/{{user_id}}
+
+
+Example variables:
+
+    base_url = https://test.example.com
+    user_id  = 101
+
+
+Request:
+
+    GET {{base_url}}/api/users/{{user_id}}
+
+
+Postman replaces the variables with their configured values.
+
+
+IMPORTANT
+---------
+
+Variables make API collections:
+
+    • Reusable
+    • Maintainable
+    • Environment-independent
+
+
+=======================================================================
+33.9 HEADERS
+=======================================================================
+
+Headers provide additional information about an HTTP request.
+
+Common headers include:
+
+    Content-Type
+    Accept
+    Authorization
+
+
+Example:
+
+    Content-Type: application/json
+
+This tells the server that the request body contains JSON.
+
+
+Example:
+
+    Authorization: Bearer <token>
+
+
+Example:
+
+    Accept: application/json
+
+
+A tester should verify that required headers are correctly supplied.
+
+
+=======================================================================
+33.10 AUTHENTICATION
+=======================================================================
+
+Some APIs require authentication.
+
+Examples include:
+
+    • Token authentication
+    • Bearer token
+    • JWT-based authentication
+
+
+Example:
+
+    Authorization:
+    Bearer eyJhbGciOi...
+
+
+Typical flow:
+
+    1. Send login request
+             |
+             v
+    2. Server authenticates user
+             |
+             v
+    3. Server returns token
+             |
+             v
+    4. Token is used in subsequent requests
+
+
+Example:
+
+    POST /login
+
+Response:
+
+    {
+        "token": "abc123"
+    }
+
+
+Then:
+
+    GET /users
+
+Header:
+
+    Authorization: Bearer abc123
+
+
+Testing scenarios:
+
+    • Valid token
+    • Missing token
+    • Invalid token
+    • Expired token
+    • User without permission
+
+
+=======================================================================
+33.11 REQUEST BODY
+=======================================================================
+
+Some API requests send data to the server.
+
+For example:
+
+    POST /users
+
+
+Request body:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+The tester should verify:
+
+    • Correct fields
+    • Required fields
+    • Data types
+    • Valid values
+    • Invalid values
+    • Missing values
+
+
+Example positive test:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+Example negative test:
+
+    {
+        "name": "",
+        "email": "invalid-email"
+    }
+
+
+Expected behavior should be validated from the API requirements.
+
+
+=======================================================================
+33.12 INSPECTING RESPONSES
+=======================================================================
+
+After clicking SEND, Postman displays the response.
+
+Important response information:
+
+    1. Status code
+    2. Response body
+    3. Response headers
+    4. Response time
+
+
+Example:
+
+    Status:
+        200 OK
+
+    Response:
+
+    {
+        "id": 101,
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+The tester asks:
+
+    • Is the status correct?
+    • Is the response structure correct?
+    • Is the data correct?
+    • Are required fields present?
+    • Is authentication handled correctly?
+    • Is the response behavior correct?
+
+
+=======================================================================
+33.13 RESPONSE VALIDATION
+=======================================================================
+
+Simply receiving a response is not enough.
+
+A QA Engineer must validate the response against expected behavior.
+
+Example:
+
+    Expected status:
+        200
+
+    Actual status:
+        200
+
+    Result:
+        PASS
+
+
+Example:
+
+    Expected status:
+        201
+
+    Actual status:
+        400
+
+    Result:
+        FAIL
+
+
+Response validation may include:
+
+    • Status code
+    • Response body
+    • Required fields
+    • Field values
+    • Data structure
+    • Error response
+    • Authentication behavior
+
+
+Example:
+
+    Expected:
+
+    {
+        "id": 101,
+        "name": "Apoorv"
+    }
+
+
+Actual:
+
+    {
+        "id": 101,
+        "name": "Apoorv"
+    }
+
+
+Result:
+
+    PASS
+
+
+=======================================================================
+33.14 TESTS IN POSTMAN
+=======================================================================
+
+Postman supports tests that can automatically validate API responses.
+
+Conceptually:
+
+    Request
+       |
+       v
+    Server
+       |
+       v
+    Response
+       |
+       v
+    Test
+       |
+       v
+    PASS / FAIL
+
+
+Example validation:
+
+    Check that status code is 200.
+
+Another example:
+
+    Check that response contains a required field.
+
+Tests are useful because they allow repeated validation without
+manually checking every response.
+
+
+Example conceptual test:
+
+    response status should be 200
+
+    response should contain "id"
+
+    response should contain "name"
+
+
+For a collection containing many requests, automated tests become
+especially useful.
+
+
+=======================================================================
+33.15 PRE-REQUEST SCRIPTS
+=======================================================================
+
+A pre-request script runs before the request is sent.
+
+Conceptually:
+
+    Pre-request Script
+            |
+            v
+        Request
+            |
+            v
+        Response
+            |
+            v
+          Tests
+
+
+They can be used for preparing request data.
+
+Examples:
+
+    • Prepare variable values
+    • Generate dynamic request data
+    • Prepare authentication-related values
+    • Set values needed by the request
+
+
+Example concept:
+
+    Generate dynamic value
+           |
+           v
+    Store in variable
+           |
+           v
+    Send request using variable
+
+
+This is useful when request data needs to be prepared automatically.
+
+
+=======================================================================
+33.16 COLLECTION RUNNER
+=======================================================================
+
+Collection Runner allows multiple requests from a collection to be
+executed together.
+
+Suppose we have:
+
+    Login
+    Get User
+    Create User
+    Update User
+    Delete User
+
+
+Instead of manually sending every request:
+
+    Collection Runner
+          |
+          v
+       Login
+          |
+          v
+      Get User
+          |
+          v
+     Create User
+          |
+          v
+     Update User
+          |
+          v
+     Delete User
+
+
+This is useful for:
+
+    • Repeated API testing
+    • Regression testing
+    • Running multiple API requests
+    • Executing API test suites
+
+
+=======================================================================
+33.17 PRACTICAL API TESTING WORKFLOW
+=======================================================================
+
+Suppose we are testing an e-commerce API.
+
+Collection:
+
+    E-Commerce API
+    |
+    +-- Authentication
+    |     +-- Login
+    |
+    +-- Products
+    |     +-- Get Products
+    |     +-- Get Product
+    |
+    +-- Cart
+    |     +-- Add Product
+    |
+    +-- Orders
+          +-- Create Order
+          +-- Get Order
+
+
+STEP 1 — LOGIN
+--------------
+
+Request:
+
+    POST {{base_url}}/login
+
+Body:
+
+    {
+        "username": "apoorv",
+        "password": "password"
+    }
+
+
+Validate:
+
+    • Status
+    • Response
+    • Authentication result
+    • Token
+
+
+STEP 2 — GET PRODUCTS
+---------------------
+
+Request:
+
+    GET {{base_url}}/products
+
+
+Validate:
+
+    • Status code
+    • Product data
+    • Response structure
+
+
+STEP 3 — GET PRODUCT
+--------------------
+
+Request:
+
+    GET {{base_url}}/products/{{product_id}}
+
+
+Validate:
+
+    • Valid product ID
+    • Correct product
+    • Invalid product ID behavior
+
+
+STEP 4 — ADD PRODUCT
+--------------------
+
+Request:
+
+    POST {{base_url}}/cart
+
+Body:
+
+    {
+        "product_id": 101,
+        "quantity": 2
+    }
+
+
+Validate:
+
+    • Authentication
+    • Required fields
+    • Product ID
+    • Quantity
+    • Response
+
+
+STEP 5 — CREATE ORDER
+---------------------
+
+Request:
+
+    POST {{base_url}}/orders
+
+Validate:
+
+    • Authentication
+    • Request data
+    • Status
+    • Order ID
+    • Response
+
+
+=======================================================================
+33.18 POSITIVE AND NEGATIVE API TESTING
+=======================================================================
+
+POSTMAN SHOULD NOT ONLY BE USED FOR HAPPY-PATH TESTING.
+
+Positive testing:
+
+    Valid input
+        |
+        v
+    Expected successful response
+
+
+Examples:
+
+    • Valid login
+    • Valid user ID
+    • Valid request body
+    • Valid authentication token
+
+
+Negative testing:
+
+    Invalid input
+        |
+        v
+    Expected error response
+
+
+Examples:
+
+    • Missing required field
+    • Invalid data
+    • Invalid ID
+    • Invalid authentication
+    • Missing authentication
+    • Invalid request
+
+
+Example:
+
+    POST /users
+
+
+Valid:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+Invalid:
+
+    {
+        "name": "",
+        "email": "wrong"
+    }
+
+
+The tester verifies that the API handles invalid input correctly.
+
+
+=======================================================================
+33.19 NEWMAN
+=======================================================================
+
+Newman is used to run Postman collections from the command line.
+
+Conceptually:
+
+    Postman Collection
+           |
+           v
+         Newman
+           |
+           v
+      API test execution
+           |
+           v
+        Results
+
+
+Why is this important?
+
+Because API tests can be executed as part of automated workflows.
+
+Example flow:
+
+    Developer pushes code
+             |
+             v
+          CI/CD
+             |
+             v
+      Run API tests
+             |
+             v
+          Newman
+             |
+             v
+       Test results
+             |
+             v
+       PASS / FAIL
+
+
+This connects Postman-based API testing with CI/CD.
+
+
+=======================================================================
+33.20 POSTMAN + CI/CD CONCEPT
+=======================================================================
+
+A QA Engineer may create:
+
+    Postman Collection
+          |
+          v
+      API Tests
+          |
+          v
+        Newman
+          |
+          v
+       CI Pipeline
+          |
+          v
+      Test Results
+
+
+This allows API tests to be executed automatically rather than only
+manually from the Postman interface.
+
+
+=======================================================================
+33.21 IMPORTANT POSTMAN TEST SCENARIOS
+=======================================================================
+
+For an API, consider:
+
+    Authentication
+    --------------
+    • Valid credentials
+    • Invalid credentials
+    • Missing credentials
+    • Invalid token
+    • Expired token
+
+    Request
+    -------
+    • Valid request
+    • Invalid request
+    • Missing required field
+    • Incorrect data type
+    • Empty value
+
+    Response
+    --------
+    • Correct status
+    • Correct response body
+    • Required fields
+    • Correct data
+
+    Organization
+    ------------
+    • Collections
+    • Environments
+    • Variables
+
+    Automation
+    ----------
+    • Tests
+    • Pre-request scripts
+    • Collection Runner
+    • Newman
+
+
+=======================================================================
+33.22 COMMON POSTMAN MISTAKES
+=======================================================================
+
+1. Hardcoding environment URLs everywhere
+
+Problem:
+
+    Difficult maintenance.
+
+Better:
+
+    Use variables.
+
+
+2. Testing only successful requests
+
+Problem:
+
+    Bugs in error handling may remain hidden.
+
+Better:
+
+    Test positive and negative scenarios.
+
+
+3. Checking only status code
+
+Problem:
+
+    API can return 200 but contain incorrect data.
+
+Better:
+
+    Validate status + response data + expected behavior.
+
+
+4. Not testing authentication
+
+Problem:
+
+    Security and authorization issues may remain hidden.
+
+Better:
+
+    Test valid, invalid, missing and unauthorized access.
+
+
+5. Keeping requests unorganized
+
+Problem:
+
+    Difficult to maintain large API suites.
+
+Better:
+
+    Use collections and logical organization.
+
+
+=======================================================================
+33.23 INTERVIEW QUESTIONS
+=======================================================================
+
+Q1. What is Postman?
+--------------------
+Postman is a tool used to send API requests, inspect responses,
+validate APIs, organize requests, and execute API tests.
+
+
+Q2. What is a Postman Collection?
+---------------------------------
+A collection is a group of related API requests organized together.
+
+
+Q3. Why are environments used?
+------------------------------
+Environments allow values such as API URLs and other variables to
+change without modifying every request.
+
+
+Q4. What are variables?
+-----------------------
+Variables store reusable values such as:
+
+    base_url
+    user_id
+    token
+
+
+Q5. What is a pre-request script?
+---------------------------------
+A script that executes before the API request is sent and can be used
+to prepare request-related data.
+
+
+Q6. What is the Collection Runner?
+----------------------------------
+It executes multiple requests from a collection together.
+
+
+Q7. What is Newman?
+-------------------
+Newman is used to execute Postman collections from the command line.
+
+
+Q8. Why is Newman useful in CI/CD?
+-----------------------------------
+It allows Postman API tests to be executed automatically as part of
+an automated pipeline.
+
+
+Q9. What should you validate in an API response?
+------------------------------------------------
+At minimum, validate the expected status and response behavior.
+Depending on the API, also validate response data and required fields.
+
+
+Q10. Why should API testing include negative scenarios?
+--------------------------------------------------------
+To verify that the API handles invalid input, missing data,
+authentication failures, and other invalid conditions correctly.
+
+
+=======================================================================
+33.24 QUICK REVISION
+=======================================================================
+
+POSTMAN
+   |
+   +-- Create Request
+   |
+   +-- HTTP Method
+   |
+   +-- URL
+   |
+   +-- Parameters
+   |
+   +-- Headers
+   |
+   +-- Authentication
+   |
+   +-- Request Body
+   |
+   +-- Send
+   |
+   +-- Inspect Response
+   |
+   +-- Validate Response
+   |
+   +-- Tests
+   |
+   +-- Pre-request Scripts
+   |
+   +-- Collections
+   |
+   +-- Environments
+   |
+   +-- Variables
+   |
+   +-- Collection Runner
+   |
+   +-- Newman
+
+
+=======================================================================
+33.25 JOB-READY CHECKLIST
+=======================================================================
+
+You should be able to:
+
+[ ] Explain what Postman is
+[ ] Create an API request
+[ ] Select HTTP methods
+[ ] Enter API URLs
+[ ] Add query/path parameters
+[ ] Add headers
+[ ] Add authentication
+[ ] Create request bodies
+[ ] Send API requests
+[ ] Inspect responses
+[ ] Validate status codes
+[ ] Validate response data
+[ ] Create collections
+[ ] Create environments
+[ ] Use variables
+[ ] Write API tests
+[ ] Understand pre-request scripts
+[ ] Run collections
+[ ] Understand Newman
+[ ] Perform positive API testing
+[ ] Perform negative API testing
+[ ] Explain Postman in an interview
+[ ] Explain Postman + Newman + CI/CD
+
+
+=======================================================================
+                         CHAPTER 33 COMPLETE
+=======================================================================
+
+KEY IDEA
+--------
+Postman is not merely a tool for "sending API requests."
+
+A QA Engineer should use it to:
+
+    DESIGN API TESTS
+          +
+    SEND API REQUESTS
+          +
+    VALIDATE RESPONSES
+          +
+    ORGANIZE TESTS
+          +
+    AUTOMATE EXECUTION
+          +
+    CONNECT API TESTING WITH CI/CD
+
+
+NEXT
+----
+CHAPTER 34 — API TEST DESIGN
+
+Topics:
+    • Positive and negative API testing
+    • Schema validation
+    • Data validation
+    • Status-code validation
+    • Response-time validation
+    • Authentication testing
+    • Authorization testing
+    • Error handling
+    • Rate limiting
+    • Pagination
+    • API chaining
+=======================================================================

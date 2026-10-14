@@ -1,0 +1,2331 @@
+======================================================================
+CHAPTER 0 — COMPUTER & INTERNET FUNDAMENTALS
+======================================================================
+
+PURPOSE
+-------
+Before learning APIs, you need to understand the environment in which
+APIs operate.
+
+This chapter builds the foundation for understanding:
+
+    Computer
+       ↓
+    Network
+       ↓
+    Internet
+       ↓
+    Client
+       ↓
+    Server
+       ↓
+    IP Address
+       ↓
+    Port
+       ↓
+    Domain
+       ↓
+    DNS
+       ↓
+    URL / URI
+       ↓
+    Request
+       ↓
+    Response
+
+The syllabus contains:
+
+    0.1  What is a Computer?
+    0.2  Client and Server
+    0.3  Internet
+    0.4  Network
+    0.5  IP Address
+    0.6  Port
+    0.7  MAC Address
+    0.8  Domain Name
+    0.9  DNS
+    0.10 URL
+    0.11 URI
+    0.12 Browser
+    0.13 Web Server
+    0.14 Application Server
+    0.15 Request and Response
+    0.16 Client-Server Architecture
+    0.17 Stateless vs Stateful Communication
+
+The syllabus specifically places Computer & Internet Fundamentals
+before Web Fundamentals and API Fundamentals.
+======================================================================
+
+
+# 0.1 WHAT IS A COMPUTER?
+======================================================================
+
+A computer is an electronic system capable of:
+
+    1. Receiving data
+    2. Processing data
+    3. Storing data
+    4. Producing output
+
+Basic model:
+
+                    +----------------+
+                    |     INPUT      |
+                    +-------+--------+
+                            |
+                            v
+                    +----------------+
+                    |    PROCESS     |
+                    +-------+--------+
+                            |
+                            v
+                    +----------------+
+                    |     OUTPUT     |
+                    +-------+--------+
+                            |
+                            v
+                    +----------------+
+                    |    STORAGE     |
+                    +----------------+
+
+Examples:
+
+    Keyboard  → Input
+    CPU       → Processing
+    Monitor   → Output
+    SSD/HDD   → Storage
+
+
+WHY DOES THIS MATTER FOR APIs?
+------------------------------
+
+An API ultimately runs on computers.
+
+For example:
+
+    Your Phone
+        |
+        | API Request
+        v
+    Internet
+        |
+        v
+    Server Computer
+        |
+        v
+    Application
+        |
+        v
+    Database
+
+Therefore, understanding computers is the first layer of API
+engineering.
+
+
+IMPORTANT COMPONENTS
+--------------------
+
+CPU
+---
+Central Processing Unit.
+
+Responsible for executing instructions.
+
+RAM
+---
+Temporary working memory used while programs are running.
+
+Storage
+-------
+SSD/HDD used for persistent data.
+
+Network Interface
+-----------------
+Allows the computer to communicate over a network.
+
+Operating System
+----------------
+Software that manages hardware and provides an environment for
+applications.
+
+Examples:
+
+    Windows
+    Linux
+    macOS
+    Android
+    iOS
+
+
+APPLICATION
+-----------
+An application is software designed to perform a task.
+
+Examples:
+
+    Chrome
+    WhatsApp
+    Instagram
+    Postman
+    Your API server
+
+
+For API engineering, a typical computer may run:
+
+    Operating System
+          |
+          +-- Web Server
+          |
+          +-- API Application
+          |
+          +-- Database
+          |
+          +-- Cache
+          |
+          +-- Monitoring
+
+
+======================================================================
+# 0.2 CLIENT AND SERVER
+======================================================================
+
+Two extremely important concepts in API engineering are:
+
+    CLIENT
+    SERVER
+
+
+CLIENT
+------
+
+A client is a system/application that requests a service or resource.
+
+Examples:
+
+    Web Browser
+    Mobile App
+    Desktop App
+    Postman
+    curl
+    Another backend service
+
+
+SERVER
+------
+
+A server is a system/application that provides a service or resource
+to a client.
+
+Example:
+
+    Client:
+        Browser
+
+    Server:
+        Web/API server
+
+
+Basic communication:
+
+    CLIENT
+       |
+       | Request
+       v
+    SERVER
+       |
+       | Response
+       v
+    CLIENT
+
+
+Example:
+
+    User opens:
+
+        https://example.com/users
+
+    Browser
+       |
+       | Request
+       v
+    Server
+       |
+       | Response
+       v
+    Browser
+
+
+IMPORTANT
+---------
+
+"Client" and "server" describe roles.
+
+A physical computer can act as:
+
+    Client
+    Server
+    Both
+
+depending on what it is doing.
+
+
+Example:
+
+    Computer A
+       |
+       | Request
+       v
+    Computer B
+
+Computer A = Client
+Computer B = Server
+
+
+But Computer B may itself request data from another server:
+
+    Computer A
+       |
+       v
+    Server B
+       |
+       v
+    Server C
+
+Server B is:
+
+    Server to A
+    Client to C
+
+
+This becomes extremely important in microservices.
+
+
+======================================================================
+# 0.3 INTERNET
+======================================================================
+
+The Internet is a global network of interconnected computer networks.
+
+Conceptually:
+
+    Network
+       |
+       +-------------------+
+       |                   |
+    Network A           Network B
+       |                   |
+    Computers           Computers
+       \                   /
+        \                 /
+         +---------------+
+                |
+            INTERNET
+
+
+The Internet allows computers and networks around the world to
+communicate.
+
+Examples of services operating over the Internet:
+
+    Web
+    Email
+    APIs
+    Video streaming
+    Online gaming
+    Cloud services
+    File transfer
+
+
+IMPORTANT DISTINCTION
+---------------------
+
+Internet != Web
+
+The Internet is the underlying global network infrastructure.
+
+The Web is one service that operates over the Internet.
+
+Other Internet-based services also exist.
+
+
+For APIs, this distinction matters because:
+
+    API
+     ↓
+    often uses HTTP
+     ↓
+    HTTP operates over networking infrastructure
+     ↓
+    networking uses protocols such as TCP/IP
+     ↓
+    communication may occur through the Internet
+
+
+======================================================================
+# 0.4 NETWORK
+======================================================================
+
+A network is a collection of connected devices that can communicate
+with each other.
+
+Example:
+
+    +----------+
+    | Laptop   |
+    +----+-----+
+         |
+         |
+    +----+-----+
+    | Router   |
+    +----+-----+
+         |
+    +----+-----+
+    | Phone    |
+    +----------+
+
+
+A network can be:
+
+    Small
+    Large
+    Private
+    Public
+    Local
+    Global
+
+
+Examples:
+
+LAN
+---
+Local Area Network.
+
+Example:
+
+    Home network
+    Office network
+    College network
+
+
+WAN
+---
+Wide Area Network.
+
+Connects networks across larger geographical areas.
+
+
+The Internet can be viewed as a massive interconnection of networks.
+
+
+WHY NETWORKING MATTERS FOR APIs
+-------------------------------
+
+An API request is not magic.
+
+When an application communicates with an API:
+
+    Application
+        |
+        v
+    Network
+        |
+        v
+    API Server
+
+The request must travel through networking infrastructure.
+
+
+A simplified path:
+
+    Client
+      |
+      v
+    Local Network
+      |
+      v
+    Router
+      |
+      v
+    ISP / Network
+      |
+      v
+    Internet
+      |
+      v
+    Server Network
+      |
+      v
+    API Server
+
+
+Later, networking concepts will help explain:
+
+    Latency
+    Timeouts
+    Packet loss
+    Load balancing
+    Proxies
+    Reverse proxies
+    TLS
+    API Gateway
+    Distributed systems
+
+
+======================================================================
+# 0.5 IP ADDRESS
+======================================================================
+
+An IP address identifies a network interface/device address used for
+communication on an IP network.
+
+Think of it conceptually as an address used to reach a machine or
+network interface.
+
+Example IPv4 address:
+
+    192.168.1.10
+
+
+Another example:
+
+    203.0.113.10
+
+
+IPv4 has the familiar form:
+
+    A.B.C.D
+
+where each part represents an 8-bit value.
+
+
+IPv6
+----
+
+IPv6 uses a much larger address space.
+
+Example:
+
+    2001:db8::1
+
+
+WHY DOES AN API NEED IP?
+------------------------
+
+Suppose:
+
+    Client
+       |
+       | Request
+       v
+    API Server
+
+The network needs addressing information to determine where traffic
+should go.
+
+Conceptually:
+
+    Client IP
+        |
+        v
+    Network
+        |
+        v
+    Destination IP
+
+
+PUBLIC VS PRIVATE IP
+--------------------
+
+Private IP addresses are commonly used inside private networks.
+
+Example:
+
+    192.168.1.10
+
+Public IP addresses can be used for communication across public
+networks such as the Internet.
+
+
+Example architecture:
+
+    Laptop
+    Private IP:
+        192.168.1.10
+
+          |
+          v
+
+    Router / NAT
+
+          |
+          v
+
+    Public IP
+        x.x.x.x
+
+          |
+          v
+
+       Internet
+
+          |
+          v
+
+    API Server
+
+
+IMPORTANT
+---------
+
+An IP address is not the same thing as a domain name.
+
+Example:
+
+    Domain:
+        example.com
+
+    IP:
+        203.0.113.10
+
+DNS helps map names to network addresses.
+
+
+======================================================================
+# 0.6 PORT
+======================================================================
+
+An IP address identifies a destination on the network.
+
+A PORT helps identify the particular network service/application
+associated with that destination.
+
+Think:
+
+    IP Address = Which machine/network destination?
+    Port       = Which service/application?
+
+
+Example:
+
+    192.168.1.10:8080
+
+Here:
+
+    192.168.1.10
+        ↓
+    IP address
+
+    8080
+        ↓
+    Port
+
+
+Common ports:
+
+    80      → HTTP
+    443     → HTTPS
+    22      → SSH
+    53      → DNS
+
+
+Example:
+
+    https://example.com:443
+
+
+Conceptual architecture:
+
+    Server Machine
+    IP = 203.0.113.10
+
+       +----------------------+
+       |       SERVER         |
+       |                      |
+       |  Port 22   → SSH     |
+       |  Port 80   → HTTP    |
+       |  Port 443  → HTTPS   |
+       |  Port 8080 → API     |
+       +----------------------+
+
+
+API DEVELOPMENT EXAMPLE
+-----------------------
+
+Suppose you develop a local API:
+
+    http://localhost:8000
+
+Then:
+
+    localhost
+        ↓
+    local machine
+
+    8000
+        ↓
+    port on which the application is listening
+
+
+For example:
+
+    FastAPI application
+            |
+            v
+        Port 8000
+            |
+            v
+    http://localhost:8000
+
+
+IMPORTANT
+---------
+
+A port is not a physical socket.
+
+It is a logical endpoint used by network communication.
+
+
+======================================================================
+# 0.7 MAC ADDRESS
+======================================================================
+
+MAC stands for:
+
+    Media Access Control
+
+
+A MAC address is associated with a network interface and is used at
+the data-link layer of networking.
+
+Example format:
+
+    00:1A:2B:3C:4D:5E
+
+
+Conceptually:
+
+    Network Interface
+           |
+           v
+      MAC Address
+
+
+IP and MAC serve different purposes.
+
+Simplified comparison:
+
+    MAC
+    ↓
+    Local network/interface addressing
+
+    IP
+    ↓
+    Network-layer addressing/routing
+
+
+Example:
+
+    Laptop
+      |
+      +-- Wi-Fi Interface
+              |
+              +-- MAC Address
+              |
+              +-- IP Address
+
+
+WHY API ENGINEERS SHOULD KNOW THIS
+----------------------------------
+
+You generally do not manually use MAC addresses when calling a REST
+API.
+
+However, understanding MAC addresses helps build a foundation for:
+
+    Ethernet
+    Wi-Fi
+    LAN communication
+    ARP
+    Network troubleshooting
+    Network security
+
+
+Do not confuse:
+
+    MAC address
+    IP address
+    Domain name
+    URL
+
+
+They are different concepts.
+
+
+======================================================================
+# 0.8 DOMAIN NAME
+======================================================================
+
+Humans generally prefer meaningful names over numerical addresses.
+
+Instead of remembering:
+
+    203.0.113.10
+
+we can use:
+
+    example.com
+
+
+A domain name is a human-readable name used to identify a domain in
+the DNS system.
+
+
+Example:
+
+    api.example.com
+
+
+Domain structure:
+
+    api.example.com
+    │   │       │
+    │   │       └── Top-level domain
+    │   └────────── Domain
+    └────────────── Subdomain
+
+
+Examples:
+
+    google.com
+    api.example.com
+    payments.example.com
+
+
+For APIs, subdomains are commonly used to separate services:
+
+    api.example.com
+    auth.example.com
+    payments.example.com
+    admin.example.com
+
+
+A domain is NOT the same as an API endpoint.
+
+For example:
+
+    Domain:
+        example.com
+
+    API endpoint:
+        https://example.com/users
+
+
+The endpoint includes much more information.
+
+
+======================================================================
+# 0.9 DNS
+======================================================================
+
+DNS stands for:
+
+    Domain Name System
+
+
+DNS translates domain names into information needed to locate network
+services, commonly including IP addresses.
+
+Humans prefer:
+
+    api.example.com
+
+Networks need addressing information such as:
+
+    IP address
+
+
+Conceptually:
+
+    Client
+       |
+       | "What address is api.example.com?"
+       v
+      DNS
+       |
+       | "Here is the address."
+       v
+    IP address
+       |
+       v
+    API Server
+
+
+Simplified flow:
+
+    User enters:
+
+        https://api.example.com/users
+
+                |
+                v
+
+        DNS lookup
+                |
+                v
+
+        api.example.com
+                |
+                v
+
+        IP address
+                |
+                v
+
+        Server
+                |
+                v
+
+        API
+
+
+IMPORTANT DNS TERMS
+-------------------
+
+DNS Resolver
+------------
+A system that performs DNS resolution on behalf of a client.
+
+DNS Server
+----------
+A server participating in DNS resolution.
+
+DNS Record
+----------
+A piece of DNS information.
+
+Common record types include:
+
+    A
+    AAAA
+    CNAME
+    MX
+    TXT
+
+
+For API engineering, especially important:
+
+    A
+        IPv4 address
+
+    AAAA
+        IPv6 address
+
+    CNAME
+        Alias to another domain name
+
+
+DNS CACHING
+-----------
+
+DNS responses may be cached.
+
+This improves performance and reduces repeated DNS lookups.
+
+DNS becomes important in:
+
+    Cloud deployment
+    Microservices
+    Service discovery
+    CDN
+    Load balancing
+    Failover
+
+
+======================================================================
+# 0.10 URL
+======================================================================
+
+URL stands for:
+
+    Uniform Resource Locator
+
+
+A URL identifies where a resource can be accessed and provides the
+information needed to access it.
+
+
+Example:
+
+    https://api.example.com:443/users/123?active=true#profile
+
+
+Break it down:
+
+    https
+      ↓
+    Scheme
+
+    api.example.com
+      ↓
+    Host
+
+    443
+      ↓
+    Port
+
+    /users/123
+      ↓
+    Path
+
+    ?active=true
+      ↓
+    Query
+
+    #profile
+      ↓
+    Fragment
+
+
+General structure:
+
+    scheme://host:port/path?query#fragment
+
+
+Example:
+
+    https://example.com/users
+
+
+Scheme
+------
+Specifies the protocol/scheme.
+
+Examples:
+
+    http
+    https
+
+
+Host
+----
+Identifies the destination host.
+
+Example:
+
+    example.com
+
+
+Port
+----
+Optional explicit port.
+
+Example:
+
+    :8080
+
+
+Path
+----
+Identifies a path associated with a resource.
+
+Example:
+
+    /users/123
+
+
+Query
+-----
+Provides parameters.
+
+Example:
+
+    ?page=2&limit=10
+
+
+Fragment
+--------
+Identifies a fragment within a representation/document and is normally
+handled by the client rather than sent to the server as part of an
+HTTP request.
+
+
+API EXAMPLE
+-----------
+
+    GET https://api.example.com/products?page=2&limit=20
+
+Here:
+
+    GET
+        HTTP method
+
+    https
+        Scheme
+
+    api.example.com
+        Host
+
+    /products
+        Path
+
+    page=2
+    limit=20
+        Query parameters
+
+
+======================================================================
+# 0.11 URI
+======================================================================
+
+URI stands for:
+
+    Uniform Resource Identifier
+
+
+A URI identifies a resource.
+
+URL is a type of URI that provides location/access information.
+
+For this course, remember the practical relationship:
+
+    URI
+      |
+      +-----------------------------+
+      |                             |
+      |                             |
+    URL                       Other URI forms
+    (location-oriented)
+
+
+Example:
+
+    https://example.com/users/123
+
+This can function as a URL and is also a URI.
+
+
+URL answers approximately:
+
+    "Where/how can I access it?"
+
+URI answers:
+
+    "What resource does this identifier identify?"
+
+
+WHY API ENGINEERS CARE
+----------------------
+
+API design frequently deals with resource identifiers.
+
+Example:
+
+    /users
+    /users/123
+    /orders
+    /orders/456
+    /products/789
+
+
+Good API design requires understanding resource naming and URI
+structure.
+
+
+======================================================================
+# 0.12 BROWSER
+======================================================================
+
+A browser is a client application used to access web resources.
+
+Examples:
+
+    Chrome
+    Firefox
+    Safari
+    Edge
+
+
+When you enter:
+
+    https://example.com
+
+the browser performs many operations behind the scenes.
+
+Simplified:
+
+    User
+      |
+      v
+    Browser
+      |
+      +--> DNS resolution
+      |
+      +--> Network connection
+      |
+      +--> HTTP/HTTPS communication
+      |
+      +--> Server
+      |
+      +<-- Response
+      |
+      v
+    Render/display
+
+
+A browser can act as an API client too.
+
+For example:
+
+    Browser
+       |
+       | GET /users
+       v
+    API Server
+       |
+       | JSON
+       v
+    Browser
+
+
+Other API clients include:
+
+    curl
+    Postman
+    Mobile applications
+    Backend services
+    JavaScript applications
+
+
+======================================================================
+# 0.13 WEB SERVER
+======================================================================
+
+A web server is software responsible for handling web requests and
+serving web content/resources.
+
+Examples include:
+
+    NGINX
+    Apache HTTP Server
+
+
+Conceptually:
+
+    Client
+       |
+       | HTTP Request
+       v
+    Web Server
+       |
+       | Response
+       v
+    Client
+
+
+A web server can:
+
+    Receive HTTP requests
+    Serve static files
+    Terminate TLS
+    Act as a reverse proxy
+    Route traffic
+    Handle connections
+    Forward requests to application servers
+
+
+Example:
+
+    Internet
+       |
+       v
+    NGINX
+       |
+       v
+    Application Server
+       |
+       v
+    Database
+
+
+This architecture is very common in production.
+
+
+======================================================================
+# 0.14 APPLICATION SERVER
+======================================================================
+
+An application server runs application/business logic.
+
+For API development, your API application may run inside an
+application server/runtime environment.
+
+Example:
+
+    Client
+       |
+       v
+    Web Server / Reverse Proxy
+       |
+       v
+    API Application
+       |
+       v
+    Database
+
+
+Suppose you build an API using Python.
+
+Conceptually:
+
+    Request
+       |
+       v
+    NGINX
+       |
+       v
+    Python API Application
+       |
+       v
+    PostgreSQL
+
+
+The API application might perform:
+
+    Authentication
+    Authorization
+    Validation
+    Business logic
+    Database operations
+    Response generation
+
+
+WEB SERVER VS APPLICATION SERVER
+---------------------------------
+
+Web server:
+
+    Primarily handles web-facing HTTP traffic,
+    static content, proxying, connection handling, etc.
+
+Application server/application runtime:
+
+    Executes application/business logic.
+
+
+In modern architectures, the exact terminology and boundaries can vary,
+but the conceptual distinction is important.
+
+
+======================================================================
+# 0.15 REQUEST AND RESPONSE
+======================================================================
+
+This is one of the most important concepts in API engineering.
+
+A client sends a:
+
+    REQUEST
+
+The server sends a:
+
+    RESPONSE
+
+
+Basic model:
+
+    CLIENT
+       |
+       | REQUEST
+       v
+    SERVER
+       |
+       | RESPONSE
+       v
+    CLIENT
+
+
+REQUEST
+-------
+
+A request contains information telling the server what the client
+wants to do.
+
+Conceptually it may contain:
+
+    Method
+    URL/path
+    Headers
+    Body
+
+
+Example:
+
+    GET /users/123 HTTP/1.1
+    Host: api.example.com
+    Accept: application/json
+
+
+RESPONSE
+--------
+
+A response contains the result from the server.
+
+Conceptually it may contain:
+
+    Status code
+    Headers
+    Body
+
+
+Example:
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    {
+        "id": 123,
+        "name": "Apoorv"
+    }
+
+
+Full interaction:
+
+    CLIENT
+       |
+       | GET /users/123
+       |
+       v
+    SERVER
+       |
+       | Find user
+       |
+       | Generate response
+       |
+       v
+    CLIENT
+
+Response:
+
+    200 OK
+    {
+        "id": 123,
+        "name": "Apoorv"
+    }
+
+
+REQUEST/RESPONSE EXAMPLE
+------------------------
+
+Client:
+
+    GET /products/10
+
+Server:
+
+    200 OK
+
+    {
+        "id": 10,
+        "name": "Laptop",
+        "price": 50000
+    }
+
+
+Another example:
+
+Client requests a resource that does not exist:
+
+    GET /products/999999
+
+Server may respond:
+
+    404 Not Found
+
+
+This request/response model is fundamental to REST APIs.
+
+
+======================================================================
+# 0.16 CLIENT-SERVER ARCHITECTURE
+======================================================================
+
+Client-server architecture separates responsibilities between clients
+and servers.
+
+Basic architecture:
+
+                  CLIENT
+                     |
+                     |
+                 REQUEST
+                     |
+                     v
+                  SERVER
+                     |
+                     |
+                 RESPONSE
+                     |
+                     v
+                  CLIENT
+
+
+More realistic API architecture:
+
+    +-------------------+
+    |      Client       |
+    |-------------------|
+    | Browser           |
+    | Mobile App        |
+    | Postman           |
+    +---------+---------+
+              |
+              | HTTP/HTTPS
+              v
+    +-------------------+
+    | Reverse Proxy /   |
+    | Load Balancer     |
+    +---------+---------+
+              |
+              v
+    +-------------------+
+    |    API Server     |
+    |-------------------|
+    | Routing           |
+    | Authentication    |
+    | Business Logic    |
+    | Validation        |
+    +---------+---------+
+              |
+              v
+    +-------------------+
+    |     Database      |
+    +-------------------+
+
+
+Larger architecture:
+
+                 CLIENTS
+                    |
+                    v
+              Load Balancer
+                    |
+                    v
+              API Gateway
+                    |
+          +---------+---------+
+          |         |         |
+          v         v         v
+       User      Order     Payment
+      Service   Service    Service
+          |         |         |
+          +---------+---------+
+                    |
+                    v
+             Databases / Cache
+
+
+This is where basic client-server concepts eventually lead to:
+
+    Microservices
+    API Gateway
+    Load balancing
+    Distributed systems
+    Cloud architecture
+
+
+CLIENT-SERVER SEPARATION
+------------------------
+
+The client should not need to know how the server internally
+implements the service.
+
+For example:
+
+    Client:
+        GET /users/123
+
+The client does not necessarily know whether the server uses:
+
+    PostgreSQL
+    MySQL
+    MongoDB
+    Redis
+    Multiple microservices
+
+The API provides an abstraction boundary.
+
+
+This is one of the major reasons APIs are useful.
+
+
+======================================================================
+# 0.17 STATELESS VS STATEFUL COMMUNICATION
+======================================================================
+
+This distinction is extremely important for API architecture.
+
+
+STATEFUL
+--------
+
+In a stateful interaction, the server maintains information about the
+client/session across requests.
+
+Conceptually:
+
+    Request 1
+       |
+       v
+    Server
+       |
+       | remembers state
+       v
+
+    Request 2
+       |
+       v
+    Same Server
+       |
+       | uses previous state
+       v
+
+
+Example concept:
+
+    Client logs in
+          |
+          v
+    Server creates session
+          |
+          v
+    Server stores session state
+
+
+The next request may depend on the server remembering the previous
+interaction.
+
+
+STATELESS
+---------
+
+In stateless communication, each request contains the information
+needed for the server to process that request, rather than relying on
+server-side conversational state from previous requests.
+
+Conceptually:
+
+    Request 1
+       |
+       v
+    Server
+       |
+       v
+    Response
+
+    Request 2
+       |
+       v
+    Server
+       |
+       v
+    Response
+
+
+Request 2 should contain the required context needed to process it.
+
+
+Example concept:
+
+    Request:
+
+    GET /users/123
+
+    Authorization: Bearer <token>
+
+
+The server can authenticate/authorize the request based on the
+information supplied with the request and its available data.
+
+
+WHY STATELESSNESS MATTERS FOR APIs
+-----------------------------------
+
+Stateless designs can make horizontal scaling easier.
+
+Example:
+
+                 Load Balancer
+                      |
+          +-----------+-----------+
+          |           |           |
+          v           v           v
+       Server A    Server B    Server C
+
+
+If requests are independently processable, a request can generally
+be routed to any suitable server instance.
+
+This is valuable for:
+
+    Horizontal scaling
+    Load balancing
+    High availability
+    Distributed systems
+
+
+STATEFUL PROBLEM
+----------------
+
+Imagine:
+
+    Client A
+       |
+       v
+    Server A
+
+Server A stores client state.
+
+Then:
+
+    Client A
+       |
+       v
+    Server B
+
+If Server B does not have the required state, the request may fail
+unless additional architecture is used.
+
+
+Possible solutions include:
+
+    Session replication
+    Shared session store
+    Sticky sessions
+    Distributed cache
+
+
+STATELESS API MODEL
+-------------------
+
+A simplified stateless API architecture:
+
+                 Load Balancer
+                      |
+          +-----------+-----------+
+          |           |           |
+          v           v           v
+        API-1       API-2       API-3
+          |           |           |
+          +-----------+-----------+
+                      |
+                      v
+                   Database
+                      |
+                      v
+                    Cache
+
+
+This architecture is easier to scale horizontally because API
+instances do not need to keep each client's conversational state
+locally.
+
+
+IMPORTANT
+---------
+
+Stateless does NOT mean:
+
+    "The system stores absolutely no state."
+
+A stateless API can still have:
+
+    Database state
+    Cache
+    Persistent data
+    Authentication data
+
+"Stateless" refers specifically to the server not depending on
+previous request state stored as conversational/session state in a way
+that is required to process the next request.
+
+
+======================================================================
+# COMPLETE CHAPTER 0 FLOW
+======================================================================
+
+Now connect all 17 concepts.
+
+                         COMPUTER
+                            |
+                            v
+                         NETWORK
+                            |
+                            v
+                         INTERNET
+                            |
+                            v
+                    CLIENT ↔ SERVER
+                            |
+                +-----------+-----------+
+                |                       |
+                v                       v
+           IP ADDRESS                 PORT
+                |                       |
+                +-----------+-----------+
+                            |
+                            v
+                       DOMAIN NAME
+                            |
+                            v
+                           DNS
+                            |
+                            v
+                     IP resolution
+                            |
+                            v
+                          URL
+                            |
+                            v
+                         BROWSER
+                            |
+                            v
+                       WEB SERVER
+                            |
+                            v
+                    APPLICATION SERVER
+                            |
+                            v
+                    REQUEST / RESPONSE
+                            |
+                            v
+                  CLIENT-SERVER ARCHITECTURE
+                            |
+                            v
+                 STATELESS / STATEFUL
+                            |
+                            v
+                      API ENGINEERING
+
+
+======================================================================
+# REAL-WORLD EXAMPLE — OPENING AN API
+======================================================================
+
+Suppose you have:
+
+    https://api.example.com/users/123
+
+
+STEP 1 — CLIENT
+---------------
+
+Your browser/mobile application acts as the client.
+
+
+STEP 2 — DOMAIN
+---------------
+
+The client sees:
+
+    api.example.com
+
+
+STEP 3 — DNS
+------------
+
+The client/system performs DNS resolution to determine the appropriate
+network address for the host.
+
+
+STEP 4 — NETWORK
+----------------
+
+The request travels through networking infrastructure toward the
+destination.
+
+
+STEP 5 — IP + PORT
+------------------
+
+The communication reaches the appropriate network destination and
+service.
+
+For HTTPS, the standard port is commonly:
+
+    443
+
+
+STEP 6 — WEB SERVER / REVERSE PROXY
+-----------------------------------
+
+The request may first reach:
+
+    NGINX
+    Load Balancer
+    API Gateway
+    Cloud proxy
+
+
+STEP 7 — APPLICATION SERVER
+---------------------------
+
+The request is routed to the API application.
+
+
+STEP 8 — API APPLICATION
+------------------------
+
+The application processes:
+
+    Authentication
+    Authorization
+    Validation
+    Business logic
+
+
+STEP 9 — DATABASE
+-----------------
+
+The application may query a database:
+
+    API
+      |
+      v
+    Database
+      |
+      v
+    User record
+
+
+STEP 10 — RESPONSE
+------------------
+
+The API produces a response:
+
+    200 OK
+
+    {
+        "id": 123,
+        "name": "User"
+    }
+
+
+STEP 11 — CLIENT
+----------------
+
+The response travels back to the client.
+
+
+Complete flow:
+
+    User
+      |
+      v
+    Browser / Mobile App
+      |
+      v
+    DNS
+      |
+      v
+    Internet
+      |
+      v
+    Load Balancer / Web Server
+      |
+      v
+    API Server
+      |
+      v
+    Database
+      |
+      v
+    API Server
+      |
+      v
+    Client
+
+
+======================================================================
+# IMPORTANT TERMINOLOGY — DO NOT CONFUSE
+======================================================================
+
+COMPUTER
+--------
+A machine capable of executing programs and processing data.
+
+
+NETWORK
+-------
+Connected devices capable of communicating.
+
+
+INTERNET
+--------
+Global interconnection of networks.
+
+
+CLIENT
+------
+The party/application requesting a service.
+
+
+SERVER
+------
+The party/application providing a service.
+
+
+IP ADDRESS
+----------
+Network addressing information used for IP communication.
+
+
+PORT
+----
+Logical endpoint associated with a network service.
+
+
+MAC ADDRESS
+-----------
+Address associated with a network interface at the data-link layer.
+
+
+DOMAIN NAME
+-----------
+Human-readable name used with DNS.
+
+
+DNS
+---
+System that resolves domain names into network information.
+
+
+URL
+---
+A locator identifying how/where a resource can be accessed.
+
+
+URI
+---
+An identifier for a resource.
+
+
+BROWSER
+-------
+A client application for accessing web resources.
+
+
+WEB SERVER
+----------
+Software that handles web traffic and can serve/proxy web requests.
+
+
+APPLICATION SERVER
+------------------
+Application runtime/service that executes application/business logic.
+
+
+REQUEST
+-------
+Message sent by a client to a server.
+
+
+RESPONSE
+--------
+Message sent by a server back to a client.
+
+
+CLIENT-SERVER ARCHITECTURE
+--------------------------
+Architecture separating requesters/consumers from service providers.
+
+
+STATELESS
+---------
+Each request is processed without depending on required conversational
+state stored from previous requests.
+
+
+STATEFUL
+--------
+The server maintains conversational/session state that can affect
+subsequent requests.
+
+
+======================================================================
+# API ENGINEER'S MENTAL MODEL
+======================================================================
+
+Whenever you see:
+
+    https://api.example.com/users/123
+
+think:
+
+    HTTPS
+      ↓
+    Network communication
+      ↓
+    DNS resolves the domain
+      ↓
+    IP identifies the network destination
+      ↓
+    Port identifies the service endpoint
+      ↓
+    Request reaches server infrastructure
+      ↓
+    Web server / proxy / gateway
+      ↓
+    API application
+      ↓
+    Business logic
+      ↓
+    Database/cache
+      ↓
+    Response
+      ↓
+    Client
+
+
+This mental model will be reused throughout the entire API course.
+
+
+======================================================================
+# CHAPTER 0 — KEY TAKEAWAYS
+======================================================================
+
+1. A computer processes, stores and communicates data.
+
+2. A network allows devices to communicate.
+
+3. The Internet is a global interconnection of networks.
+
+4. A client requests a service.
+
+5. A server provides a service.
+
+6. IP addresses provide network addressing.
+
+7. Ports identify logical service endpoints on a host.
+
+8. MAC addresses identify network interfaces at the data-link layer.
+
+9. Domain names provide human-readable names.
+
+10. DNS resolves domain names into network information.
+
+11. A URL identifies how/where a resource can be accessed.
+
+12. A URI identifies a resource.
+
+13. A browser is a common web client.
+
+14. A web server handles web-facing traffic and may serve or proxy
+    requests.
+
+15. An application server/runtime executes application logic.
+
+16. APIs fundamentally use request-response communication in many
+    common architectures.
+
+17. Client-server architecture separates consumers from providers.
+
+18. Stateless communication is especially important for scalable API
+    architectures.
+
+19. Stateful communication depends on maintained conversational state.
+
+20. These concepts form the foundation for:
+        HTTP
+        HTTPS
+        REST
+        API development
+        Authentication
+        API Gateway
+        Load Balancing
+        Microservices
+        Distributed Systems
+        Cloud APIs
+
+
+======================================================================
+# CHAPTER 0 — INTERVIEW QUESTIONS
+======================================================================
+
+Q1. What is a computer?
+A:
+A system that receives, processes, stores and produces data.
+
+Q2. What is a client?
+A:
+An application/system that requests a service or resource.
+
+Q3. What is a server?
+A:
+An application/system that provides a service or resource.
+
+Q4. What is the Internet?
+A:
+A global interconnection of computer networks.
+
+Q5. What is an IP address?
+A:
+An address used for communication on an IP network.
+
+Q6. What is a port?
+A:
+A logical endpoint used to identify a network service/application on
+a host.
+
+Q7. What is the difference between IP and port?
+A:
+IP identifies the network destination; the port identifies the
+logical service endpoint on that destination.
+
+Q8. What is a MAC address?
+A:
+An address associated with a network interface at the data-link layer.
+
+Q9. What is DNS?
+A:
+The Domain Name System, used to resolve domain names into network
+information.
+
+Q10. What is a domain name?
+A:
+A human-readable name used in the DNS system.
+
+Q11. What is a URL?
+A:
+A Uniform Resource Locator that identifies how/where a resource can
+be accessed.
+
+Q12. What is a URI?
+A:
+A Uniform Resource Identifier that identifies a resource.
+
+Q13. What is a browser?
+A:
+A client application used to access web resources.
+
+Q14. What is a web server?
+A:
+Software that handles web requests and can serve or proxy web
+resources.
+
+Q15. What is an application server?
+A:
+An environment/service that executes application/business logic.
+
+Q16. What is a request?
+A:
+A message sent by a client to a server.
+
+Q17. What is a response?
+A:
+A message sent by a server to a client.
+
+Q18. What is client-server architecture?
+A:
+An architecture that separates service consumers from service
+providers.
+
+Q19. What is stateless communication?
+A:
+Communication where processing a request does not depend on required
+conversational state stored from previous requests.
+
+Q20. Why is statelessness useful for APIs?
+A:
+It can make horizontal scaling and load balancing easier because
+requests can be handled by different server instances.
+
+
+======================================================================
+# FINAL MENTAL PICTURE
+======================================================================
+
+                     USER
+                       |
+                       v
+              +----------------+
+              | Browser / App  |
+              |    CLIENT      |
+              +-------+--------+
+                      |
+                      | URL
+                      v
+                    DNS
+                      |
+                      v
+                IP + PORT
+                      |
+                      v
+                 INTERNET
+                      |
+                      v
+            +-------------------+
+            | Load Balancer /   |
+            | Web Server /      |
+            | API Gateway       |
+            +---------+---------+
+                      |
+                      v
+            +-------------------+
+            |  APPLICATION/API  |
+            |      SERVER       |
+            +---------+---------+
+                      |
+              +-------+-------+
+              |               |
+              v               v
+          Database          Cache
+              |               |
+              +-------+-------+
+                      |
+                      v
+                  RESPONSE
+                      |
+                      v
+                    CLIENT
+
+
+MASTER THIS FLOW:
+
+    CLIENT
+      ↓
+    DOMAIN
+      ↓
+    DNS
+      ↓
+    IP
+      ↓
+    PORT
+      ↓
+    NETWORK / INTERNET
+      ↓
+    WEB SERVER / PROXY
+      ↓
+    APPLICATION SERVER
+      ↓
+    REQUEST PROCESSING
+      ↓
+    DATABASE / CACHE
+      ↓
+    RESPONSE
+      ↓
+    CLIENT
+
+
+This is the foundation on which the next chapters build:
+
+    Chapter 1 → Web Fundamentals
+    Chapter 2 → What is an API?
+    Chapter 3 → Types of APIs
+    Chapter 4 → HTTP Fundamentals
+    Chapter 5 → HTTP Methods
+    ...
+
+======================================================================
+END OF CHAPTER 0
+======================================================================

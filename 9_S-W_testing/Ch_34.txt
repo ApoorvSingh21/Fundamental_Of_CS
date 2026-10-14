@@ -1,0 +1,1537 @@
+=======================================================================
+        SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+=======================================================================
+
+                         CHAPTER 34
+                       API TEST DESIGN
+=======================================================================
+
+OBJECTIVE
+---------
+Learn how to systematically design API tests instead of simply
+sending requests.
+
+A QA Engineer must determine:
+
+    • What should be tested?
+    • What valid data should be used?
+    • What invalid data should be used?
+    • What status code is expected?
+    • What response should be returned?
+    • How should authentication be tested?
+    • How should authorization be tested?
+    • How should errors be handled?
+    • How should pagination be tested?
+    • How should rate limiting be tested?
+    • How can multiple APIs be chained together?
+
+
+SOURCE TOPICS
+-------------
+• Positive testing
+• Negative testing
+• Schema validation
+• Data validation
+• Status-code validation
+• Response-time validation
+• Authentication
+• Authorization
+• Error handling
+• Rate limiting
+• Pagination
+• API chaining
+
+
+=======================================================================
+34.1 WHAT IS API TEST DESIGN?
+=======================================================================
+
+API test design means identifying API test scenarios and defining
+the expected behavior for each scenario.
+
+Suppose we have:
+
+    POST /users
+
+A weak test approach is:
+
+    Send request
+    Check 200/201
+    Done
+
+
+A better QA approach is:
+
+    Valid request
+    Invalid request
+    Missing fields
+    Incorrect data
+    Authentication
+    Authorization
+    Response structure
+    Response data
+    Status code
+    Error handling
+    Response time
+    Boundary conditions
+
+
+Therefore:
+
+    API TEST DESIGN
+          =
+    TEST CONDITIONS
+          +
+    TEST DATA
+          +
+    EXPECTED RESULTS
+          +
+    VALIDATION
+
+
+=======================================================================
+34.2 API TEST DESIGN PROCESS
+=======================================================================
+
+A practical process:
+
+    STEP 1
+      |
+      v
+    Understand API requirement
+      |
+      v
+    Identify request structure
+      |
+      v
+    Identify expected response
+      |
+      v
+    Design positive scenarios
+      |
+      v
+    Design negative scenarios
+      |
+      v
+    Design authentication tests
+      |
+      v
+    Design authorization tests
+      |
+      v
+    Design data validation tests
+      |
+      v
+    Design status-code tests
+      |
+      v
+    Design response-time tests
+      |
+      v
+    Design pagination/rate-limit tests
+      |
+      v
+    Design API chaining
+      |
+      v
+    Automate important tests
+
+
+=======================================================================
+34.3 POSITIVE API TESTING
+=======================================================================
+
+Positive testing verifies that the API works correctly when valid
+input is supplied.
+
+Example:
+
+    POST /users
+
+Request:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+Expected:
+
+    Successful response
+    Correct status code
+    Correct response structure
+    Correct user data
+
+
+Positive scenarios:
+
+    • Valid request
+    • Valid authentication
+    • Valid user ID
+    • Valid data
+    • Valid required fields
+    • Valid optional fields
+
+
+Example test case:
+
+    TC_API_001
+
+    Test:
+        Create user with valid data
+
+    Request:
+        Valid name
+        Valid email
+
+    Expected:
+        User created successfully
+        Expected success status
+        User information returned
+
+
+=======================================================================
+34.4 NEGATIVE API TESTING
+=======================================================================
+
+Negative testing verifies that the API handles invalid input
+correctly.
+
+Examples:
+
+    • Missing required field
+    • Invalid data type
+    • Invalid value
+    • Empty value
+    • Invalid ID
+    • Invalid authentication
+    • Missing authentication
+    • Unauthorized access
+
+
+Example:
+
+    POST /users
+
+    {
+        "name": "",
+        "email": "wrong"
+    }
+
+
+Expected:
+
+    API rejects invalid input
+    +
+    Appropriate error response
+
+
+IMPORTANT
+---------
+
+Negative testing does NOT mean simply expecting an error.
+
+The error should also be appropriate and predictable according to
+the API requirement.
+
+
+=======================================================================
+34.5 POSITIVE VS NEGATIVE TESTING
+=======================================================================
+
+                    API TESTING
+                        |
+              +---------+---------+
+              |                   |
+          POSITIVE             NEGATIVE
+              |                   |
+          Valid data          Invalid data
+          Valid auth          Missing auth
+          Valid ID            Invalid ID
+          Valid request       Missing fields
+              |                   |
+              v                   v
+          Success             Expected error
+
+
+Example:
+
+    GET /users/101
+
+
+Positive:
+
+    101 exists
+        |
+        v
+    Expected user returned
+
+
+Negative:
+
+    Invalid/nonexistent ID
+        |
+        v
+    Expected error response
+
+
+=======================================================================
+34.6 STATUS-CODE VALIDATION
+=======================================================================
+
+API tests should validate expected HTTP status codes.
+
+Examples:
+
+    200
+        Successful request
+
+    201
+        Resource successfully created
+
+    204
+        Successful operation with no response body
+
+    400
+        Invalid request
+
+    401
+        Authentication required/failed
+
+    403
+        Access forbidden
+
+    404
+        Resource not found
+
+    409
+        Conflict
+
+    500
+        Server-side error
+
+
+Example:
+
+    POST /users
+
+Expected:
+
+    201
+
+
+Actual:
+
+    400
+
+
+Result:
+
+    FAIL
+
+
+The tester should investigate why the API returned the wrong
+behavior.
+
+
+=======================================================================
+34.7 STATUS CODE TEST DESIGN
+=======================================================================
+
+For an endpoint, identify possible expected outcomes.
+
+Example:
+
+    GET /users/{id}
+
+
+Test cases:
+
+    TC01
+    Valid ID
+    Expected success status
+
+
+    TC02
+    Invalid ID
+    Expected appropriate error status
+
+
+    TC03
+    Missing authentication
+    Expected authentication-related error
+
+
+    TC04
+    Unauthorized user
+    Expected authorization-related error
+
+
+The exact status expected depends on the API's defined behavior.
+
+
+=======================================================================
+34.8 DATA VALIDATION
+=======================================================================
+
+Data validation verifies that the API receives and returns the
+correct data.
+
+Example:
+
+    POST /users
+
+Request:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+Validate:
+
+    name
+       |
+       +-- Correct value
+       +-- Correct data type
+       +-- Required behavior
+
+    email
+       |
+       +-- Correct value
+       +-- Correct data type
+       +-- Required behavior
+
+
+Response should also be checked.
+
+Example:
+
+    {
+        "id": 101,
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+Validate:
+
+    • ID exists
+    • Name is correct
+    • Email is correct
+    • Expected fields are present
+
+
+=======================================================================
+34.9 SCHEMA VALIDATION
+=======================================================================
+
+Schema validation verifies that the response follows the expected
+structure.
+
+Suppose the expected response contains:
+
+    id
+    name
+    email
+
+
+Expected structure:
+
+    {
+        "id": number,
+        "name": string,
+        "email": string
+    }
+
+
+If the API unexpectedly returns:
+
+    {
+        "id": "ABC",
+        "name": 123
+    }
+
+
+The response structure/data types may violate the expected schema.
+
+
+Schema validation can therefore help detect:
+
+    • Missing fields
+    • Unexpected structure
+    • Incorrect data types
+    • Incorrect response format
+
+
+Conceptually:
+
+    Expected Schema
+          |
+          v
+    Actual Response
+          |
+          v
+       Compare
+          |
+       +--+--+
+       |     |
+      Match  Mismatch
+       |       |
+      PASS    FAIL
+
+
+=======================================================================
+34.10 DATA VALIDATION VS SCHEMA VALIDATION
+=======================================================================
+
+SCHEMA VALIDATION
+-----------------
+
+Checks structure and expected data types.
+
+Example:
+
+    id     -> number
+    name   -> string
+    email  -> string
+
+
+DATA VALIDATION
+---------------
+
+Checks whether the actual values are correct.
+
+Example:
+
+    id:
+        Expected 101
+
+    Actual:
+        101
+
+
+Therefore:
+
+    Schema = structure/type
+
+    Data = actual value/content
+
+
+Both can be important.
+
+
+=======================================================================
+34.11 RESPONSE-TIME VALIDATION
+=======================================================================
+
+API testing should also consider response time when it is part of
+the expected behavior.
+
+Example:
+
+    Requirement:
+        API should respond within expected time.
+
+
+Test:
+
+    Send request
+         |
+         v
+    Measure response time
+         |
+         v
+    Compare against expectation
+
+
+Example:
+
+    Expected:
+        Within defined limit
+
+    Actual:
+        Slower than defined limit
+
+    Result:
+        FAIL
+
+
+Response-time testing can help identify APIs that technically work
+but respond too slowly for the expected behavior.
+
+
+IMPORTANT
+---------
+
+The actual acceptable response-time threshold must come from the
+application's requirements or agreed expectations.
+
+
+=======================================================================
+34.12 AUTHENTICATION TESTING
+=======================================================================
+
+Authentication answers:
+
+    "Who are you?"
+
+
+API authentication test scenarios include:
+
+    1. Valid credentials
+    2. Invalid credentials
+    3. Missing credentials
+    4. Invalid token
+    5. Expired token
+    6. Valid token
+
+
+Example:
+
+    GET /profile
+
+With valid token:
+
+    Expected:
+        Successful access
+
+
+Without token:
+
+    Expected:
+        Authentication-related failure
+
+
+With invalid token:
+
+    Expected:
+        Authentication-related failure
+
+
+=======================================================================
+34.13 AUTHORIZATION TESTING
+=======================================================================
+
+Authorization answers:
+
+    "What are you allowed to access?"
+
+
+Example roles:
+
+    Admin
+    User
+
+
+Suppose:
+
+    DELETE /users/101
+
+Admin:
+
+    Allowed
+
+
+Normal user:
+
+    Not allowed
+
+
+Test:
+
+    Admin token
+        |
+        v
+    DELETE /users/101
+        |
+        v
+    Expected allowed behavior
+
+
+Then:
+
+    Normal user token
+        |
+        v
+    DELETE /users/101
+        |
+        v
+    Expected forbidden behavior
+
+
+Authentication and authorization are different.
+
+    Authentication
+        =
+    Identity verification
+
+    Authorization
+        =
+    Permission verification
+
+
+=======================================================================
+34.14 AUTHENTICATION VS AUTHORIZATION
+=======================================================================
+
+Example:
+
+    User logs into application.
+
+Authentication:
+
+    "Is this really Apoorv?"
+
+
+Authorization:
+
+    "Is Apoorv allowed to delete this user?"
+
+
+Therefore:
+
+    LOGIN
+      |
+      v
+    Authentication
+      |
+      v
+    Identity established
+      |
+      v
+    Authorization
+      |
+      v
+    Permission checked
+
+
+This distinction is a very common API interview topic.
+
+
+=======================================================================
+34.15 ERROR HANDLING
+=======================================================================
+
+A good API should handle invalid situations predictably.
+
+Examples:
+
+    Invalid request
+    Missing field
+    Invalid ID
+    Unauthorized request
+    Resource not found
+    Conflict
+    Server failure
+
+
+Example:
+
+    POST /users
+
+
+Request:
+
+    {
+        "email": ""
+    }
+
+
+The tester checks:
+
+    • Correct error status
+    • Appropriate error response
+    • Useful error information
+    • No unexpected behavior
+
+
+The exact error format depends on the API design.
+
+
+Example conceptual error:
+
+    {
+        "error": "Invalid email"
+    }
+
+
+The QA Engineer validates that the API behaves according to the
+defined contract/requirements.
+
+
+=======================================================================
+34.16 RATE LIMITING
+=======================================================================
+
+Rate limiting controls how many requests can be made within a
+defined period or according to the API's rules.
+
+Conceptually:
+
+    Client
+      |
+      | Request 1
+      | Request 2
+      | Request 3
+      | ...
+      v
+    API
+      |
+      v
+    Rate limit
+
+
+Testing should verify that the API behaves correctly when the
+defined request limit is reached.
+
+Test concept:
+
+    Send requests within allowed limit
+             |
+             v
+       Expected behavior
+
+
+    Exceed defined limit
+             |
+             v
+       Expected rate-limit behavior
+
+
+A tester should verify:
+
+    • Normal requests work
+    • Limit is respected
+    • Excess requests are handled correctly
+    • API does not behave unexpectedly
+
+
+The exact limit and expected response depend on the API requirements.
+
+
+=======================================================================
+34.17 PAGINATION
+=======================================================================
+
+Pagination divides a large collection of data into smaller results.
+
+Suppose an API contains:
+
+    1000 users
+
+
+Instead of returning all 1000 at once, the API may return smaller
+sets.
+
+Conceptually:
+
+    Page 1
+    -------
+    Users 1-20
+
+
+    Page 2
+    -------
+    Users 21-40
+
+
+    Page 3
+    -------
+    Users 41-60
+
+
+Example:
+
+    GET /users?page=1
+
+    GET /users?page=2
+
+
+Testing pagination should consider:
+
+    • First page
+    • Next page
+    • Different page values
+    • Last page
+    • Empty page/result
+    • Expected number of records
+    • Correct page navigation
+
+
+=======================================================================
+34.18 PAGINATION TEST EXAMPLE
+=======================================================================
+
+Suppose:
+
+    Total users = 45
+
+    Page size = 20
+
+
+Expected:
+
+    Page 1 -> 20 users
+    Page 2 -> 20 users
+    Page 3 -> 5 users
+
+
+Test:
+
+    GET /users?page=1
+
+Expected:
+
+    20 records
+
+
+    GET /users?page=2
+
+Expected:
+
+    20 records
+
+
+    GET /users?page=3
+
+Expected:
+
+    5 records
+
+
+The exact behavior depends on the API requirements.
+
+
+=======================================================================
+34.19 PAGINATION EDGE CASES
+=======================================================================
+
+Important scenarios:
+
+    • page = 0
+    • negative page
+    • very large page
+    • missing page
+    • invalid page value
+    • page beyond available data
+
+
+Example:
+
+    GET /users?page=9999
+
+
+Possible expected behavior:
+
+    Empty result
+
+OR
+
+    Appropriate validation/error response
+
+
+The expected result should be based on the API requirements.
+
+
+=======================================================================
+34.20 API CHAINING
+=======================================================================
+
+API chaining means using data obtained from one API request in a
+subsequent API request.
+
+Example:
+
+    Login
+      |
+      v
+    Receive token
+      |
+      v
+    Get user
+      |
+      v
+    Receive user ID
+      |
+      v
+    Get user's orders
+      |
+      v
+    Create/update order
+
+
+Example:
+
+    STEP 1
+
+    POST /login
+
+    Response:
+
+    {
+        "token": "abc123"
+    }
+
+
+    STEP 2
+
+    GET /profile
+
+    Header:
+
+    Authorization: Bearer abc123
+
+
+    STEP 3
+
+    Response:
+
+    {
+        "user_id": 101
+    }
+
+
+    STEP 4
+
+    GET /users/101/orders
+
+
+This is API chaining.
+
+
+=======================================================================
+34.21 WHY API CHAINING IS IMPORTANT
+=======================================================================
+
+Real applications often have dependent API operations.
+
+Example:
+
+    Login
+       ↓
+    Get user
+       ↓
+    Create order
+       ↓
+    Get order
+       ↓
+    Update order
+
+
+Testing each request independently may not fully validate the
+complete workflow.
+
+API chaining allows the tester to validate the sequence.
+
+
+=======================================================================
+34.22 API CHAINING TEST DESIGN
+=======================================================================
+
+Example:
+
+    API 1:
+        Login
+
+    Output:
+        Token
+
+
+    API 2:
+        Get Profile
+
+    Input:
+        Token from API 1
+
+
+    API 3:
+        Get Orders
+
+    Input:
+        User ID from API 2
+
+
+Flow:
+
+    Login
+      |
+      | token
+      v
+    Profile
+      |
+      | user_id
+      v
+    Orders
+
+
+Important validation:
+
+    API 1
+    -----
+    Token generated correctly
+
+
+    API 2
+    -----
+    Token accepted
+    Correct profile returned
+
+
+    API 3
+    -----
+    Correct user ID used
+    Correct orders returned
+
+
+=======================================================================
+34.23 COMPLETE API TEST MATRIX
+=======================================================================
+
+For a typical API, think across multiple dimensions.
+
+    +-------------------------------------------------------------+
+    | API TEST DESIGN                                             |
+    +-------------------------------------------------------------+
+    | Positive Testing                                            |
+    | Negative Testing                                            |
+    | Status Code Validation                                      |
+    | Schema Validation                                           |
+    | Data Validation                                             |
+    | Response-Time Validation                                    |
+    | Authentication                                              |
+    | Authorization                                                |
+    | Error Handling                                               |
+    | Rate Limiting                                                |
+    | Pagination                                                   |
+    | API Chaining                                                 |
+    +-------------------------------------------------------------+
+
+
+This provides a much stronger test strategy than checking only
+whether the endpoint returns a response.
+
+
+=======================================================================
+34.24 PRACTICAL EXAMPLE — USER API
+=======================================================================
+
+API:
+
+    POST /users
+
+
+REQUEST:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+TEST DESIGN:
+
+--------------------------------------------------
+TC01 — Valid request
+--------------------------------------------------
+
+Input:
+
+    Valid name
+    Valid email
+
+Expected:
+
+    User successfully created
+    Expected success status
+    Correct response
+
+
+--------------------------------------------------
+TC02 — Missing name
+--------------------------------------------------
+
+Input:
+
+    {
+        "email": "apoorv@example.com"
+    }
+
+Expected:
+
+    Appropriate validation error
+
+
+--------------------------------------------------
+TC03 — Invalid email
+--------------------------------------------------
+
+Input:
+
+    {
+        "name": "Apoorv",
+        "email": "wrong"
+    }
+
+Expected:
+
+    Appropriate validation error
+
+
+--------------------------------------------------
+TC04 — Missing authentication
+--------------------------------------------------
+
+Request without required authentication.
+
+Expected:
+
+    Authentication-related failure
+
+
+--------------------------------------------------
+TC05 — Unauthorized user
+--------------------------------------------------
+
+Use a user without required permission.
+
+Expected:
+
+    Authorization-related failure
+
+
+--------------------------------------------------
+TC06 — Response validation
+--------------------------------------------------
+
+Verify:
+
+    • Required fields
+    • Correct structure
+    • Correct data
+
+
+--------------------------------------------------
+TC07 — Response-time validation
+--------------------------------------------------
+
+Verify that response time meets the defined expectation.
+
+
+--------------------------------------------------
+TC08 — Error handling
+--------------------------------------------------
+
+Send invalid input.
+
+Verify:
+
+    • Correct error status
+    • Expected error response
+
+
+=======================================================================
+34.25 API TEST DESIGN USING POSTMAN
+=======================================================================
+
+A practical Postman workflow:
+
+    Requirement
+         |
+         v
+    Identify endpoint
+         |
+         v
+    Create request
+         |
+         v
+    Configure URL
+         |
+         v
+    Add parameters
+         |
+         v
+    Add headers
+         |
+         v
+    Configure authentication
+         |
+         v
+    Add body
+         |
+         v
+    Send request
+         |
+         v
+    Validate status
+         |
+         v
+    Validate response
+         |
+         v
+    Add automated tests
+         |
+         v
+    Add to collection
+         |
+         v
+    Execute collection
+         |
+         v
+    Run through Newman when required
+
+
+=======================================================================
+34.26 COMMON API TEST DESIGN MISTAKES
+=======================================================================
+
+1. Testing only positive scenarios
+
+    Problem:
+        Invalid input behavior remains untested.
+
+
+2. Checking only status code
+
+    Problem:
+        Response data may still be incorrect.
+
+
+3. Ignoring authentication
+
+    Problem:
+        Security-related behavior may be missed.
+
+
+4. Ignoring authorization
+
+    Problem:
+        Users may access operations they should not access.
+
+
+5. Ignoring response structure
+
+    Problem:
+        API contract changes may go unnoticed.
+
+
+6. Ignoring pagination
+
+    Problem:
+        Large-data scenarios may fail.
+
+
+7. Ignoring rate limiting
+
+    Problem:
+        API behavior under request limits may be unknown.
+
+
+8. Not testing API dependencies
+
+    Problem:
+        Real workflows may fail even when individual APIs work.
+
+
+=======================================================================
+34.27 INTERVIEW QUESTIONS
+=======================================================================
+
+Q1. What is API test design?
+--------------------------------
+API test design is the process of identifying API test scenarios,
+test data, expected results, and validation conditions.
+
+
+Q2. What is positive API testing?
+---------------------------------
+Testing an API with valid input and verifying expected successful
+behavior.
+
+
+Q3. What is negative API testing?
+---------------------------------
+Testing invalid conditions and verifying that the API handles them
+correctly.
+
+
+Q4. What is schema validation?
+------------------------------
+Checking whether the response follows the expected structure and
+data types.
+
+
+Q5. What is data validation?
+----------------------------
+Checking whether the actual API data is correct according to the
+expected result.
+
+
+Q6. Authentication vs authorization?
+------------------------------------
+Authentication verifies identity.
+
+Authorization verifies permissions.
+
+
+Q7. What is API chaining?
+-------------------------
+Using data from one API response as input for another API request.
+
+
+Q8. What is pagination testing?
+-------------------------------
+Testing APIs that return data in multiple pages and verifying that
+each page behaves correctly.
+
+
+Q9. What is rate-limit testing?
+-------------------------------
+Testing API behavior when request activity reaches or exceeds the
+defined rate limit.
+
+
+Q10. What should be validated in an API?
+-----------------------------------------
+Depending on the requirement:
+
+    • Status code
+    • Response structure
+    • Response data
+    • Authentication
+    • Authorization
+    • Error behavior
+    • Response time
+    • Pagination
+    • Rate limiting
+
+
+=======================================================================
+34.28 QUICK REVISION
+=======================================================================
+
+API TEST DESIGN
+|
++-- Positive Testing
+|     +-- Valid input
+|     +-- Expected success
+|
++-- Negative Testing
+|     +-- Invalid input
+|     +-- Expected error
+|
++-- Status Validation
+|     +-- Expected HTTP status
+|
++-- Schema Validation
+|     +-- Structure
+|     +-- Data types
+|
++-- Data Validation
+|     +-- Actual values
+|
++-- Response-Time Validation
+|     +-- Defined performance expectation
+|
++-- Authentication
+|     +-- Identity
+|
++-- Authorization
+|     +-- Permissions
+|
++-- Error Handling
+|     +-- Predictable failure behavior
+|
++-- Rate Limiting
+|     +-- Request limits
+|
++-- Pagination
+|     +-- Multiple result pages
+|
++-- API Chaining
+      +-- Response → Next request
+
+
+=======================================================================
+34.29 JOB-READY CHECKLIST
+=======================================================================
+
+You should be able to:
+
+[ ] Design positive API tests
+[ ] Design negative API tests
+[ ] Validate HTTP status codes
+[ ] Validate response data
+[ ] Understand schema validation
+[ ] Distinguish schema and data validation
+[ ] Design response-time checks
+[ ] Test authentication
+[ ] Test authorization
+[ ] Explain authentication vs authorization
+[ ] Test error handling
+[ ] Understand rate-limit testing
+[ ] Test pagination
+[ ] Test pagination edge cases
+[ ] Explain API chaining
+[ ] Design dependent API workflows
+[ ] Build API test scenarios in Postman
+[ ] Explain API test design in an interview
+
+
+=======================================================================
+                         CHAPTER 34 COMPLETE
+=======================================================================
+
+CORE IDEA
+---------
+
+GOOD API TESTING IS NOT:
+
+    "Send request → Check 200 → Done"
+
+GOOD API TESTING IS:
+
+    REQUIREMENT
+        ↓
+    TEST SCENARIOS
+        ↓
+    VALID + INVALID DATA
+        ↓
+    REQUEST VALIDATION
+        ↓
+    RESPONSE VALIDATION
+        ↓
+    AUTHENTICATION
+        ↓
+    AUTHORIZATION
+        ↓
+    ERROR HANDLING
+        ↓
+    PERFORMANCE EXPECTATION
+        ↓
+    PAGINATION / RATE LIMITING
+        ↓
+    API CHAINING
+        ↓
+    AUTOMATION
+
+
+NEXT
+----
+CHAPTER 35 — PROGRAMMING FUNDAMENTALS
+
+Topics:
+    • Variables
+    • Data types
+    • Operators
+    • Conditions
+    • Loops
+    • Functions
+    • Arrays
+    • Strings
+    • Collections
+    • Exceptions
+    • Files
+=======================================================================

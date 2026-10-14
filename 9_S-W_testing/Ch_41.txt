@@ -1,0 +1,1567 @@
+i====================================================================
+        SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+====================================================================
+
+                         CHAPTER 41
+                    FRAMEWORK DESIGN
+====================================================================
+
+OBJECTIVE
+---------
+Move from writing individual automation scripts to designing a
+maintainable, reusable, scalable automation framework.
+
+SOURCE TOPICS
+-------------
+    • Framework structure
+    • Page Object Model (POM)
+    • Page Factory concepts
+    • Data-driven framework
+    • Keyword-driven framework
+    • Hybrid framework
+    • Configuration
+    • Test data management
+    • Reusable utilities
+    • Logging
+    • Reporting
+    • Screenshots
+
+
+====================================================================
+41.1 WHAT IS AN AUTOMATION FRAMEWORK?
+====================================================================
+
+An automation framework is an organized structure for developing,
+executing, maintaining, and managing automated tests.
+
+A simple script might look like:
+
+    Test
+      ↓
+    Find element
+      ↓
+    Click
+      ↓
+    Verify
+
+
+But a real project may contain:
+
+    Hundreds of tests
+    Hundreds of pages/elements
+    Multiple environments
+    Different test data
+    Logs
+    Screenshots
+    Reports
+    Configuration
+    Reusable functions
+
+
+Without structure:
+
+    Large number of tests
+           ↓
+    Duplicate code
+           ↓
+    Difficult maintenance
+           ↓
+    Unstable automation
+
+
+With a framework:
+
+    Tests
+      ↓
+    Page Objects
+      ↓
+    Utilities
+      ↓
+    Configuration
+      ↓
+    Test Data
+      ↓
+    Automation Tool
+      ↓
+    Application
+
+
+The purpose is to make automation:
+
+    Reusable
+    Maintainable
+    Organized
+    Scalable
+    Understandable
+
+
+====================================================================
+41.2 WHY DO WE NEED FRAMEWORK DESIGN?
+====================================================================
+
+Imagine 100 automated tests.
+
+Without framework design:
+
+    Test 1 → Login code
+    Test 2 → Login code
+    Test 3 → Login code
+    ...
+    Test 100 → Login code
+
+
+Suppose the Login button changes.
+
+You may need to update the same logic in many places.
+
+
+With a reusable design:
+
+    Login Page
+       |
+       +---- Username locator
+       +---- Password locator
+       +---- Login button locator
+       |
+       +---- login() method
+
+
+Tests can use:
+
+    loginPage.login()
+
+
+Now if the implementation changes, the relevant page object can be
+updated centrally.
+
+
+This is one of the major benefits of framework design.
+
+
+====================================================================
+41.3 BASIC FRAMEWORK STRUCTURE
+====================================================================
+
+A conceptual automation framework may contain:
+
+    +----------------------------------+
+    | Tests                            |
+    +----------------------------------+
+                  |
+                  ↓
+    +----------------------------------+
+    | Page Objects                     |
+    +----------------------------------+
+                  |
+                  ↓
+    +----------------------------------+
+    | Reusable Utilities               |
+    +----------------------------------+
+                  |
+                  ↓
+    +----------------------------------+
+    | Configuration / Test Data        |
+    +----------------------------------+
+                  |
+                  ↓
+    +----------------------------------+
+    | Selenium / Playwright             |
+    +----------------------------------+
+                  |
+                  ↓
+    +----------------------------------+
+    | Application                      |
+    +----------------------------------+
+
+
+Supporting components:
+
+    Logging
+    Reporting
+    Screenshots
+
+
+====================================================================
+41.4 EXAMPLE PROJECT STRUCTURE
+====================================================================
+
+A conceptual structure:
+
+    automation-project/
+    |
+    +-- tests/
+    |     |
+    |     +-- login/
+    |     +-- search/
+    |     +-- checkout/
+    |
+    +-- pages/
+    |     |
+    |     +-- LoginPage
+    |     +-- HomePage
+    |     +-- ProductPage
+    |     +-- CartPage
+    |
+    +-- utilities/
+    |     |
+    |     +-- BrowserUtility
+    |     +-- ScreenshotUtility
+    |     +-- DataUtility
+    |
+    +-- config/
+    |     |
+    |     +-- configuration
+    |
+    +-- test-data/
+    |
+    +-- reports/
+    |
+    +-- screenshots/
+    |
+    +-- logs/
+
+
+The exact directory names depend on the project and language.
+
+
+====================================================================
+41.5 PAGE OBJECT MODEL (POM)
+====================================================================
+
+Page Object Model is a design approach where pages/components of
+an application are represented as objects in automation code.
+
+Instead of placing all locators and browser interactions directly
+inside test cases:
+
+    Test
+      ↓
+    Locator
+      ↓
+    Action
+
+
+we separate them:
+
+    Test
+      ↓
+    Page Object
+      ↓
+    Locator + Action
+      ↓
+    Application
+
+
+Example:
+
+    LoginPage
+
+        username
+        password
+        loginButton
+
+        login()
+
+
+Test:
+
+    loginPage.login(username, password)
+
+
+The test focuses on WHAT it wants to do.
+
+The page object contains HOW that page interaction is performed.
+
+
+====================================================================
+41.6 WHY POM IS IMPORTANT
+====================================================================
+
+Suppose 50 tests use the Login page.
+
+Without POM:
+
+    Test 1 → username locator
+    Test 2 → username locator
+    Test 3 → username locator
+    ...
+    Test 50 → username locator
+
+
+If the locator changes:
+
+    Many tests may require changes.
+
+
+With POM:
+
+    LoginPage
+       |
+       +-- username locator
+       +-- password locator
+       +-- login button
+       +-- login()
+
+
+Tests:
+
+    Test 1 ──┐
+    Test 2 ──┤
+    Test 3 ──┤──→ LoginPage
+    ...      │
+    Test 50 ─┘
+
+
+The page-specific implementation is centralized.
+
+
+====================================================================
+41.7 POM EXAMPLE
+====================================================================
+
+Application:
+
+    Login Page
+
+    Username: [________]
+    Password: [________]
+    [ Login ]
+
+
+Page Object:
+
+    LoginPage
+    --------------------------------
+    usernameLocator
+    passwordLocator
+    loginButtonLocator
+
+    enterUsername()
+    enterPassword()
+    clickLogin()
+    login()
+    --------------------------------
+
+
+Test:
+
+    loginPage = new LoginPage()
+
+    loginPage.login(
+        "user",
+        "password"
+    )
+
+    verifyDashboard()
+
+
+The test does not need to know every locator used by the Login
+page.
+
+
+====================================================================
+41.8 POM RESPONSIBILITIES
+====================================================================
+
+A Page Object generally represents the behavior/interactions of a
+page or relevant UI component.
+
+For example:
+
+    LoginPage
+        ↓
+    Login-related elements
+        +
+    Login-related actions
+
+
+    CartPage
+        ↓
+    Cart elements
+        +
+    Cart-related actions
+
+
+    CheckoutPage
+        ↓
+    Checkout elements
+        +
+    Checkout-related actions
+
+
+This keeps application-specific UI details separated from tests.
+
+
+====================================================================
+41.9 BENEFITS OF POM
+====================================================================
+
+1. REUSABILITY
+--------------
+
+Page interactions can be reused by multiple tests.
+
+
+2. MAINTAINABILITY
+------------------
+
+UI changes can be handled in the relevant page object.
+
+
+3. READABILITY
+--------------
+
+Tests become easier to understand.
+
+Instead of:
+
+    Find element
+    Enter value
+    Find button
+    Click
+
+
+the test can express:
+
+    loginPage.login()
+
+
+4. REDUCED DUPLICATION
+----------------------
+
+Common page interactions are centralized.
+
+
+5. SEPARATION OF CONCERNS
+-------------------------
+
+Test logic and page interaction logic are separated.
+
+
+====================================================================
+41.10 PAGE FACTORY — BASIC CONCEPT
+====================================================================
+
+Page Factory is a concept associated with organizing page elements
+in Page Object implementations.
+
+Conceptually:
+
+    Page Class
+       |
+       +---- Page Elements
+       |
+       +---- Page Actions
+
+
+Instead of manually handling every element reference throughout
+the page object, a page-oriented mechanism can help initialize
+elements.
+
+
+The important job-ready distinction is:
+
+    POM
+      =
+    Design approach for page objects
+
+
+    Page Factory
+      =
+    Mechanism/concept used in certain implementations to support
+    page element initialization
+
+
+They should not be treated as exactly the same thing.
+
+
+====================================================================
+41.11 DATA-DRIVEN FRAMEWORK
+====================================================================
+
+A data-driven framework separates:
+
+    Test logic
+        from
+    Test data
+
+
+Example:
+
+Without data-driven design:
+
+    Test Login User1
+    Test Login User2
+    Test Login User3
+
+
+The same test logic may be duplicated.
+
+
+With data-driven design:
+
+    Test Logic
+        +
+    Test Data
+        ↓
+    Multiple Executions
+
+
+Example data:
+
+    +----------+----------+
+    | Username | Password |
+    +----------+----------+
+    | user1    | pass1    |
+    | user2    | pass2    |
+    | user3    | pass3    |
+    +----------+----------+
+
+
+Same test logic:
+
+    Login
+      ↓
+    Data Row 1
+
+    Login
+      ↓
+    Data Row 2
+
+    Login
+      ↓
+    Data Row 3
+
+
+====================================================================
+41.12 WHY DATA-DRIVEN AUTOMATION?
+====================================================================
+
+Suppose the Login test must be executed with:
+
+    100 users
+
+
+Bad approach:
+
+    Create 100 separate test scripts.
+
+
+Better:
+
+    One reusable test
+          +
+    Multiple test data records
+
+
+Concept:
+
+    Test Logic
+       ↓
+    Test Data
+       ↓
+    Multiple Executions
+
+
+Benefits:
+
+    Less duplication
+    Better reuse
+    Easier data variation
+    Better scalability
+
+
+====================================================================
+41.13 DATA-DRIVEN EXAMPLE
+====================================================================
+
+Test:
+
+    Login
+
+Data:
+
+    User A → Password A
+    User B → Password B
+    User C → Password C
+
+
+Execution:
+
+    Login Test
+       |
+       +---- User A
+       |
+       +---- User B
+       |
+       +---- User C
+
+
+The test implementation remains largely the same while the input
+data changes.
+
+
+====================================================================
+41.14 KEYWORD-DRIVEN FRAMEWORK
+====================================================================
+
+A keyword-driven framework represents actions using keywords.
+
+Example keywords:
+
+    OPEN
+    LOGIN
+    CLICK
+    ENTER
+    VERIFY
+
+
+Test flow:
+
+    OPEN      LoginPage
+    ENTER     Username
+    ENTER     Password
+    CLICK     Login
+    VERIFY    Dashboard
+
+
+Concept:
+
+    Keyword
+       ↓
+    Associated action
+       ↓
+    Application
+
+
+The purpose is to separate test instructions from the underlying
+automation implementation.
+
+
+====================================================================
+41.15 KEYWORD-DRIVEN EXAMPLE
+====================================================================
+
+Suppose we define:
+
+    OPEN
+    ENTER
+    CLICK
+    VERIFY
+
+
+Test specification:
+
+    OPEN    "Login Page"
+    ENTER   "Username"    "Apoorv"
+    ENTER   "Password"    "Password123"
+    CLICK   "Login"
+    VERIFY  "Dashboard"
+
+
+The framework maps each keyword to an automation operation.
+
+
+For example:
+
+    CLICK
+      ↓
+    Framework action
+      ↓
+    Locate element
+      ↓
+    Click
+
+
+The exact implementation depends on the framework.
+
+
+====================================================================
+41.16 HYBRID FRAMEWORK
+====================================================================
+
+A hybrid framework combines multiple framework approaches.
+
+For example:
+
+    POM
+      +
+    Data-Driven
+      +
+    Reusable Utilities
+      +
+    Configuration
+      +
+    Reporting
+
+
+Concept:
+
+    Hybrid Framework
+       |
+       +---- POM
+       |
+       +---- Data-driven
+       |
+       +---- Utilities
+       |
+       +---- Configuration
+       |
+       +---- Logging
+       |
+       +---- Reporting
+
+
+In real automation projects, combining useful patterns is common.
+
+
+====================================================================
+41.17 FRAMEWORK TYPE COMPARISON
+====================================================================
+
++----------------------+--------------------------------+
+| Approach             | Main Idea                      |
++----------------------+--------------------------------+
+| POM                  | Page behavior is organized    |
+| Data-driven          | Logic separated from data     |
+| Keyword-driven       | Actions represented as keys   |
+| Hybrid               | Combines approaches           |
++----------------------+--------------------------------+
+
+
+Important:
+
+These are design approaches, not mutually exclusive choices.
+
+
+A framework may use:
+
+    POM
+      +
+    Data-driven
+      +
+    Utility classes
+      +
+    Configuration
+      +
+    Reporting
+
+
+====================================================================
+41.18 CONFIGURATION MANAGEMENT
+====================================================================
+
+Automation tests often need configuration values.
+
+Examples:
+
+    Application URL
+    Environment
+    Browser
+    Test settings
+
+
+Instead of hard-coding these values everywhere:
+
+    Test 1 → URL
+    Test 2 → URL
+    Test 3 → URL
+
+
+centralize configuration.
+
+Concept:
+
+    Configuration
+       |
+       +---- Base URL
+       +---- Browser
+       +---- Environment
+       +---- Other settings
+
+
+Tests read required values from the configuration.
+
+
+====================================================================
+41.19 WHY CONFIGURATION MATTERS
+====================================================================
+
+Suppose there are environments:
+
+    Development
+    Testing
+    Staging
+    Production
+
+
+The same automation test may need to run against different
+environments.
+
+Conceptually:
+
+    Test
+      ↓
+    Configuration
+      ↓
+    Selected Environment
+      ↓
+    Application
+
+
+This avoids modifying test logic simply to change environment
+settings.
+
+
+====================================================================
+41.20 TEST DATA MANAGEMENT
+====================================================================
+
+Test data is the information required by tests.
+
+Examples:
+
+    Usernames
+    Passwords
+    Product data
+    Search values
+    Customer information
+
+
+A good framework separates test data from test logic when
+appropriate.
+
+Concept:
+
+    Test Logic
+        +
+    Test Data
+        ↓
+    Test Execution
+
+
+Benefits:
+
+    Reusability
+    Easier updates
+    Multiple scenarios
+    Reduced duplication
+
+
+This connects directly to the data-driven approach.
+
+
+====================================================================
+41.21 REUSABLE UTILITIES
+====================================================================
+
+Utility components provide common functionality used by multiple
+tests.
+
+Examples:
+
+    Browser utilities
+    Screenshot utilities
+    Data utilities
+    Common interaction helpers
+
+
+Concept:
+
+    Test A ──┐
+    Test B ──┤
+    Test C ──┼──→ Reusable Utility
+    Test D ──┘
+
+
+Instead of rewriting common logic repeatedly.
+
+
+Example:
+
+    captureScreenshot()
+
+
+can be reused by multiple tests.
+
+
+====================================================================
+41.22 WHY REUSABILITY MATTERS
+====================================================================
+
+Without reusable components:
+
+    Test A:
+        write screenshot logic
+
+    Test B:
+        write screenshot logic
+
+    Test C:
+        write screenshot logic
+
+
+With reusable utility:
+
+    Screenshot Utility
+          ↓
+    captureScreenshot()
+          ↑
+       ┌──┼──┐
+       │  │  │
+      A   B  C
+
+
+If screenshot implementation changes, it can be updated centrally.
+
+
+====================================================================
+41.23 LOGGING
+====================================================================
+
+Logging records useful information about test execution.
+
+Example:
+
+    [INFO] Open Login Page
+    [INFO] Enter Username
+    [INFO] Click Login
+    [INFO] Dashboard displayed
+
+
+If a test fails:
+
+    [INFO] Open Login Page
+    [INFO] Enter Username
+    [INFO] Click Login
+    [ERROR] Dashboard not displayed
+
+
+Logs help understand:
+
+    What happened?
+    Where did it happen?
+    When did it happen?
+
+
+Logging is especially valuable when tests run automatically in
+CI/CD environments.
+
+
+====================================================================
+41.24 REPORTING
+====================================================================
+
+Reports communicate test execution results.
+
+Example:
+
+    Regression Suite
+
+    Total:   100
+    Passed:   92
+    Failed:    6
+    Skipped:   2
+
+
+A report may help teams understand:
+
+    Test status
+    Failures
+    Execution results
+
+
+Concept:
+
+    Test Execution
+         ↓
+    Result Collection
+         ↓
+    Report
+         ↓
+    QA / Developers / Team
+
+
+====================================================================
+41.25 SCREENSHOTS
+====================================================================
+
+Screenshots provide visual evidence.
+
+Example:
+
+    Test fails
+       ↓
+    Capture screenshot
+       ↓
+    Attach to report
+       ↓
+    Investigate
+
+
+A screenshot can help identify:
+
+    Unexpected page
+    Wrong data
+    Missing element
+    UI issue
+    Incorrect navigation
+
+
+Screenshots are particularly useful for failures.
+
+
+====================================================================
+41.26 FRAMEWORK EXECUTION FLOW
+====================================================================
+
+A mature automation framework can follow:
+
+    Configuration
+          ↓
+    Test Data
+          ↓
+    Test Case
+          ↓
+    Page Object
+          ↓
+    Selenium / Playwright
+          ↓
+    Application
+          ↓
+    Assertion
+          ↓
+    Result
+       ↙     ↘
+    Logs    Screenshot
+       \      /
+        Report
+
+
+This is a useful mental model for framework architecture.
+
+
+====================================================================
+41.27 COMPLETE E-COMMERCE EXAMPLE
+====================================================================
+
+Application:
+
+    E-Commerce Website
+
+
+Framework:
+
+    tests/
+        loginTest
+        searchTest
+        cartTest
+        checkoutTest
+
+    pages/
+        LoginPage
+        HomePage
+        ProductPage
+        CartPage
+        CheckoutPage
+
+    utilities/
+        BrowserUtility
+        ScreenshotUtility
+        DataUtility
+
+    config/
+        configuration
+
+    test-data/
+        login-data
+        product-data
+
+    reports/
+        execution reports
+
+    logs/
+        execution logs
+
+    screenshots/
+        failure screenshots
+
+
+Execution:
+
+    Test
+      ↓
+    Read configuration
+      ↓
+    Load test data
+      ↓
+    Create/use Page Object
+      ↓
+    Perform browser actions
+      ↓
+    Assert result
+      ↓
+    Log execution
+      ↓
+    Capture screenshot if needed
+      ↓
+    Generate report
+
+
+====================================================================
+41.28 MAINTAINABILITY
+====================================================================
+
+A major framework goal is maintainability.
+
+Suppose:
+
+    Login button changes.
+
+
+Poor framework:
+
+    Locator appears in 30 test files.
+
+
+Result:
+
+    30 files may need changes.
+
+
+Better framework:
+
+    LoginPage
+       ↓
+    Login button locator
+
+
+Change it in the appropriate page object.
+
+
+This is why separation of concerns is important.
+
+
+====================================================================
+41.29 SEPARATION OF CONCERNS
+====================================================================
+
+Different responsibilities should be separated.
+
+Example:
+
+    Test
+      ↓
+    What should be tested?
+
+
+    Page Object
+      ↓
+    How do I interact with the page?
+
+
+    Configuration
+      ↓
+    Which environment/settings?
+
+
+    Test Data
+      ↓
+    Which inputs?
+
+
+    Utility
+      ↓
+    Common reusable operation?
+
+
+    Logging
+      ↓
+    What happened?
+
+
+    Reporting
+      ↓
+    What was the final result?
+
+
+This makes the framework easier to understand and maintain.
+
+
+====================================================================
+41.30 COMMON FRAMEWORK DESIGN MISTAKES
+====================================================================
+
+MISTAKE 1
+---------
+
+Putting everything into one huge class.
+
+Problem:
+
+    Hard to understand
+    Hard to maintain
+    Difficult to reuse
+
+
+MISTAKE 2
+---------
+
+Duplicating locators across test cases.
+
+Better:
+
+    Centralize page-specific information.
+
+
+MISTAKE 3
+---------
+
+Hard-coding environment values everywhere.
+
+Better:
+
+    Centralize configuration.
+
+
+MISTAKE 4
+---------
+
+Mixing test data with test logic unnecessarily.
+
+Better:
+
+    Separate test data where appropriate.
+
+
+MISTAKE 5
+---------
+
+No reusable utilities.
+
+Result:
+
+    Duplicate code.
+
+
+MISTAKE 6
+---------
+
+No logging.
+
+Result:
+
+    Difficult failure investigation.
+
+
+MISTAKE 7
+---------
+
+No useful reporting.
+
+Result:
+
+    Difficult to communicate execution results.
+
+
+MISTAKE 8
+---------
+
+Using POM incorrectly by creating page objects that become huge
+collections of unrelated responsibilities.
+
+Keep responsibilities meaningful and organized.
+
+
+====================================================================
+41.31 FRAMEWORK DESIGN PRINCIPLES
+====================================================================
+
+A job-ready automation framework should aim for:
+
+    REUSABILITY
+        ↓
+    MAINTAINABILITY
+        ↓
+    READABILITY
+        ↓
+    SCALABILITY
+        ↓
+    RELIABILITY
+
+
+Practical principles:
+
+    1. Avoid unnecessary duplication.
+    2. Separate test logic from page interaction.
+    3. Separate test data where useful.
+    4. Centralize configuration.
+    5. Build reusable utilities.
+    6. Add meaningful logging.
+    7. Produce useful reports.
+    8. Capture evidence for failures.
+
+
+====================================================================
+41.32 INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is an automation framework?
+-------------------------------------
+
+An organized structure for developing, executing, maintaining, and
+managing automated tests.
+
+
+Q2. Why do we need an automation framework?
+--------------------------------------------
+
+To improve organization, reusability, maintainability,
+scalability, and consistency of automation.
+
+
+Q3. What is POM?
+----------------
+
+Page Object Model is a design approach where application pages or
+components are represented as objects containing relevant elements
+and interactions.
+
+
+Q4. What is the main benefit of POM?
+------------------------------------
+
+It separates page interaction details from test logic and reduces
+duplication.
+
+
+Q5. What is Page Factory?
+-------------------------
+
+A concept/mechanism used in certain Page Object implementations to
+support initialization of page elements.
+
+
+Q6. What is a data-driven framework?
+-------------------------------------
+
+An approach that separates test data from test logic so the same
+test can execute with multiple data sets.
+
+
+Q7. What is a keyword-driven framework?
+---------------------------------------
+
+An approach where test actions are represented using keywords that
+map to automation operations.
+
+
+Q8. What is a hybrid framework?
+-------------------------------
+
+A framework combining multiple useful approaches, such as POM,
+data-driven design, utilities, configuration, logging, and
+reporting.
+
+
+Q9. Why is configuration management important?
+-----------------------------------------------
+
+It allows settings such as environment and application URL to be
+managed separately from test logic.
+
+
+Q10. Why is logging important?
+------------------------------
+
+It records execution information and helps diagnose failures.
+
+
+Q11. Why are screenshots useful?
+--------------------------------
+
+They provide visual evidence during execution, particularly when
+tests fail.
+
+
+Q12. Why is test data separated from test logic?
+-------------------------------------------------
+
+To improve reuse, maintainability, and the ability to execute the
+same test with different inputs.
+
+
+Q13. What is separation of concerns?
+------------------------------------
+
+Separating different responsibilities such as test logic, page
+interaction, configuration, data, utilities, logging, and
+reporting.
+
+
+====================================================================
+41.33 QUICK REVISION
+====================================================================
+
+AUTOMATION FRAMEWORK
+--------------------
+Organized structure for automated testing.
+
+
+POM
+---
+Page Object Model.
+
+    Test
+      ↓
+    Page Object
+      ↓
+    Application
+
+
+PAGE FACTORY
+------------
+Concept/mechanism for page element initialization in certain POM
+implementations.
+
+
+DATA-DRIVEN
+-----------
+    Test Logic
+        +
+    Test Data
+        ↓
+    Multiple Executions
+
+
+KEYWORD-DRIVEN
+--------------
+    Keyword
+       ↓
+    Automation Action
+
+
+HYBRID
+------
+Combination of multiple useful framework approaches.
+
+
+CONFIGURATION
+-------------
+Centralized environment/application settings.
+
+
+TEST DATA
+---------
+Inputs required by tests.
+
+
+UTILITY
+-------
+Reusable common functionality.
+
+
+LOGGING
+-------
+Execution information.
+
+
+REPORTING
+---------
+Test execution results.
+
+
+SCREENSHOT
+----------
+Visual execution evidence.
+
+
+====================================================================
+41.34 JOB-READY CHECKLIST
+====================================================================
+
+You should be able to explain:
+
+[✓] What an automation framework is
+[✓] Why framework design is needed
+[✓] Basic framework structure
+[✓] Page Object Model
+[✓] POM benefits
+[✓] Page Factory concept
+[✓] Data-driven framework
+[✓] Keyword-driven framework
+[✓] Hybrid framework
+[✓] Configuration management
+[✓] Test data management
+[✓] Reusable utilities
+[✓] Logging
+[✓] Reporting
+[✓] Screenshots
+[✓] Separation of concerns
+[✓] Maintainability
+[✓] Reusability
+[✓] Framework design mistakes
+[✓] Framework execution flow
+
+
+====================================================================
+41.35 CHAPTER 41 FINAL TAKEAWAY
+====================================================================
+
+A beginner automation script looks like:
+
+    Test
+      ↓
+    Browser
+      ↓
+    Application
+
+
+A job-ready automation framework looks more like:
+
+    Test Cases
+        ↓
+    Test Framework
+        ↓
+    Page Objects
+        ↓
+    Reusable Utilities
+        ↓
+    Configuration + Test Data
+        ↓
+    Selenium / Playwright
+        ↓
+    Application
+        ↓
+    Assertions
+        ↓
+    Logs + Screenshots
+        ↓
+    Reports
+
+
+The central idea is:
+
+    DON'T JUST AUTOMATE TESTS.
+
+    DESIGN AUTOMATION THAT CAN BE
+    MAINTAINED AS THE APPLICATION GROWS.
+
+
+====================================================================
+                    NEXT: CHAPTER 42
+                    ADVANCED UI AUTOMATION
+====================================================================
+
+Topics:
+    • Dynamic / Relative XPath
+    • CSS
+    • Tables
+    • Autosuggest
+    • Date Pickers
+    • File Upload / Download
+    • Windows
+    • Shadow DOM
+    • Iframes
+    • Parallel Execution
+====================================================================

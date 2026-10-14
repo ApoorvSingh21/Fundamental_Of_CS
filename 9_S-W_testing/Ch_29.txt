@@ -1,0 +1,1250 @@
+i================================================================
+       SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+================================================================
+
+                    CHAPTER 29
+                    ADVANCED SQL
+================================================================
+
+SOURCE TOPICS
+-------------
+• JOINs
+• Self JOIN
+• Subqueries
+• Aggregate Functions
+• CASE
+• Views
+• Indexes
+• Transactions
+
+
+================================================================
+29.1 WHY ADVANCED SQL IS IMPORTANT FOR QA
+================================================================
+
+Basic SQL helps a tester verify individual records.
+
+Advanced SQL helps a tester verify relationships and complex
+business data.
+
+Typical QA validation:
+
+        UI
+         ↓
+        API
+         ↓
+     Business Logic
+         ↓
+      DATABASE
+         ↓
+  Multiple Related Tables
+         ↓
+      SQL Query
+         ↓
+ Expected vs Actual
+
+
+Example:
+
+An e-commerce order may involve:
+
+    customers
+    orders
+    order_items
+    products
+    payments
+
+A tester may need to combine information from several tables.
+
+This is where JOINs, subqueries and aggregate functions become
+important.
+
+
+================================================================
+29.2 SAMPLE DATABASE
+================================================================
+
+Assume the following tables.
+
+CUSTOMERS
+
++----+--------+-------------------+
+| id | name   | email             |
++----+--------+-------------------+
+| 1  | Rahul  | rahul@gmail.com   |
+| 2  | Priya  | priya@gmail.com   |
+| 3  | Amit   | amit@gmail.com    |
++----+--------+-------------------+
+
+
+ORDERS
+
++----+-------------+--------+
+| id | customer_id | amount |
++----+-------------+--------+
+| 101| 1           | 5000   |
+| 102| 1           | 2000   |
+| 103| 2           | 7000   |
++----+-------------+--------+
+
+
+PRODUCTS
+
++----+----------+-------+
+| id | name     | price |
++----+----------+-------+
+| 1  | Laptop   | 60000 |
+| 2  | Mouse    | 1000  |
+| 3  | Keyboard | 2500  |
++----+----------+-------+
+
+
+================================================================
+29.3 JOIN
+================================================================
+
+A JOIN combines rows from multiple tables using a related
+column.
+
+Example relationship:
+
+    CUSTOMERS
+        |
+        | customer_id
+        ↓
+     ORDERS
+
+
+Customer:
+
+    id = 1
+    name = Rahul
+
+Order:
+
+    customer_id = 1
+    amount = 5000
+
+A JOIN allows us to retrieve:
+
+    Rahul → Order 101 → ₹5000
+
+
+================================================================
+29.4 INNER JOIN
+================================================================
+
+INNER JOIN returns matching records from both tables.
+
+Syntax:
+
+    SELECT columns
+    FROM table1
+    INNER JOIN table2
+        ON table1.column = table2.column;
+
+
+Example:
+
+    SELECT customers.name,
+           orders.id,
+           orders.amount
+    FROM customers
+    INNER JOIN orders
+        ON customers.id = orders.customer_id;
+
+
+Result:
+
++-------+------+--------+
+| name  | id   | amount |
++-------+------+--------+
+| Rahul | 101  | 5000   |
+| Rahul | 102  | 2000   |
+| Priya | 103  | 7000   |
++-------+------+--------+
+
+
+IMPORTANT:
+
+A customer without an order will not appear in an INNER JOIN.
+
+
+================================================================
+29.5 WHY JOIN IS IMPORTANT FOR QA
+================================================================
+
+Suppose the UI displays:
+
+    Customer: Rahul
+    Order: 101
+    Amount: ₹5000
+
+Tester can verify the backend data:
+
+    SELECT c.name,
+           o.id,
+           o.amount
+    FROM customers c
+    INNER JOIN orders o
+        ON c.id = o.customer_id
+    WHERE o.id = 101;
+
+
+Expected:
+
+    Rahul
+    101
+    5000
+
+
+This validates relationships between database tables.
+
+
+================================================================
+29.6 TABLE ALIASES
+================================================================
+
+Aliases provide shorter names for tables.
+
+Example:
+
+    SELECT c.name, o.amount
+    FROM customers c
+    JOIN orders o
+        ON c.id = o.customer_id;
+
+
+Here:
+
+    c → customers
+    o → orders
+
+
+Aliases make complex queries easier to read.
+
+
+================================================================
+29.7 LEFT JOIN
+================================================================
+
+LEFT JOIN returns:
+
+    All records from the LEFT table
+
+plus:
+
+    Matching records from the RIGHT table.
+
+
+Example:
+
+    SELECT c.name, o.id
+    FROM customers c
+    LEFT JOIN orders o
+        ON c.id = o.customer_id;
+
+
+Suppose Amit has no order.
+
+Result can contain:
+
+    Rahul → 101
+    Rahul → 102
+    Priya → 103
+    Amit  → NULL
+
+
+This is useful for QA validation.
+
+Example requirement:
+
+    "Display all registered users, including users who
+     have never placed an order."
+
+
+A LEFT JOIN can help validate this requirement.
+
+
+================================================================
+29.8 RIGHT JOIN
+================================================================
+
+RIGHT JOIN returns:
+
+    All records from the RIGHT table
+
+plus:
+
+    Matching records from the LEFT table.
+
+
+Conceptually:
+
+    LEFT JOIN
+        → Keep all left-table records
+
+    RIGHT JOIN
+        → Keep all right-table records
+
+
+The exact availability and behavior can depend on the
+database system being used.
+
+
+================================================================
+29.9 SELF JOIN
+================================================================
+
+A SELF JOIN joins a table with itself.
+
+It is useful when records within the same table have a
+relationship.
+
+Example:
+
+EMPLOYEES
+
++----+----------+------------+
+| id | name     | manager_id |
++----+----------+------------+
+| 1  | Rahul    | NULL       |
+| 2  | Priya    | 1          |
+| 3  | Amit     | 1          |
++----+----------+------------+
+
+
+Here:
+
+    Priya.manager_id = Rahul.id
+
+    Amit.manager_id = Rahul.id
+
+
+A SELF JOIN can display:
+
+    Employee → Manager
+
+
+Example:
+
+    SELECT e.name AS employee,
+           m.name AS manager
+    FROM employees e
+    LEFT JOIN employees m
+        ON e.manager_id = m.id;
+
+
+Result conceptually:
+
+    Rahul → NULL
+    Priya → Rahul
+    Amit  → Rahul
+
+
+================================================================
+29.10 SUBQUERY
+================================================================
+
+A subquery is a query inside another query.
+
+Example:
+
+Find products whose price is greater than the average price.
+
+First:
+
+    SELECT AVG(price)
+    FROM products;
+
+
+Then use it inside another query:
+
+    SELECT *
+    FROM products
+    WHERE price >
+        (SELECT AVG(price)
+         FROM products);
+
+
+The inner query executes as part of the larger query.
+
+
+================================================================
+29.11 WHY SUBQUERIES MATTER FOR QA
+================================================================
+
+Suppose a requirement says:
+
+    "Find all customers whose order amount is greater than
+     the average order amount."
+
+A tester can validate the requirement using a subquery.
+
+Example:
+
+    SELECT *
+    FROM orders
+    WHERE amount >
+        (SELECT AVG(amount)
+         FROM orders);
+
+
+This is useful when validating:
+
+    • Reports
+    • Dashboards
+    • Business rules
+    • Analytics
+    • Filtering logic
+
+
+================================================================
+29.12 AGGREGATE FUNCTIONS
+================================================================
+
+Aggregate functions calculate values across multiple rows.
+
+Common functions:
+
+    COUNT()
+    SUM()
+    AVG()
+    MIN()
+    MAX()
+
+
+---------------------------------------------------------------
+COUNT()
+---------------------------------------------------------------
+
+Counts records.
+
+Example:
+
+    SELECT COUNT(*)
+    FROM customers;
+
+
+Possible result:
+
+    3
+
+
+QA example:
+
+UI:
+
+    Total Customers: 3
+
+Database:
+
+    SELECT COUNT(*)
+    FROM customers;
+
+
+Compare UI and database values.
+
+
+---------------------------------------------------------------
+SUM()
+---------------------------------------------------------------
+
+Calculates the total.
+
+Example:
+
+    SELECT SUM(amount)
+    FROM orders;
+
+
+Possible result:
+
+    14000
+
+
+QA example:
+
+    Verify total order amount displayed in a dashboard.
+
+
+---------------------------------------------------------------
+AVG()
+---------------------------------------------------------------
+
+Calculates average.
+
+Example:
+
+    SELECT AVG(amount)
+    FROM orders;
+
+
+---------------------------------------------------------------
+MIN()
+---------------------------------------------------------------
+
+Returns minimum value.
+
+Example:
+
+    SELECT MIN(amount)
+    FROM orders;
+
+
+---------------------------------------------------------------
+MAX()
+---------------------------------------------------------------
+
+Returns maximum value.
+
+Example:
+
+    SELECT MAX(amount)
+    FROM orders;
+
+
+================================================================
+29.13 AGGREGATE + GROUP BY
+================================================================
+
+Aggregate functions become particularly useful with GROUP BY.
+
+Example:
+
+    SELECT customer_id,
+           SUM(amount)
+    FROM orders
+    GROUP BY customer_id;
+
+
+Result conceptually:
+
+    Customer 1 → 7000
+    Customer 2 → 7000
+
+
+QA USE:
+
+If an application displays:
+
+    Rahul's Total Orders = ₹7000
+
+Tester can verify:
+
+    SELECT customer_id,
+           SUM(amount)
+    FROM orders
+    WHERE customer_id = 1
+    GROUP BY customer_id;
+
+
+================================================================
+29.14 CASE
+================================================================
+
+CASE is used to implement conditional logic in SQL.
+
+Concept:
+
+    IF condition
+       THEN result
+    ELSE result
+
+
+Example:
+
+    SELECT name,
+           price,
+           CASE
+               WHEN price >= 50000 THEN 'Expensive'
+               WHEN price >= 5000 THEN 'Medium'
+               ELSE 'Low'
+           END AS price_category
+    FROM products;
+
+
+Possible output:
+
+    Laptop    → Expensive
+    Mouse     → Low
+    Keyboard  → Low
+
+
+QA USE:
+
+CASE can help validate business classifications.
+
+For example:
+
+    Amount >= 10000
+        → High Value
+
+    Amount < 10000
+        → Normal
+
+
+A tester can compare database classification with application
+logic.
+
+
+================================================================
+29.15 VIEWS
+================================================================
+
+A VIEW is a database object representing a query result.
+
+Conceptually:
+
+    Complex Query
+         ↓
+        VIEW
+         ↓
+   Easy Data Access
+
+
+Example:
+
+    CREATE VIEW customer_orders AS
+    SELECT c.name,
+           o.id,
+           o.amount
+    FROM customers c
+    JOIN orders o
+        ON c.id = o.customer_id;
+
+
+Then:
+
+    SELECT *
+    FROM customer_orders;
+
+
+Instead of repeatedly writing the complete JOIN query,
+the view can be queried.
+
+
+================================================================
+29.16 WHY VIEWS MATTER FOR QA
+================================================================
+
+Views may be used by applications, reports, or database
+processes.
+
+A tester may need to verify:
+
+    • View contains expected records
+    • View reflects source-table changes
+    • Calculated data is correct
+    • Filters are correct
+    • Joins are correct
+
+
+Example:
+
+    SELECT *
+    FROM customer_orders
+    WHERE name = 'Rahul';
+
+
+This can help validate reporting functionality.
+
+
+================================================================
+29.17 INDEXES
+================================================================
+
+An INDEX helps a database find data efficiently.
+
+Conceptually:
+
+Without useful indexing:
+
+    Query
+      ↓
+  More data scanning
+      ↓
+   Slower lookup
+
+
+With an appropriate index:
+
+    Query
+      ↓
+    Index
+      ↓
+  Faster lookup
+
+
+Example:
+
+    CREATE INDEX idx_customer_email
+    ON customers(email);
+
+
+Now the email column can have an index.
+
+
+================================================================
+29.18 INDEXES AND QA
+================================================================
+
+Indexes are primarily a database performance concern.
+
+A QA engineer may encounter indexes while testing:
+
+    • Search
+    • Large-data queries
+    • API response time
+    • Reports
+    • Performance testing
+
+
+Example:
+
+A search works correctly with 100 records but becomes very
+slow with millions of records.
+
+The tester may work with developers/DBAs to investigate
+database query performance and indexing.
+
+
+IMPORTANT:
+
+An index is not automatically "better" in every situation.
+
+Indexes also have storage and write/update costs.
+
+The source syllabus only requires understanding the concept
+and its relevance to testing.
+
+
+================================================================
+29.19 TRANSACTIONS
+================================================================
+
+A transaction is a logical unit of database work.
+
+Example:
+
+Bank transfer:
+
+    Account A
+        ↓
+    Remove ₹1000
+        ↓
+    Add ₹1000
+    Account B
+
+
+Both operations should behave as one logical operation.
+
+If something fails midway, the database should not be left
+in an invalid state.
+
+
+================================================================
+29.20 COMMIT
+================================================================
+
+COMMIT makes transaction changes permanent.
+
+Concept:
+
+    BEGIN TRANSACTION
+          ↓
+       Changes
+          ↓
+       COMMIT
+          ↓
+    Changes saved
+
+
+Example:
+
+    UPDATE accounts
+    SET balance = balance - 1000
+    WHERE id = 1;
+
+    COMMIT;
+
+
+================================================================
+29.21 ROLLBACK
+================================================================
+
+ROLLBACK reverses uncommitted transaction changes.
+
+Concept:
+
+    BEGIN TRANSACTION
+          ↓
+       Changes
+          ↓
+       Problem
+          ↓
+      ROLLBACK
+          ↓
+    Undo changes
+
+
+This is important for testing failure scenarios.
+
+
+================================================================
+29.22 TRANSACTION QA SCENARIO
+================================================================
+
+Consider an online payment.
+
+User clicks:
+
+    PAY ₹5,000
+
+
+Expected:
+
+    Payment succeeds
+        ↓
+    Order created
+        ↓
+    Payment recorded
+        ↓
+    Inventory updated
+
+
+If the payment fails:
+
+    Order/payment/inventory state should remain consistent
+    according to the application's business rules.
+
+
+Tester may validate the resulting database records.
+
+This is especially important in:
+
+    • Banking
+    • E-commerce
+    • FinTech
+    • Payment systems
+
+
+================================================================
+29.23 COMBINING ADVANCED SQL
+================================================================
+
+Real QA queries often combine multiple concepts.
+
+Example:
+
+    SELECT c.name,
+           COUNT(o.id) AS order_count,
+           SUM(o.amount) AS total_amount
+    FROM customers c
+    LEFT JOIN orders o
+        ON c.id = o.customer_id
+    GROUP BY c.name;
+
+
+This can produce:
+
+    Customer → Number of Orders → Total Amount
+
+
+This is much more useful for testing reports than querying
+one table at a time.
+
+
+================================================================
+29.24 PRACTICAL QA SCENARIOS
+================================================================
+
+SCENARIO 1 — CUSTOMER + ORDERS
+------------------------------
+
+Requirement:
+
+    Display customer name and order amount.
+
+Query:
+
+    SELECT c.name,
+           o.amount
+    FROM customers c
+    JOIN orders o
+        ON c.id = o.customer_id;
+
+
+Verify UI against database results.
+
+
+---------------------------------------------------------------
+
+SCENARIO 2 — CUSTOMER WITH NO ORDER
+------------------------------------
+
+Requirement:
+
+    Display customers who have never ordered.
+
+One possible approach:
+
+    SELECT c.name
+    FROM customers c
+    LEFT JOIN orders o
+        ON c.id = o.customer_id
+    WHERE o.id IS NULL;
+
+
+This helps identify customers with no matching orders.
+
+
+---------------------------------------------------------------
+
+SCENARIO 3 — TOTAL ORDERS
+--------------------------
+
+Requirement:
+
+    Dashboard displays total number of orders.
+
+Query:
+
+    SELECT COUNT(*)
+    FROM orders;
+
+
+Compare with dashboard.
+
+
+---------------------------------------------------------------
+
+SCENARIO 4 — TOTAL REVENUE
+---------------------------
+
+Requirement:
+
+    Dashboard displays total sales.
+
+Query:
+
+    SELECT SUM(amount)
+    FROM orders;
+
+
+Compare with application output.
+
+
+---------------------------------------------------------------
+
+SCENARIO 5 — HIGHEST ORDER
+---------------------------
+
+Query:
+
+    SELECT MAX(amount)
+    FROM orders;
+
+
+Verify maximum order amount.
+
+
+---------------------------------------------------------------
+
+SCENARIO 6 — BUSINESS CLASSIFICATION
+-------------------------------------
+
+Requirement:
+
+    Orders above ₹5,000 are "High Value".
+
+Query:
+
+    SELECT id,
+           amount,
+           CASE
+               WHEN amount > 5000 THEN 'High Value'
+               ELSE 'Normal'
+           END AS category
+    FROM orders;
+
+
+Compare database-derived result with application behavior.
+
+
+================================================================
+29.25 BASIC SQL vs ADVANCED SQL
+================================================================
+
+BASIC SQL
+---------
+
+    SELECT
+    WHERE
+    ORDER BY
+    DISTINCT
+    GROUP BY
+    HAVING
+    INSERT
+    UPDATE
+    DELETE
+    LIKE
+    IN
+    BETWEEN
+    NULL
+
+
+ADVANCED SQL
+------------
+
+    JOIN
+    SELF JOIN
+    SUBQUERY
+    AGGREGATE FUNCTIONS
+    CASE
+    VIEWS
+    INDEXES
+    TRANSACTIONS
+
+
+The goal is not simply memorizing syntax.
+
+The goal is to use SQL to validate application behavior.
+
+
+================================================================
+29.26 COMMON QA INTERVIEW QUESTIONS
+================================================================
+
+Q1. What is a JOIN?
+-------------------
+A JOIN combines related data from multiple tables.
+
+
+Q2. What is INNER JOIN?
+-----------------------
+It returns matching records from both joined tables.
+
+
+Q3. What is LEFT JOIN?
+----------------------
+It returns all records from the left table and matching
+records from the right table.
+
+
+Q4. What is a SELF JOIN?
+------------------------
+A SELF JOIN joins a table with itself.
+
+
+Q5. What is a subquery?
+-----------------------
+A query written inside another query.
+
+
+Q6. What are aggregate functions?
+---------------------------------
+Functions that calculate values across multiple rows.
+
+Examples:
+
+    COUNT()
+    SUM()
+    AVG()
+    MIN()
+    MAX()
+
+
+Q7. What is CASE?
+-----------------
+CASE provides conditional logic in SQL queries.
+
+
+Q8. What is a VIEW?
+-------------------
+A VIEW represents a query-based database object that can be
+queried like a table in supported database systems.
+
+
+Q9. What is an INDEX?
+---------------------
+An index is a database structure that can help improve lookup
+performance.
+
+
+Q10. What is a transaction?
+---------------------------
+A transaction is a logical unit of database operations.
+
+
+Q11. What is COMMIT?
+--------------------
+COMMIT makes transaction changes permanent.
+
+
+Q12. What is ROLLBACK?
+----------------------
+ROLLBACK reverses uncommitted transaction changes.
+
+
+================================================================
+29.27 IMPORTANT QA THINKING
+================================================================
+
+A QA engineer should ask:
+
+    "What data should exist?"
+
+    "Where is that data stored?"
+
+    "Which tables are involved?"
+
+    "How are the tables related?"
+
+    "What query can verify it?"
+
+    "What should happen if the operation fails?"
+
+This turns SQL knowledge into practical testing skill.
+
+
+================================================================
+29.28 QUICK REVISION
+================================================================
+
+JOIN
+ ↓
+Combine related tables
+
+INNER JOIN
+ ↓
+Matching records
+
+LEFT JOIN
+ ↓
+All left records + matches
+
+SELF JOIN
+ ↓
+Table joined with itself
+
+SUBQUERY
+ ↓
+Query inside another query
+
+COUNT
+ ↓
+Number of records
+
+SUM
+ ↓
+Total
+
+AVG
+ ↓
+Average
+
+MIN
+ ↓
+Minimum
+
+MAX
+ ↓
+Maximum
+
+CASE
+ ↓
+Conditional logic
+
+VIEW
+ ↓
+Saved/query-based database object
+
+INDEX
+ ↓
+Can improve lookup performance
+
+TRANSACTION
+ ↓
+Logical unit of database work
+
+COMMIT
+ ↓
+Make changes permanent
+
+ROLLBACK
+ ↓
+Undo uncommitted changes
+
+
+================================================================
+29.29 JOB-READY CHECKLIST
+================================================================
+
+Before moving ahead, you should be able to:
+
+    [✓] Explain JOIN
+    [✓] Write INNER JOIN queries
+    [✓] Understand LEFT JOIN
+    [✓] Explain SELF JOIN
+    [✓] Write basic subqueries
+    [✓] Use COUNT()
+    [✓] Use SUM()
+    [✓] Use AVG()
+    [✓] Use MIN()
+    [✓] Use MAX()
+    [✓] Use GROUP BY with aggregates
+    [✓] Understand CASE
+    [✓] Explain database views
+    [✓] Explain indexes at a basic level
+    [✓] Explain transactions
+    [✓] Understand COMMIT
+    [✓] Understand ROLLBACK
+    [✓] Use SQL for UI/database validation
+    [✓] Validate reports and dashboard data
+    [✓] Explain SQL testing scenarios in interviews
+
+
+================================================================
+CHAPTER 29 — FINAL TAKEAWAY
+================================================================
+
+Basic SQL allows a tester to inspect data.
+
+Advanced SQL allows a tester to understand relationships,
+calculations and business data across multiple tables.
+
+The practical QA mindset is:
+
+        REQUIREMENT
+             ↓
+        APPLICATION
+             ↓
+          API
+             ↓
+       DATABASE
+             ↓
+    MULTIPLE TABLES
+             ↓
+       ADVANCED SQL
+             ↓
+    EXPECTED vs ACTUAL
+             ↓
+       PASS / DEFECT
+
+
+================================================================
+
+NEXT → CHAPTER 30: DATABASE TESTING
+
+Topics:
+• Database Validation
+• CRUD Testing
+• Data Integrity
+• Referential Integrity
+• UI ↔ Database Validation
+• Backend Validation
+• Stored Procedures
+• Database Migration
+• ETL Basics
+================================================================

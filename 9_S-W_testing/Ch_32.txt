@@ -1,0 +1,1914 @@
+o======================================================================
+       SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+======================================================================
+
+                         CHAPTER 32
+                    HTTP / API CONCEPTS
+======================================================================
+
+COURSE POSITION
+---------------
+Chapter 32 of 78
+Phase 10 → API Testing
+
+PREVIOUS
+--------
+Chapter 31 → API Fundamentals
+
+CURRENT
+-------
+Chapter 32 → HTTP / API Concepts
+
+NEXT
+----
+Chapter 33 → Postman
+
+SOURCE TOPICS
+-------------
+• Headers
+• Body
+• Query Parameters
+• Path Parameters
+• Authentication
+• Authorization
+• Cookies
+• Tokens
+• JWT
+• HTTP Status Codes
+======================================================================
+
+
+32.1 HTTP — THE FOUNDATION OF WEB APIs
+======================================
+
+HTTP stands for:
+
+    HyperText Transfer Protocol
+
+
+HTTP is commonly used for communication between clients and servers.
+
+
+Basic flow:
+
+    CLIENT
+       |
+       | HTTP Request
+       v
+    SERVER
+       |
+       | HTTP Response
+       v
+    CLIENT
+
+
+Example:
+
+    Browser
+       |
+       | GET /users/101
+       v
+    Server
+       |
+       | Response
+       v
+    Browser
+
+
+APIs commonly use HTTP to exchange requests and responses.
+
+
+======================================================================
+32.2 HTTPS
+======================================================================
+
+HTTPS is HTTP over a secure encrypted connection.
+
+Conceptually:
+
+    HTTP
+      ↓
+    Data communication
+
+
+    HTTPS
+      ↓
+    HTTP + secure encrypted transport
+
+
+For QA, HTTPS is important because API requests may contain:
+
+    • User information
+    • Authentication credentials
+    • Tokens
+    • Personal information
+    • Business data
+
+
+Testing should therefore verify that APIs behave correctly over the
+expected secure protocol.
+
+
+======================================================================
+32.3 HTTP REQUEST
+======================================================================
+
+An HTTP request is sent from the client to the server.
+
+
+A request can contain:
+
+
+    HTTP METHOD
+        ↓
+    URL
+        ↓
+    HEADERS
+        ↓
+    PARAMETERS
+        ↓
+    REQUEST BODY
+
+
+Example:
+
+    POST /users
+
+    Headers:
+        Content-Type: application/json
+
+    Body:
+        {
+            "name": "Apoorv",
+            "email": "apoorv@example.com"
+        }
+
+
+The server receives and processes this request.
+
+
+======================================================================
+32.4 HTTP RESPONSE
+======================================================================
+
+The server returns an HTTP response.
+
+
+A response commonly contains:
+
+
+    STATUS CODE
+        ↓
+    HEADERS
+        ↓
+    RESPONSE BODY
+
+
+Example:
+
+    HTTP/1.1 200 OK
+
+    Content-Type: application/json
+
+    {
+        "user_id": 101,
+        "name": "Apoorv"
+    }
+
+
+QA engineers inspect all these parts while testing APIs.
+
+
+======================================================================
+32.5 API REQUEST STRUCTURE
+======================================================================
+
+A typical API request can be visualized as:
+
+
+    +--------------------------------------+
+    | HTTP METHOD                          |
+    | GET / POST / PUT / PATCH / DELETE    |
+    +--------------------------------------+
+    | URL / ENDPOINT                       |
+    +--------------------------------------+
+    | HEADERS                              |
+    +--------------------------------------+
+    | PARAMETERS                           |
+    +--------------------------------------+
+    | REQUEST BODY                         |
+    +--------------------------------------+
+
+
+Not every request requires every component.
+
+For example, a simple GET request may not require a request body.
+
+
+======================================================================
+32.6 HEADERS
+======================================================================
+
+HTTP HEADERS provide additional information about a request or
+response.
+
+
+Examples include:
+
+    Content-Type
+    Authorization
+    Accept
+    Cookie
+
+
+Headers help the client and server understand how the request or
+response should be handled.
+
+
+Example:
+
+    Content-Type: application/json
+
+
+This tells the server that the request body is JSON.
+
+
+Another example:
+
+    Authorization: Bearer <token>
+
+
+This can provide authentication credentials/token information.
+
+
+======================================================================
+32.7 CONTENT-TYPE
+======================================================================
+
+Content-Type describes the format of the message body.
+
+
+Common example:
+
+    Content-Type: application/json
+
+
+Meaning:
+
+    The body contains JSON data.
+
+
+Example request:
+
+    POST /users
+
+    Content-Type: application/json
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+QA should verify that the API handles the expected content type
+correctly.
+
+
+======================================================================
+32.8 ACCEPT HEADER
+======================================================================
+
+The Accept header tells the server what response format the client
+can accept.
+
+
+Example:
+
+    Accept: application/json
+
+
+Conceptually:
+
+    Client:
+        "I expect JSON response."
+
+
+Server:
+
+    Returns response according to the API's supported behavior.
+
+
+QA can verify that response content matches the expected contract.
+
+
+======================================================================
+32.9 REQUEST BODY
+======================================================================
+
+The REQUEST BODY contains data sent to the server.
+
+
+It is commonly used with:
+
+    POST
+    PUT
+    PATCH
+
+
+Example:
+
+    POST /users
+
+
+Body:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+The server processes the supplied data.
+
+
+QA should validate:
+
+    • Required fields
+    • Data values
+    • Data types
+    • Missing fields
+    • Invalid values
+    • Expected response
+    • Persistence where applicable
+
+
+======================================================================
+32.10 RESPONSE BODY
+======================================================================
+
+The RESPONSE BODY contains data returned by the server.
+
+
+Example:
+
+    {
+        "user_id": 101,
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+QA can verify:
+
+    • Required fields
+    • Correct values
+    • Data types
+    • Structure
+    • Business rules
+
+
+For example:
+
+    Expected user_id:
+        101
+
+    Actual:
+        102
+
+
+This could indicate an API defect.
+
+
+======================================================================
+32.11 QUERY PARAMETERS
+======================================================================
+
+QUERY PARAMETERS are parameters added to the URL to provide filtering,
+searching, sorting, pagination, or other request information.
+
+
+They commonly appear after:
+
+    ?
+
+
+Example:
+
+    GET /users?city=Indore
+
+
+Here:
+
+    city=Indore
+
+is a query parameter.
+
+
+Another example:
+
+    GET /products?category=laptop
+
+
+Conceptually:
+
+    /products
+        ?
+        category=laptop
+
+
+======================================================================
+32.12 MULTIPLE QUERY PARAMETERS
+======================================================================
+
+Multiple query parameters are commonly separated using:
+
+    &
+
+
+Example:
+
+    GET /products?category=laptop&sort=price
+
+
+Parameters:
+
+    category = laptop
+    sort     = price
+
+
+Another example:
+
+    GET /users?city=Indore&status=active
+
+
+Parameters:
+
+    city   = Indore
+    status = active
+
+
+QA should verify that each parameter produces the expected behavior.
+
+
+======================================================================
+32.13 QUERY PARAMETER QA TESTING
+======================================================================
+
+Suppose an API supports:
+
+    GET /products?category=laptop
+
+
+QA can test:
+
+
+POSITIVE:
+
+    category=laptop
+
+
+NEGATIVE:
+
+    category=unknown
+
+
+MISSING:
+
+    GET /products
+
+
+INVALID:
+
+    category=###
+
+
+QA verifies:
+
+    • Response
+    • Status code
+    • Returned records
+    • Error handling
+    • Filtering behavior
+
+
+======================================================================
+32.14 PATH PARAMETERS
+======================================================================
+
+PATH PARAMETERS are values embedded directly into the URL path.
+
+
+Example:
+
+    GET /users/101
+
+
+Here:
+
+    101
+
+is the user identifier.
+
+
+Another example:
+
+    GET /products/201
+
+
+Here:
+
+    201
+
+identifies the product.
+
+
+Concept:
+
+    /users/{user_id}
+
+
+Actual request:
+
+    /users/101
+
+
+======================================================================
+32.15 QUERY PARAMETER vs PATH PARAMETER
+======================================================================
+
+PATH PARAMETER
+--------------
+
+Identifies a particular resource.
+
+
+Example:
+
+    GET /users/101
+
+
+Meaning:
+
+    Get user 101.
+
+
+QUERY PARAMETER
+---------------
+
+Provides additional request/filtering information.
+
+
+Example:
+
+    GET /users?city=Indore
+
+
+Meaning:
+
+    Get users filtered by city.
+
+
+Simple distinction:
+
+    PATH
+      ↓
+    Resource identification
+
+
+    QUERY
+      ↓
+    Filtering / options / request parameters
+
+
+======================================================================
+32.16 COMBINING PATH AND QUERY PARAMETERS
+======================================================================
+
+Both can appear in one API request.
+
+
+Example:
+
+    GET /users/101?details=true
+
+
+Here:
+
+    101
+      ↓
+    Path parameter
+
+    details=true
+      ↓
+    Query parameter
+
+
+QA should verify that both parts are processed correctly.
+
+
+======================================================================
+32.17 AUTHENTICATION
+======================================================================
+
+AUTHENTICATION answers:
+
+    "Who are you?"
+
+
+It verifies the identity of the client/user.
+
+
+Examples:
+
+    • Username/password
+    • Token
+    • JWT
+    • Other supported authentication mechanisms
+
+
+Concept:
+
+    Client
+       |
+       | Credentials
+       v
+    Authentication
+       |
+       v
+    Identity verified
+
+
+Example:
+
+    User logs in
+         ↓
+    Credentials validated
+         ↓
+    Authentication succeeds
+         ↓
+    Token/session may be issued
+
+
+======================================================================
+32.18 AUTHORIZATION
+======================================================================
+
+AUTHORIZATION answers:
+
+    "What are you allowed to do?"
+
+
+Authentication and authorization are different.
+
+
+AUTHENTICATION:
+
+    Who are you?
+
+
+AUTHORIZATION:
+
+    What can you access?
+
+
+Example:
+
+
+    User logs in
+         ↓
+    Authentication
+         ↓
+    User identified as:
+        Normal User
+         ↓
+    Authorization
+         ↓
+    Allowed:
+        View own profile
+
+
+    Not allowed:
+        Access admin functions
+
+
+======================================================================
+32.19 AUTHENTICATION vs AUTHORIZATION
+======================================================================
+
+    AUTHENTICATION
+        ↓
+    Identity verification
+        ↓
+    "Who are you?"
+
+
+    AUTHORIZATION
+        ↓
+    Permission verification
+        ↓
+    "What can you access?"
+
+
+Example:
+
+    Login
+      ↓
+    Authentication
+
+
+    Access Admin API
+      ↓
+    Authorization
+
+
+This distinction is extremely important in QA interviews.
+
+
+======================================================================
+32.20 API AUTHENTICATION EXAMPLE
+======================================================================
+
+Suppose:
+
+    POST /login
+
+
+Request:
+
+    {
+        "username": "apoorv",
+        "password": "password"
+    }
+
+
+Server validates credentials.
+
+
+Possible response:
+
+    {
+        "token": "abc123..."
+    }
+
+
+The client can then use the token for protected API requests.
+
+
+Concept:
+
+    LOGIN
+      ↓
+    Credentials validated
+      ↓
+    Token issued
+      ↓
+    Token used for protected requests
+
+
+======================================================================
+32.21 TOKENS
+======================================================================
+
+A TOKEN is a value used to represent authenticated access according to
+the API's authentication design.
+
+
+Conceptual flow:
+
+    Login
+      ↓
+    Authentication
+      ↓
+    Token
+      ↓
+    Protected API request
+
+
+Example header:
+
+    Authorization: Bearer <token>
+
+
+The exact token format depends on the authentication mechanism.
+
+
+QA should test:
+
+    • Valid token
+    • Missing token
+    • Invalid token
+    • Expired token
+    • Token handling according to the API contract
+
+
+======================================================================
+32.22 BEARER TOKEN
+======================================================================
+
+A common HTTP authentication pattern is:
+
+    Authorization: Bearer <token>
+
+
+Example:
+
+    Authorization: Bearer eyJ...
+
+
+The client sends the token in the Authorization header.
+
+
+Concept:
+
+    Client
+       |
+       | Authorization: Bearer token
+       v
+    Protected API
+       |
+       v
+    Validate token
+       |
+       v
+    Response
+
+
+The exact token value should be treated as sensitive information.
+
+
+======================================================================
+32.23 JWT
+======================================================================
+
+JWT stands for:
+
+    JSON Web Token
+
+
+JWT is a token format commonly used in authentication and authorization
+systems.
+
+
+A JWT is commonly represented in three parts:
+
+
+    HEADER
+       .
+    PAYLOAD
+       .
+    SIGNATURE
+
+
+Concept:
+
+    header.payload.signature
+
+
+Example representation:
+
+    xxxxx.yyyyy.zzzzz
+
+
+The actual values can be much longer.
+
+
+======================================================================
+32.24 JWT HEADER
+======================================================================
+
+The JWT header commonly contains information about the token, such as
+the token type and signing algorithm.
+
+
+Conceptually:
+
+    {
+        "alg": "...",
+        "typ": "JWT"
+    }
+
+
+The exact fields depend on the implementation.
+
+
+======================================================================
+32.25 JWT PAYLOAD
+======================================================================
+
+The payload contains claims.
+
+
+Example conceptual payload:
+
+    {
+        "sub": "101",
+        "role": "user"
+    }
+
+
+Claims may represent information about the token subject, roles,
+expiration, and other application-defined information.
+
+
+IMPORTANT:
+
+    JWT payload data should not be assumed to be secret merely because
+    it is encoded.
+
+
+Sensitive information should not be placed into a JWT payload unless
+the system's security design explicitly supports it.
+
+
+======================================================================
+32.26 JWT SIGNATURE
+======================================================================
+
+The signature helps the server verify that the token has not been
+tampered with, according to the configured signing mechanism.
+
+
+Conceptually:
+
+    Header
+       +
+    Payload
+       +
+    Secret/key
+       ↓
+    Signature
+
+
+During validation, the server verifies the token according to its
+configured security mechanism.
+
+
+======================================================================
+32.27 JWT AUTHENTICATION FLOW
+======================================================================
+
+Typical conceptual flow:
+
+
+    USER
+      |
+      | Login credentials
+      v
+    LOGIN API
+      |
+      | Validate
+      v
+    Authentication System
+      |
+      | JWT
+      v
+    CLIENT
+      |
+      | Authorization: Bearer JWT
+      v
+    PROTECTED API
+      |
+      | Validate JWT
+      v
+    RESPONSE
+
+
+QA can test each stage.
+
+
+======================================================================
+32.28 JWT TEST SCENARIOS
+======================================================================
+
+VALID TOKEN
+-----------
+
+Send valid JWT.
+
+Expected:
+
+    Request is processed according to authorization rules.
+
+
+--------------------------------------------------
+
+MISSING TOKEN
+-------------
+
+Do not send Authorization header.
+
+
+Expected:
+
+    Authentication-related error according to API contract.
+
+
+--------------------------------------------------
+
+INVALID TOKEN
+-------------
+
+Send an invalid token.
+
+
+Expected:
+
+    Request rejected appropriately.
+
+
+--------------------------------------------------
+
+EXPIRED TOKEN
+-------------
+
+Send expired JWT.
+
+
+Expected:
+
+    Request rejected according to authentication rules.
+
+
+--------------------------------------------------
+
+WRONG ROLE
+----------
+
+Authenticated user attempts an operation requiring another role.
+
+
+Expected:
+
+    Authorization failure.
+
+
+This tests the difference between authentication and authorization.
+
+
+======================================================================
+32.29 COOKIES
+======================================================================
+
+A COOKIE is data stored by the client and sent with requests according
+to the server's cookie rules.
+
+
+Cookies can be used for purposes such as:
+
+    • Session management
+    • Authentication
+    • Preferences
+    • Tracking
+
+
+Conceptual flow:
+
+    Server
+       |
+       | Set-Cookie
+       v
+    Client
+       |
+       | Cookie
+       v
+    Server
+
+
+For API testing, QA may need to verify cookie behavior where the API
+uses cookies.
+
+
+======================================================================
+32.30 SESSION COOKIE
+======================================================================
+
+A session-based authentication system may work like:
+
+
+    Login
+      ↓
+    Server authenticates user
+      ↓
+    Session created
+      ↓
+    Session identifier sent/stored
+      ↓
+    Client sends cookie
+      ↓
+    Server identifies session
+
+
+QA may verify:
+
+    • Cookie created
+    • Cookie sent correctly
+    • Protected resources require valid session
+    • Logout invalidates session according to requirements
+
+
+======================================================================
+32.31 TOKEN vs COOKIE
+======================================================================
+
+TOKEN-BASED APPROACH
+
+    Client stores token
+         ↓
+    Sends token with request
+
+
+Example:
+
+    Authorization: Bearer <token>
+
+
+COOKIE-BASED APPROACH
+
+    Client stores cookie
+         ↓
+    Sends cookie according to cookie rules
+
+
+Both approaches can be used for session/authentication-related
+purposes depending on system architecture.
+
+
+QA needs to understand which mechanism the application uses.
+
+
+======================================================================
+32.32 HTTP STATUS CODES
+======================================================================
+
+HTTP status codes tell the client the general result of an HTTP
+request.
+
+
+They are grouped into categories:
+
+
+    1xx
+       Informational
+
+
+    2xx
+       Success
+
+
+    3xx
+       Redirection
+
+
+    4xx
+       Client-side/request errors
+
+
+    5xx
+       Server-side errors
+
+
+For API testing, status-code validation is essential.
+
+
+======================================================================
+32.33 2xx SUCCESS CODES
+======================================================================
+
+Common examples:
+
+
+    200 OK
+
+Indicates successful processing of a request.
+
+
+Example:
+
+    GET /users/101
+
+Response:
+
+    200 OK
+
+
+--------------------------------------------------
+
+    201 Created
+
+Commonly used when a new resource is successfully created.
+
+
+Example:
+
+    POST /users
+
+Response:
+
+    201 Created
+
+
+--------------------------------------------------
+
+    204 No Content
+
+Indicates successful processing with no response body in the response
+according to the API's contract.
+
+
+A common example is a successful delete/update operation, depending on
+the API design.
+
+
+======================================================================
+32.34 3xx REDIRECTION CODES
+======================================================================
+
+3xx codes generally indicate redirection-related behavior.
+
+
+Examples include:
+
+    301
+    302
+    304
+
+
+The exact meaning depends on the status code.
+
+
+For API testing, QA should understand the expected behavior rather than
+assuming every 3xx response is an error.
+
+
+======================================================================
+32.35 4xx CLIENT / REQUEST ERRORS
+======================================================================
+
+4xx responses generally indicate a problem with the request or the
+client's access.
+
+
+Common examples:
+
+
+    400 Bad Request
+
+The request is invalid or cannot be processed as submitted.
+
+
+Example:
+
+    Missing required field
+    Invalid request format
+
+
+--------------------------------------------------
+
+    401 Unauthorized
+
+Typically indicates that authentication is missing or invalid.
+
+
+Example:
+
+    Protected API called without valid authentication.
+
+
+Remember:
+
+    401
+      ↓
+    Authentication problem
+
+
+--------------------------------------------------
+
+    403 Forbidden
+
+The client is authenticated or otherwise identified, but is not
+permitted to perform the requested operation.
+
+
+Remember:
+
+    403
+      ↓
+    Authorization / permission problem
+
+
+--------------------------------------------------
+
+    404 Not Found
+
+The requested resource cannot be found.
+
+
+Example:
+
+    GET /users/999999
+
+
+if that resource does not exist.
+
+
+--------------------------------------------------
+
+    409 Conflict
+
+Can indicate a conflict with the current state of the resource.
+
+
+Example:
+
+    Attempting to create data that conflicts with an existing resource,
+    depending on the API contract.
+
+
+======================================================================
+32.36 5xx SERVER ERRORS
+======================================================================
+
+5xx responses generally indicate a server-side problem.
+
+
+Common example:
+
+
+    500 Internal Server Error
+
+
+This can indicate that the server encountered an unexpected condition.
+
+
+Other 5xx statuses exist, such as:
+
+    502
+    503
+    504
+
+
+QA should investigate whether such responses occur unexpectedly during
+valid requests.
+
+
+======================================================================
+32.37 STATUS CODE CHEAT SHEET
+======================================================================
+
+    +------+----------------------------+
+    | CODE | COMMON MEANING             |
+    +------+----------------------------+
+    | 200  | OK                         |
+    | 201  | Created                    |
+    | 204  | No Content                 |
+    | 301  | Moved Permanently          |
+    | 302  | Found / Redirect           |
+    | 304  | Not Modified               |
+    | 400  | Bad Request               |
+    | 401  | Unauthorized              |
+    | 403  | Forbidden                 |
+    | 404  | Not Found                 |
+    | 409  | Conflict                  |
+    | 500  | Internal Server Error     |
+    | 502  | Bad Gateway               |
+    | 503  | Service Unavailable       |
+    | 504  | Gateway Timeout           |
+    +------+----------------------------+
+
+
+IMPORTANT INTERVIEW MEMORY:
+
+    2xx → Success
+
+    3xx → Redirection
+
+    4xx → Request/client-side issue
+
+    5xx → Server-side issue
+
+
+======================================================================
+32.38 401 vs 403
+======================================================================
+
+This is one of the most common API interview questions.
+
+
+401:
+
+    Authentication problem.
+
+    "I cannot authenticate you."
+
+
+403:
+
+    Permission problem.
+
+    "I know who you are, but you are not allowed to do this."
+
+
+Example:
+
+
+    User not logged in
+         ↓
+       401
+
+
+    Logged-in normal user
+         ↓
+    Tries admin-only API
+         ↓
+       403
+
+
+This is a very important distinction.
+
+
+======================================================================
+32.39 400 vs 404
+======================================================================
+
+400:
+
+    The request itself is invalid or cannot be processed as submitted.
+
+
+Example:
+
+    Invalid request body.
+
+
+404:
+
+    The requested resource cannot be found.
+
+
+Example:
+
+    GET /users/999999
+
+
+where user 999999 does not exist.
+
+
+Remember:
+
+    400 → Bad request
+
+    404 → Resource not found
+
+
+======================================================================
+32.40 API TESTING USING HEADERS + BODY
+======================================================================
+
+Example:
+
+    POST /users
+
+
+Headers:
+
+    Content-Type: application/json
+    Accept: application/json
+
+
+Body:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+QA validates:
+
+
+REQUEST
+-------
+
+    Method:
+        POST
+
+    Endpoint:
+        /users
+
+    Headers:
+        Correct
+
+    Body:
+        Correct
+
+
+RESPONSE
+--------
+
+    Status:
+        Expected 2xx
+
+    Body:
+        Correct user information
+
+
+DATABASE
+--------
+
+    Record:
+        Created correctly
+
+
+Complete validation:
+
+
+    Request
+       ↓
+    API
+       ↓
+    Response
+       ↓
+    Database
+
+
+======================================================================
+32.41 API TESTING USING PATH + QUERY PARAMETERS
+======================================================================
+
+Example:
+
+    GET /users/101?details=true
+
+
+PATH:
+
+    user_id = 101
+
+
+QUERY:
+
+    details = true
+
+
+QA can test:
+
+
+    /users/101?details=true
+    /users/101?details=false
+    /users/999?details=true
+    /users/invalid?details=true
+    /users/101
+
+
+Each variation should produce behavior according to the API contract.
+
+
+======================================================================
+32.42 API SECURITY TEST SCENARIOS
+======================================================================
+
+Authentication:
+
+    [ ] Valid credentials
+    [ ] Invalid credentials
+    [ ] Missing credentials
+
+
+Token:
+
+    [ ] Valid token
+    [ ] Missing token
+    [ ] Invalid token
+    [ ] Expired token
+
+
+Authorization:
+
+    [ ] Correct role
+    [ ] Incorrect role
+    [ ] Unauthorized resource access
+
+
+Input:
+
+    [ ] Missing required field
+    [ ] Invalid value
+    [ ] Invalid data type
+
+
+These tests help identify authentication, authorization, validation,
+and API behavior defects.
+
+
+======================================================================
+32.43 COMPLETE API REQUEST/RESPONSE FLOW
+======================================================================
+
+Example:
+
+    POST /orders/5001?confirm=true
+
+
+    +---------------------------------------+
+    | REQUEST                               |
+    +---------------------------------------+
+    | Method: POST                          |
+    | Path: /orders/5001                    |
+    | Query: confirm=true                   |
+    | Headers:                              |
+    |   Authorization: Bearer <token>       |
+    |   Content-Type: application/json      |
+    | Body:                                 |
+    |   { ... }                             |
+    +---------------------------------------+
+                    |
+                    v
+                SERVER
+                    |
+                    v
+              Authentication
+                    |
+                    v
+              Authorization
+                    |
+                    v
+              Business Logic
+                    |
+                    v
+                Database
+                    |
+                    v
+                RESPONSE
+                    |
+                    v
+    +---------------------------------------+
+    | Status: 200 / 201 / etc.             |
+    | Headers: ...                          |
+    | Body: { ... }                         |
+    +---------------------------------------+
+
+
+This is the complete picture a QA Engineer should understand.
+
+
+======================================================================
+32.44 COMMON INTERVIEW QUESTIONS
+======================================================================
+
+Q1. What is an HTTP header?
+
+Answer:
+
+    A header provides additional information about an HTTP request or
+    response.
+
+
+Q2. What is Content-Type?
+
+Answer:
+
+    It indicates the media type/format of the message body.
+
+
+Q3. What is a request body?
+
+Answer:
+
+    It contains data sent from the client to the server.
+
+
+Q4. What is a query parameter?
+
+Answer:
+
+    It is a parameter included in the URL, commonly used for filtering,
+    searching, pagination, or other request options.
+
+
+Q5. What is a path parameter?
+
+Answer:
+
+    It is a value embedded in the URL path, commonly used to identify a
+    particular resource.
+
+
+Q6. Difference between path and query parameter?
+
+Answer:
+
+    Path parameters commonly identify a resource, while query
+    parameters commonly provide filtering or additional options.
+
+
+Q7. What is authentication?
+
+Answer:
+
+    Authentication verifies identity.
+
+
+Q8. What is authorization?
+
+Answer:
+
+    Authorization determines what an authenticated identity is allowed
+    to access or perform.
+
+
+Q9. What is a token?
+
+Answer:
+
+    A token can represent authenticated access and is sent according to
+    the API's authentication design.
+
+
+Q10. What is JWT?
+
+Answer:
+
+    JWT stands for JSON Web Token and is a commonly used token format
+    consisting conceptually of header, payload, and signature.
+
+
+Q11. What is 200?
+
+Answer:
+
+    OK / successful request.
+
+
+Q12. What is 201?
+
+Answer:
+
+    Created; commonly used after successful resource creation.
+
+
+Q13. What is 400?
+
+Answer:
+
+    Bad Request.
+
+
+Q14. Difference between 401 and 403?
+
+Answer:
+
+    401 generally indicates an authentication problem, while 403
+    indicates that access is forbidden due to permissions or policy.
+
+
+Q15. What is 404?
+
+Answer:
+
+    Not Found.
+
+
+Q16. What is 500?
+
+Answer:
+
+    Internal Server Error.
+
+
+======================================================================
+32.45 QUICK REVISION
+======================================================================
+
+HTTP
+ ↓
+Communication protocol used for web communication
+
+
+REQUEST
+ ↓
+Method + URL + Headers + Parameters + Body
+
+
+RESPONSE
+ ↓
+Status + Headers + Body
+
+
+HEADERS
+ ↓
+Additional request/response information
+
+
+BODY
+ ↓
+Data sent/received
+
+
+PATH PARAMETER
+ ↓
+Identifies resource
+
+
+QUERY PARAMETER
+ ↓
+Filtering/options
+
+
+AUTHENTICATION
+ ↓
+Who are you?
+
+
+AUTHORIZATION
+ ↓
+What are you allowed to do?
+
+
+TOKEN
+ ↓
+Represents authenticated access according to API design
+
+
+JWT
+ ↓
+JSON Web Token
+ ↓
+Header + Payload + Signature
+
+
+STATUS CODES
+
+    2xx → Success
+    3xx → Redirection
+    4xx → Request/client issue
+    5xx → Server issue
+
+
+======================================================================
+32.46 JOB-READY CHECKLIST
+======================================================================
+
+You should now be able to explain:
+
+[✓] HTTP
+[✓] HTTPS
+[✓] HTTP request
+[✓] HTTP response
+[✓] Headers
+[✓] Content-Type
+[✓] Accept
+[✓] Request body
+[✓] Response body
+[✓] Query parameters
+[✓] Path parameters
+[✓] Path vs query parameters
+[✓] Authentication
+[✓] Authorization
+[✓] Authentication vs authorization
+[✓] Tokens
+[✓] Bearer tokens
+[✓] JWT
+[✓] JWT header
+[✓] JWT payload
+[✓] JWT signature
+[✓] Cookies
+[✓] Session-based authentication concept
+[✓] HTTP status-code categories
+[✓] 200
+[✓] 201
+[✓] 204
+[✓] 400
+[✓] 401
+[✓] 403
+[✓] 404
+[✓] 409
+[✓] 500
+[✓] 502
+[✓] 503
+[✓] 504
+[✓] API security test scenarios
+[✓] Basic API interview questions
+
+
+======================================================================
+                    CHAPTER 32 COMPLETE
+======================================================================
+
+NEXT → CHAPTER 33: POSTMAN
+
+Topics:
+    • Installing Postman
+    • Collections
+    • Environments
+    • Variables
+    • Headers
+    • Authentication
+    • Request body
+    • Sending requests
+    • Inspecting responses
+    • Response validation
+    • Tests
+    • Pre-request scripts
+    • Collection Runner
+    • Newman
+======================================================================

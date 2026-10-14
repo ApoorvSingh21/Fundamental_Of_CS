@@ -1,0 +1,1402 @@
+====================================================================
+       SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+====================================================================
+                         CHAPTER 42
+                  ADVANCED UI AUTOMATION
+====================================================================
+
+GOAL
+----
+Handle real-world UI automation problems that are more complex
+than simple element identification and clicking.
+
+Topics:
+1. Dynamic Elements
+2. Dynamic / Relative XPath
+3. CSS Selectors
+4. HTML Tables
+5. Autosuggest
+6. Date Pickers
+7. File Upload
+8. File Download
+9. Windows / Tabs
+10. Shadow DOM
+11. Iframes
+12. Parallel Execution
+13. Practical E-commerce Example
+14. Common Mistakes
+15. Interview Questions
+16. Quick Revision
+17. Job-Ready Checklist
+
+
+====================================================================
+42.1 ADVANCED UI AUTOMATION — OVERVIEW
+====================================================================
+
+Basic automation:
+
+    Find element
+        ↓
+    Perform action
+        ↓
+    Validate result
+
+Real applications are more complicated.
+
+Examples:
+
+    • Element IDs change dynamically
+    • Tables contain variable rows
+    • Search boxes show dynamic suggestions
+    • Date pickers use JavaScript widgets
+    • Upload controls require files
+    • Downloads need validation
+    • Multiple browser tabs/windows exist
+    • Elements exist inside iframes
+    • Modern applications use Shadow DOM
+    • Hundreds of tests need parallel execution
+
+
+Therefore, an automation engineer must know how to
+handle dynamic UI components reliably.
+
+
+====================================================================
+42.2 DYNAMIC ELEMENTS
+====================================================================
+
+A dynamic element is an element whose properties or location
+may change during different executions.
+
+Example:
+
+HTML:
+
+<button id="btn_12345">Login</button>
+
+Next execution:
+
+<button id="btn_67890">Login</button>
+
+
+The ID changes.
+
+Therefore:
+
+    id="btn_12345"
+
+is not a stable locator.
+
+
+------------------------------
+STATIC LOCATOR
+------------------------------
+
+If:
+
+    <button id="loginButton">Login</button>
+
+always remains the same,
+
+we can use:
+
+    By.id("loginButton")
+
+
+------------------------------
+DYNAMIC LOCATOR
+------------------------------
+
+If the ID changes:
+
+    btn_12345
+    btn_67890
+    btn_99991
+
+we should identify a stable part.
+
+Example XPath:
+
+    //button[contains(@id,'btn_')]
+
+
+Or use stable visible text:
+
+    //button[text()='Login']
+
+
+The exact locator strategy depends on the application.
+
+
+====================================================================
+42.3 DYNAMIC / RELATIVE XPATH
+====================================================================
+
+XPath is used to locate elements in an HTML document.
+
+
+Basic XPath:
+
+    //input[@id='username']
+
+
+Text:
+
+    //button[text()='Login']
+
+
+Contains:
+
+    //button[contains(text(),'Login')]
+
+
+Contains attribute:
+
+    //input[contains(@id,'user')]
+
+
+Starts with:
+
+    //input[starts-with(@id,'user')]
+
+
+--------------------------------------------------------------------
+RELATIVE XPATH
+--------------------------------------------------------------------
+
+Relative XPath starts from a suitable element rather than
+depending on the complete HTML hierarchy.
+
+Example:
+
+    //input[@name='email']
+
+
+This is generally more maintainable than a long absolute path.
+
+
+--------------------------------------------------------------------
+ABSOLUTE VS RELATIVE XPATH
+--------------------------------------------------------------------
+
+Absolute:
+
+    /html/body/div[1]/div[2]/form/div[1]/input
+
+Problem:
+
+    Small UI structure changes can break the locator.
+
+
+Relative:
+
+    //input[@name='email']
+
+Advantage:
+
+    More independent of the complete DOM hierarchy.
+
+
+--------------------------------------------------------------------
+RELATION-BASED XPATH
+--------------------------------------------------------------------
+
+Sometimes the desired element does not have a useful attribute.
+
+Example:
+
+    <label>Email</label>
+    <input type="text">
+
+
+We can locate the input using its relationship with the label.
+
+Concept:
+
+    Label
+      ↓
+    Related input
+
+
+Common XPath relationships include:
+
+    parent
+    child
+    ancestor
+    descendant
+    following
+    preceding
+    sibling
+
+
+Example:
+
+    //label[text()='Email']/following::input[1]
+
+
+This can be useful when the relationship between elements
+is stable.
+
+
+--------------------------------------------------------------------
+XPATH FUNCTIONS
+--------------------------------------------------------------------
+
+Important functions:
+
+    contains()
+    starts-with()
+    text()
+
+
+Examples:
+
+    //button[contains(@class,'submit')]
+
+    //input[starts-with(@id,'user')]
+
+    //button[text()='Submit']
+
+
+--------------------------------------------------------------------
+XPATH BEST PRACTICE
+--------------------------------------------------------------------
+
+Prefer:
+
+    Stable ID
+    Stable name
+    Stable data attribute
+    Stable text
+    Stable relationship
+
+Avoid unnecessarily:
+
+    Very long XPath
+    Absolute XPath
+    Fragile positional XPath
+
+Example of fragile locator:
+
+    //div[3]/div[2]/button[1]
+
+If the UI structure changes, the test may fail.
+
+
+====================================================================
+42.4 CSS SELECTORS
+====================================================================
+
+CSS selectors provide another way to identify web elements.
+
+
+ID:
+
+    #username
+
+
+Class:
+
+    .login-button
+
+
+Tag:
+
+    input
+
+
+Attribute:
+
+    input[name='email']
+
+
+Multiple conditions:
+
+    input[type='text'][name='email']
+
+
+Class + element:
+
+    button.submit
+
+
+CSS can often provide concise and readable locators.
+
+
+--------------------------------------------------------------------
+CSS VS XPATH
+--------------------------------------------------------------------
+
+CSS:
+
+    input[name='username']
+
+
+XPath:
+
+    //input[@name='username']
+
+
+Both may identify the same element.
+
+
+Use the locator that is:
+
+    • Stable
+    • Readable
+    • Maintainable
+    • Appropriate for the application
+
+
+====================================================================
+42.5 HTML TABLES
+====================================================================
+
+Tables are common in real applications.
+
+Example:
+
+    Product       Price       Stock
+    --------------------------------
+    Laptop        80000       10
+    Mouse         1000        25
+    Keyboard      2000        15
+
+
+Automation may need to:
+
+    • Find a particular row
+    • Read a cell
+    • Verify values
+    • Click an action in a row
+    • Count rows
+    • Validate table data
+
+
+--------------------------------------------------------------------
+FINDING A ROW
+--------------------------------------------------------------------
+
+Suppose:
+
+    Product = Laptop
+
+The automation can:
+
+    1. Find the row containing Laptop.
+    2. Identify the required cell/action.
+    3. Perform the operation.
+
+
+Conceptually:
+
+    Table
+      ↓
+    Find row where Product = Laptop
+      ↓
+    Find required column
+      ↓
+    Validate / Click
+
+
+--------------------------------------------------------------------
+DYNAMIC TABLE
+--------------------------------------------------------------------
+
+Rows may change:
+
+    Product A
+    Product B
+    Product C
+    Product D
+
+Do not hard-code:
+
+    Row 1
+    Row 2
+    Row 3
+
+Instead, locate the row using meaningful data.
+
+
+Example concept:
+
+    //tr[td[text()='Laptop']]
+
+
+Then locate an action inside that row.
+
+
+====================================================================
+42.6 AUTOSUGGEST
+====================================================================
+
+Autosuggest is a search component that dynamically displays
+suggestions while typing.
+
+Example:
+
+    Search: "Ind"
+
+Suggestions:
+
+    India
+    Indonesia
+    Indiana
+
+
+Automation challenge:
+
+The suggestions may appear dynamically.
+
+
+Typical flow:
+
+    1. Click search field
+    2. Enter text
+    3. Wait for suggestions
+    4. Read suggestions
+    5. Find required suggestion
+    6. Click it
+    7. Validate selected value
+
+
+--------------------------------------------------------------------
+EXAMPLE
+--------------------------------------------------------------------
+
+Input:
+
+    "Ind"
+
+Dropdown:
+
+    India
+    Indonesia
+    Indiana
+
+
+Requirement:
+
+    Select India.
+
+
+Automation logic:
+
+    Enter "Ind"
+        ↓
+    Locate suggestion list
+        ↓
+    Find "India"
+        ↓
+    Click "India"
+
+
+Important:
+
+Do not assume the suggestion is immediately available.
+
+The application may need time to receive data from the server.
+
+
+====================================================================
+42.7 DATE PICKERS
+====================================================================
+
+Date pickers are frequently used in:
+
+    • Flight booking
+    • Hotel booking
+    • Banking
+    • E-commerce
+    • Appointment systems
+
+
+Example:
+
+    From: [10/10/2026]
+    To:   [15/10/2026]
+
+
+Automation may need to:
+
+    • Open calendar
+    • Select month
+    • Select year
+    • Select day
+
+
+--------------------------------------------------------------------
+DATE PICKER STRATEGY
+--------------------------------------------------------------------
+
+Understand the component first.
+
+Possible structure:
+
+    Year
+      ↓
+    Month
+      ↓
+    Calendar
+      ↓
+    Day
+
+
+Example:
+
+    Select:
+        15 October 2026
+
+
+Logic:
+
+    Open date picker
+        ↓
+    Select October
+        ↓
+    Select 15
+        ↓
+    Validate selected date
+
+
+For a range:
+
+    Select start date
+        ↓
+    Select end date
+        ↓
+    Validate range
+
+
+--------------------------------------------------------------------
+COMMON PROBLEM
+--------------------------------------------------------------------
+
+Some date pickers disable:
+
+    • Previous dates
+    • Holidays
+    • Invalid dates
+
+Automation should validate the state rather than blindly
+clicking a fixed position.
+
+
+====================================================================
+42.8 FILE UPLOAD
+====================================================================
+
+File upload is common in:
+
+    • Profile pictures
+    • Documents
+    • Resumes
+    • Identity verification
+    • Product images
+
+
+Typical HTML:
+
+    <input type="file">
+
+
+Automation can provide the file path to the upload control.
+
+Concept:
+
+    Locate file input
+        ↓
+    Provide file path
+        ↓
+    Submit/upload
+        ↓
+    Validate successful upload
+
+
+Example concept in Selenium:
+
+    element.sendKeys("/path/to/file.pdf");
+
+
+The exact implementation depends on the framework and application.
+
+
+--------------------------------------------------------------------
+UPLOAD VALIDATION
+--------------------------------------------------------------------
+
+Do not stop after selecting the file.
+
+Validate:
+
+    • File name displayed
+    • Upload completed
+    • Success message
+    • Correct file associated with record
+    • Invalid file rejection if applicable
+
+
+====================================================================
+42.9 FILE DOWNLOAD
+====================================================================
+
+Applications commonly provide:
+
+    Download Invoice
+    Download Report
+    Export CSV
+    Download PDF
+
+
+Automation flow:
+
+    Click Download
+        ↓
+    Browser downloads file
+        ↓
+    Verify file exists
+        ↓
+    Optionally validate file content
+
+
+Important validation:
+
+    File exists
+    Correct filename
+    Correct extension
+    Download completed
+
+
+Example:
+
+    Click "Download Invoice"
+        ↓
+    Wait for download
+        ↓
+    Verify invoice.pdf exists
+
+
+The source syllabus specifically includes file
+download handling as an advanced UI automation topic.
+
+
+====================================================================
+42.10 WINDOWS / TABS
+====================================================================
+
+A web application may open another page in:
+
+    • New tab
+    • New browser window
+
+
+Example:
+
+    Main Page
+       |
+       +----> Payment Page
+
+
+Automation must manage browser contexts/windows correctly.
+
+
+--------------------------------------------------------------------
+GENERAL FLOW
+--------------------------------------------------------------------
+
+    Get current window
+          ↓
+    Click link
+          ↓
+    New window/tab opens
+          ↓
+    Get window handles
+          ↓
+    Switch to required window
+          ↓
+    Perform actions
+          ↓
+    Return to original window if required
+
+
+Concept:
+
+    mainWindow = currentWindow
+
+    click(link)
+
+    get all windows
+
+    switch to new window
+
+
+--------------------------------------------------------------------
+COMMON MISTAKE
+--------------------------------------------------------------------
+
+Trying to locate an element belonging to the new window
+without switching to that window first.
+
+
+Correct concept:
+
+    Window A
+       ↓
+    Switch
+       ↓
+    Window B
+       ↓
+    Locate element
+
+
+====================================================================
+42.11 SHADOW DOM
+====================================================================
+
+Modern web applications may use Shadow DOM.
+
+Shadow DOM provides encapsulation for parts of a web component.
+
+
+Concept:
+
+    Normal DOM
+        |
+        +---- Web Component
+                 |
+                 +---- Shadow Root
+                         |
+                         +---- Elements
+
+
+An element inside Shadow DOM may not be directly accessible
+using ordinary DOM traversal in the same way as a normal element.
+
+
+Automation therefore needs to understand the application's
+Shadow DOM structure and use framework-supported mechanisms
+to access elements inside it.
+
+
+--------------------------------------------------------------------
+WHY SHADOW DOM MATTERS
+--------------------------------------------------------------------
+
+Without understanding Shadow DOM:
+
+    Element appears visible
+            ↓
+    Locator cannot find it
+            ↓
+    Test fails
+
+
+Therefore, an automation engineer must recognize when an
+element belongs to a shadow tree.
+
+
+====================================================================
+42.12 IFRAMES
+====================================================================
+
+An iframe embeds another HTML document inside the current page.
+
+
+Concept:
+
+    Main Page
+       |
+       +----------------------+
+       |      iframe          |
+       |                      |
+       |   Login Form         |
+       |                      |
+       +----------------------+
+
+
+Example:
+
+    <iframe>
+        ...
+    </iframe>
+
+
+If the required element is inside the iframe, automation
+usually needs to switch into that frame before interacting
+with the element.
+
+
+--------------------------------------------------------------------
+IFRAME FLOW
+--------------------------------------------------------------------
+
+    Main page
+       ↓
+    Locate iframe
+       ↓
+    Switch to iframe
+       ↓
+    Locate element
+       ↓
+    Perform action
+       ↓
+    Switch back to main page
+
+
+Conceptually:
+
+    driver.switchTo().frame(frame)
+
+
+Then:
+
+    locate element
+    perform action
+
+
+Return:
+
+    driver.switchTo().defaultContent()
+
+
+--------------------------------------------------------------------
+NESTED IFRAMES
+--------------------------------------------------------------------
+
+Sometimes:
+
+    Main page
+       ↓
+    iframe A
+       ↓
+    iframe B
+       ↓
+    Element
+
+
+Automation must switch through the appropriate frame hierarchy.
+
+
+====================================================================
+42.13 PARALLEL EXECUTION
+====================================================================
+
+Suppose we have:
+
+    Test 1 = 2 minutes
+    Test 2 = 2 minutes
+    Test 3 = 2 minutes
+    Test 4 = 2 minutes
+
+
+Sequential:
+
+    Test 1 → Test 2 → Test 3 → Test 4
+
+Approximate total:
+
+    8 minutes
+
+
+Parallel:
+
+    Test 1 ─┐
+    Test 2 ─┤
+    Test 3 ─┤ → execute simultaneously
+    Test 4 ─┘
+
+Potential execution time:
+
+    approximately 2 minutes
+
+Actual time depends on infrastructure and test behavior.
+
+
+--------------------------------------------------------------------
+WHY PARALLEL EXECUTION?
+--------------------------------------------------------------------
+
+Advantages:
+
+    • Faster test execution
+    • Better CI/CD feedback
+    • Useful for large regression suites
+    • Better utilization of execution resources
+
+
+--------------------------------------------------------------------
+PARALLEL EXECUTION RISKS
+--------------------------------------------------------------------
+
+Tests must be properly isolated.
+
+Problems can occur when tests share:
+
+    • Same test data
+    • Same files
+    • Same user
+    • Same database state
+    • Same browser state
+
+
+Example:
+
+    Test A modifies user account.
+
+    Test B expects the original account state.
+
+Running simultaneously may create failures.
+
+
+Therefore:
+
+    Parallel execution
+          +
+    Test isolation
+          =
+    Reliable parallel testing
+
+
+====================================================================
+42.14 PRACTICAL E-COMMERCE EXAMPLE
+====================================================================
+
+Consider:
+
+    https://example-shop.com
+
+
+Scenario:
+
+    Search for Laptop
+        ↓
+    Select suggestion
+        ↓
+    Open product
+        ↓
+    Select date / option if applicable
+        ↓
+    Add to cart
+        ↓
+    Checkout
+        ↓
+    Upload document if required
+        ↓
+    Payment opens in new tab
+        ↓
+    Complete payment
+        ↓
+    Return to main page
+        ↓
+    Download invoice
+
+
+Advanced automation challenges:
+
+    1. Dynamic search suggestions
+    2. Dynamic product elements
+    3. Product table
+    4. Date picker
+    5. File upload
+    6. New payment tab
+    7. iframe payment form
+    8. File download
+
+
+Possible automation flow:
+
+    START
+      |
+      v
+    Open application
+      |
+      v
+    Search "Laptop"
+      |
+      v
+    Select autosuggestion
+      |
+      v
+    Open product
+      |
+      v
+    Add to cart
+      |
+      v
+    Checkout
+      |
+      v
+    Switch to payment tab
+      |
+      v
+    Switch into payment iframe
+      |
+      v
+    Complete payment
+      |
+      v
+    Return to application
+      |
+      v
+    Download invoice
+      |
+      v
+    Verify invoice
+      |
+      v
+    END
+
+
+====================================================================
+42.15 COMMON ADVANCED UI AUTOMATION MISTAKES
+====================================================================
+
+1. Using unstable locators
+
+Bad:
+
+    //div[4]/div[2]/button[1]
+
+Better:
+
+    Stable attribute/text/relationship
+
+
+2. Using fixed sleeps everywhere
+
+Problem:
+
+    Application may be ready earlier or later.
+
+Prefer framework-supported synchronization mechanisms.
+
+
+3. Ignoring dynamic elements
+
+Dynamic applications require synchronization and robust
+element identification.
+
+
+4. Not switching into iframe
+
+Result:
+
+    Element not found.
+
+
+5. Not switching to the correct window
+
+Result:
+
+    Element not found or interaction occurs in wrong context.
+
+
+6. Hard-coding table row numbers
+
+Problem:
+
+    Row ordering can change.
+
+
+7. Not validating downloads
+
+Clicking Download does not prove that the correct file
+was successfully downloaded.
+
+
+8. Sharing state between parallel tests
+
+This creates:
+
+    Flaky tests
+    Data conflicts
+    Unpredictable results
+
+
+9. Creating duplicate locators
+
+The framework becomes difficult to maintain.
+
+
+10. Making tests too dependent on UI structure
+
+Tests should focus on stable application behavior and
+maintainable automation design.
+
+
+====================================================================
+42.16 ADVANCED UI AUTOMATION — INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is a dynamic element?
+
+Answer:
+
+An element whose properties or location can change between
+executions or during runtime.
+
+
+Q2. What is the difference between absolute and relative XPath?
+
+Answer:
+
+Absolute XPath starts from the root HTML hierarchy and is
+generally more fragile.
+
+Relative XPath identifies an element using relevant attributes,
+text, or relationships and is generally more maintainable.
+
+
+Q3. Why should long XPath expressions be avoided?
+
+Answer:
+
+They are highly dependent on the DOM structure and can break
+when the UI changes.
+
+
+Q4. What is a CSS selector?
+
+Answer:
+
+A selector used to identify HTML elements using CSS-style
+selection syntax.
+
+
+Q5. How would you automate a dynamic table?
+
+Answer:
+
+Locate the row using meaningful data and then locate the
+required cell or action within that row instead of relying
+on a fixed row number.
+
+
+Q6. What is autosuggest?
+
+Answer:
+
+A UI component that dynamically displays matching suggestions
+while the user types.
+
+
+Q7. How do you automate a date picker?
+
+Answer:
+
+Identify its structure, navigate to the required month/year,
+select the required date, and validate the selected value.
+
+
+Q8. How do you automate file upload?
+
+Answer:
+
+Locate the file-upload control and provide the required file
+path using the automation framework's supported mechanism.
+
+
+Q9. What is an iframe?
+
+Answer:
+
+An iframe embeds another HTML document within a page.
+
+
+Q10. Why must you switch to an iframe?
+
+Answer:
+
+Because elements inside the frame belong to that frame's
+document context.
+
+
+Q11. How do you return from an iframe?
+
+Answer:
+
+Switch back to the default/main document context.
+
+
+Q12. Why are multiple windows/tabs difficult?
+
+Answer:
+
+The automation must identify and switch to the correct
+browser window/tab before interacting with its elements.
+
+
+Q13. What is Shadow DOM?
+
+Answer:
+
+A DOM encapsulation mechanism used by web components that
+creates a separate shadow tree for component content.
+
+
+Q14. Why is parallel execution useful?
+
+Answer:
+
+It reduces overall execution time by allowing independent
+tests to execute concurrently.
+
+
+Q15. What is the major requirement for reliable parallel testing?
+
+Answer:
+
+Proper test isolation and independent test data/state.
+
+
+====================================================================
+42.17 QUICK REVISION
+====================================================================
+
+Dynamic Elements
+    ↓
+Use stable locators and synchronization.
+
+Relative XPath
+    ↓
+Prefer maintainable, relationship/data-based locators.
+
+CSS
+    ↓
+Concise element selection.
+
+Tables
+    ↓
+Locate rows using meaningful data.
+
+Autosuggest
+    ↓
+Type → wait → find suggestion → select.
+
+Date Picker
+    ↓
+Navigate → select required date → validate.
+
+File Upload
+    ↓
+Provide file → upload → validate.
+
+File Download
+    ↓
+Download → verify file.
+
+Windows/Tabs
+    ↓
+Get handles → switch → interact → return.
+
+Shadow DOM
+    ↓
+Understand shadow tree and use supported access mechanisms.
+
+Iframes
+    ↓
+Switch into frame → interact → switch back.
+
+Parallel Execution
+    ↓
+Run independent tests concurrently.
+
+Parallel Testing
+    +
+Test Isolation
+    =
+Reliable Faster Execution
+
+
+====================================================================
+42.18 JOB-READY CHECKLIST
+====================================================================
+
+You should be able to:
+
+[ ] Handle dynamic elements
+[ ] Write relative XPath
+[ ] Use contains() and starts-with()
+[ ] Use text-based XPath
+[ ] Understand XPath relationships
+[ ] Write CSS selectors
+[ ] Automate HTML tables
+[ ] Handle autosuggest
+[ ] Automate date pickers
+[ ] Automate file upload
+[ ] Validate downloads
+[ ] Handle multiple windows/tabs
+[ ] Understand Shadow DOM
+[ ] Handle iframes
+[ ] Understand parallel execution
+[ ] Understand test isolation
+[ ] Build robust UI automation
+[ ] Avoid fragile locators
+[ ] Avoid unnecessary fixed waits
+[ ] Debug context-related failures
+
+
+====================================================================
+42.19 CHAPTER SUMMARY
+====================================================================
+
+Chapter 42 takes automation beyond basic:
+
+    find element → click element
+
+and introduces real-world UI automation problems.
+
+The important mindset is:
+
+    Stable Locator
+          +
+    Correct Context
+          +
+    Proper Synchronization
+          +
+    Test Isolation
+          +
+    Validation
+          =
+    Reliable UI Automation
+
+
+The major advanced components are:
+
+    Dynamic elements
+    XPath
+    CSS
+    Tables
+    Autosuggest
+    Date pickers
+    Upload/download
+    Windows/tabs
+    Shadow DOM
+    Iframes
+    Parallel execution
+
+
+====================================================================
+CHAPTER 42 COMPLETE
+====================================================================
+
+NEXT:
+CHAPTER 43 — PLAYWRIGHT
+
+Topics:
+    • Playwright Architecture
+    • Installation
+    • Browser / Context / Page
+    • Locators
+    • Auto-waiting
+    • Assertions
+    • Screenshots
+    • Tracing
+    • Network Interception
+    • Authentication State
+    • Parallel Execution
+    • Cross-browser Testing
+    • Playwright Test Runner
+====================================================================

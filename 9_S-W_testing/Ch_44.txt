@@ -1,0 +1,1294 @@
+i====================================================================
+       SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+====================================================================
+                         CHAPTER 43
+                         PLAYWRIGHT
+====================================================================
+
+GOAL
+----
+Learn Playwright as a modern browser automation framework and
+understand the concepts required to build reliable, maintainable,
+cross-browser UI automation.
+
+TOPICS
+------
+1. Playwright Architecture
+2. Installation
+3. Browser
+4. Browser Context
+5. Page
+6. Locators
+7. Auto-waiting
+8. Assertions
+9. Screenshots
+10. Tracing
+11. Network Interception
+12. Authentication State
+13. Parallel Execution
+14. Cross-browser Testing
+15. Playwright Test Runner
+16. Practical Example
+17. Common Mistakes
+18. Interview Questions
+19. Quick Revision
+20. Job-Ready Checklist
+
+
+====================================================================
+43.1 WHAT IS PLAYWRIGHT?
+====================================================================
+
+Playwright is a modern browser automation framework used for
+automating web applications.
+
+It can be used for:
+
+    • UI automation
+    • End-to-end testing
+    • Cross-browser testing
+    • API-related testing
+    • Screenshots
+    • Tracing
+    • Network interception
+    • Authentication-state reuse
+    • Parallel test execution
+
+
+High-level flow:
+
+    Test
+      |
+      v
+    Playwright
+      |
+      v
+    Browser
+      |
+      +---- Chromium
+      +---- Firefox
+      +---- WebKit
+      |
+      v
+    Web Application
+
+
+====================================================================
+43.2 PLAYWRIGHT ARCHITECTURE
+====================================================================
+
+A useful mental model is:
+
+    Playwright Test
+          |
+          v
+    Browser
+          |
+          v
+    Browser Context
+          |
+          v
+    Page
+          |
+          v
+    Web Application
+
+
+Each level has a different responsibility.
+
+
+--------------------------------------------------------------------
+BROWSER
+--------------------------------------------------------------------
+
+Represents a browser instance.
+
+Examples:
+
+    Chromium
+    Firefox
+    WebKit
+
+
+--------------------------------------------------------------------
+BROWSER CONTEXT
+--------------------------------------------------------------------
+
+A browser context represents an isolated browser session.
+
+Conceptually similar to having a fresh browser profile.
+
+Example:
+
+    Context A
+       |
+       +---- Page 1
+       +---- Page 2
+
+
+    Context B
+       |
+       +---- Page 1
+
+
+Context A and Context B can be isolated from each other.
+
+
+--------------------------------------------------------------------
+PAGE
+--------------------------------------------------------------------
+
+A Page represents a browser tab/page.
+
+Example:
+
+    Browser
+       |
+       +---- Context
+                |
+                +---- Page
+
+
+A test generally interacts with the application through a Page.
+
+
+====================================================================
+43.3 WHY BROWSER CONTEXT IS IMPORTANT
+====================================================================
+
+Suppose two tests use different users:
+
+    Test A → User A
+    Test B → User B
+
+
+If they share browser state, problems can occur:
+
+    • Cookies may leak
+    • Authentication may leak
+    • Local/session storage may leak
+    • Tests may affect each other
+
+
+Browser contexts provide isolation.
+
+Concept:
+
+    Browser
+       |
+       +---- Context A → User A
+       |
+       +---- Context B → User B
+
+
+This is particularly useful for reliable automation.
+
+
+====================================================================
+43.4 INSTALLATION
+====================================================================
+
+Playwright can be installed using its supported package ecosystem.
+
+For a Node.js / TypeScript project, the typical setup is:
+
+    Create project
+        ↓
+    Install Playwright
+        ↓
+    Install required browsers
+        ↓
+    Create test
+        ↓
+    Run test
+
+
+A typical Playwright Test project contains:
+
+    tests/
+    playwright.config.*
+    package.json
+
+
+The exact command can vary depending on the project setup.
+
+
+====================================================================
+43.5 BASIC PLAYWRIGHT TEST
+====================================================================
+
+A conceptual Playwright test:
+
+    test('login test', async ({ page }) => {
+
+        await page.goto('https://example.com');
+
+        await page.getByLabel('Username').fill('user');
+
+        await page.getByLabel('Password').fill('password');
+
+        await page.getByRole('button', { name: 'Login' }).click();
+
+        await expect(page).toHaveTitle(/Dashboard/);
+
+    });
+
+
+The flow is:
+
+    Start test
+       ↓
+    Get Page
+       ↓
+    Navigate
+       ↓
+    Fill fields
+       ↓
+    Click Login
+       ↓
+    Assert result
+
+
+====================================================================
+43.6 LOCATORS
+====================================================================
+
+Locators identify elements in the application.
+
+Playwright provides locator mechanisms such as:
+
+    • Role
+    • Label
+    • Text
+    • Placeholder
+    • Test ID
+    • CSS
+    • XPath
+
+
+The recommended approach is generally to prefer meaningful,
+user-facing or stable locators.
+
+
+--------------------------------------------------------------------
+ROLE LOCATOR
+--------------------------------------------------------------------
+
+Example:
+
+    getByRole('button', { name: 'Login' })
+
+
+This identifies a button using its accessible role and name.
+
+
+--------------------------------------------------------------------
+LABEL LOCATOR
+--------------------------------------------------------------------
+
+Example:
+
+    getByLabel('Email')
+
+
+Useful for form fields associated with labels.
+
+
+--------------------------------------------------------------------
+PLACEHOLDER
+--------------------------------------------------------------------
+
+Example:
+
+    getByPlaceholder('Enter email')
+
+
+Useful when the placeholder is stable.
+
+
+--------------------------------------------------------------------
+TEXT
+--------------------------------------------------------------------
+
+Example:
+
+    getByText('Welcome')
+
+
+Useful for identifying visible text.
+
+
+--------------------------------------------------------------------
+TEST ID
+--------------------------------------------------------------------
+
+Applications may expose stable test-specific attributes.
+
+Concept:
+
+    data-testid="login-button"
+
+
+Then:
+
+    getByTestId('login-button')
+
+
+This can provide a stable automation contract between the
+application and test suite.
+
+
+====================================================================
+43.7 LOCATOR EXAMPLE
+====================================================================
+
+Suppose the application contains:
+
+    Email field
+    Password field
+    Login button
+
+
+A conceptual test:
+
+    await page.getByLabel('Email').fill('user@example.com');
+
+    await page.getByLabel('Password').fill('secret');
+
+    await page.getByRole('button', { name: 'Login' }).click();
+
+
+Advantages:
+
+    • Readable
+    • Close to user behavior
+    • Easier to maintain
+    • Less dependent on complex DOM structure
+
+
+====================================================================
+43.8 AUTO-WAITING
+====================================================================
+
+One important Playwright feature is automatic waiting.
+
+Web applications are dynamic.
+
+Example:
+
+    Click Login
+       ↓
+    Server request
+       ↓
+    UI updates
+       ↓
+    Dashboard appears
+
+
+The dashboard may not appear immediately.
+
+
+A fragile automation approach would use:
+
+    sleep(5000)
+
+
+This introduces unnecessary fixed waiting.
+
+
+Playwright's locator-based interactions include waiting for
+appropriate conditions before performing actions.
+
+
+Conceptually:
+
+    Find element
+        ↓
+    Wait until actionable
+        ↓
+    Perform action
+
+
+This can make tests more reliable than arbitrary fixed delays.
+
+
+--------------------------------------------------------------------
+WHY AUTO-WAITING MATTERS
+--------------------------------------------------------------------
+
+Without proper synchronization:
+
+    Test runs too early
+          ↓
+    Element not ready
+          ↓
+    Failure
+
+
+With appropriate synchronization:
+
+    Test
+      ↓
+    Wait for required condition
+      ↓
+    Action
+      ↓
+    Validation
+
+
+====================================================================
+43.9 ASSERTIONS
+====================================================================
+
+An assertion verifies that the application behaves as expected.
+
+
+Example:
+
+    Login
+      ↓
+    Dashboard
+      ↓
+    Verify dashboard
+
+
+Common assertion concepts include:
+
+    • URL
+    • Title
+    • Visibility
+    • Text
+    • Element state
+    • Page state
+
+
+Example:
+
+    await expect(page).toHaveTitle(/Dashboard/);
+
+
+Another conceptual example:
+
+    await expect(page.getByText('Welcome')).toBeVisible();
+
+
+Assertions turn automation into testing.
+
+Without assertions:
+
+    Automation
+       =
+    Performing actions
+
+
+With assertions:
+
+    Automation
+       +
+    Validation
+       =
+    Test
+
+
+====================================================================
+43.10 SCREENSHOTS
+====================================================================
+
+Screenshots help diagnose failures and document application state.
+
+
+Possible uses:
+
+    • Failure investigation
+    • Debugging
+    • Reports
+    • Visual evidence
+    • Test execution analysis
+
+
+Concept:
+
+    Test failure
+        ↓
+    Capture screenshot
+        ↓
+    Inspect UI state
+        ↓
+    Diagnose problem
+
+
+A screenshot can help answer:
+
+    "What did the browser actually display
+     when the test failed?"
+
+
+====================================================================
+43.11 TRACING
+====================================================================
+
+Tracing provides detailed information about test execution.
+
+It can help investigate:
+
+    • Actions
+    • Navigation
+    • Screens
+    • Timing
+    • Network-related activity
+    • Failure sequence
+
+
+Concept:
+
+    Test execution
+          ↓
+    Trace recorded
+          ↓
+    Test fails
+          ↓
+    Open trace
+          ↓
+    Analyze execution
+
+
+This is especially useful for debugging difficult failures.
+
+
+--------------------------------------------------------------------
+WHY TRACING IS IMPORTANT
+--------------------------------------------------------------------
+
+Suppose:
+
+    Test passes locally
+    Test fails in CI
+
+
+A simple error message may not be enough.
+
+Tracing can provide additional execution information that helps
+identify where and why the failure occurred.
+
+
+====================================================================
+43.12 NETWORK INTERCEPTION
+====================================================================
+
+Modern web applications communicate with backend services.
+
+Example:
+
+    Browser
+       |
+       | GET /products
+       v
+    API Server
+       |
+       v
+    Product Data
+
+
+Playwright provides mechanisms for working with network traffic.
+
+
+Possible testing use cases include:
+
+    • Observe requests
+    • Inspect responses
+    • Modify/intercept requests
+    • Mock network responses
+    • Simulate specific backend conditions
+
+
+--------------------------------------------------------------------
+CONCEPTUAL FLOW
+--------------------------------------------------------------------
+
+    Browser requests:
+        /products
+
+              ↓
+
+    Playwright intercepts
+
+              ↓
+
+    Modify / inspect / mock
+
+              ↓
+
+    Application receives response
+
+
+This is useful when testing UI behavior without always depending
+on a live backend response.
+
+
+====================================================================
+43.13 AUTHENTICATION STATE
+====================================================================
+
+Many applications require login.
+
+Without authentication reuse:
+
+    Test 1
+       ↓
+    Login
+
+    Test 2
+       ↓
+    Login
+
+    Test 3
+       ↓
+    Login
+
+
+This can make the suite slower and more repetitive.
+
+
+Playwright supports mechanisms for storing and reusing
+authentication state.
+
+
+Concept:
+
+    Login once
+       ↓
+    Save authentication state
+       ↓
+    Reuse state
+       ↓
+    Tests start as authenticated user
+
+
+Authentication state can involve information such as:
+
+    • Cookies
+    • Local storage
+    • Other browser session state
+
+
+This can simplify authenticated test setup.
+
+
+====================================================================
+43.14 PARALLEL EXECUTION
+====================================================================
+
+Large test suites can contain:
+
+    10 tests
+    100 tests
+    1000+ tests
+
+
+Sequential execution:
+
+    T1 → T2 → T3 → T4 → T5
+
+
+Parallel execution:
+
+    T1 ─┐
+    T2 ─┤
+    T3 ─┼──> execute concurrently
+    T4 ─┤
+    T5 ─┘
+
+
+Benefits:
+
+    • Faster feedback
+    • Better CI/CD performance
+    • Useful for regression suites
+
+
+But tests must be isolated.
+
+
+--------------------------------------------------------------------
+PARALLEL TESTING PROBLEM
+--------------------------------------------------------------------
+
+Suppose:
+
+    Test A → updates user balance
+
+    Test B → expects original user balance
+
+
+If both operate on the same state:
+
+    Test A modifies data
+          ↓
+    Test B sees unexpected state
+          ↓
+    Test B fails
+
+
+Therefore:
+
+    Parallel execution
+          +
+    Proper test isolation
+          =
+    Reliable test suite
+
+
+====================================================================
+43.15 CROSS-BROWSER TESTING
+====================================================================
+
+Web applications need to work across supported browsers.
+
+Playwright supports browser automation for:
+
+    Chromium
+    Firefox
+    WebKit
+
+
+Concept:
+
+    Test
+      |
+      +---- Chromium
+      |
+      +---- Firefox
+      |
+      +---- WebKit
+
+
+This helps identify browser-specific problems.
+
+
+--------------------------------------------------------------------
+EXAMPLE
+--------------------------------------------------------------------
+
+Suppose login works in Chromium but fails in WebKit.
+
+Cross-browser testing can reveal:
+
+    Chromium → PASS
+    Firefox  → PASS
+    WebKit   → FAIL
+
+
+The QA engineer can then investigate the browser-specific issue.
+
+
+====================================================================
+43.16 PLAYWRIGHT TEST RUNNER
+====================================================================
+
+Playwright Test provides a test-running environment.
+
+
+It supports concepts such as:
+
+    • Test organization
+    • Assertions
+    • Fixtures
+    • Configuration
+    • Parallel execution
+    • Reports
+    • Browser projects
+
+
+Typical structure:
+
+    Project
+      |
+      +---- playwright.config
+      |
+      +---- tests/
+      |       |
+      |       +---- login.spec
+      |       +---- cart.spec
+      |       +---- checkout.spec
+      |
+      +---- package.json
+
+
+--------------------------------------------------------------------
+TEST ORGANIZATION
+--------------------------------------------------------------------
+
+Example:
+
+    Login Tests
+       |
+       +---- valid login
+       +---- invalid login
+       +---- locked account
+
+
+    Cart Tests
+       |
+       +---- add product
+       +---- remove product
+       +---- quantity update
+
+
+This creates a maintainable test suite.
+
+
+====================================================================
+43.17 PRACTICAL E-COMMERCE EXAMPLE
+====================================================================
+
+Application:
+
+    E-commerce website
+
+
+Scenario:
+
+    Login
+      ↓
+    Search product
+      ↓
+    Open product
+      ↓
+    Add to cart
+      ↓
+    Checkout
+      ↓
+    Validate order
+
+
+Possible Playwright implementation concept:
+
+    test('purchase product', async ({ page }) => {
+
+        await page.goto('https://example-shop.com');
+
+        await page.getByLabel('Email').fill('user@example.com');
+
+        await page.getByLabel('Password').fill('password');
+
+        await page.getByRole('button', {
+            name: 'Login'
+        }).click();
+
+        await expect(
+            page.getByText('Dashboard')
+        ).toBeVisible();
+
+        await page.getByPlaceholder(
+            'Search products'
+        ).fill('Laptop');
+
+        await page.getByText('Laptop').first().click();
+
+        await page.getByRole('button', {
+            name: 'Add to cart'
+        }).click();
+
+        await expect(
+            page.getByText('Added to cart')
+        ).toBeVisible();
+
+    });
+
+
+Important:
+
+The exact selectors depend on the actual application's
+HTML and accessibility structure.
+
+
+====================================================================
+43.18 PLAYWRIGHT VS TRADITIONAL UI AUTOMATION
+====================================================================
+
+Traditional UI automation often requires explicit handling of:
+
+    • Drivers
+    • Synchronization
+    • Browser setup
+    • Windows
+    • Dynamic elements
+
+
+Playwright provides a modern automation model with features such as:
+
+    • Browser automation
+    • Auto-waiting
+    • Browser contexts
+    • Locators
+    • Tracing
+    • Network interception
+    • Authentication-state handling
+    • Parallel execution
+    • Cross-browser support
+
+
+The important point is not:
+
+    "One tool is always better."
+
+
+Instead:
+
+    Choose the framework according to
+    project requirements and team needs.
+
+
+====================================================================
+43.19 COMMON PLAYWRIGHT MISTAKES
+====================================================================
+
+1. Using fragile selectors
+
+Avoid unnecessary dependence on unstable DOM structure.
+
+
+2. Using fixed sleeps everywhere
+
+Prefer appropriate locator/action waiting and assertions.
+
+
+3. Sharing state between tests
+
+Tests should remain isolated where appropriate.
+
+
+4. Ignoring assertions
+
+A test that only performs clicks is not enough.
+
+
+5. Ignoring failure diagnostics
+
+Use screenshots and tracing to investigate failures.
+
+
+6. Hard-coding authentication into every test
+
+Consider appropriate authentication-state reuse.
+
+
+7. Running tests in parallel without isolation
+
+Shared data can create flaky failures.
+
+
+8. Testing only one browser
+
+Cross-browser requirements should be considered.
+
+
+9. Overusing CSS/XPath when better locators exist
+
+Prefer stable, meaningful locators where appropriate.
+
+
+10. Treating Playwright only as a click automation tool
+
+Its capabilities include:
+
+    Browser automation
+    Network handling
+    Authentication state
+    Tracing
+    Cross-browser testing
+    Parallel execution
+
+
+====================================================================
+43.20 INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is Playwright?
+
+Answer:
+
+Playwright is a browser automation and testing framework used
+to automate web applications and perform end-to-end testing.
+
+
+Q2. What browsers does Playwright support?
+
+Answer:
+
+The source syllabus identifies:
+
+    Chromium
+    Firefox
+    WebKit
+
+
+Q3. What is a Browser Context?
+
+Answer:
+
+A Browser Context provides an isolated browser session, helping
+keep cookies, authentication and other browser state separated.
+
+
+Q4. What is a Page?
+
+Answer:
+
+A Page represents a browser page/tab within a browser context.
+
+
+Q5. What is auto-waiting?
+
+Answer:
+
+It is Playwright's mechanism of waiting for appropriate
+conditions before performing supported actions, reducing the
+need for arbitrary fixed delays.
+
+
+Q6. What are Playwright locators?
+
+Answer:
+
+They are mechanisms used to identify and interact with elements
+on a web page.
+
+
+Q7. Give examples of Playwright locators.
+
+Answer:
+
+    getByRole()
+    getByLabel()
+    getByText()
+    getByPlaceholder()
+    getByTestId()
+
+
+Q8. What are assertions used for?
+
+Answer:
+
+Assertions verify that the application produced the expected
+result.
+
+
+Q9. What is Playwright tracing?
+
+Answer:
+
+Tracing records useful information about test execution and
+helps diagnose failures.
+
+
+Q10. What is network interception?
+
+Answer:
+
+It allows tests to observe, modify, or mock network interactions
+according to the testing requirement.
+
+
+Q11. Why is authentication-state reuse useful?
+
+Answer:
+
+It can avoid repeating login setup for every test and allow
+tests to start from an authenticated state.
+
+
+Q12. Why is parallel execution useful?
+
+Answer:
+
+It can reduce total test execution time by executing independent
+tests concurrently.
+
+
+Q13. What is required for reliable parallel execution?
+
+Answer:
+
+Tests should be appropriately isolated so that one test does not
+unexpectedly affect another.
+
+
+Q14. Why is cross-browser testing important?
+
+Answer:
+
+A web application may behave differently across supported
+browsers, so testing multiple browser engines helps identify
+browser-specific issues.
+
+
+Q15. What is the difference between Browser, Context and Page?
+
+Answer:
+
+    Browser
+        = browser instance
+
+    Context
+        = isolated browser session
+
+    Page
+        = browser tab/page within a context
+
+
+====================================================================
+43.21 QUICK REVISION
+====================================================================
+
+PLAYWRIGHT
+    ↓
+Modern web automation/testing framework
+
+BROWSER
+    ↓
+Browser instance
+
+CONTEXT
+    ↓
+Isolated browser session
+
+PAGE
+    ↓
+Browser tab/page
+
+LOCATORS
+    ↓
+Find and interact with elements
+
+AUTO-WAITING
+    ↓
+Wait for appropriate actionability conditions
+
+ASSERTIONS
+    ↓
+Validate expected behavior
+
+SCREENSHOTS
+    ↓
+Visual failure evidence
+
+TRACING
+    ↓
+Detailed execution debugging
+
+NETWORK INTERCEPTION
+    ↓
+Observe / modify / mock network behavior
+
+AUTH STATE
+    ↓
+Reuse authenticated session state
+
+PARALLEL EXECUTION
+    ↓
+Run independent tests concurrently
+
+CROSS-BROWSER
+    ↓
+Chromium + Firefox + WebKit
+
+
+====================================================================
+43.22 JOB-READY CHECKLIST
+====================================================================
+
+You should be able to:
+
+[ ] Explain Playwright
+[ ] Explain Browser
+[ ] Explain Browser Context
+[ ] Explain Page
+[ ] Create a basic Playwright test
+[ ] Navigate to a web application
+[ ] Use Playwright locators
+[ ] Use role-based locators
+[ ] Use label-based locators
+[ ] Use text-based locators
+[ ] Use test IDs
+[ ] Understand auto-waiting
+[ ] Write assertions
+[ ] Capture screenshots
+[ ] Understand tracing
+[ ] Understand network interception
+[ ] Understand authentication-state reuse
+[ ] Run tests in parallel
+[ ] Understand test isolation
+[ ] Run cross-browser tests
+[ ] Understand Playwright Test Runner
+[ ] Debug failed tests
+[ ] Build maintainable Playwright tests
+
+
+====================================================================
+43.23 CHAPTER SUMMARY
+====================================================================
+
+Playwright provides a modern approach to web automation.
+
+Core architecture:
+
+    Browser
+       ↓
+    Browser Context
+       ↓
+    Page
+       ↓
+    Locators
+       ↓
+    Actions
+       ↓
+    Assertions
+
+
+Important capabilities:
+
+    • Auto-waiting
+    • Assertions
+    • Screenshots
+    • Tracing
+    • Network interception
+    • Authentication state
+    • Parallel execution
+    • Cross-browser testing
+
+
+The job-ready mindset is:
+
+    Reliable Locators
+          +
+    Automatic Synchronization
+          +
+    Isolated Browser Contexts
+          +
+    Strong Assertions
+          +
+    Good Debugging
+          +
+    Cross-browser Coverage
+          +
+    Parallel Execution
+          =
+    Maintainable Playwright Automation
+
+
+====================================================================
+CHAPTER 43 COMPLETE
+====================================================================
+
+NEXT:
+CHAPTER 44 — SELENIUM VS PLAYWRIGHT
+
+Topics:
+    • Architecture Comparison
+    • Browser Support
+    • Synchronization
+    • Performance
+    • Debugging
+    • Use Cases
+====================================================================

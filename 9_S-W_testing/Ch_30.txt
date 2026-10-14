@@ -1,0 +1,1503 @@
+o======================================================================
+       SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+======================================================================
+
+                         CHAPTER 30
+                       DATABASE TESTING
+======================================================================
+
+COURSE POSITION
+---------------
+Chapter 30 of 78
+Phase 9 → SQL / Database Testing
+
+PREVIOUS
+--------
+Chapter 29 → Advanced SQL
+
+CURRENT
+-------
+Chapter 30 → Database Testing
+
+NEXT
+----
+Chapter 31 → API Fundamentals
+
+SOURCE TOPICS
+-------------
+• Database validation
+• CRUD testing
+• Data integrity
+• Referential integrity
+• UI / Database validation
+• Stored procedures
+• Database migration
+• ETL basics
+======================================================================
+
+
+30.1 WHAT IS DATABASE TESTING?
+==============================
+
+DATABASE TESTING is the process of verifying that data stored and
+processed by an application is correct, consistent, complete, and
+properly maintained.
+
+A QA Engineer does not only test what is visible on the UI.
+
+A modern application commonly follows:
+
+    UI
+     ↓
+    API
+     ↓
+    Backend
+     ↓
+    Database
+
+
+A database defect may not immediately be visible from the UI.
+
+Therefore, QA may need to verify:
+
+    UI data
+        ↕
+    API data
+        ↕
+    Backend processing
+        ↕
+    Database data
+
+
+Example:
+
+User changes their email:
+
+    UI:
+        new@example.com
+
+Expected database:
+
+    new@example.com
+
+Actual database:
+
+    old@example.com
+
+
+The UI may appear successful while the database contains incorrect
+data.
+
+Database testing helps detect such problems.
+
+
+======================================================================
+30.2 WHY DATABASE TESTING IS IMPORTANT
+======================================================================
+
+Applications depend heavily on stored data.
+
+Examples:
+
+    Banking
+    E-commerce
+    Healthcare
+    Education
+    SaaS
+    Travel
+    Logistics
+
+
+Consider an e-commerce order.
+
+User places an order:
+
+    Product = Laptop
+    Quantity = 1
+    Amount = ₹60,000
+
+
+The application may need to:
+
+    1. Create an order
+    2. Store order details
+    3. Associate order with user
+    4. Store payment information
+    5. Update inventory
+    6. Update order status
+
+
+If one database operation is incorrect, the application may produce
+incorrect business results.
+
+
+Therefore:
+
+    Correct UI
+        ≠
+    Guaranteed correct database
+
+
+Database validation provides another layer of testing.
+
+
+======================================================================
+30.3 DATABASE TESTING AREAS
+======================================================================
+
+Important areas include:
+
+    1. Database validation
+    2. CRUD testing
+    3. Data integrity
+    4. Referential integrity
+    5. UI-to-database validation
+    6. Stored procedure testing
+    7. Database migration testing
+    8. ETL testing basics
+
+
+We will cover each concept.
+
+
+======================================================================
+30.4 DATABASE VALIDATION
+======================================================================
+
+Database validation means verifying that the database contains the
+expected data after an application operation.
+
+
+Example:
+
+User registration:
+
+    Name:
+        Apoorv
+
+    Email:
+        apoorv@example.com
+
+
+User clicks:
+
+    REGISTER
+
+
+Expected database:
+
+    user_id | name   | email
+    -------------------------------
+    101     | Apoorv | apoorv@example.com
+
+
+QA validates:
+
+    • Record exists
+    • Correct name
+    • Correct email
+    • Correct relationships
+    • Expected fields populated
+
+
+Concept:
+
+    Application action
+          ↓
+    Database operation
+          ↓
+    Validate stored data
+
+
+======================================================================
+30.5 DATABASE VALIDATION EXAMPLE
+======================================================================
+
+SCENARIO:
+
+    User updates phone number.
+
+
+BEFORE:
+
+    user_id | phone
+    -------------------
+    101     | 9871111111
+
+
+ACTION:
+
+    User changes phone to:
+
+    9872222222
+
+
+EXPECTED:
+
+    user_id | phone
+    -------------------
+    101     | 9872222222
+
+
+QA checks:
+
+    SELECT *
+    FROM users
+    WHERE user_id = 101;
+
+
+Expected result:
+
+    phone = 9872222222
+
+
+If the database still contains:
+
+    9871111111
+
+then the update has not been correctly persisted.
+
+
+======================================================================
+30.6 CRUD TESTING
+======================================================================
+
+CRUD means:
+
+    C → CREATE
+    R → READ
+    U → UPDATE
+    D → DELETE
+
+
+Database testing should verify that application operations produce the
+expected CRUD behavior.
+
+
+----------------------------------------------------------------------
+CREATE
+----------------------------------------------------------------------
+
+Example:
+
+    User registration
+
+
+Expected:
+
+    New database record is created.
+
+
+Validation:
+
+    SELECT *
+    FROM users
+    WHERE email = 'apoorv@example.com';
+
+
+Expected:
+
+    Exactly the expected user record exists.
+
+
+----------------------------------------------------------------------
+READ
+----------------------------------------------------------------------
+
+Example:
+
+    User opens profile.
+
+
+Application reads:
+
+    User information from database.
+
+
+QA validates:
+
+    Database data
+        ↓
+    API response
+        ↓
+    UI display
+
+
+The information should be consistent with the expected data.
+
+
+----------------------------------------------------------------------
+UPDATE
+----------------------------------------------------------------------
+
+Example:
+
+    User changes their name.
+
+
+Expected:
+
+    Existing record is updated.
+
+
+QA verifies:
+
+    Old value
+        ↓
+    New value
+
+
+and confirms that the correct record was modified.
+
+
+----------------------------------------------------------------------
+DELETE
+----------------------------------------------------------------------
+
+Example:
+
+    User deletes an account.
+
+
+Expected database behavior should match the application's
+requirements.
+
+
+QA verifies that the expected record/state is produced after deletion.
+
+
+----------------------------------------------------------------------
+CRUD SUMMARY
+----------------------------------------------------------------------
+
+    CREATE
+       ↓
+    Record created
+
+    READ
+       ↓
+    Record retrieved
+
+    UPDATE
+       ↓
+    Record modified
+
+    DELETE
+       ↓
+    Record removed / expected deleted state
+
+
+======================================================================
+30.7 DATA INTEGRITY
+======================================================================
+
+DATA INTEGRITY means maintaining the correctness and consistency of
+data.
+
+
+The data should remain valid throughout application operations.
+
+
+Example:
+
+    USERS
+
+    user_id | name   | email
+    -----------------------------
+    101     | Apoorv | apoorv@example.com
+
+
+Suppose an update accidentally changes the wrong user's email.
+
+The database may remain technically operational, but the data is
+incorrect.
+
+That is a data-integrity problem.
+
+
+QA should verify:
+
+    • Correct data
+    • Correct records
+    • Correct relationships
+    • No unexpected corruption
+    • Expected constraints
+    • Consistent application state
+
+
+======================================================================
+30.8 DATA INTEGRITY EXAMPLE
+======================================================================
+
+Suppose:
+
+    User 101 → Apoorv
+    User 102 → Rahul
+
+
+User 101 updates their email.
+
+
+Expected:
+
+    User 101 → new email
+    User 102 → unchanged
+
+
+Actual:
+
+    User 101 → unchanged
+    User 102 → new email
+
+
+The database may contain valid-looking values, but the wrong record was
+updated.
+
+This is still a data-integrity defect.
+
+
+QA should verify not only:
+
+    "Was the value updated?"
+
+but also:
+
+    "Was the correct record updated?"
+
+
+======================================================================
+30.9 REFERENTIAL INTEGRITY
+======================================================================
+
+REFERENTIAL INTEGRITY ensures that relationships between related
+tables remain valid.
+
+
+Example:
+
+    USERS
+
+    user_id | name
+    ----------------
+    101     | Apoorv
+    102     | Rahul
+
+
+    ORDERS
+
+    order_id | user_id
+    --------------------
+    5001     | 101
+    5002     | 102
+
+
+The order's user_id should refer to a valid user.
+
+
+Concept:
+
+    USERS
+      |
+      | user_id
+      v
+    ORDERS
+      |
+      +--> user_id must correspond to valid user data
+
+
+If an order references a user that does not exist, the relationship
+may be invalid.
+
+
+======================================================================
+30.10 REFERENTIAL INTEGRITY QA SCENARIO
+======================================================================
+
+Suppose:
+
+    USERS
+
+    101 → Apoorv
+    102 → Rahul
+
+
+ORDERS:
+
+    5001 → user 101
+    5002 → user 102
+
+
+This is valid.
+
+
+Now imagine:
+
+    5003 → user 999
+
+
+If user 999 does not exist, the order contains an invalid reference.
+
+
+QA should investigate whether the database constraints and application
+logic correctly prevent such invalid relationships.
+
+
+======================================================================
+30.11 UI → DATABASE VALIDATION
+======================================================================
+
+This is one of the most important practical skills for a QA Engineer.
+
+
+Example:
+
+    Profile Page
+        |
+        | User changes name
+        v
+    Save
+        |
+        v
+    Backend
+        |
+        v
+    Database
+
+
+UI:
+
+    Name = "Apoorv Singh"
+
+
+Database should contain the expected value for the correct user.
+
+
+QA validation:
+
+    1. Perform operation in UI.
+    2. Observe application result.
+    3. Identify relevant database record.
+    4. Query database.
+    5. Compare expected and actual values.
+    6. Report defect if inconsistent.
+
+
+Flow:
+
+    UI
+     ↓
+    API
+     ↓
+    Backend
+     ↓
+    DB
+     ↑
+    SQL validation
+
+
+======================================================================
+30.12 API → DATABASE VALIDATION
+======================================================================
+
+Database testing is also useful for API testing.
+
+
+Example:
+
+API request:
+
+    POST /users
+
+
+Request data:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+API response:
+
+    {
+        "user_id": 101,
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+QA can verify:
+
+    API response
+         ↓
+    Database record
+
+
+Database:
+
+    user_id = 101
+    name = Apoorv
+    email = apoorv@example.com
+
+
+This verifies backend persistence.
+
+
+======================================================================
+30.13 STORED PROCEDURES
+======================================================================
+
+A STORED PROCEDURE is a database-side program or set of SQL operations
+stored in the database and executed when called.
+
+
+Conceptually:
+
+    Application
+         ↓
+    Calls procedure
+         ↓
+    Stored Procedure
+         ↓
+    Database operations
+         ↓
+    Result
+
+
+A stored procedure may contain logic involving:
+
+    • Data retrieval
+    • Data insertion
+    • Data updates
+    • Business-related database operations
+
+
+For QA, the important point is:
+
+    Stored procedures can contain important database logic.
+
+Therefore they may need to be tested.
+
+
+======================================================================
+30.14 STORED PROCEDURE TESTING
+======================================================================
+
+Suppose an application uses a stored procedure to calculate an order
+total.
+
+
+Input:
+
+    User ID
+    Order ID
+
+
+Procedure:
+
+    Calculate total
+
+
+Expected:
+
+    Correct total returned.
+
+
+QA should consider:
+
+    • Valid input
+    • Invalid input
+    • Boundary conditions
+    • Correct output
+    • Data changes
+    • Error handling
+    • Related records
+
+
+Concept:
+
+    Input
+      ↓
+    Stored Procedure
+      ↓
+    Database processing
+      ↓
+    Output
+
+
+The exact stored-procedure syntax depends on the database technology.
+
+
+======================================================================
+30.15 DATABASE MIGRATION
+======================================================================
+
+DATABASE MIGRATION means moving or changing database structures or
+data from one database state/environment to another.
+
+
+Examples:
+
+    Old database
+         ↓
+    Migration
+         ↓
+    New database
+
+
+Migration may involve:
+
+    • Schema changes
+    • Table changes
+    • Column changes
+    • Data movement
+    • Data transformation
+
+
+QA needs to verify that expected data and functionality remain correct
+after migration.
+
+
+======================================================================
+30.16 DATABASE MIGRATION TESTING
+======================================================================
+
+Suppose an application changes its database structure.
+
+
+Before migration:
+
+    USERS
+
+    user_id
+    name
+    email
+
+
+After migration:
+
+    USERS
+
+    user_id
+    first_name
+    last_name
+    email
+
+
+QA should verify:
+
+    • Existing data is preserved as expected
+    • Data mapping is correct
+    • No unexpected data loss
+    • New structure works correctly
+    • Application functionality still works
+    • Relationships remain valid
+
+
+Migration testing concept:
+
+    OLD DATABASE
+          ↓
+       MIGRATION
+          ↓
+    NEW DATABASE
+          ↓
+    VALIDATION
+
+
+======================================================================
+30.17 DATA MIGRATION EXAMPLE
+======================================================================
+
+Before:
+
+    full_name
+
+    "Apoorv Singh Rathor"
+
+
+After migration:
+
+    first_name = "Apoorv"
+    last_name  = "Singh Rathor"
+
+
+QA should verify:
+
+    Old data
+       ↓
+    Transformation
+       ↓
+    New data
+
+
+Expected:
+
+    first_name = Apoorv
+    last_name  = Singh Rathor
+
+
+If migration produces:
+
+    first_name = Apoorv
+    last_name  = NULL
+
+
+when the requirement expects the complete name to be preserved, this
+may indicate a migration defect.
+
+
+======================================================================
+30.18 ETL BASICS
+======================================================================
+
+ETL stands for:
+
+    E → Extract
+    T → Transform
+    L → Load
+
+
+ETL is commonly associated with moving and transforming data.
+
+
+Basic flow:
+
+    SOURCE
+      |
+      v
+    EXTRACT
+      |
+      v
+    TRANSFORM
+      |
+      v
+    LOAD
+      |
+      v
+    TARGET
+
+
+----------------------------------------------------------------------
+EXTRACT
+----------------------------------------------------------------------
+
+Data is extracted from a source.
+
+
+Example:
+
+    Source database
+
+
+----------------------------------------------------------------------
+TRANSFORM
+----------------------------------------------------------------------
+
+Data is transformed according to required rules.
+
+
+Examples:
+
+    • Format conversion
+    • Data mapping
+    • Data cleansing
+    • Value transformation
+
+
+----------------------------------------------------------------------
+LOAD
+----------------------------------------------------------------------
+
+Transformed data is loaded into the target system.
+
+
+Concept:
+
+    Source
+      ↓
+    Extract
+      ↓
+    Transform
+      ↓
+    Load
+      ↓
+    Target
+
+
+======================================================================
+30.19 ETL TESTING BASICS
+======================================================================
+
+A QA engineer may validate:
+
+    • Record counts
+    • Data values
+    • Data mapping
+    • Data transformation
+    • Missing records
+    • Duplicate records
+    • Invalid data
+    • Source-to-target consistency
+
+
+Example:
+
+Source:
+
+    customer_id | name
+    ------------------
+    101         | Apoorv
+
+
+Transformation:
+
+    Name converted according to target requirements.
+
+
+Target:
+
+    customer_id | customer_name
+    ----------------------------
+    101         | Apoorv
+
+
+QA validates:
+
+    Source
+       ↓
+    Transformation
+       ↓
+    Target
+
+
+Expected data should be preserved/transformed according to the
+specified requirements.
+
+
+======================================================================
+30.20 ETL QA EXAMPLE
+======================================================================
+
+Suppose:
+
+    SOURCE DATABASE
+
+    user_id | name
+    ----------------
+    101     | Apoorv
+    102     | Rahul
+    103     | Neha
+
+
+After ETL:
+
+    TARGET DATABASE
+
+    user_id | name
+    ----------------
+    101     | Apoorv
+    102     | Rahul
+    103     | Neha
+
+
+QA may verify:
+
+    Source record count = Target record count
+
+
+and:
+
+    Source user 101
+        =
+    Target user 101
+
+
+Potential defects:
+
+    • Missing record
+    • Duplicate record
+    • Incorrect transformation
+    • Incorrect mapping
+    • Wrong value
+    • Data truncation
+
+
+======================================================================
+30.21 DATABASE TESTING TEST CASE EXAMPLES
+======================================================================
+
+TEST CASE 1 — USER CREATION
+---------------------------
+
+Objective:
+
+    Verify that registration creates a database record.
+
+Steps:
+
+    1. Open registration page.
+    2. Enter valid data.
+    3. Submit registration.
+    4. Query users table.
+    5. Verify new record.
+
+Expected:
+
+    Correct record is created.
+
+
+--------------------------------------------------
+
+TEST CASE 2 — USER UPDATE
+--------------------------
+
+Objective:
+
+    Verify profile update.
+
+Steps:
+
+    1. Login.
+    2. Change user information.
+    3. Save.
+    4. Query database.
+    5. Verify updated values.
+
+Expected:
+
+    Correct record contains new values.
+
+
+--------------------------------------------------
+
+TEST CASE 3 — ORDER RELATIONSHIP
+---------------------------------
+
+Objective:
+
+    Verify order belongs to correct user.
+
+Steps:
+
+    1. Create order.
+    2. Obtain order ID.
+    3. Query order.
+    4. Verify user_id.
+    5. Verify corresponding user exists.
+
+Expected:
+
+    Correct user-order relationship.
+
+
+--------------------------------------------------
+
+TEST CASE 4 — DELETE
+---------------------
+
+Objective:
+
+    Verify account deletion behavior.
+
+Steps:
+
+    1. Delete test account.
+    2. Query database.
+    3. Verify expected state.
+
+Expected:
+
+    Database reflects the required deletion behavior.
+
+
+--------------------------------------------------
+
+TEST CASE 5 — DATA MIGRATION
+-----------------------------
+
+Objective:
+
+    Verify data after migration.
+
+Steps:
+
+    1. Identify source record.
+    2. Run migration.
+    3. Identify target record.
+    4. Compare values.
+    5. Verify transformation rules.
+
+Expected:
+
+    Data is migrated correctly.
+
+
+======================================================================
+30.22 DATABASE DEFECT EXAMPLE
+======================================================================
+
+BUG TITLE:
+
+    User email update is not persisted in database
+
+
+STEPS:
+
+    1. Login as user 101.
+    2. Open profile.
+    3. Change email to:
+           new@example.com
+    4. Save changes.
+    5. Query database.
+
+
+EXPECTED:
+
+    user_id = 101
+    email = new@example.com
+
+
+ACTUAL:
+
+    user_id = 101
+    email = old@example.com
+
+
+IMPACT:
+
+    Application and database contain inconsistent user information.
+
+
+Possible severity/priority should be determined based on the actual
+business impact.
+
+
+======================================================================
+30.23 DATABASE TESTING WORKFLOW
+======================================================================
+
+A practical workflow can be:
+
+    REQUIREMENT
+         ↓
+    Identify expected database behavior
+         ↓
+    Perform application operation
+         ↓
+    Identify affected table/record
+         ↓
+    Execute appropriate SQL query
+         ↓
+    Compare expected vs actual
+         ↓
+    Check relationships/integrity
+         ↓
+    Report defect if needed
+
+
+Example:
+
+    Requirement:
+        Updating email should persist.
+
+    Action:
+        Update email through UI.
+
+    Validation:
+        Query database.
+
+    Result:
+        Compare expected vs actual.
+
+    Outcome:
+        PASS / FAIL
+
+
+======================================================================
+30.24 WHAT A QA ENGINEER SHOULD VALIDATE
+======================================================================
+
+DATABASE STRUCTURE
+------------------
+
+    • Correct tables
+    • Correct columns
+    • Correct relationships
+
+
+DATA
+----
+
+    • Correct values
+    • Correct records
+    • Correct updates
+    • Correct deletions
+
+
+INTEGRITY
+---------
+
+    • Data integrity
+    • Referential integrity
+
+
+OPERATIONS
+----------
+
+    • CRUD behavior
+
+
+DATABASE LOGIC
+--------------
+
+    • Stored procedures
+
+
+MIGRATION
+---------
+
+    • Data preservation
+    • Correct transformation
+
+
+ETL
+---
+
+    • Source-to-target correctness
+    • Data mapping
+    • Transformation
+
+
+======================================================================
+30.25 DATABASE TESTING vs UI TESTING
+======================================================================
+
+UI TESTING:
+
+    Focuses on application behavior visible through the interface.
+
+
+DATABASE TESTING:
+
+    Focuses on data stored and processed in the database.
+
+
+Example:
+
+    User changes email.
+
+
+UI TEST:
+
+    Verify UI displays new email.
+
+
+DATABASE TEST:
+
+    Verify database stores new email.
+
+
+BEST VALIDATION:
+
+    UI
+     ↓
+    API
+     ↓
+    Database
+
+
+Testing different layers provides stronger confidence in the system.
+
+
+======================================================================
+30.26 COMMON INTERVIEW QUESTIONS
+======================================================================
+
+Q1. What is database testing?
+
+Answer:
+
+    Database testing verifies that application data is correctly
+    stored, retrieved, updated, deleted, and maintained according to
+    requirements.
+
+
+Q2. What is data integrity?
+
+Answer:
+
+    Data integrity refers to maintaining the correctness and
+    consistency of data.
+
+
+Q3. What is referential integrity?
+
+Answer:
+
+    Referential integrity ensures that relationships between related
+    records remain valid.
+
+
+Q4. What is CRUD?
+
+Answer:
+
+    Create, Read, Update, Delete.
+
+
+Q5. How do you validate data after a UI operation?
+
+Answer:
+
+    Perform the operation, identify the affected database record,
+    query the database, and compare actual data with expected data.
+
+
+Q6. What is a stored procedure?
+
+Answer:
+
+    A stored procedure is stored database-side logic that can be
+    executed to perform database operations.
+
+
+Q7. What is database migration?
+
+Answer:
+
+    Database migration involves moving or changing database structure
+    or data from one state/environment to another.
+
+
+Q8. What is ETL?
+
+Answer:
+
+    ETL stands for Extract, Transform, Load.
+
+
+Q9. What is the purpose of ETL testing?
+
+Answer:
+
+    To verify that data is correctly extracted, transformed, and
+    loaded into the target system.
+
+
+Q10. Give an example of a database defect.
+
+Answer:
+
+    The UI reports that a user's email was updated, but the database
+    still contains the old email.
+
+
+======================================================================
+30.27 QUICK REVISION
+======================================================================
+
+DATABASE TESTING
+        |
+        +---- Database Validation
+        |
+        +---- CRUD Testing
+        |
+        +---- Data Integrity
+        |
+        +---- Referential Integrity
+        |
+        +---- UI ↔ Database Validation
+        |
+        +---- Stored Procedures
+        |
+        +---- Database Migration
+        |
+        +---- ETL
+
+
+Remember:
+
+    CRUD
+        → Create / Read / Update / Delete
+
+    Data Integrity
+        → Correct and consistent data
+
+    Referential Integrity
+        → Valid relationships between related data
+
+    Stored Procedure
+        → Database-side stored logic
+
+    Migration
+        → Move/change database structure or data
+
+    ETL
+        → Extract → Transform → Load
+
+
+======================================================================
+30.28 JOB-READY CHECKLIST
+======================================================================
+
+You should now be able to:
+
+[✓] Explain database testing
+[✓] Explain why database testing is important
+[✓] Perform basic database validation
+[✓] Understand CRUD testing
+[✓] Validate CREATE operations
+[✓] Validate READ operations
+[✓] Validate UPDATE operations
+[✓] Validate DELETE operations
+[✓] Explain data integrity
+[✓] Explain referential integrity
+[✓] Validate UI data against database data
+[✓] Validate API data against database data
+[✓] Understand stored procedures
+[✓] Understand stored procedure testing
+[✓] Explain database migration
+[✓] Understand migration testing
+[✓] Explain ETL
+[✓] Understand basic ETL testing
+[✓] Identify common database defects
+[✓] Answer basic database-testing interview questions
+
+
+======================================================================
+                    PHASE 9 COMPLETE
+======================================================================
+
+DATABASE / SQL FOUNDATION
+-------------------------
+
+Chapter 27 → Database Fundamentals
+Chapter 28 → SQL for Testers
+Chapter 29 → Advanced SQL
+Chapter 30 → Database Testing
+
+
+You now move from DATABASE TESTING to API TESTING.
+
+
+======================================================================
+                    CHAPTER 30 COMPLETE
+======================================================================
+
+NEXT → CHAPTER 31: API FUNDAMENTALS
+
+Topics:
+    • What is an API?
+    • Why APIs are used
+    • Client-server architecture
+    • REST
+    • SOAP
+    • REST vs SOAP
+    • HTTP methods
+        GET
+        POST
+        PUT
+        PATCH
+        DELETE
+======================================================================

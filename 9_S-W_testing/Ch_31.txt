@@ -1,0 +1,1620 @@
+======================================================================
+       SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+======================================================================
+
+                         CHAPTER 31
+                       API FUNDAMENTALS
+======================================================================
+
+COURSE POSITION
+---------------
+Chapter 31 of 78
+Phase 10 → API Testing
+
+PREVIOUS
+--------
+Chapter 30 → Database Testing
+
+CURRENT
+-------
+Chapter 31 → API Fundamentals
+
+NEXT
+----
+Chapter 32 → HTTP / API Concepts
+
+SOURCE TOPICS
+-------------
+• API
+• Why APIs are used
+• Client-server architecture
+• REST
+• SOAP
+• REST vs SOAP
+• HTTP methods
+    GET
+    POST
+    PUT
+    PATCH
+    DELETE
+======================================================================
+
+
+31.1 WHAT IS AN API?
+====================
+
+API stands for:
+
+    Application Programming Interface
+
+
+An API is an interface that allows different software components or
+applications to communicate with each other.
+
+
+Simple idea:
+
+    Application A
+         |
+         | API
+         v
+    Application B
+
+
+In modern web applications:
+
+    Frontend
+       |
+       | API request
+       v
+    Backend
+       |
+       v
+    Database
+
+
+The frontend does not necessarily communicate directly with the
+database.
+
+Instead:
+
+    Frontend
+       ↓
+      API
+       ↓
+    Backend
+       ↓
+    Database
+
+
+For a QA Engineer, API testing means testing the communication and
+behavior of these APIs.
+
+
+======================================================================
+31.2 REAL-WORLD EXAMPLE
+======================================================================
+
+Consider an e-commerce application.
+
+
+User opens:
+
+    Product page
+
+
+The frontend needs product information:
+
+    Product Name
+    Price
+    Description
+    Availability
+
+
+The frontend can request this information from an API.
+
+
+Conceptually:
+
+    Browser
+       |
+       | GET product request
+       v
+    Product API
+       |
+       v
+    Backend
+       |
+       v
+    Database
+
+
+The backend processes the request and returns data.
+
+
+Example response:
+
+    {
+        "product_id": 201,
+        "name": "Laptop",
+        "price": 60000,
+        "available": true
+    }
+
+
+The frontend then displays this information to the user.
+
+
+======================================================================
+31.3 WHY ARE APIs USED?
+======================================================================
+
+APIs allow different software components to communicate in a
+standardized way.
+
+
+Common uses include:
+
+    • Frontend ↔ Backend communication
+    • Mobile app ↔ Backend communication
+    • Web app ↔ Backend communication
+    • Service ↔ Service communication
+    • External system integrations
+
+
+Example:
+
+    Web Application
+          |
+          v
+        API
+          |
+          v
+       Backend
+
+
+And:
+
+    Mobile Application
+          |
+          v
+        Same API
+          |
+          v
+       Backend
+
+
+The web and mobile applications can use backend services through APIs.
+
+
+======================================================================
+31.4 API IN A WEB APPLICATION
+======================================================================
+
+A typical web application can be represented as:
+
+
+    +-------------------+
+    |    Frontend/UI    |
+    +-------------------+
+             |
+             | HTTP Request
+             v
+    +-------------------+
+    |       API         |
+    +-------------------+
+             |
+             v
+    +-------------------+
+    |     Backend       |
+    +-------------------+
+             |
+             v
+    +-------------------+
+    |     Database      |
+    +-------------------+
+
+
+Response travels back:
+
+    Database
+       ↓
+    Backend
+       ↓
+      API
+       ↓
+    Frontend
+       ↓
+      User
+
+
+The API acts as an important communication interface.
+
+
+======================================================================
+31.5 CLIENT-SERVER ARCHITECTURE
+======================================================================
+
+API testing requires understanding client-server architecture.
+
+
+CLIENT
+------
+
+The client is the system making a request.
+
+
+Examples:
+
+    • Web browser
+    • Mobile application
+    • Desktop application
+    • Another service
+
+
+SERVER
+------
+
+The server receives requests, processes them, and returns responses.
+
+
+Basic flow:
+
+
+    CLIENT
+       |
+       | Request
+       v
+    SERVER
+       |
+       | Processing
+       v
+    DATABASE
+       |
+       v
+    SERVER
+       |
+       | Response
+       v
+    CLIENT
+
+
+Example:
+
+    Browser
+       |
+       | GET /products
+       v
+    Server
+       |
+       v
+    Database
+       |
+       v
+    Server
+       |
+       | Product data
+       v
+    Browser
+
+
+======================================================================
+31.6 API REQUEST
+======================================================================
+
+An API request is a message sent by a client to a server.
+
+
+An API request can contain information such as:
+
+    • HTTP method
+    • URL
+    • Headers
+    • Parameters
+    • Request body
+
+
+Conceptually:
+
+    REQUEST
+    --------------------------------
+    Method:
+        GET
+
+    URL:
+        /products
+
+    Headers:
+        ...
+
+    Body:
+        ...
+    --------------------------------
+
+
+The server receives and processes the request.
+
+
+======================================================================
+31.7 API RESPONSE
+======================================================================
+
+An API response is the server's response to a request.
+
+
+A response commonly contains:
+
+    • Status code
+    • Headers
+    • Response body
+
+
+Example:
+
+    RESPONSE
+    --------------------------------
+    Status:
+        200
+
+    Body:
+
+    {
+        "product_id": 201,
+        "name": "Laptop",
+        "price": 60000
+    }
+    --------------------------------
+
+
+The client uses this response to perform the required action.
+
+
+======================================================================
+31.8 REST
+======================================================================
+
+REST stands for:
+
+    Representational State Transfer
+
+
+REST is an architectural style commonly used for web APIs.
+
+
+REST APIs commonly use:
+
+    HTTP
+    JSON
+    HTTP methods
+    Resources / endpoints
+
+
+Example resource:
+
+    /users
+
+
+Another resource:
+
+    /products
+
+
+Another:
+
+    /orders
+
+
+The client interacts with these resources through HTTP requests.
+
+
+======================================================================
+31.9 REST API EXAMPLE
+======================================================================
+
+Suppose we have a users resource.
+
+
+GET:
+
+    GET /users
+
+
+This can request a list of users.
+
+
+Get a specific user:
+
+    GET /users/101
+
+
+Create a user:
+
+    POST /users
+
+
+Update a user:
+
+    PUT /users/101
+
+
+Partially update:
+
+    PATCH /users/101
+
+
+Delete:
+
+    DELETE /users/101
+
+
+The HTTP method communicates the intended operation.
+
+
+======================================================================
+31.10 REST RESOURCE CONCEPT
+======================================================================
+
+REST commonly models application entities as resources.
+
+
+Example:
+
+
+    /users
+    /products
+    /orders
+    /payments
+
+
+A specific resource can be represented using an identifier.
+
+
+Example:
+
+    /users/101
+
+means a particular user resource.
+
+
+Similarly:
+
+    /products/201
+
+represents a particular product.
+
+
+And:
+
+    /orders/5001
+
+represents a particular order.
+
+
+This makes API endpoints easier to understand and organize.
+
+
+======================================================================
+31.11 SOAP
+======================================================================
+
+SOAP stands for:
+
+    Simple Object Access Protocol
+
+
+SOAP is a protocol used for exchanging structured information between
+systems.
+
+
+SOAP APIs commonly use XML-based messages.
+
+
+Conceptually:
+
+    Client
+       |
+       | SOAP request
+       v
+    SOAP Service
+       |
+       v
+    Backend
+
+
+SOAP has historically been used extensively in enterprise systems and
+integrations.
+
+
+For this syllabus, the key requirement is understanding SOAP and how it
+differs from REST.
+
+
+======================================================================
+31.12 REST vs SOAP
+======================================================================
+
+REST:
+
+    • Architectural style
+    • Commonly uses HTTP
+    • Commonly uses JSON
+    • Uses HTTP methods
+    • Resource-oriented
+
+
+SOAP:
+
+    • Protocol
+    • Commonly uses XML messages
+    • Has a more formal messaging structure
+    • Used in many enterprise/integration scenarios
+
+
+Simple comparison:
+
+
+    REST
+      ↓
+    Resource-oriented
+      ↓
+    HTTP methods
+      ↓
+    JSON commonly used
+
+
+    SOAP
+      ↓
+    Protocol
+      ↓
+    XML-based messaging commonly used
+      ↓
+    Enterprise integrations
+
+
+IMPORTANT:
+
+Do not reduce the difference to:
+
+    REST = JSON
+    SOAP = XML
+
+
+The deeper distinction is:
+
+    REST is an architectural style.
+
+    SOAP is a protocol.
+
+
+======================================================================
+31.13 REST vs SOAP — QA PERSPECTIVE
+======================================================================
+
+As a QA Engineer, you may encounter both REST and SOAP APIs.
+
+
+For REST testing, you may validate:
+
+    • Endpoint
+    • HTTP method
+    • Request
+    • Response
+    • Status code
+    • Headers
+    • JSON data
+    • Authentication
+    • Business behavior
+
+
+For SOAP testing, you may encounter:
+
+    • XML request
+    • XML response
+    • Service operation
+    • Request/response structure
+    • Error behavior
+
+
+The exact testing approach depends on the API implementation.
+
+
+======================================================================
+31.14 HTTP METHODS
+======================================================================
+
+The important methods in this syllabus are:
+
+
+    GET
+    POST
+    PUT
+    PATCH
+    DELETE
+
+
+They commonly represent different operations on resources.
+
+
+Conceptually:
+
+
+    GET
+      ↓
+    Retrieve
+
+
+    POST
+      ↓
+    Create
+
+
+    PUT
+      ↓
+    Replace / update resource
+
+
+    PATCH
+      ↓
+    Partial update
+
+
+    DELETE
+      ↓
+    Delete
+
+
+These meanings are important for API testing interviews.
+
+
+======================================================================
+31.15 GET
+======================================================================
+
+GET is generally used to retrieve information.
+
+
+Example:
+
+    GET /users
+
+
+Meaning:
+
+    Retrieve users.
+
+
+Specific user:
+
+    GET /users/101
+
+
+Meaning:
+
+    Retrieve user 101.
+
+
+Example response:
+
+    {
+        "user_id": 101,
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+QA can verify:
+
+    • Correct status
+    • Correct response data
+    • Correct user
+    • Expected response structure
+    • Expected behavior
+
+
+======================================================================
+31.16 POST
+======================================================================
+
+POST is generally used to submit data to create a new resource or
+perform an operation defined by the API.
+
+
+Example:
+
+    POST /users
+
+
+Request body:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+Possible response:
+
+    {
+        "user_id": 101,
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+QA can validate:
+
+    • Request accepted
+    • Correct response
+    • New resource created as expected
+    • Correct data persisted
+    • Appropriate error behavior for invalid input
+
+
+======================================================================
+31.17 PUT
+======================================================================
+
+PUT is generally used to replace or update a resource representation.
+
+
+Example:
+
+    PUT /users/101
+
+
+Request:
+
+    {
+        "name": "Apoorv Singh",
+        "email": "new@example.com"
+    }
+
+
+The API processes the update according to its contract.
+
+
+QA should verify:
+
+    • Correct resource updated
+    • Expected fields changed
+    • Expected data persisted
+    • Other relevant fields behave according to the API contract
+
+
+Important:
+
+The exact semantics of PUT depend on the API contract, but it is
+commonly associated with replacement/full update.
+
+
+======================================================================
+31.18 PATCH
+======================================================================
+
+PATCH is generally used for partial updates.
+
+
+Example:
+
+    PATCH /users/101
+
+
+Request:
+
+    {
+        "email": "new@example.com"
+    }
+
+
+Only the email is being changed.
+
+
+Conceptually:
+
+
+    Existing User
+    -------------------------
+    name  = Apoorv
+    email = old@example.com
+    age   = 24
+    -------------------------
+
+             PATCH
+
+    email = new@example.com
+
+             ↓
+
+    Result
+    -------------------------
+    name  = Apoorv
+    email = new@example.com
+    age   = 24
+    -------------------------
+
+
+QA should verify that the intended field changed and other data behaves
+according to the API contract.
+
+
+======================================================================
+31.19 DELETE
+======================================================================
+
+DELETE is generally used to remove a resource.
+
+
+Example:
+
+    DELETE /users/101
+
+
+The API processes the deletion according to its contract.
+
+
+QA should validate:
+
+    • Appropriate response
+    • Resource deletion behavior
+    • Related data behavior where applicable
+    • Repeated request behavior
+    • Database state when database validation is in scope
+
+
+Example:
+
+    DELETE /users/101
+
+
+Then:
+
+    GET /users/101
+
+
+The result should match the API's defined behavior for a deleted
+resource.
+
+
+======================================================================
+31.20 HTTP METHOD SUMMARY
+======================================================================
+
+    +----------+--------------------------------+
+    | METHOD   | COMMON PURPOSE                 |
+    +----------+--------------------------------+
+    | GET      | Retrieve data                  |
+    | POST     | Create / submit                |
+    | PUT      | Replace / update               |
+    | PATCH    | Partial update                 |
+    | DELETE   | Delete resource                |
+    +----------+--------------------------------+
+
+
+Remember:
+
+    GET
+      → Read
+
+    POST
+      → Create
+
+    PUT
+      → Full replacement/update
+
+    PATCH
+      → Partial update
+
+    DELETE
+      → Delete
+
+
+======================================================================
+31.21 API ENDPOINT
+======================================================================
+
+An ENDPOINT is a specific URL through which an API operation can be
+accessed.
+
+
+Examples:
+
+    GET /users
+
+    GET /users/101
+
+    POST /users
+
+    PUT /users/101
+
+    DELETE /users/101
+
+
+Each endpoint represents an API operation/resource interaction.
+
+
+For QA, identifying the correct endpoint is one of the first steps in
+API testing.
+
+
+======================================================================
+31.22 API TESTING EXAMPLE — USER CREATION
+======================================================================
+
+Requirement:
+
+    User should be created through an API.
+
+
+Endpoint:
+
+    POST /users
+
+
+Request:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+QA validates:
+
+    1. Correct endpoint
+    2. Correct HTTP method
+    3. Request accepted
+    4. Appropriate status code
+    5. Response body
+    6. User ID generated if applicable
+    7. Data persisted correctly
+    8. Invalid requests handled correctly
+
+
+Flow:
+
+    POST /users
+         ↓
+    Backend
+         ↓
+    Database
+         ↓
+    Response
+
+
+======================================================================
+31.23 API TESTING EXAMPLE — GET USER
+======================================================================
+
+Requirement:
+
+    Retrieve user details.
+
+
+Request:
+
+    GET /users/101
+
+
+Expected response concept:
+
+    {
+        "user_id": 101,
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+QA verifies:
+
+    • Correct user
+    • Correct data
+    • Correct response structure
+    • Correct status
+    • Appropriate behavior for invalid user IDs
+
+
+Example negative scenario:
+
+    GET /users/999999
+
+
+If the user does not exist, the API should return the behavior defined
+by its contract.
+
+
+======================================================================
+31.24 API TESTING EXAMPLE — UPDATE USER
+======================================================================
+
+Requirement:
+
+    Update user email.
+
+
+Request:
+
+    PATCH /users/101
+
+
+Body:
+
+    {
+        "email": "new@example.com"
+    }
+
+
+QA validates:
+
+    Before:
+        old@example.com
+
+    Request:
+        new@example.com
+
+    After:
+        new@example.com
+
+
+If database validation is included:
+
+    API response
+         ↓
+    Database
+         ↓
+    Verify persistence
+
+
+======================================================================
+31.25 API TESTING EXAMPLE — DELETE USER
+======================================================================
+
+Request:
+
+    DELETE /users/101
+
+
+QA validates:
+
+    • Appropriate response
+    • Resource no longer behaves as an active resource according to
+      the API contract
+    • Related application behavior
+    • Database state when applicable
+
+
+Possible follow-up:
+
+    GET /users/101
+
+
+The expected result depends on the API's defined behavior.
+
+
+======================================================================
+31.26 POSITIVE AND NEGATIVE API TESTING
+======================================================================
+
+API testing is not only about valid requests.
+
+
+POSITIVE TESTING
+----------------
+
+Send valid input.
+
+
+Example:
+
+    POST /users
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+Expected:
+
+    Request succeeds according to the API contract.
+
+
+NEGATIVE TESTING
+----------------
+
+Send invalid input.
+
+
+Example:
+
+    Missing email:
+
+    {
+        "name": "Apoorv"
+    }
+
+
+QA verifies:
+
+    • Appropriate error response
+    • Appropriate status
+    • Useful error information
+    • No unexpected database changes
+
+
+Other negative scenarios:
+
+    • Invalid ID
+    • Missing required field
+    • Invalid data type
+    • Invalid authentication
+    • Invalid request format
+
+
+Detailed API test design is covered in later chapters.
+
+
+======================================================================
+31.27 API + DATABASE VALIDATION
+======================================================================
+
+API testing becomes more powerful when combined with database
+validation.
+
+
+Example:
+
+    POST /users
+
+
+Request:
+
+    {
+        "name": "Apoorv",
+        "email": "apoorv@example.com"
+    }
+
+
+API returns:
+
+    user_id = 101
+
+
+QA can query the database:
+
+    SELECT *
+    FROM users
+    WHERE user_id = 101;
+
+
+Expected:
+
+    name  = Apoorv
+    email = apoorv@example.com
+
+
+Validation chain:
+
+    API Request
+         ↓
+    Backend
+         ↓
+    Database
+         ↓
+    API Response
+
+
+QA validates the complete flow.
+
+
+======================================================================
+31.28 API TESTING IN POSTMAN
+======================================================================
+
+A tool such as Postman can be used to send API requests and inspect
+responses.
+
+
+Basic workflow:
+
+    1. Open Postman.
+    2. Select HTTP method.
+    3. Enter endpoint.
+    4. Configure request.
+    5. Send request.
+    6. Inspect response.
+    7. Validate result.
+
+
+Example:
+
+    Method:
+        GET
+
+    URL:
+        /users/101
+
+
+Send:
+
+
+    Request
+       ↓
+    API
+       ↓
+    Response
+
+
+Postman becomes especially important in later API-testing chapters.
+
+
+======================================================================
+31.29 API TESTING LAYERS
+======================================================================
+
+When testing an API, QA may validate multiple layers:
+
+
+REQUEST
+-------
+    • Method
+    • Endpoint
+    • Parameters
+    • Headers
+    • Body
+
+
+PROCESSING
+----------
+    • Business logic
+    • Authentication
+    • Authorization
+    • Validation
+
+
+RESPONSE
+--------
+    • Status code
+    • Headers
+    • Response body
+    • Data
+
+
+PERSISTENCE
+-----------
+    • Database state
+    • Data consistency
+
+
+Concept:
+
+    Request
+       ↓
+    Processing
+       ↓
+    Response
+       ↓
+    Database validation
+
+
+======================================================================
+31.30 COMMON API DEFECT EXAMPLES
+======================================================================
+
+DEFECT 1
+--------
+
+Request:
+
+    POST /users
+
+Valid data is submitted.
+
+Actual:
+
+    API returns success but no database record is created.
+
+
+Potential issue:
+
+    Persistence failure.
+
+
+----------------------------------------------------------------------
+DEFECT 2
+----------------------------------------------------------------------
+
+Request:
+
+    GET /users/101
+
+
+Expected:
+
+    User 101
+
+
+Actual:
+
+    User 102
+
+
+Potential issue:
+
+    Incorrect data retrieval.
+
+
+----------------------------------------------------------------------
+DEFECT 3
+----------------------------------------------------------------------
+
+Request:
+
+    PATCH /users/101
+
+
+Body:
+
+    {
+        "email": "new@example.com"
+    }
+
+
+Expected:
+
+    Only email changes.
+
+
+Actual:
+
+    User's name is unexpectedly changed.
+
+
+Potential issue:
+
+    Incorrect update behavior.
+
+
+----------------------------------------------------------------------
+DEFECT 4
+----------------------------------------------------------------------
+
+Invalid request:
+
+    Missing required email.
+
+
+Expected:
+
+    Validation error.
+
+
+Actual:
+
+    User created with invalid/incomplete data.
+
+
+Potential issue:
+
+    Input validation defect.
+
+
+======================================================================
+31.31 COMMON API INTERVIEW QUESTIONS
+======================================================================
+
+Q1. What is an API?
+
+Answer:
+
+    API stands for Application Programming Interface. It provides an
+    interface through which software components can communicate.
+
+
+Q2. Why are APIs used?
+
+Answer:
+
+    APIs allow different software components and applications to
+    communicate and exchange data or perform operations.
+
+
+Q3. What is REST?
+
+Answer:
+
+    REST is an architectural style commonly used for web APIs.
+
+
+Q4. What is SOAP?
+
+Answer:
+
+    SOAP is a protocol used for exchanging structured information
+    between systems.
+
+
+Q5. What is the difference between REST and SOAP?
+
+Answer:
+
+    REST is an architectural style, while SOAP is a protocol. REST
+    commonly uses HTTP and often JSON, while SOAP commonly uses
+    XML-based messaging.
+
+
+Q6. What is GET?
+
+Answer:
+
+    GET is generally used to retrieve data.
+
+
+Q7. What is POST?
+
+Answer:
+
+    POST is generally used to create a resource or submit data for an
+    operation.
+
+
+Q8. What is PUT?
+
+Answer:
+
+    PUT is generally associated with replacing or updating a resource.
+
+
+Q9. What is PATCH?
+
+Answer:
+
+    PATCH is generally used for partial updates.
+
+
+Q10. What is DELETE?
+
+Answer:
+
+    DELETE is generally used to remove a resource.
+
+
+Q11. What is an endpoint?
+
+Answer:
+
+    An endpoint is a specific API URL through which an operation or
+    resource can be accessed.
+
+
+Q12. What is client-server architecture?
+
+Answer:
+
+    A client sends requests to a server, and the server processes the
+    requests and returns responses.
+
+
+======================================================================
+31.32 QUICK REVISION
+======================================================================
+
+API
+ ↓
+Application Programming Interface
+
+
+CLIENT
+ ↓
+Sends request
+
+
+SERVER
+ ↓
+Processes request
+
+
+API
+ ↓
+Communication interface
+
+
+REST
+ ↓
+Architectural style
+
+
+SOAP
+ ↓
+Protocol
+
+
+GET
+ ↓
+Retrieve
+
+
+POST
+ ↓
+Create / submit
+
+
+PUT
+ ↓
+Replace / update
+
+
+PATCH
+ ↓
+Partial update
+
+
+DELETE
+ ↓
+Delete
+
+
+Typical flow:
+
+    CLIENT
+       ↓
+    API REQUEST
+       ↓
+    SERVER
+       ↓
+    DATABASE
+       ↓
+    SERVER
+       ↓
+    API RESPONSE
+       ↓
+    CLIENT
+
+
+======================================================================
+31.33 JOB-READY CHECKLIST
+======================================================================
+
+You should now be able to explain:
+
+[✓] What an API is
+[✓] Why APIs are used
+[✓] Client-server architecture
+[✓] API request
+[✓] API response
+[✓] REST
+[✓] REST resources
+[✓] SOAP
+[✓] REST vs SOAP
+[✓] HTTP methods
+[✓] GET
+[✓] POST
+[✓] PUT
+[✓] PATCH
+[✓] DELETE
+[✓] API endpoints
+[✓] Positive API testing
+[✓] Negative API testing
+[✓] API-to-database validation
+[✓] Basic API testing using Postman conceptually
+[✓] Common API defects
+[✓] Basic API interview questions
+
+
+======================================================================
+                    CHAPTER 31 COMPLETE
+======================================================================
+
+NEXT → CHAPTER 32: HTTP / API CONCEPTS
+
+Topics:
+    • Headers
+    • Request body
+    • Query parameters
+    • Path parameters
+    • Authentication
+    • Authorization
+    • Cookies
+    • Tokens
+    • JWT
+    • HTTP status codes
+======================================================================

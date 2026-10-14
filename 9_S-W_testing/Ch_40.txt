@@ -1,0 +1,1363 @@
+====================================================================
+        SOFTWARE TESTING / QA ENGINEER — JOB READY MASTER
+====================================================================
+
+                         CHAPTER 40
+                  TEST AUTOMATION TOOLS
+====================================================================
+
+OBJECTIVE
+---------
+Understand the major test execution frameworks/tools used with
+different programming languages and automation approaches.
+
+SOURCE TOPICS
+-------------
+    • JUnit / TestNG
+    • PyTest
+    • Playwright Test / Jest
+
+
+====================================================================
+40.1 WHY DO WE NEED A TEST FRAMEWORK?
+====================================================================
+
+Selenium can control a browser, but a complete automation solution
+also needs a way to organize and execute tests.
+
+Think of the difference:
+
+    Selenium
+       ↓
+    Browser automation
+
+    Test Framework
+       ↓
+    Test organization + execution + assertions + reporting support
+
+
+A typical automation solution:
+
+    Test Code
+       ↓
+    Test Framework
+       ↓
+    Selenium / Playwright
+       ↓
+    Browser
+       ↓
+    Application
+
+
+A test framework helps structure the automation suite so that tests
+can be:
+
+    Organized
+    Executed
+    Validated
+    Reused
+    Maintained
+
+
+====================================================================
+40.2 TEST FRAMEWORK vs AUTOMATION TOOL
+====================================================================
+
+These concepts should not be confused.
+
+AUTOMATION TOOL
+---------------
+
+Controls/interacts with the application.
+
+Examples:
+
+    Selenium
+    Playwright
+
+
+TEST FRAMEWORK
+--------------
+
+Provides a structure for writing and executing tests.
+
+Examples in this chapter:
+
+    JUnit
+    TestNG
+    PyTest
+    Playwright Test
+    Jest
+
+
+Conceptually:
+
+    +-----------------------------+
+    |       Test Framework        |
+    |                             |
+    |  Test cases                 |
+    |  Assertions                 |
+    |  Execution                  |
+    |  Organization               |
+    +-------------+---------------+
+                  |
+                  ↓
+    +-----------------------------+
+    | Automation Tool             |
+    | Selenium / Playwright       |
+    +-------------+---------------+
+                  |
+                  ↓
+              Browser
+
+
+====================================================================
+40.3 JUNIT
+====================================================================
+
+JUnit is a testing framework commonly used in Java.
+
+Conceptual stack:
+
+    Java
+      ↓
+    JUnit
+      ↓
+    Selenium
+      ↓
+    Browser
+      ↓
+    Web Application
+
+
+JUnit provides a structured way to define and execute tests.
+
+A basic test concept:
+
+    @Test
+    loginTest()
+    {
+        openLoginPage();
+        enterCredentials();
+        clickLogin();
+        verifyDashboard();
+    }
+
+
+The exact syntax depends on the JUnit version being used.
+
+
+====================================================================
+40.4 JUNIT TEST STRUCTURE
+====================================================================
+
+A basic test can conceptually contain:
+
+    Test setup
+        ↓
+    Test actions
+        ↓
+    Assertions
+        ↓
+    Cleanup
+
+
+Example:
+
+    SETUP
+      ↓
+    Open application
+      ↓
+    Execute login
+      ↓
+    ASSERT dashboard
+      ↓
+    CLEANUP
+
+
+JUnit helps provide the framework structure around these steps.
+
+
+====================================================================
+40.5 JUNIT ASSERTIONS
+====================================================================
+
+Assertions are used to compare:
+
+    Actual Result
+          vs
+    Expected Result
+
+
+Example:
+
+    Expected:
+        Page title = "Dashboard"
+
+    Actual:
+        Page title = "Dashboard"
+
+
+Result:
+
+    PASS
+
+
+If:
+
+    Expected:
+        Dashboard
+
+    Actual:
+        Error Page
+
+
+Result:
+
+    FAIL
+
+
+Concept:
+
+    Action
+      ↓
+    Application Result
+      ↓
+    Assertion
+      ↓
+    PASS / FAIL
+
+
+Assertions are essential because performing an action alone does
+not prove that the test passed.
+
+
+====================================================================
+40.6 TESTNG
+====================================================================
+
+TestNG is another popular Java testing framework.
+
+Conceptual stack:
+
+    Java
+      ↓
+    TestNG
+      ↓
+    Selenium
+      ↓
+    Browser
+      ↓
+    Application
+
+
+TestNG is widely used in Java-based automation frameworks.
+
+
+It supports structured test execution and provides features useful
+for organizing automation suites.
+
+
+====================================================================
+40.7 TESTNG TEST CONCEPT
+====================================================================
+
+Conceptually:
+
+    Test Class
+        |
+        +---- Login Test
+        |
+        +---- Search Test
+        |
+        +---- Cart Test
+        |
+        +---- Checkout Test
+
+
+Tests can be organized into a larger suite.
+
+Example:
+
+    Regression Suite
+          |
+          +---- Login
+          +---- Search
+          +---- Product
+          +---- Cart
+          +---- Checkout
+
+
+This is useful when executing many automated tests together.
+
+
+====================================================================
+40.8 JUNIT vs TESTNG
+====================================================================
+
+Both are Java testing frameworks.
+
++----------------------+--------------------------+
+| JUnit                | TestNG                   |
++----------------------+--------------------------+
+| Java testing         | Java testing             |
+| Test framework       | Test framework           |
+| Assertions           | Assertions               |
+| Test organization    | Test organization        |
+| Test execution       | Test execution           |
++----------------------+--------------------------+
+
+
+For this syllabus, the important job-ready skill is understanding
+that both can provide the testing framework layer around Java
+automation.
+
+
+Example:
+
+    Java + JUnit + Selenium
+
+or
+
+    Java + TestNG + Selenium
+
+
+====================================================================
+40.9 PYTEST
+====================================================================
+
+PyTest is a testing framework for Python.
+
+Conceptual stack:
+
+    Python
+      ↓
+    PyTest
+      ↓
+    Selenium / other automation tools
+      ↓
+    Application
+
+
+PyTest is commonly used to write and execute Python tests.
+
+
+A conceptual test:
+
+    def test_login():
+        open_login_page()
+        enter_credentials()
+        click_login()
+        verify_dashboard()
+
+
+The test framework manages the execution of the test.
+
+
+====================================================================
+40.10 PYTEST TEST STRUCTURE
+====================================================================
+
+Conceptually:
+
+    Test Function
+        ↓
+    Setup
+        ↓
+    Actions
+        ↓
+    Assertions
+        ↓
+    Result
+
+
+Example:
+
+    test_login()
+
+        Open Login
+             ↓
+        Enter username
+             ↓
+        Enter password
+             ↓
+        Click Login
+             ↓
+        Assert Dashboard
+             ↓
+        PASS / FAIL
+
+
+PyTest allows tests to be written in a relatively straightforward
+Python style.
+
+
+====================================================================
+40.11 PYTEST ASSERTIONS
+====================================================================
+
+PyTest uses Python's assertion mechanism for validating expected
+results.
+
+Conceptually:
+
+    actual == expected
+
+
+Example:
+
+    expected_title = "Dashboard"
+
+    actual_title = get_page_title()
+
+    assert actual_title == expected_title
+
+
+If they match:
+
+    PASS
+
+
+If they do not match:
+
+    FAIL
+
+
+The assertion is what determines whether the expected behavior
+was achieved.
+
+
+====================================================================
+40.12 FIXTURES IN PYTEST — BASIC IDEA
+====================================================================
+
+PyTest provides fixtures for supporting test setup and reusable
+test resources.
+
+Conceptually:
+
+    Fixture
+       ↓
+    Prepare required state
+       ↓
+    Test
+       ↓
+    Cleanup / resource handling
+
+
+Example concept:
+
+    Browser fixture
+         ↓
+    Start browser
+         ↓
+    Test executes
+         ↓
+    Browser cleanup
+
+
+This avoids repeatedly writing the same setup logic in every test.
+
+
+IMPORTANT:
+
+Fixtures are an important PyTest concept for automation framework
+design.
+
+
+====================================================================
+40.13 PLAYWRIGHT TEST
+====================================================================
+
+Playwright Test is a test framework associated with Playwright.
+
+Conceptual stack:
+
+    Test
+      ↓
+    Playwright Test
+      ↓
+    Playwright
+      ↓
+    Browser
+      ↓
+    Web Application
+
+
+It provides a structured environment for writing and executing
+Playwright tests.
+
+
+This is different from simply using Playwright as a browser
+automation library.
+
+
+The framework provides test-oriented capabilities around the
+automation tool.
+
+
+====================================================================
+40.14 PLAYWRIGHT TEST CONCEPT
+====================================================================
+
+Conceptual test:
+
+    test("login", async ({ page }) => {
+
+        open login page
+
+        enter username
+
+        enter password
+
+        click login
+
+        verify dashboard
+
+    })
+
+
+The exact syntax depends on the Playwright version and language
+being used.
+
+
+The important structure is:
+
+    Test
+      ↓
+    Page interaction
+      ↓
+    Assertion
+      ↓
+    Result
+
+
+====================================================================
+40.15 JEST
+====================================================================
+
+Jest is a JavaScript testing framework.
+
+Conceptual stack:
+
+    JavaScript / TypeScript
+             ↓
+           Jest
+             ↓
+      Test / Application
+             ↓
+          Result
+
+
+Jest is commonly associated with JavaScript/TypeScript testing.
+
+
+For browser automation, the syllabus also includes:
+
+    Playwright Test
+
+
+Therefore distinguish:
+
+    Jest
+      ↓
+    JavaScript testing framework
+
+
+    Playwright Test
+      ↓
+    Playwright-oriented test framework
+
+
+====================================================================
+40.16 CHOOSING THE FRAMEWORK
+====================================================================
+
+The programming language and automation technology influence the
+framework choice.
+
+Example combinations:
+
+    JAVA
+      ↓
+    JUnit / TestNG
+      ↓
+    Selenium
+
+
+    PYTHON
+      ↓
+    PyTest
+      ↓
+    Selenium / other automation tools
+
+
+    JAVASCRIPT / TYPESCRIPT
+      ↓
+    Playwright Test
+      ↓
+    Playwright
+
+
+Another JavaScript/TypeScript testing option:
+
+    Jest
+
+
+The exact stack depends on project requirements.
+
+
+====================================================================
+40.17 TEST EXECUTION FLOW
+====================================================================
+
+A test framework generally participates in a flow like:
+
+    Test Definition
+          ↓
+    Test Discovery
+          ↓
+    Test Execution
+          ↓
+    Application Interaction
+          ↓
+    Assertions
+          ↓
+    PASS / FAIL
+          ↓
+    Test Results
+
+
+Example:
+
+    Regression Suite
+          ↓
+    Framework identifies tests
+          ↓
+    Execute tests
+          ↓
+    Collect results
+          ↓
+    Report failures
+
+
+====================================================================
+40.18 ASSERTIONS — THE HEART OF VALIDATION
+====================================================================
+
+Consider:
+
+    Test:
+
+    Click Login
+
+
+If the test only clicks the button:
+
+    Did Login actually succeed?
+
+Unknown.
+
+
+Add validation:
+
+    Click Login
+       ↓
+    Verify Dashboard
+       ↓
+    PASS / FAIL
+
+
+Therefore:
+
+    ACTION ≠ VALIDATION
+
+
+A test should validate expected behavior.
+
+
+Examples:
+
+    Expected title
+    Expected text
+    Expected element
+    Expected page state
+    Expected result
+
+
+====================================================================
+40.19 TEST SETUP AND CLEANUP
+====================================================================
+
+Automation tests often need preparation before execution.
+
+Example:
+
+    Start browser
+       ↓
+    Open application
+       ↓
+    Execute test
+       ↓
+    Close browser
+
+
+Conceptually:
+
+    SETUP
+      ↓
+    TEST
+      ↓
+    CLEANUP
+
+
+Frameworks provide mechanisms for organizing these activities.
+
+
+This becomes especially important when a test suite contains many
+tests.
+
+
+====================================================================
+40.20 TEST SUITES
+====================================================================
+
+A test suite is a collection/group of tests executed together.
+
+Example:
+
+    E-Commerce Regression Suite
+          |
+          +---- Login
+          +---- Search
+          +---- Product Details
+          +---- Cart
+          +---- Checkout
+          +---- Order
+
+
+Instead of manually executing each test individually:
+
+    Framework
+       ↓
+    Execute Suite
+       ↓
+    Collect Results
+
+
+This is essential for large automation projects.
+
+
+====================================================================
+40.21 TEST ORGANIZATION
+====================================================================
+
+A good test suite should be organized logically.
+
+Possible structure:
+
+    Tests
+      |
+      +---- Login
+      |
+      +---- Search
+      |
+      +---- Cart
+      |
+      +---- Checkout
+
+
+As the project grows:
+
+    Tests
+      |
+      +---- Smoke
+      |
+      +---- Regression
+      |
+      +---- Functional
+
+
+The exact structure depends on project requirements.
+
+
+====================================================================
+40.22 SMOKE TEST SUITE
+====================================================================
+
+A smoke suite can contain important basic tests.
+
+Example:
+
+    Application launches
+          ↓
+    Login works
+          ↓
+    Main page works
+          ↓
+    Basic critical workflow works
+
+
+If smoke tests fail:
+
+    Further testing may be affected.
+
+
+Automation frameworks make it easier to organize and execute such
+test groups.
+
+
+====================================================================
+40.23 REGRESSION SUITE
+====================================================================
+
+Regression suite contains tests used to verify that existing
+functionality continues to work after changes.
+
+Example:
+
+    New feature added
+          ↓
+    Run regression suite
+          ↓
+    Login
+    Search
+    Cart
+    Checkout
+    Orders
+          ↓
+    Analyze results
+
+
+Automation is especially valuable for repeatable regression suites.
+
+
+====================================================================
+40.24 FRAMEWORK + SELENIUM EXAMPLE
+====================================================================
+
+Consider:
+
+    Java + TestNG + Selenium
+
+
+Architecture:
+
+    TestNG
+      ↓
+    Test Methods
+      ↓
+    Selenium WebDriver
+      ↓
+    Browser
+      ↓
+    Application
+
+
+Example workflow:
+
+    TestNG starts test
+          ↓
+    Selenium opens browser
+          ↓
+    Login actions
+          ↓
+    Selenium interacts with page
+          ↓
+    TestNG assertion
+          ↓
+    PASS / FAIL
+
+
+This distinction is very important:
+
+    TestNG
+        =
+    Test execution/organization layer
+
+
+    Selenium
+        =
+    Browser automation layer
+
+
+====================================================================
+40.25 FRAMEWORK + PYTEST EXAMPLE
+====================================================================
+
+Consider:
+
+    Python + PyTest + Selenium
+
+
+Architecture:
+
+    PyTest
+      ↓
+    Python Test
+      ↓
+    Selenium
+      ↓
+    Browser
+      ↓
+    Application
+
+
+Flow:
+
+    PyTest executes test
+          ↓
+    Selenium controls browser
+          ↓
+    Test performs actions
+          ↓
+    Assertion
+          ↓
+    PASS / FAIL
+
+
+====================================================================
+40.26 FRAMEWORK + PLAYWRIGHT EXAMPLE
+====================================================================
+
+Consider:
+
+    TypeScript + Playwright Test + Playwright
+
+
+Architecture:
+
+    Playwright Test
+          ↓
+    Test Code
+          ↓
+    Playwright
+          ↓
+    Browser
+          ↓
+    Application
+
+
+Flow:
+
+    Test execution
+         ↓
+    Browser interaction
+         ↓
+    Assertions
+         ↓
+    Result
+
+
+This is a natural stack for Playwright-based browser automation.
+
+
+====================================================================
+40.27 THREE IMPORTANT AUTOMATION STACKS
+====================================================================
+
+STACK 1 — JAVA
+--------------
+
+    Java
+      +
+    Selenium
+      +
+    TestNG / JUnit
+
+
+STACK 2 — PYTHON
+----------------
+
+    Python
+      +
+    Selenium
+      +
+    PyTest
+
+
+STACK 3 — TYPESCRIPT
+--------------------
+
+    TypeScript
+       +
+    Playwright
+       +
+    Playwright Test
+
+
+These are representative combinations for the learning path.
+
+
+====================================================================
+40.28 HOW TO CHOOSE BETWEEN THEM?
+====================================================================
+
+Consider:
+
+    Programming language
+          +
+    Team expertise
+          +
+    Existing project
+          +
+    Automation technology
+          +
+    Maintenance requirements
+
+
+Example:
+
+If the team is standardized on Java:
+
+    Java + Selenium + TestNG/JUnit
+
+
+If the team uses Python:
+
+    Python + PyTest + Selenium
+
+
+If the project uses Playwright with TypeScript:
+
+    TypeScript + Playwright Test
+
+
+Do not select a framework only because it is popular.
+
+
+====================================================================
+40.29 COMMON BEGINNER MISTAKES
+====================================================================
+
+MISTAKE 1
+---------
+
+Confusing Selenium with a complete testing framework.
+
+Remember:
+
+    Selenium → browser automation
+
+
+MISTAKE 2
+---------
+
+Writing actions without assertions.
+
+Bad:
+
+    Click Login
+
+Better:
+
+    Click Login
+       ↓
+    Verify Dashboard
+
+
+MISTAKE 3
+---------
+
+Putting all tests into one huge test.
+
+Better:
+
+    Separate logical test cases.
+
+
+MISTAKE 4
+---------
+
+Duplicating setup code everywhere.
+
+Better:
+
+    Use framework-supported setup/reusable mechanisms.
+
+
+MISTAKE 5
+---------
+
+Ignoring test organization.
+
+A growing automation suite requires structure.
+
+
+MISTAKE 6
+---------
+
+Choosing frameworks without considering the project's language
+and automation stack.
+
+
+====================================================================
+40.30 FRAMEWORK LAYERS
+====================================================================
+
+A useful mental model:
+
+    +--------------------------------------+
+    | Test Suite / Test Cases              |
+    +--------------------------------------+
+                    ↓
+    +--------------------------------------+
+    | Test Framework                      |
+    | JUnit / TestNG / PyTest / etc.      |
+    +--------------------------------------+
+                    ↓
+    +--------------------------------------+
+    | Automation Tool                     |
+    | Selenium / Playwright               |
+    +--------------------------------------+
+                    ↓
+    +--------------------------------------+
+    | Browser / Application               |
+    +--------------------------------------+
+
+
+This layered understanding is extremely useful in interviews.
+
+
+====================================================================
+40.31 INTERVIEW QUESTIONS
+====================================================================
+
+Q1. What is a test framework?
+-----------------------------
+
+A test framework provides structure and mechanisms for organizing,
+executing, and validating automated tests.
+
+
+Q2. What is the difference between Selenium and TestNG?
+--------------------------------------------------------
+
+Selenium is used for browser automation, while TestNG is a Java
+testing framework used to organize and execute tests.
+
+
+Q3. What is JUnit?
+------------------
+
+JUnit is a Java testing framework.
+
+
+Q4. What is TestNG?
+-------------------
+
+TestNG is a Java testing framework commonly used for organizing
+and executing Java tests.
+
+
+Q5. What is PyTest?
+-------------------
+
+PyTest is a Python testing framework.
+
+
+Q6. What is Playwright Test?
+----------------------------
+
+It is a test framework associated with Playwright for organizing
+and executing Playwright-based tests.
+
+
+Q7. What is Jest?
+-----------------
+
+Jest is a JavaScript testing framework.
+
+
+Q8. Why are assertions important?
+----------------------------------
+
+Assertions verify whether the actual result matches the expected
+result.
+
+
+Q9. What is a test suite?
+-------------------------
+
+A test suite is a collection/group of tests that can be executed
+together.
+
+
+Q10. Give an example of a Java Selenium stack.
+------------------------------------------------
+
+    Java
+      +
+    Selenium
+      +
+    TestNG or JUnit
+
+
+Q11. Give an example of a Python automation stack.
+---------------------------------------------------
+
+    Python
+      +
+    PyTest
+      +
+    Selenium
+
+
+Q12. Give an example of a Playwright stack.
+--------------------------------------------
+
+    TypeScript
+       +
+    Playwright
+       +
+    Playwright Test
+
+
+====================================================================
+40.32 QUICK REVISION
+====================================================================
+
+TEST FRAMEWORK
+--------------
+Provides structure for writing and executing tests.
+
+
+JUNIT
+-----
+Java testing framework.
+
+
+TESTNG
+------
+Java testing framework.
+
+
+PYTEST
+------
+Python testing framework.
+
+
+PLAYWRIGHT TEST
+---------------
+Test framework for Playwright-based testing.
+
+
+JEST
+----
+JavaScript testing framework.
+
+
+SELENIUM
+--------
+Browser automation tool.
+
+
+PLAYWRIGHT
+----------
+Browser automation technology/tool.
+
+
+ASSERTION
+---------
+Validates expected result against actual result.
+
+
+TEST SUITE
+----------
+Group of tests executed together.
+
+
+CORE MODEL
+----------
+
+    Framework
+       ↓
+    Automation Tool
+       ↓
+    Browser
+       ↓
+    Application
+
+
+====================================================================
+40.33 JOB-READY CHECKLIST
+====================================================================
+
+You should be able to explain:
+
+[✓] Why a test framework is needed
+[✓] Test framework vs automation tool
+[✓] JUnit
+[✓] TestNG
+[✓] PyTest
+[✓] Playwright Test
+[✓] Jest
+[✓] Assertions
+[✓] Test setup
+[✓] Test cleanup
+[✓] Test suites
+[✓] Test organization
+[✓] Smoke suite concept
+[✓] Regression suite concept
+[✓] Java + Selenium + TestNG/JUnit
+[✓] Python + Selenium + PyTest
+[✓] TypeScript + Playwright + Playwright Test
+[✓] Framework layers
+
+
+====================================================================
+40.34 CHAPTER 40 FINAL TAKEAWAY
+====================================================================
+
+Remember the distinction:
+
+    SELENIUM / PLAYWRIGHT
+            ↓
+    Browser Automation
+
+
+    JUNIT / TESTNG / PYTEST /
+    PLAYWRIGHT TEST / JEST
+            ↓
+    Test Organization + Execution + Validation
+
+
+A professional automation stack combines these layers:
+
+    Programming Language
+             ↓
+    Test Framework
+             ↓
+    Automation Tool
+             ↓
+    Browser
+             ↓
+    Application
+             ↓
+    Assertions
+             ↓
+    PASS / FAIL
+
+
+The next step is to move from simply executing tests to designing
+a maintainable automation framework.
+
+====================================================================
+                    NEXT: CHAPTER 41
+                 FRAMEWORK DESIGN
+====================================================================
+
+Topics:
+    • Automation framework structure
+    • Page Object Model (POM)
+    • Page Factory concepts
+    • Data-driven framework
+    • Keyword-driven framework
+    • Hybrid framework
+    • Configuration
+    • Test data management
+    • Reusable utilities
+    • Logging
+    • Reporting
+    • Screenshots
+====================================================================
